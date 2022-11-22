@@ -13,3 +13,8 @@ export const lookupItem = async ({ queryKey }) => {
   const [_, id] = queryKey;
   return await axios.get(apiRoutes.lookupItem + "/item/" + id);
 };
+
+export const deleteLookupItem = async ({ queryKey }) => {
+  const [_, id] = queryKey;
+  return await axios.delete(apiRoutes.lookupItem + "/Delete/" + id);
+};

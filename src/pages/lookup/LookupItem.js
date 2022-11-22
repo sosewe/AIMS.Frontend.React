@@ -6,6 +6,11 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider as MuiDivider,
   Link,
   Paper as MuiPaper,
@@ -17,7 +22,7 @@ import { spacing } from "@mui/system";
 import { NavLink, useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import { Add as AddIcon } from "@mui/icons-material";
-import { useLookupItems } from "../../api/lookup";
+import { deleteLookupItem, useLookupItems } from "../../api/lookup";
 import { toast } from "react-toastify";
 
 const Card = styled(MuiCard)(spacing);
@@ -34,20 +39,55 @@ const Button = styled(MuiButton)(spacing);
 
 const LookupItemsData = () => {
   const [pageSize, setPageSize] = useState(5);
+  const [open, setOpen] = React.useState(false);
+  const [id, setId] = React.useState();
   const navigate = useNavigate();
-  const { data, isLoading, isError, error } = useQuery(
-    "lookupItems",
-    useLookupItems,
-    {
-      retry: 0,
-    }
-  );
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch: refetchLookupItems,
+  } = useQuery("lookupItems", useLookupItems, { retry: 0 });
   if (isError) {
     toast(error.response.data, {
       type: "error",
     });
   }
 
+  function handleClickOpen(id) {
+    setOpen(true);
+    setId(id);
+  }
+
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const {
+    refetch,
+    isSuccess: isDeleteSuccess,
+    isError: isDeleteError,
+    error: deleteError,
+  } = useQuery(["lookup", id], deleteLookupItem, { enabled: false });
+
+  const handleDeleteLookupItem = (isDeleteSuccess) => {
+    refetch();
+    setOpen(false);
+    setTimeout(() => {
+      refetchLookupItems();
+    }, 1500);
+  };
+  if (isDeleteSuccess) {
+    toast("Successfully Deleted", {
+      type: "success",
+    });
+  }
+  if (isDeleteError) {
+    toast(deleteError.response.data, {
+      type: "error",
+    });
+  }
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -89,9 +129,11 @@ const LookupItemsData = () => {
                     <NavLink to={`/lookup/new-lookupItem/${params.id}`}>
                       <Button startIcon={<Edit2Icon />} size="small"></Button>
                     </NavLink>
-                    <NavLink to={`/users/profile/${params.id}`}>
-                      <Button startIcon={<TrashIcon />} size="small"></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<TrashIcon />}
+                      size="small"
+                      onClick={() => handleClickOpen(params.id)}
+                    ></Button>
                   </>
                 ),
               },
@@ -101,6 +143,27 @@ const LookupItemsData = () => {
             loading={isLoading}
           />
         </div>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Delete Lookup Item</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete Lookup Item?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDeleteLookupItem} color="primary">
+              Yes
+            </Button>
+            <Button onClick={handleClose} color="error" autoFocus>
+              No
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
     </Card>
   );
