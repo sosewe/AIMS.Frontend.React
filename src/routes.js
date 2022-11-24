@@ -52,7 +52,7 @@ import InvoiceList from "./pages/pages/InvoiceList";
 import Orders from "./pages/pages/Orders";
 import Pricing from "./pages/pages/Pricing";
 import Settings from "./pages/pages/Settings";
-import Projects from "./pages/pages/Projects";
+// import Projects from "./pages/pages/Projects";
 import Chat from "./pages/pages/Chat";
 
 // Table components
@@ -118,6 +118,10 @@ const VectorMaps = async(() => import("./pages/maps/VectorMaps"));
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
 const NewLookupItem = async(() => import("./pages/lookup/NewLookupItem"));
 
+// Project
+const Projects = async(() => import("./pages/project/design/Projects"));
+const NewProject = async(() => import("./pages/project/design/NewProject"));
+
 const routes = [
   {
     path: "/",
@@ -126,6 +130,24 @@ const routes = [
       {
         path: "",
         element: <Home />,
+      },
+    ],
+  },
+  {
+    path: "project",
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "projects",
+        element: <Projects />,
+      },
+      {
+        path: "new-project",
+        element: <NewProject />,
+      },
+      {
+        path: "new-project/:id",
+        element: <NewProject />,
       },
     ],
   },

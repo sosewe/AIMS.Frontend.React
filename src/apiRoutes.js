@@ -4,5 +4,6 @@ const path = protocol + "//" + hostname;
 export const apiRoutes = {
   getTokenByPassword: "/api/getTokenByPassword",
   lookupItem: path + process.env.REACT_APP_LOOKUP_PORT + "/api/LookupItem",
+  project: path + process.env.REACT_APP_INDICATOR_PORT + "/api/Project",
   job: "/api/job/:id?",
 };

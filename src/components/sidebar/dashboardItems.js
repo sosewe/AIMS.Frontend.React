@@ -14,7 +14,22 @@ import {
   Sliders,
   Users,
   Shuffle,
+  Layers,
 } from "react-feather";
+
+const projectSection = [
+  {
+    href: "/project",
+    icon: Layers,
+    title: "Project",
+    children: [
+      {
+        href: "/project/projects",
+        title: "Projects",
+      },
+    ],
+  },
+];
 
 const configurationSection = [
   {
@@ -333,7 +348,7 @@ const navItems = [
   },
   {
     title: "Projects",
-    pages: [],
+    pages: projectSection,
   },
   {
     title: "Configuration",

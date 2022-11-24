@@ -177,7 +177,7 @@ const LookupItem = () => {
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/lookup/">
+        <Link component={NavLink} to="/lookup/lookupItem">
           Lookup
         </Link>
         <Typography>Lookup Item</Typography>
