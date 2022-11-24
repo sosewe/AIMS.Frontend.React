@@ -18,3 +18,14 @@ export const deleteLookupItem = async ({ queryKey }) => {
   const [_, id] = queryKey;
   return await axios.delete(apiRoutes.lookupItem + "/Delete/" + id);
 };
+
+export const getLookupMasterItemsByName = async ({ queryKey }) => {
+  const [_, masterName] = queryKey;
+  return await axios.get(
+    apiRoutes.lookupOption + "/optionsByName/" + masterName
+  );
+};
+
+export const getAMREFStaffList = async () => {
+  return await axios.get(apiRoutes.ERPStaffList);
+};
