@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import {
   Breadcrumbs as MuiBreadcrumbs,
@@ -42,13 +42,14 @@ const LookupItemsData = () => {
   const [open, setOpen] = React.useState(false);
   const [id, setId] = React.useState();
   const navigate = useNavigate();
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch: refetchLookupItems,
-  } = useQuery("lookupItems", useLookupItems, { retry: 0 });
+  const queryClient = useQueryClient();
+  const { data, isLoading, isError, error } = useQuery(
+    ["lookupItems"],
+    useLookupItems,
+    {
+      retry: 0,
+    }
+  );
   if (isError) {
     toast(error.response.data, {
       type: "error",
@@ -71,12 +72,10 @@ const LookupItemsData = () => {
     error: deleteError,
   } = useQuery(["lookup", id], deleteLookupItem, { enabled: false });
 
-  const handleDeleteLookupItem = (isDeleteSuccess) => {
-    refetch();
+  const handleDeleteLookupItem = async () => {
+    await refetch();
     setOpen(false);
-    setTimeout(() => {
-      refetchLookupItems();
-    }, 1500);
+    await queryClient.invalidateQueries(["lookupItems"]);
   };
   if (isDeleteSuccess) {
     toast("Successfully Deleted", {

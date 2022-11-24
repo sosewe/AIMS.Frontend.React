@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -79,14 +79,16 @@ const LookupItemForm = () => {
   });
 
   useEffect(() => {
-    async function getCurrentUser() {
-      if (!isLoading && lookupItemData) {
-        await formik.setFieldValue("name", lookupItemData.data.name, false);
-        await formik.setFieldValue("alias", lookupItemData.data.alias, false);
+    function setCurrentFormValues() {
+      if (lookupItemData) {
+        formik.setValues({
+          name: lookupItemData.data.name,
+          alias: lookupItemData.data.alias,
+        });
       }
     }
-    getCurrentUser();
-  }, [isLoading]);
+    setCurrentFormValues();
+  }, [lookupItemData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
