@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
@@ -11,16 +11,27 @@ import {
   CardContent as MuiCardContent,
   Checkbox,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider as MuiDivider,
   FormControlLabel,
   FormGroup,
   Grid,
   Link,
   MenuItem,
-  Portal,
+  Paper as MuiPaper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { spacing } from "@mui/system";
 import { NavLink, useParams } from "react-router-dom";
 import { useFormik } from "formik";
@@ -44,16 +55,12 @@ import { newProjectAdministrativeProgramme } from "../../../api/project-administ
 import { newImplementingOrganisation } from "../../../api/implementing-organisation";
 
 const Card = styled(MuiCard)(spacing);
-
 const Divider = styled(MuiDivider)(spacing);
-
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
-
 const CardContent = styled(MuiCardContent)(spacing);
-
 const TextField = styled(MuiTextField)(spacing);
-
 const Button = styled(MuiButton)(spacing);
+const Paper = styled(MuiPaper)(spacing);
 
 const staffDetailsInitial = {
   staffDetailsName: "",
@@ -84,7 +91,7 @@ const initialValues = {
   administrativeProgramme: "",
 };
 
-const StaffDetailsForm = () => {
+const StaffDetailsForm = ({ handleClick }) => {
   const { isLoading, data: aimsRolesData } = useQuery(
     ["aimsRoles", "AIMSRoles"],
     getLookupMasterItemsByName,
@@ -101,13 +108,13 @@ const StaffDetailsForm = () => {
     initialValues: staffDetailsInitial,
     validationSchema: Yup.object().shape({
       staffDetailsName: Yup.string().required("Required"),
-      staffDetailsAIMSRole: Yup.string().required("Required"),
-      staffDetailsWorkFlowTask: Yup.string().required("Required"),
+      staffDetailsAIMSRole: Yup.object().required("Required"),
+      staffDetailsWorkFlowTask: Yup.object().required("Required"),
       primaryRole: Yup.boolean().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
-      values.createDate = new Date();
       try {
+        handleClick(values);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -171,10 +178,7 @@ const StaffDetailsForm = () => {
                 </MenuItem>
                 {!isLoading
                   ? aimsRolesData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
+                      <MenuItem key={option.lookupItemId} value={option}>
                         {option.lookupItemName}
                       </MenuItem>
                     ))
@@ -214,7 +218,7 @@ const StaffDetailsForm = () => {
                   : []}
               </TextField>
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <FormGroup>
                 <FormControlLabel
                   control={
@@ -228,7 +232,16 @@ const StaffDetailsForm = () => {
                 />
               </FormGroup>
             </Grid>
-            <Grid item md={2}></Grid>
+            <Grid item md={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
           </Grid>
         </CardContent>
       </Card>
@@ -238,8 +251,9 @@ const StaffDetailsForm = () => {
 
 const NewProjectForm = () => {
   let { id } = useParams();
-  const portalRef = useRef(null);
   const [errorSet, setIsErrorSet] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [staffDetailsArray, setStaffDetailsArray] = useState([]);
   const { isLoading, data: projectTypesData } = useQuery(
     ["projectTypes", "ProjectType"],
     getLookupMasterItemsByName,
@@ -406,6 +420,27 @@ const NewProjectForm = () => {
           void: false,
         };
 
+        const projectRoles = [];
+        for (const staffDetailsArrayElement of staffDetailsArray) {
+          const projectRole = {
+            aimsRoleId:
+              staffDetailsArrayElement.staffDetailsAIMSRole.lookupItemId,
+            createDate: new Date(),
+            dqaRoleId: staffDetailsArrayElement.staffDetailsWorkFlowTask.roleId,
+            dqaRoleName:
+              staffDetailsArrayElement.staffDetailsWorkFlowTask.roleName,
+            isPrimary:
+              staffDetailsArrayElement.primaryRole === ""
+                ? false
+                : staffDetailsArrayElement.primaryRole,
+            processLevelId: project.data.id,
+            processLevelTypeId: processLevelTypeId,
+            staffNames: processLevelTypeId.staffDetailsName,
+            void: false,
+          };
+          projectRoles.push(projectRole);
+        }
+
         await donorProcessMutation.mutateAsync(projectDonor);
         await processLevelContactMutation.mutateAsync(projectContact);
         await administrativeProgrammeMutation.mutateAsync(
@@ -414,6 +449,7 @@ const NewProjectForm = () => {
         await implementingOrganizationMutation.mutateAsync(
           projectImplementingOrganization
         );
+        await processLevelRoleMutation.mutateAsync(projectRoles);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -425,17 +461,15 @@ const NewProjectForm = () => {
     },
   });
 
-  // useEffect(() => {
-  //   function setCurrentFormValues() {
-  //     if (lookupItemData) {
-  //       formik.setValues({
-  //         name: lookupItemData.data.name,
-  //         alias: lookupItemData.data.alias,
-  //       });
-  //     }
-  //   }
-  //   setCurrentFormValues();
-  // }, [lookupItemData]);
+  const handleClick = (values) => {
+    setStaffDetailsArray((current) => [...current, values]);
+  };
+
+  function removeStaff(row) {
+    setStaffDetailsArray((current) =>
+      current.filter((staff) => staff.staffDetailsName !== row.staffDetailsName)
+    );
+  }
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -1042,9 +1076,61 @@ const NewProjectForm = () => {
                   </Typography>
                 </Grid>
               </Grid>
-              <Portal container={portalRef.current}>
-                <StaffDetailsForm />
-              </Portal>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setOpen(true)}
+                  >
+                    <AddIcon /> Add Staff Details
+                  </Button>
+                </Grid>
+              </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Paper>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Staff Name</TableCell>
+                          <TableCell align="right">Project Role</TableCell>
+                          <TableCell align="right">DQA Workflow Role</TableCell>
+                          <TableCell align="right">Primary Role</TableCell>
+                          <TableCell align="right">Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {staffDetailsArray.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell component="th" scope="row">
+                              {row.staffDetailsName}
+                            </TableCell>
+                            <TableCell align="right">
+                              {row.staffDetailsAIMSRole.lookupItemName}
+                            </TableCell>
+                            <TableCell align="right">
+                              {row.staffDetailsWorkFlowTask.roleName}
+                            </TableCell>
+                            <TableCell align="right">
+                              {row.primaryRole ? "Yes" : "No"}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => removeStaff(row)}
+                              >
+                                <DeleteIcon />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Paper>
+                </Grid>
+              </Grid>
               <Button type="submit" variant="contained" color="primary" mt={3}>
                 Save changes
               </Button>
@@ -1052,6 +1138,24 @@ const NewProjectForm = () => {
           )}
         </CardContent>
       </Card>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={open}
+        onClose={() => setOpen(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Staff Details</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Add Staff Details</DialogContentText>
+          <StaffDetailsForm handleClick={handleClick} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </form>
   );
 };
