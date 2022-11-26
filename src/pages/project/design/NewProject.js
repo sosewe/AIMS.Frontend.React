@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
@@ -9,11 +9,15 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Checkbox,
   CircularProgress,
   Divider as MuiDivider,
+  FormControlLabel,
+  FormGroup,
   Grid,
   Link,
   MenuItem,
+  Portal,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
@@ -23,12 +27,21 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import {
+  getAdministrativeRoles,
   getAMREFStaffList,
   getLookupMasterItemsByName,
-  newLookupItem,
 } from "../../../api/lookup";
 import { DatePicker } from "@mui/x-date-pickers";
 import { getDonors } from "../../../api/donor";
+import { getOrganizationUnits } from "../../../api/organization-unit";
+import { getAmrefEntities } from "../../../api/amref-entity";
+import { getAdministrativeProgrammes } from "../../../api/administrative-programme";
+import { newProject } from "../../../api/project";
+import { newDonorProcessLevel } from "../../../api/donor-process-level";
+import { newProcessLevelContact } from "../../../api/process-level-contact";
+import { newProcessLevelRole } from "../../../api/process-level-role";
+import { newProjectAdministrativeProgramme } from "../../../api/project-administrative-programme";
+import { newImplementingOrganisation } from "../../../api/implementing-organisation";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -42,6 +55,12 @@ const TextField = styled(MuiTextField)(spacing);
 
 const Button = styled(MuiButton)(spacing);
 
+const staffDetailsInitial = {
+  staffDetailsName: "",
+  staffDetailsAIMSRole: "",
+  staffDetailsWorkFlowTask: "",
+  primaryRole: false,
+};
 const initialValues = {
   projectCode: "",
   projectType: "",
@@ -65,8 +84,162 @@ const initialValues = {
   administrativeProgramme: "",
 };
 
+const StaffDetailsForm = () => {
+  const { isLoading, data: aimsRolesData } = useQuery(
+    ["aimsRoles", "AIMSRoles"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingAdministrativeRoles, data: administrativeRoles } =
+    useQuery(["administrativeRoles"], getAdministrativeRoles, {
+      refetchOnWindowFocus: false,
+    });
+
+  const formik = useFormik({
+    initialValues: staffDetailsInitial,
+    validationSchema: Yup.object().shape({
+      staffDetailsName: Yup.string().required("Required"),
+      staffDetailsAIMSRole: Yup.string().required("Required"),
+      staffDetailsWorkFlowTask: Yup.string().required("Required"),
+      primaryRole: Yup.boolean().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      values.createDate = new Date();
+      try {
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsName"
+                label="Name"
+                required
+                value={formik.values.staffDetailsName}
+                error={Boolean(
+                  formik.touched.staffDetailsName &&
+                    formik.errors.staffDetailsName
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsName &&
+                  formik.errors.staffDetailsName
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsAIMSRole"
+                label="Project Role"
+                required
+                select
+                value={formik.values.staffDetailsAIMSRole}
+                error={Boolean(
+                  formik.touched.staffDetailsAIMSRole &&
+                    formik.errors.staffDetailsAIMSRole
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsAIMSRole &&
+                  formik.errors.staffDetailsAIMSRole
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Project Role
+                </MenuItem>
+                {!isLoading
+                  ? aimsRolesData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsWorkFlowTask"
+                label="DQA Work Flow Role"
+                required
+                select
+                value={formik.values.staffDetailsWorkFlowTask}
+                error={Boolean(
+                  formik.touched.staffDetailsWorkFlowTask &&
+                    formik.errors.staffDetailsWorkFlowTask
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsWorkFlowTask &&
+                  formik.errors.staffDetailsWorkFlowTask
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select DQA Work Flow Role
+                </MenuItem>
+                {!isLoadingAdministrativeRoles
+                  ? administrativeRoles.data.map((option) => (
+                      <MenuItem key={option.roleId} value={option}>
+                        {option.roleName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={1}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formik.values.primaryRole}
+                      onChange={formik.handleChange}
+                      name="primaryRole"
+                    />
+                  }
+                  label="Primary Role?"
+                />
+              </FormGroup>
+            </Grid>
+            <Grid item md={2}></Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+
 const NewProjectForm = () => {
   let { id } = useParams();
+  const portalRef = useRef(null);
+  const [errorSet, setIsErrorSet] = useState(false);
   const { isLoading, data: projectTypesData } = useQuery(
     ["projectTypes", "ProjectType"],
     getLookupMasterItemsByName,
@@ -81,13 +254,14 @@ const NewProjectForm = () => {
       refetchOnWindowFocus: false,
     }
   );
-  const { isLoading: isLoadingStaffList, data: staffListData } = useQuery(
-    ["staffList"],
-    getAMREFStaffList,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
+  const {
+    isLoading: isLoadingStaffList,
+    isError: isErrorStaffList,
+    data: staffListData,
+  } = useQuery(["staffList"], getAMREFStaffList, {
+    refetchOnWindowFocus: false,
+    retry: 0,
+  });
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -106,31 +280,148 @@ const NewProjectForm = () => {
     useQuery(["recipientType", "RecipientType"], getLookupMasterItemsByName, {
       refetchOnWindowFocus: false,
     });
+  const { isLoading: isLoadingOrgUnits, data: orgUnitsData } = useQuery(
+    ["organizationUnits"],
+    getOrganizationUnits,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingRegProg, data: regProgData } = useQuery(
+    ["regionalProgramme", "RegionalProgramme"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingProcessLevelType, data: processLevelData } =
+    useQuery(
+      ["processLevelType", "ProcessLevelType"],
+      getLookupMasterItemsByName,
+      {
+        refetchOnWindowFocus: false,
+      }
+    );
+  const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
+    ["amrefEntities"],
+    getAmrefEntities,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingAdminProgrammes, data: adminProgrammes } =
+    useQuery(["administrativeProgrammes"], getAdministrativeProgrammes, {
+      refetchOnWindowFocus: false,
+    });
 
-  // const mutation = useMutation(newLookupItem, {
-  //   onSuccess: () => {
-  //     toast("New Lookup Item Created Successfully!", {
-  //       type: "success",
-  //     });
-  //   },
-  //   onError: (error) => {
-  //     toast(error.response.data, {
-  //       type: "error",
-  //     });
-  //   },
-  // });
+  if (isErrorStaffList && !errorSet) {
+    setIsErrorSet(true);
+    toast("Error loading staff list", {
+      type: "error",
+    });
+  }
+
+  const mutation = useMutation({ mutationFn: newProject });
+  const donorProcessMutation = useMutation({
+    mutationFn: newDonorProcessLevel,
+  });
+  const processLevelContactMutation = useMutation({
+    mutationFn: newProcessLevelContact,
+  });
+  const processLevelRoleMutation = useMutation({
+    mutationFn: newProcessLevelRole,
+  });
+  const administrativeProgrammeMutation = useMutation({
+    mutationFn: newProjectAdministrativeProgramme,
+  });
+  const implementingOrganizationMutation = useMutation({
+    mutationFn: newImplementingOrganisation,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      name: Yup.string().required("Required"),
-      alias: Yup.string().required("Required"),
+      projectCode: Yup.string().required("Required"),
+      projectType: Yup.string().required("Required"),
+      shortTitle: Yup.string().required("Required"),
+      longTitle: Yup.string().required("Required"),
+      description: Yup.string().required("Required"),
+      goal: Yup.string().required("Required"),
+      startingDate: Yup.date().min(new Date()).required("Required"),
+      endingDate: Yup.date().min(new Date()).required("Required"),
+      currentStatus: Yup.string().required("Required"),
+      // projectManagerName: Yup.string(),
+      // projectManagerEmail: Yup.string(),
+      totalBudget: Yup.number().integer().required("Required"),
+      currencyTypeId: Yup.string().required("Required"),
+      // costCentre: "",
+      donors: Yup.string().required("Required"),
+      recipientTypeId: Yup.string().required("Required"),
+      projectOrganisationUnitId: Yup.string().required("Required"),
+      regionalProgramme: Yup.string().required("Required"),
+      eNASupportingOffice: Yup.string().required("Required"),
+      administrativeProgramme: Yup.string().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       values.createDate = new Date();
-      // mutation.mutate(values);
-      resetForm();
-      setSubmitting(false);
+      try {
+        const project = await mutation.mutateAsync(values);
+        console.log(project);
+        let processLevelTypeId;
+        if (isLoadingProcessLevelType) {
+          const projectProcessLevel = processLevelData.data.filter(
+            (obj) => obj.lookupItemName === "Project"
+          );
+          if (projectProcessLevel.length > 0) {
+            processLevelTypeId = projectProcessLevel[0].lookupItemId;
+          }
+        }
+
+        const projectDonor = {
+          createDate: new Date(),
+          donorId: values.donors,
+          processLevelId: project.data.id,
+          processLevelTypeId: processLevelTypeId,
+          void: false,
+        };
+        const projectContact = {
+          createDate: new Date(),
+          managerEmail: values.projectManagerEmail,
+          managerName: values.projectManagerName,
+          processLevelItemId: project.data.id,
+          processLevelTypeId: processLevelTypeId,
+          void: false,
+        };
+        const projectAdministrativeProgramme = {
+          administrativeProgrammeId: values.administrativeProgramme,
+          createDate: new Date(),
+          projectId: project.data.id,
+        };
+        const projectImplementingOrganization = {
+          createDate: new Date(),
+          organizationId: values.projectOrganisationUnitId,
+          processLevelItemId: project.data.id,
+          processLevelTypeId: processLevelTypeId,
+          projectManager: "",
+          void: false,
+        };
+
+        await donorProcessMutation.mutateAsync(projectDonor);
+        await processLevelContactMutation.mutateAsync(projectContact);
+        await administrativeProgrammeMutation.mutateAsync(
+          projectAdministrativeProgramme
+        );
+        await implementingOrganizationMutation.mutateAsync(
+          projectImplementingOrganization
+        );
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
     },
   });
 
@@ -148,7 +439,7 @@ const NewProjectForm = () => {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      <Card mb={6}>
+      <Card mb={12}>
         <CardContent>
           {formik.isSubmitting ? (
             <Box display="flex" justifyContent="center" my={6}>
@@ -162,10 +453,14 @@ const NewProjectForm = () => {
                     name="projectCode"
                     label="Project Code"
                     required
-                    value={formik.values.name}
-                    error={Boolean(formik.touched.name && formik.errors.name)}
+                    value={formik.values.projectCode}
+                    error={Boolean(
+                      formik.touched.projectCode && formik.errors.projectCode
+                    )}
                     fullWidth
-                    helperText={formik.touched.name && formik.errors.name}
+                    helperText={
+                      formik.touched.projectCode && formik.errors.projectCode
+                    }
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     variant="outlined"
@@ -258,6 +553,21 @@ const NewProjectForm = () => {
                 helperText={
                   formik.touched.description && formik.errors.description
                 }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                multiline
+                required
+                variant="outlined"
+                rows={3}
+                my={2}
+              />
+              <TextField
+                name="goal"
+                label="Goal"
+                value={formik.values.goal}
+                error={Boolean(formik.touched.goal && formik.errors.goal)}
+                fullWidth
+                helperText={formik.touched.goal && formik.errors.goal}
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 multiline
@@ -361,7 +671,6 @@ const NewProjectForm = () => {
                   <TextField
                     name="projectManagerName"
                     label="Project Manager's Name"
-                    required
                     select
                     value={formik.values.projectManagerName}
                     error={Boolean(
@@ -388,7 +697,7 @@ const NewProjectForm = () => {
                     <MenuItem disabled value="">
                       Select Project Manager's Name
                     </MenuItem>
-                    {!isLoadingStaffList
+                    {!isLoadingStaffList && !isErrorStaffList
                       ? staffListData.data.map((option) => (
                           <MenuItem key={option.Full_Name} value={option}>
                             {option.Full_Name}
@@ -401,7 +710,6 @@ const NewProjectForm = () => {
                   <TextField
                     name="projectManagerEmail"
                     label="Project Manager's Email"
-                    required
                     value={formik.values.projectManagerEmail}
                     error={Boolean(
                       formik.touched.projectManagerEmail &&
@@ -419,7 +727,6 @@ const NewProjectForm = () => {
                   />
                 </Grid>
               </Grid>
-
               <Grid container spacing={12}>
                 <Grid item md={12}>
                   <Typography variant="h3" gutterBottom display="inline">
@@ -575,6 +882,169 @@ const NewProjectForm = () => {
                   </TextField>
                 </Grid>
               </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Typography variant="h3" gutterBottom display="inline">
+                    Offices
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid container spacing={4}>
+                <Grid item md={4}>
+                  <TextField
+                    name="projectOrganisationUnitId"
+                    label="Implementing Office"
+                    required
+                    select
+                    value={formik.values.projectOrganisationUnitId}
+                    error={Boolean(
+                      formik.touched.projectOrganisationUnitId &&
+                        formik.errors.projectOrganisationUnitId
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.projectOrganisationUnitId &&
+                      formik.errors.projectOrganisationUnitId
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Implementing Office
+                    </MenuItem>
+                    {!isLoadingOrgUnits
+                      ? orgUnitsData.data.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.name}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="regionalProgramme"
+                    label="Regional Programme"
+                    required
+                    select
+                    value={formik.values.regionalProgramme}
+                    error={Boolean(
+                      formik.touched.regionalProgramme &&
+                        formik.errors.regionalProgramme
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.regionalProgramme &&
+                      formik.errors.regionalProgramme
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Regional Programme
+                    </MenuItem>
+                    {!isLoadingRegProg
+                      ? regProgData.data.map((option) => (
+                          <MenuItem
+                            key={option.lookupItemId}
+                            value={option.lookupItemId}
+                          >
+                            {option.lookupItemName}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="eNASupportingOffice"
+                    label="E/NA Supporting Office"
+                    required
+                    select
+                    value={formik.values.eNASupportingOffice}
+                    error={Boolean(
+                      formik.touched.eNASupportingOffice &&
+                        formik.errors.eNASupportingOffice
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.eNASupportingOffice &&
+                      formik.errors.eNASupportingOffice
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select E/NA Supporting Office
+                    </MenuItem>
+                    {!isLoadingAmrefEntities
+                      ? amrefEntities.data.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.name}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+              </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Typography variant="h3" gutterBottom display="inline">
+                    Administration
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid container spacing={4}>
+                <Grid item md={4}>
+                  <TextField
+                    name="administrativeProgramme"
+                    label="Administrative Programme"
+                    required
+                    select
+                    value={formik.values.administrativeProgramme}
+                    error={Boolean(
+                      formik.touched.administrativeProgramme &&
+                        formik.errors.administrativeProgramme
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.administrativeProgramme &&
+                      formik.errors.administrativeProgramme
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Administrative Programme
+                    </MenuItem>
+                    {!isLoadingAdminProgrammes
+                      ? adminProgrammes.data.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.shortTitle}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+              </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Typography variant="h3" gutterBottom display="inline">
+                    Staff Details
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Portal container={portalRef.current}>
+                <StaffDetailsForm />
+              </Portal>
               <Button type="submit" variant="contained" color="primary" mt={3}>
                 Save changes
               </Button>
