@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -12,12 +12,11 @@ import {
   Grid,
   Link,
   MenuItem,
-  Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -27,7 +26,10 @@ import {
   getLookupMasterItemsByName,
 } from "../../api/lookup";
 import { getOrganizationUnitByEntityType } from "../../api/organization-unit";
-import { newAdministrativeProgramme } from "../../api/administrative-programme";
+import {
+  getAdministrativeProgrammeById,
+  newAdministrativeProgramme,
+} from "../../api/administrative-programme";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -47,6 +49,15 @@ const initialValues = {
 };
 
 const NewAdministrativeProgrammeForm = () => {
+  let { id } = useParams();
+  const { data: OrganizationUnitData } = useQuery(
+    ["getAdministrativeProgrammeById", id],
+    getAdministrativeProgrammeById,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
   const { data: entityTypesData } = useQuery(
     ["entityTypes", "EntityType"],
     getLookupMasterItemsByName,
@@ -92,6 +103,9 @@ const NewAdministrativeProgrammeForm = () => {
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       values.createDate = new Date();
       values.managerName = values.managerName.Full_Name;
+      if (id) {
+        values.id = id;
+      }
       try {
         await mutation.mutateAsync(values);
       } catch (error) {
@@ -104,6 +118,29 @@ const NewAdministrativeProgrammeForm = () => {
       }
     },
   });
+  useEffect(() => {
+    function setCurrentFormValues() {
+      let managerName;
+      if (staffListData && OrganizationUnitData) {
+        managerName = staffListData.data.filter(
+          (obj) => obj.Full_Name === OrganizationUnitData.data.managerName
+        );
+      }
+      if (OrganizationUnitData) {
+        formik.setValues({
+          shortTitle: OrganizationUnitData.data.shortTitle,
+          longTitle: OrganizationUnitData.data.longTitle,
+          description: OrganizationUnitData.data.description,
+          goal: OrganizationUnitData.data.goal,
+          organisationUnitId: OrganizationUnitData.data.organisationUnitId,
+          managerName:
+            managerName && managerName.length > 0 ? managerName[0] : "",
+          managerEmail: OrganizationUnitData.data.managerEmail,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [OrganizationUnitData, staffListData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
