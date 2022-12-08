@@ -297,7 +297,11 @@ const NewAdministrativeProgrammeForm = () => {
                     label="Organization Unit"
                     required
                     select
-                    value={formik.values.organisationUnitId}
+                    value={
+                      formik.values.organisationUnitId
+                        ? formik.values.organisationUnitId
+                        : ""
+                    }
                     error={Boolean(
                       formik.touched.organisationUnitId &&
                         formik.errors.organisationUnitId
@@ -312,9 +316,7 @@ const NewAdministrativeProgrammeForm = () => {
                     variant="outlined"
                     my={2}
                   >
-                    <MenuItem disabled value="">
-                      Select Organization Unit
-                    </MenuItem>
+                    <MenuItem disabled>Select Organization Unit</MenuItem>
                     {!isLoading
                       ? organizationUnitsData.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>

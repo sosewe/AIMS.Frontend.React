@@ -130,11 +130,12 @@ const DesignProject = async(() =>
 
 // Programmes
 const AdministrativeProgrammes = async(() =>
-  import("./pages/programmes/AdministrativeProgrammes")
+  import("./pages/administrative-programmes/AdministrativeProgrammes")
 );
 const NewAdministrativeProgramme = async(() =>
-  import("./pages/programmes/NewAdministrativeProgramme")
+  import("./pages/administrative-programmes/NewAdministrativeProgramme")
 );
+const Programmes = async(() => import("./pages/programmes/Programmes"));
 
 const routes = [
   {
@@ -151,6 +152,10 @@ const routes = [
     path: "programme",
     element: <DashboardLayout />,
     children: [
+      {
+        path: "programmes",
+        element: <Programmes />,
+      },
       {
         path: "administrative-programmes",
         element: <AdministrativeProgrammes />,

@@ -39,7 +39,7 @@ const programmeSection = [
     title: "Programmes",
     children: [
       {
-        href: "/programme/",
+        href: "/programme/programmes",
         title: "Programmes",
       },
       {

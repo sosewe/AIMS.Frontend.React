@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
   Breadcrumbs as MuiBreadcrumbs,
@@ -17,31 +16,24 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
+import { Helmet } from "react-helmet-async";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Trash as TrashIcon } from "react-feather";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteAdministrativeProgrammeById } from "../../api/administrative-programme";
 import { toast } from "react-toastify";
-import {
-  deleteAdministrativeProgrammeById,
-  getAdministrativeProgrammes,
-} from "../../api/administrative-programme";
-import { getOrganizationUnitById } from "../../api/organization-unit";
+import { getProgrammes } from "../../api/programmes";
 
 const Card = styled(MuiCard)(spacing);
-
 const Paper = styled(MuiPaper)(spacing);
-
 const Divider = styled(MuiDivider)(spacing);
-
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
-
 const CardContent = styled(MuiCardContent)(spacing);
-
 const Button = styled(MuiButton)(spacing);
 
-const AdministrativeProgrammesData = () => {
+const ProgrammesData = () => {
   const [pageSize, setPageSize] = useState(5);
   const [open, setOpen] = React.useState(false);
   const [id, setId] = React.useState();
@@ -49,8 +41,8 @@ const AdministrativeProgrammesData = () => {
   const queryClient = useQueryClient();
   // fetch Administrative Programmes
   const { data, isLoading, isError, error } = useQuery(
-    ["administrativeProgrammes"],
-    getAdministrativeProgrammes,
+    ["programmes"],
+    getProgrammes,
     {
       retry: 0,
     }
@@ -60,17 +52,6 @@ const AdministrativeProgrammesData = () => {
     toast(error.response.data, {
       type: "error",
     });
-  }
-
-  function GetOrganization(params) {
-    const organisationUnitId = params.value;
-    const result = useQuery(
-      ["getOrganizationUnitById", organisationUnitId],
-      getOrganizationUnitById
-    );
-    if (result && result.data) {
-      return result.data.data.name;
-    }
   }
 
   const { refetch } = useQuery(
@@ -101,9 +82,9 @@ const AdministrativeProgrammesData = () => {
           mr={2}
           variant="contained"
           color="error"
-          onClick={() => navigate("/programme/new-administrative-programme")}
+          onClick={() => navigate("/programme/new-programme")}
         >
-          <AddIcon /> New Administrative Programme
+          <AddIcon /> New Programme
         </Button>
       </CardContent>
       <br />
@@ -114,33 +95,26 @@ const AdministrativeProgrammesData = () => {
             rows={isLoading || isError ? [] : data ? data.data : []}
             columns={[
               {
-                field: "shortTitle",
-                headerName: "Short Title",
+                field: "name",
+                headerName: "Name",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "longTitle",
-                headerName: "Long Title",
+                field: "initials",
+                headerName: "Initials",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "organisationUnitId",
-                headerName: "Organisation Unit",
-                editable: false,
-                flex: 1,
-                valueGetter: GetOrganization,
-              },
-              {
-                field: "managerName",
-                headerName: "Manager Name",
+                field: "code",
+                headerName: "Code",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "goal",
-                headerName: "Goal",
+                field: "description",
+                headerName: "Description",
                 editable: false,
                 flex: 1,
               },
@@ -169,6 +143,7 @@ const AdministrativeProgrammesData = () => {
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
+            getRowHeight={() => "auto"}
           />
         </div>
         <Dialog
@@ -178,7 +153,7 @@ const AdministrativeProgrammesData = () => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Delete Administrative Programme
+            Delete Programme
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
@@ -202,24 +177,24 @@ const AdministrativeProgrammesData = () => {
   );
 };
 
-const AdministrativeProgrammes = () => {
+const Programmes = () => {
   return (
     <React.Fragment>
-      <Helmet title="Administrative Programmes" />
+      <Helmet title="Programmes" />
       <Typography variant="h3" gutterBottom display="inline">
-        Administrative Programmes
+        Programmes
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} to="/programme/administrative-programmes">
-          Administrative Programmes
+          Programmes
         </Link>
-        <Typography>Administrative Programmes List</Typography>
+        <Typography>Programmes List</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
-      <AdministrativeProgrammesData />
+      <ProgrammesData />
     </React.Fragment>
   );
 };
-export default AdministrativeProgrammes;
+export default Programmes;
