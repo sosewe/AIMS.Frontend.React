@@ -33,7 +33,7 @@ import {
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { spacing } from "@mui/system";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -250,7 +250,6 @@ const StaffDetailsForm = ({ handleClick }) => {
 };
 
 const NewProjectForm = () => {
-  let { id } = useParams();
   const [errorSet, setIsErrorSet] = useState(false);
   const [open, setOpen] = useState(false);
   const [staffDetailsArray, setStaffDetailsArray] = useState([]);
@@ -481,6 +480,13 @@ const NewProjectForm = () => {
             </Box>
           ) : (
             <>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Typography variant="h3" gutterBottom display="inline">
+                    Project Details
+                  </Typography>
+                </Grid>
+              </Grid>
               <Grid container spacing={6}>
                 <Grid item md={6}>
                   <TextField
@@ -1165,14 +1171,14 @@ const NewProject = () => {
     <React.Fragment>
       <Helmet title="New Project" />
       <Typography variant="h3" gutterBottom display="inline">
-        Project Details
+        New Project
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} to="/project/projects">
           Projects
         </Link>
-        <Typography>New Project Details</Typography>
+        <Typography>New Project</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />

@@ -15,6 +15,7 @@ import {
   Users,
   Shuffle,
   Layers,
+  Clipboard,
 } from "react-feather";
 
 const projectSection = [
@@ -26,6 +27,24 @@ const projectSection = [
       {
         href: "/project/projects",
         title: "Projects",
+      },
+    ],
+  },
+];
+
+const programmeSection = [
+  {
+    href: "/programme",
+    icon: Clipboard,
+    title: "Programmes",
+    children: [
+      {
+        href: "/programme/",
+        title: "Programmes",
+      },
+      {
+        href: "/programme/administrative-programmes",
+        title: "Administrative Programmes",
       },
     ],
   },
@@ -344,7 +363,7 @@ const docsSection = [
 const navItems = [
   {
     title: "Programmes",
-    pages: [],
+    pages: programmeSection,
   },
   {
     title: "Projects",

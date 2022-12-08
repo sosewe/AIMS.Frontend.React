@@ -121,6 +121,20 @@ const NewLookupItem = async(() => import("./pages/lookup/NewLookupItem"));
 // Project
 const Projects = async(() => import("./pages/project/design/Projects"));
 const NewProject = async(() => import("./pages/project/design/NewProject"));
+const ProjectDetail = async(() =>
+  import("./pages/project/design/ProjectDetail")
+);
+const DesignProject = async(() =>
+  import("./pages/project/design/DesignProject")
+);
+
+// Programmes
+const AdministrativeProgrammes = async(() =>
+  import("./pages/programmes/AdministrativeProgrammes")
+);
+const NewAdministrativeProgramme = async(() =>
+  import("./pages/programmes/NewAdministrativeProgramme")
+);
 
 const routes = [
   {
@@ -130,6 +144,24 @@ const routes = [
       {
         path: "",
         element: <Home />,
+      },
+    ],
+  },
+  {
+    path: "programme",
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "administrative-programmes",
+        element: <AdministrativeProgrammes />,
+      },
+      {
+        path: "new-administrative-programme",
+        element: <NewAdministrativeProgramme />,
+      },
+      {
+        path: "new-administrative-programme/:id",
+        element: <NewAdministrativeProgramme />,
       },
     ],
   },
@@ -148,6 +180,14 @@ const routes = [
       {
         path: "new-project/:id",
         element: <NewProject />,
+      },
+      {
+        path: "project-detail/:id",
+        element: <ProjectDetail />,
+      },
+      {
+        path: "design-project",
+        element: <DesignProject />,
       },
     ],
   },

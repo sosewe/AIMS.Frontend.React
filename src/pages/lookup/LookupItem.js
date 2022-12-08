@@ -20,7 +20,7 @@ import { Edit2 as Edit2Icon, Trash as TrashIcon } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { NavLink, useNavigate } from "react-router-dom";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Add as AddIcon } from "@mui/icons-material";
 import { deleteLookupItem, useLookupItems } from "../../api/lookup";
 import { toast } from "react-toastify";
@@ -140,6 +140,7 @@ const LookupItemsData = () => {
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
+            components={{ Toolbar: GridToolbar }}
           />
         </div>
         <Dialog

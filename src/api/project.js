@@ -8,3 +8,8 @@ export const getProjects = async () => {
 export const newProject = async (values) => {
   return await axios.post(apiRoutes.project, values);
 };
+
+export const getProjectById = async ({ queryKey }) => {
+  const [_, id] = queryKey;
+  return await axios.get(apiRoutes.project + "/" + id);
+};

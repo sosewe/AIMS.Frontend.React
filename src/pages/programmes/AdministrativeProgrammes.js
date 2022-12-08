@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
   Breadcrumbs as MuiBreadcrumbs,
@@ -11,15 +12,13 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { getProjects } from "../../../api/project";
-import { Helmet } from "react-helmet-async";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { Edit2, Trash } from "react-feather";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Link2 } from "react-feather";
+import { getAdministrativeProgrammes } from "../../api/administrative-programme";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -33,13 +32,13 @@ const CardContent = styled(MuiCardContent)(spacing);
 
 const Button = styled(MuiButton)(spacing);
 
-const ProjectsData = () => {
+const AdministrativeProgrammesData = () => {
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
   // fetch projects
   const { data, isLoading, isError, error } = useQuery(
-    ["projects"],
-    getProjects,
+    ["administrativeProgrammes"],
+    getAdministrativeProgrammes,
     {
       retry: 0,
     }
@@ -58,9 +57,9 @@ const ProjectsData = () => {
           mr={2}
           variant="contained"
           color="error"
-          onClick={() => navigate("/project/new-project")}
+          onClick={() => navigate("/programme/new-administrative-programme")}
         >
-          <AddIcon /> New Project
+          <AddIcon /> New Administrative Programme
         </Button>
       </CardContent>
       <br />
@@ -71,8 +70,8 @@ const ProjectsData = () => {
             rows={isLoading || isError ? [] : data ? data.data : []}
             columns={[
               {
-                field: "projectCode",
-                headerName: "Project Code",
+                field: "longTitle",
+                headerName: "Long Title",
                 editable: false,
                 flex: 1,
               },
@@ -83,30 +82,22 @@ const ProjectsData = () => {
                 flex: 1,
               },
               {
-                field: "longTitle",
-                headerName: "Long Title",
+                field: "organisationUnitId",
+                headerName: "Organisation Unit",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "startingDate",
-                headerName: "Start Date",
+                field: "managerName",
+                headerName: "Manager Name",
                 editable: false,
                 flex: 1,
-                valueFormatter: (params) =>
-                  params?.value
-                    ? format(new Date(params.value), "dd-MMM-yyyy")
-                    : "",
               },
               {
-                field: "endingDate",
-                headerName: "End Date",
+                field: "goal",
+                headerName: "Goal",
                 editable: false,
                 flex: 1,
-                valueFormatter: (params) =>
-                  params?.value
-                    ? format(new Date(params.value), "dd-MMM-yyyy")
-                    : "",
               },
               {
                 field: "action",
@@ -115,8 +106,13 @@ const ProjectsData = () => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
+                    <NavLink
+                      to={`/programme/new-administrative-programme/${params.id}`}
+                    >
+                      <Button startIcon={<Edit2 />} size="small"></Button>
+                    </NavLink>
                     <NavLink to={`/project/project-detail/${params.id}`}>
-                      <Button startIcon={<Link2 />} size="small"></Button>
+                      <Button startIcon={<Trash />} size="small"></Button>
                     </NavLink>
                   </>
                 ),
@@ -125,6 +121,7 @@ const ProjectsData = () => {
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
+            components={{ Toolbar: GridToolbar }}
           />
         </div>
       </Paper>
@@ -132,25 +129,24 @@ const ProjectsData = () => {
   );
 };
 
-const Projects = () => {
+const AdministrativeProgrammes = () => {
   return (
     <React.Fragment>
-      <Helmet title="Projects" />
+      <Helmet title="Administrative Programmes" />
       <Typography variant="h3" gutterBottom display="inline">
-        Projects
+        Administrative Programmes
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/project/projects">
-          Projects
+        <Link component={NavLink} to="/programme/administrative-programmes">
+          Administrative Programmes
         </Link>
-        <Typography>Projects List</Typography>
+        <Typography>Administrative Programmes List</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
-      <ProjectsData />
+      <AdministrativeProgrammesData />
     </React.Fragment>
   );
 };
-
-export default Projects;
+export default AdministrativeProgrammes;
