@@ -379,7 +379,6 @@ const NewProjectForm = () => {
       values.createDate = new Date();
       try {
         const project = await mutation.mutateAsync(values);
-        console.log(project);
         let processLevelTypeId;
         if (isLoadingProcessLevelType) {
           const projectProcessLevel = processLevelData.data.filter(
