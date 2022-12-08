@@ -19,6 +19,7 @@ import { Edit2, Trash } from "react-feather";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { getAdministrativeProgrammes } from "../../api/administrative-programme";
+import { getOrganizationUnitById } from "../../api/organization-unit";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -48,6 +49,17 @@ const AdministrativeProgrammesData = () => {
     toast(error.response.data, {
       type: "error",
     });
+  }
+
+  function GetOrganization(params) {
+    const organisationUnitId = params.value;
+    const result = useQuery(
+      ["getOrganizationUnitById", organisationUnitId],
+      getOrganizationUnitById
+    );
+    if (result && result.data) {
+      return result.data.data.name;
+    }
   }
 
   return (
@@ -86,6 +98,7 @@ const AdministrativeProgrammesData = () => {
                 headerName: "Organisation Unit",
                 editable: false,
                 flex: 1,
+                valueGetter: GetOrganization,
               },
               {
                 field: "managerName",

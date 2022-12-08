@@ -11,3 +11,8 @@ export const getOrganizationUnitByEntityType = async ({ queryKey }) => {
     `${apiRoutes.organizationUnit}/GetOrganizationUnitByEntityType/${entityTypeId}`
   );
 };
+
+export const getOrganizationUnitById = async ({ queryKey }) => {
+  const [_, organisationUnitId] = queryKey;
+  return await axios.get(`${apiRoutes.organizationUnit}/${organisationUnitId}`);
+};
