@@ -50,7 +50,7 @@ const ProjectView = () => {
           <Grid item xs={12} md={6}>
             <Link
               component={NavLink}
-              to="/project/design-project/"
+              to={`/project/design-project/${id}`}
               color="indianred"
               variant="h3"
             >

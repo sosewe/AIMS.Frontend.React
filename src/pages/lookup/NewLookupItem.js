@@ -44,13 +44,9 @@ const initialValues = {
 
 const LookupItemForm = () => {
   let { id } = useParams();
-  const { isLoading, data: lookupItemData } = useQuery(
-    ["lookup", id],
-    lookupItem,
-    {
-      enabled: !!id,
-    }
-  );
+  const { data: lookupItemData } = useQuery(["lookup", id], lookupItem, {
+    enabled: !!id,
+  });
   const mutation = useMutation(newLookupItem, {
     onSuccess: () => {
       toast("New Lookup Item Created Successfully!", {

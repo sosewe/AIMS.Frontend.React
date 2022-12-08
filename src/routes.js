@@ -191,7 +191,7 @@ const routes = [
         element: <ProjectDetail />,
       },
       {
-        path: "design-project",
+        path: "design-project/:id",
         element: <DesignProject />,
       },
     ],
