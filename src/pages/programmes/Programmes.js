@@ -22,9 +22,8 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Trash as TrashIcon } from "react-feather";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteAdministrativeProgrammeById } from "../../api/administrative-programme";
 import { toast } from "react-toastify";
-import { getProgrammes } from "../../api/programmes";
+import { deleteProgrammeById, getProgrammes } from "../../api/programmes";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -55,8 +54,8 @@ const ProgrammesData = () => {
   }
 
   const { refetch } = useQuery(
-    ["deleteAdministrativeProgrammeById", id],
-    deleteAdministrativeProgrammeById,
+    ["deleteProgrammeById", id],
+    deleteProgrammeById,
     { enabled: false }
   );
 
@@ -69,10 +68,10 @@ const ProgrammesData = () => {
     setOpen(false);
   }
 
-  const handleDeleteAdministrativeProgramme = async () => {
+  const handleDeleteProgramme = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["administrativeProgrammes"]);
+    await queryClient.invalidateQueries(["programmes"]);
   };
 
   return (
@@ -118,26 +117,26 @@ const ProgrammesData = () => {
                 editable: false,
                 flex: 1,
               },
-              {
-                field: "action",
-                headerName: "Action",
-                sortable: false,
-                flex: 1,
-                renderCell: (params) => (
-                  <>
-                    <NavLink
-                      to={`/programme/new-administrative-programme/${params.id}`}
-                    >
-                      <Button startIcon={<Edit2 />} size="small"></Button>
-                    </NavLink>
-                    <Button
-                      startIcon={<TrashIcon />}
-                      size="small"
-                      onClick={() => handleClickOpen(params.id)}
-                    ></Button>
-                  </>
-                ),
-              },
+              // {
+              //   field: "action",
+              //   headerName: "Action",
+              //   sortable: false,
+              //   flex: 1,
+              //   renderCell: (params) => (
+              //     <>
+              //       <NavLink
+              //         to={`/programme/new-administrative-programme/${params.id}`}
+              //       >
+              //         <Button startIcon={<Edit2 />} size="small"></Button>
+              //       </NavLink>
+              //       <Button
+              //         startIcon={<TrashIcon />}
+              //         size="small"
+              //         onClick={() => handleClickOpen(params.id)}
+              //       ></Button>
+              //     </>
+              //   ),
+              // },
             ]}
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
@@ -152,19 +151,14 @@ const ProgrammesData = () => {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">
-            Delete Programme
-          </DialogTitle>
+          <DialogTitle id="alert-dialog-title">Delete Programme</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Administrative Programme?
+              Are you sure you want to delete Programme?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={handleDeleteAdministrativeProgramme}
-              color="primary"
-            >
+            <Button onClick={handleDeleteProgramme} color="primary">
               Yes
             </Button>
             <Button onClick={handleClose} color="error" autoFocus>

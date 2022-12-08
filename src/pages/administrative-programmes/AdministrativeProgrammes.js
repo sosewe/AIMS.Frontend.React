@@ -164,6 +164,7 @@ const AdministrativeProgrammesData = () => {
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
+            getRowHeight={() => "auto"}
           />
         </div>
         <Dialog
