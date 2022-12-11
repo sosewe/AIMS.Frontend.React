@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import styled from "@emotion/styled";
 import {
@@ -41,12 +41,22 @@ import { getDonors } from "../../../api/donor";
 import { getOrganizationUnits } from "../../../api/organization-unit";
 import { getAmrefEntities } from "../../../api/amref-entity";
 import { getAdministrativeProgrammes } from "../../../api/administrative-programme";
-import { newProject } from "../../../api/project";
-import { newDonorProcessLevel } from "../../../api/donor-process-level";
+import { getProjectById, newProject } from "../../../api/project";
+import {
+  GetDonorByProcessLevelIdAndProcessLevelTypeId,
+  newDonorProcessLevel,
+} from "../../../api/donor-process-level";
 import { newProcessLevelContact } from "../../../api/process-level-contact";
 import { newProcessLevelRole } from "../../../api/process-level-role";
-import { newProjectAdministrativeProgramme } from "../../../api/project-administrative-programme";
-import { newImplementingOrganisation } from "../../../api/implementing-organisation";
+import {
+  getProjectAdministrativeProgramme,
+  newProjectAdministrativeProgramme,
+} from "../../../api/project-administrative-programme";
+import {
+  getImplementingOrganisationByProcessLevelItemIdAndProcessLevelTypeId,
+  newImplementingOrganisation,
+} from "../../../api/implementing-organisation";
+import { newOfficeInvolvedProcessLevel } from "../../../api/office-involved";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -78,7 +88,7 @@ const initialValues = {
   donors: "",
   recipientTypeId: "",
   projectOrganisationUnitId: "",
-  regionalProgramme: "",
+  regionalProgrammeId: "",
   eNASupportingOffice: "",
   administrativeProgramme: "",
 };
@@ -245,6 +255,15 @@ const NewProjectForm = ({ id }) => {
   const [errorSet, setIsErrorSet] = useState(false);
   const [open, setOpen] = useState(false);
   const [staffDetailsArray, setStaffDetailsArray] = useState([]);
+  let processLevelTypeId;
+  const { data: ProjectData } = useQuery(
+    ["getProjectById", id],
+    getProjectById,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
   const { isLoading, data: projectTypesData } = useQuery(
     ["projectTypes", "ProjectType"],
     getLookupMasterItemsByName,
@@ -326,6 +345,44 @@ const NewProjectForm = ({ id }) => {
     });
   }
 
+  if (!isLoadingProcessLevelType) {
+    const projectProcessLevel = processLevelData.data.filter(
+      (obj) => obj.lookupItemName === "Project"
+    );
+    if (projectProcessLevel.length > 0) {
+      processLevelTypeId = projectProcessLevel[0].lookupItemId;
+    }
+  }
+
+  const { data: donorProcessLevelData } = useQuery(
+    ["donorProcessLevel", id, processLevelTypeId],
+    GetDonorByProcessLevelIdAndProcessLevelTypeId,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!processLevelTypeId && !!id,
+    }
+  );
+  const { data: implementingOrganizationsData } = useQuery(
+    [
+      "implementingOrganizationByProcessLevelItemIdAndProcessLevelTypeId",
+      id,
+      processLevelTypeId,
+    ],
+    getImplementingOrganisationByProcessLevelItemIdAndProcessLevelTypeId,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!processLevelTypeId && !!id,
+    }
+  );
+  const { data: administrativeProgrammeByProject } = useQuery(
+    ["getAdministrativeProgrammeByProjectId", id],
+    getProjectAdministrativeProgramme,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
+
   const mutation = useMutation({ mutationFn: newProject });
   const donorProcessMutation = useMutation({
     mutationFn: newDonorProcessLevel,
@@ -342,6 +399,9 @@ const NewProjectForm = ({ id }) => {
   const implementingOrganizationMutation = useMutation({
     mutationFn: newImplementingOrganisation,
   });
+  const officeInvolvedMutation = useMutation({
+    mutationFn: newOfficeInvolvedProcessLevel,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -355,7 +415,7 @@ const NewProjectForm = ({ id }) => {
       startingDate: Yup.date().min(new Date()).required("Required"),
       endingDate: Yup.date().min(new Date()).required("Required"),
       currentStatus: Yup.string().required("Required"),
-      projectManagerName: Yup.string(),
+      projectManagerName: Yup.object(),
       projectManagerEmail: Yup.string(),
       totalBudget: Yup.number().integer().required("Required"),
       currencyTypeId: Yup.string().required("Required"),
@@ -363,7 +423,7 @@ const NewProjectForm = ({ id }) => {
       donors: Yup.string().required("Required"),
       recipientTypeId: Yup.string().required("Required"),
       projectOrganisationUnitId: Yup.string().required("Required"),
-      regionalProgramme: Yup.string().required("Required"),
+      regionalProgrammeId: Yup.string().required("Required"),
       eNASupportingOffice: Yup.string().required("Required"),
       administrativeProgramme: Yup.string().required("Required"),
     }),
@@ -371,15 +431,6 @@ const NewProjectForm = ({ id }) => {
       values.createDate = new Date();
       try {
         const project = await mutation.mutateAsync(values);
-        let processLevelTypeId;
-        if (isLoadingProcessLevelType) {
-          const projectProcessLevel = processLevelData.data.filter(
-            (obj) => obj.lookupItemName === "Project"
-          );
-          if (projectProcessLevel.length > 0) {
-            processLevelTypeId = projectProcessLevel[0].lookupItemId;
-          }
-        }
 
         const projectDonor = {
           createDate: new Date(),
@@ -391,7 +442,7 @@ const NewProjectForm = ({ id }) => {
         const projectContact = {
           createDate: new Date(),
           managerEmail: values.projectManagerEmail,
-          managerName: values.projectManagerName,
+          managerName: values.projectManagerName.Full_Name,
           processLevelItemId: project.data.id,
           processLevelTypeId: processLevelTypeId,
           void: false,
@@ -408,6 +459,13 @@ const NewProjectForm = ({ id }) => {
           processLevelTypeId: processLevelTypeId,
           projectManager: "",
           void: false,
+        };
+        const eNAOfficeInvolved = {
+          createDate: new Date(),
+          processLevelItemId: project.data.id,
+          processLevelTypeId: processLevelTypeId,
+          office: values.eNASupportingOffice,
+          entityTypeId: values.eNASupportingOffice,
         };
 
         const projectRoles = [];
@@ -432,7 +490,6 @@ const NewProjectForm = ({ id }) => {
         }
 
         await donorProcessMutation.mutateAsync(projectDonor);
-        await processLevelContactMutation.mutateAsync(projectContact);
         await administrativeProgrammeMutation.mutateAsync(
           projectAdministrativeProgramme
         );
@@ -440,6 +497,8 @@ const NewProjectForm = ({ id }) => {
           projectImplementingOrganization
         );
         await processLevelRoleMutation.mutateAsync(projectRoles);
+        await officeInvolvedMutation.mutateAsync(eNAOfficeInvolved);
+        await processLevelContactMutation.mutateAsync(projectContact);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -460,6 +519,54 @@ const NewProjectForm = ({ id }) => {
       current.filter((staff) => staff.staffDetailsName !== row.staffDetailsName)
     );
   }
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (ProjectData) {
+        formik.setValues({
+          projectCode: ProjectData.data.projectCode,
+          projectType: ProjectData.data.projectType,
+          shortTitle: ProjectData.data.shortTitle,
+          longTitle: ProjectData.data.longTitle,
+          description: ProjectData.data.description,
+          goal: ProjectData.data.goal,
+          startingDate: new Date(ProjectData.data.startingDate),
+          endingDate: new Date(ProjectData.data.endingDate),
+          currentStatus: ProjectData.data.currentStatus,
+          projectName: ProjectData.data.projectName,
+          //check email
+          totalBudget: ProjectData.data.totalBudget,
+          currencyTypeId: ProjectData.data.currencyTypeId,
+          //cost center
+          //donors
+          donors:
+            donorProcessLevelData && donorProcessLevelData.data.length > 0
+              ? donorProcessLevelData && donorProcessLevelData.data[0].donorId
+              : "",
+          recipientTypeId: ProjectData.data.recipientTypeId,
+          //implementing offices
+          projectOrganisationUnitId:
+            implementingOrganizationsData &&
+            implementingOrganizationsData.data.length > 0
+              ? implementingOrganizationsData.data[0].organizationId
+              : "",
+          //regional programme
+          regionalProgrammeId: ProjectData.data.regionalProgrammeId,
+          //e/na
+          //administrative programme
+          administrativeProgramme: administrativeProgrammeByProject
+            ? administrativeProgrammeByProject.data.administrativeProgrammeId
+            : "",
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    ProjectData,
+    donorProcessLevelData,
+    implementingOrganizationsData,
+    administrativeProgrammeByProject,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -663,7 +770,7 @@ const NewProjectForm = ({ id }) => {
                 <Grid item md={4}>
                   <TextField
                     name="currentStatus"
-                    label="Project Type"
+                    label="Current Status"
                     required
                     select
                     value={formik.values.currentStatus}
@@ -728,7 +835,10 @@ const NewProjectForm = ({ id }) => {
                     <MenuItem disabled value="">
                       Select Project Manager's Name
                     </MenuItem>
-                    {!isLoadingStaffList && !isErrorStaffList
+                    {!isLoadingStaffList &&
+                    !isErrorStaffList &&
+                    staffListData.data &&
+                    staffListData.data.length > 0
                       ? staffListData.data.map((option) => (
                           <MenuItem key={option.Full_Name} value={option}>
                             {option.Full_Name}
@@ -956,19 +1066,19 @@ const NewProjectForm = ({ id }) => {
                 </Grid>
                 <Grid item md={4}>
                   <TextField
-                    name="regionalProgramme"
+                    name="regionalProgrammeId"
                     label="Regional Programme"
                     required
                     select
-                    value={formik.values.regionalProgramme}
+                    value={formik.values.regionalProgrammeId}
                     error={Boolean(
-                      formik.touched.regionalProgramme &&
-                        formik.errors.regionalProgramme
+                      formik.touched.regionalProgrammeId &&
+                        formik.errors.regionalProgrammeId
                     )}
                     fullWidth
                     helperText={
-                      formik.touched.regionalProgramme &&
-                      formik.errors.regionalProgramme
+                      formik.touched.regionalProgrammeId &&
+                      formik.errors.regionalProgrammeId
                     }
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
