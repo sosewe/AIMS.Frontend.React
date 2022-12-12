@@ -7,6 +7,8 @@ import Box from "@mui/material/Box";
 import NewProjectForm from "./NewProjectForm";
 import { useParams } from "react-router-dom";
 import GeoFocus from "./GeoFocus";
+import { useQuery } from "@tanstack/react-query";
+import { getLookupMasterItemsByName } from "../../../api/lookup";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,11 +48,29 @@ function a11yProps(index: number) {
 
 const DesignProject = () => {
   const [value, setValue] = React.useState(0);
+  let processLevelTypeId;
   let { id } = useParams();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  const { isLoading: isLoadingProcessLevelType, data: processLevelData } =
+    useQuery(
+      ["processLevelType", "ProcessLevelType"],
+      getLookupMasterItemsByName,
+      {
+        refetchOnWindowFocus: false,
+      }
+    );
+  if (!isLoadingProcessLevelType) {
+    const projectProcessLevel = processLevelData.data.filter(
+      (obj) => obj.lookupItemName === "Project"
+    );
+    if (projectProcessLevel.length > 0) {
+      processLevelTypeId = projectProcessLevel[0].lookupItemId;
+    }
+  }
 
   return (
     <Box
@@ -81,7 +101,7 @@ const DesignProject = () => {
         Item Two
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <GeoFocus id={id} />
+        <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={3}>
         Item Four

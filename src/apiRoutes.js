@@ -20,6 +20,7 @@ export const apiRoutes = {
   administrativeProgramme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdministrativeProgramme`,
   programme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Programme`,
   officeInvolved: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/OfficeInvolved`,
+  location: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Location`,
   // external
   ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,
