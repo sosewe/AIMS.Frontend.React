@@ -27,6 +27,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { Check } from "react-feather";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -46,8 +47,14 @@ import {
   GetDonorByProcessLevelIdAndProcessLevelTypeId,
   newDonorProcessLevel,
 } from "../../../api/donor-process-level";
-import { newProcessLevelContact } from "../../../api/process-level-contact";
-import { newProcessLevelRole } from "../../../api/process-level-role";
+import {
+  getProcessLevelContactByProcessLevelItemId,
+  newProcessLevelContact,
+} from "../../../api/process-level-contact";
+import {
+  getProcessLevelRoleByProcessLevelItemId,
+  newProcessLevelRole,
+} from "../../../api/process-level-role";
 import {
   getProjectAdministrativeProgramme,
   newProjectAdministrativeProgramme,
@@ -56,7 +63,10 @@ import {
   getImplementingOrganisationByProcessLevelItemIdAndProcessLevelTypeId,
   newImplementingOrganisation,
 } from "../../../api/implementing-organisation";
-import { newOfficeInvolvedProcessLevel } from "../../../api/office-involved";
+import {
+  getOfficeInvolvedByProcessLevelItemId,
+  newOfficeInvolvedProcessLevel,
+} from "../../../api/office-involved";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -93,19 +103,16 @@ const initialValues = {
   administrativeProgramme: "",
 };
 
-const StaffDetailsForm = ({ handleClick }) => {
-  const { isLoading, data: aimsRolesData } = useQuery(
-    ["aimsRoles", "AIMSRoles"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-  const { isLoading: isLoadingAdministrativeRoles, data: administrativeRoles } =
-    useQuery(["administrativeRoles"], getAdministrativeRoles, {
-      refetchOnWindowFocus: false,
-    });
-
+const StaffDetailsForm = ({
+  aimsRolesData,
+  administrativeRoles,
+  isLoading,
+  isLoadingAdministrativeRoles,
+  staffListData,
+  isLoadingStaffList,
+  isErrorStaffList,
+  handleClick,
+}) => {
   const formik = useFormik({
     initialValues: staffDetailsInitial,
     validationSchema: Yup.object().shape({
@@ -137,7 +144,7 @@ const StaffDetailsForm = ({ handleClick }) => {
               <TextField
                 name="staffDetailsName"
                 label="Name"
-                required
+                select
                 value={formik.values.staffDetailsName}
                 error={Boolean(
                   formik.touched.staffDetailsName &&
@@ -152,7 +159,21 @@ const StaffDetailsForm = ({ handleClick }) => {
                 onChange={formik.handleChange}
                 variant="outlined"
                 my={2}
-              />
+              >
+                <MenuItem disabled value="">
+                  Select Name
+                </MenuItem>
+                {!isLoadingStaffList &&
+                !isErrorStaffList &&
+                staffListData.data &&
+                staffListData.data.length > 0
+                  ? staffListData.data.map((option) => (
+                      <MenuItem key={option.Full_Name} value={option.Full_Name}>
+                        {option.Full_Name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
             </Grid>
             <Grid item md={3}>
               <TextField
@@ -256,6 +277,17 @@ const NewProjectForm = ({ id }) => {
   const [open, setOpen] = useState(false);
   const [staffDetailsArray, setStaffDetailsArray] = useState([]);
   let processLevelTypeId;
+  const { isLoading: isLoadingAimsRole, data: aimsRolesData } = useQuery(
+    ["aimsRoles", "AIMSRoles"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingAdministrativeRoles, data: administrativeRoles } =
+    useQuery(["administrativeRoles"], getAdministrativeRoles, {
+      refetchOnWindowFocus: false,
+    });
   const { data: ProjectData } = useQuery(
     ["getProjectById", id],
     getProjectById,
@@ -382,6 +414,30 @@ const NewProjectForm = ({ id }) => {
       enabled: !!id,
     }
   );
+  const { data: officeInvolvedeNAData } = useQuery(
+    ["eNAOfficeInvolvedQuery", id],
+    getOfficeInvolvedByProcessLevelItemId,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
+  const { data: processLevelRolesData } = useQuery(
+    ["processLevelRolesQuery", id],
+    getProcessLevelRoleByProcessLevelItemId,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
+  const { data: processLevelContactsData } = useQuery(
+    ["processLevelContactsQuery", id],
+    getProcessLevelContactByProcessLevelItemId,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
 
   const mutation = useMutation({ mutationFn: newProject });
   const donorProcessMutation = useMutation({
@@ -429,6 +485,9 @@ const NewProjectForm = ({ id }) => {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       values.createDate = new Date();
+      if (id) {
+        values.id = id;
+      }
       try {
         const project = await mutation.mutateAsync(values);
 
@@ -483,9 +542,12 @@ const NewProjectForm = ({ id }) => {
                 : staffDetailsArrayElement.primaryRole,
             processLevelId: project.data.id,
             processLevelTypeId: processLevelTypeId,
-            staffNames: processLevelTypeId.staffDetailsName,
+            staffNames: staffDetailsArrayElement.staffDetailsName,
             void: false,
           };
+          if (staffDetailsArrayElement.id) {
+            projectRole.id = staffDetailsArrayElement.id;
+          }
           projectRoles.push(projectRole);
         }
 
@@ -504,7 +566,7 @@ const NewProjectForm = ({ id }) => {
           type: "error",
         });
       } finally {
-        resetForm();
+        // resetForm();
         setSubmitting(false);
       }
     },
@@ -520,9 +582,22 @@ const NewProjectForm = ({ id }) => {
     );
   }
 
+  // console.log(processLevelRolesData);
   useEffect(() => {
     function setCurrentFormValues() {
       if (ProjectData) {
+        let managerName = [];
+        if (
+          !isLoadingStaffList &&
+          !isErrorStaffList &&
+          processLevelContactsData &&
+          processLevelContactsData.data.length > 0
+        ) {
+          managerName = staffListData.data.filter(
+            (obj) =>
+              obj.Full_Name === processLevelContactsData.data[0].managerName
+          );
+        }
         formik.setValues({
           projectCode: ProjectData.data.projectCode,
           projectType: ProjectData.data.projectType,
@@ -533,7 +608,9 @@ const NewProjectForm = ({ id }) => {
           startingDate: new Date(ProjectData.data.startingDate),
           endingDate: new Date(ProjectData.data.endingDate),
           currentStatus: ProjectData.data.currentStatus,
-          projectName: ProjectData.data.projectName,
+          projectManagerName: managerName.length > 0 ? managerName[0] : "",
+          projectManagerEmail:
+            managerName.length > 0 ? managerName[0].Company_E_Mail : "",
           //check email
           totalBudget: ProjectData.data.totalBudget,
           currencyTypeId: ProjectData.data.currencyTypeId,
@@ -553,11 +630,38 @@ const NewProjectForm = ({ id }) => {
           //regional programme
           regionalProgrammeId: ProjectData.data.regionalProgrammeId,
           //e/na
+          eNASupportingOffice:
+            officeInvolvedeNAData && officeInvolvedeNAData.data.length > 0
+              ? officeInvolvedeNAData.data[0].entityTypeId
+              : "",
           //administrative programme
           administrativeProgramme: administrativeProgrammeByProject
             ? administrativeProgrammeByProject.data.administrativeProgrammeId
             : "",
         });
+        if (processLevelRolesData && processLevelRolesData.data.length > 0) {
+          const allStaff = [];
+          for (const staffData of processLevelRolesData.data) {
+            const lookupRole =
+              !isLoadingAimsRole &&
+              aimsRolesData.data.filter(
+                (obj) => obj.lookupItemId === staffData.aimsRoleId
+              );
+            const staff = {
+              id: staffData.id,
+              staffDetailsName: staffData.staffNames,
+              staffDetailsAIMSRole:
+                lookupRole && lookupRole.length > 0 ? lookupRole[0] : "",
+              staffDetailsWorkFlowTask: {
+                roleId: staffData.dqaRoleId,
+                roleName: staffData.dqaRoleName,
+              },
+              primaryRole: staffData.isPrimary,
+            };
+            allStaff.push(staff);
+          }
+          setStaffDetailsArray(allStaff);
+        }
       }
     }
     setCurrentFormValues();
@@ -566,6 +670,14 @@ const NewProjectForm = ({ id }) => {
     donorProcessLevelData,
     implementingOrganizationsData,
     administrativeProgrammeByProject,
+    officeInvolvedeNAData,
+    processLevelRolesData,
+    processLevelContactsData,
+    aimsRolesData,
+    isErrorStaffList,
+    isLoadingAimsRole,
+    isLoadingStaffList,
+    staffListData,
   ]);
 
   return (
@@ -1238,8 +1350,9 @@ const NewProjectForm = ({ id }) => {
                   </Paper>
                 </Grid>
               </Grid>
+              <br />
               <Button type="submit" variant="contained" color="primary" mt={3}>
-                Save changes
+                <Check /> Save changes
               </Button>
             </>
           )}
@@ -1255,7 +1368,16 @@ const NewProjectForm = ({ id }) => {
         <DialogTitle id="form-dialog-title">Staff Details</DialogTitle>
         <DialogContent>
           <DialogContentText>Add Staff Details</DialogContentText>
-          <StaffDetailsForm handleClick={handleClick} />
+          <StaffDetailsForm
+            aimsRolesData={aimsRolesData}
+            administrativeRoles={administrativeRoles}
+            isLoading={isLoadingAimsRole}
+            isLoadingAdministrativeRoles={isLoadingAdministrativeRoles}
+            staffListData={staffListData}
+            isLoadingStaffList={isLoadingStaffList}
+            isErrorStaffList={isErrorStaffList}
+            handleClick={handleClick}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)} color="primary">

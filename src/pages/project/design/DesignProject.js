@@ -6,6 +6,7 @@ import Box from "@mui/material/Box";
 
 import NewProjectForm from "./NewProjectForm";
 import { useParams } from "react-router-dom";
+import GeoFocus from "./GeoFocus";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -80,7 +81,7 @@ const DesignProject = () => {
         Item Two
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        <GeoFocus id={id} />
       </TabPanel>
       <TabPanel value={value} index={3}>
         Item Four
