@@ -320,7 +320,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
             </Typography>
           </Grid>
           <Grid item md={12}>
-            <Paper style={{ height: 400, width: "100%" }}>
+            <Paper style={{ height: 250, width: "100%" }}>
               <DataGrid
                 rowsPerPageOptions={[5, 10, 25]}
                 rows={

@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import GeoFocus from "./GeoFocus";
 import { useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../api/lookup";
+import ProjectObjectives from "./ProjectObjectives";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -104,7 +105,7 @@ const DesignProject = () => {
         <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        Item Four
+        <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={4}>
         Item Five
