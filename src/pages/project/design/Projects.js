@@ -17,7 +17,7 @@ import { getProjects } from "../../../api/project";
 import { Helmet } from "react-helmet-async";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
 import { Link2 } from "react-feather";
 
@@ -125,6 +125,7 @@ const ProjectsData = () => {
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
+            components={{ Toolbar: GridToolbar }}
           />
         </div>
       </Paper>
