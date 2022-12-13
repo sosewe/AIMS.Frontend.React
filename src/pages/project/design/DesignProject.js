@@ -10,6 +10,8 @@ import GeoFocus from "./GeoFocus";
 import { useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../api/lookup";
 import ProjectObjectives from "./ProjectObjectives";
+import ThematicFocus from "./ThematicFocus";
+import ResultsFramework from "./ResultsFramework";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -99,7 +101,7 @@ const DesignProject = () => {
         <NewProjectForm id={id} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        Item Two
+        <ThematicFocus id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
@@ -108,13 +110,7 @@ const DesignProject = () => {
         <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={4}>
-        Item Five
-      </TabPanel>
-      <TabPanel value={value} index={5}>
-        Item Six
-      </TabPanel>
-      <TabPanel value={value} index={6}>
-        Item Seven
+        <ResultsFramework id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
     </Box>
   );
