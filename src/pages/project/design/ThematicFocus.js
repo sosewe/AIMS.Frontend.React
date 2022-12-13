@@ -3,11 +3,11 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  // Dialog,
+  // DialogActions,
+  // DialogContent,
+  // DialogContentText,
+  // DialogTitle,
   Grid,
   MenuItem,
   Paper as MuiPaper,
@@ -15,11 +15,11 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { DataGrid } from "@mui/x-data-grid";
+// import { DataGrid } from "@mui/x-data-grid";
 import styled from "@emotion/styled";
 import { useQuery } from "@tanstack/react-query";
 import { getAllThematicAreas } from "../../../api/thematic-area";
-import { ErrorMessage, Field, FieldArray, useFormik } from "formik";
+import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 

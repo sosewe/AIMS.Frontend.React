@@ -16,7 +16,7 @@ import { msalConfig } from "./authConfig";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // Note: Remove the following line if you want to disable the API mocks.
-import "./mocks";
+// import "./mocks";
 
 const container = document.getElementById("root");
 const root = createRoot(container);
@@ -27,7 +27,9 @@ root.render(
   <BrowserRouter>
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <MsalProvider instance={msalInstance}>
+          <App />
+        </MsalProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </ThemeProvider>

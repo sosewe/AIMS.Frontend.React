@@ -16,6 +16,7 @@ import {
   Shuffle,
   Layers,
   Clipboard,
+  Settings,
 } from "react-feather";
 
 const projectSection = [
@@ -67,6 +68,17 @@ const configurationSection = [
       {
         href: "/lookup/lookupItem",
         title: "Lookup Items",
+      },
+    ],
+  },
+  {
+    href: "/settings",
+    icon: Settings,
+    title: "Settings",
+    children: [
+      {
+        href: "/settings/donors",
+        title: "Donors",
       },
     ],
   },

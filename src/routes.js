@@ -137,10 +137,18 @@ const NewAdministrativeProgramme = async(() =>
 );
 const Programmes = async(() => import("./pages/programmes/Programmes"));
 
+// Donors
+const Donors = async(() => import("./pages/donor/Donors"));
+const NewDonor = async(() => import("./pages/donor/NewDonor"));
+
 const routes = [
   {
     path: "/",
-    element: <DashboardLayout />,
+    element: (
+      <AuthGuard>
+        <DashboardLayout />
+      </AuthGuard>
+    ),
     children: [
       {
         path: "",
@@ -211,6 +219,24 @@ const routes = [
       {
         path: "new-lookupItem/:id",
         element: <NewLookupItem />,
+      },
+    ],
+  },
+  {
+    path: "settings",
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "donors",
+        element: <Donors />,
+      },
+      {
+        path: "new-donor",
+        element: <NewDonor />,
+      },
+      {
+        path: "new-donor/:id",
+        element: <NewDonor />,
       },
     ],
   },

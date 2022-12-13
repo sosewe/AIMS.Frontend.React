@@ -2,8 +2,9 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import { Badge, Grid, Avatar, Typography } from "@mui/material";
+import { useMsal } from "@azure/msal-react";
 
-import useAuth from "../../hooks/useAuth";
+// import useAuth from "../../hooks/useAuth";
 
 const Footer = styled.div`
   background-color: ${(props) =>
@@ -37,7 +38,9 @@ const FooterBadge = styled(Badge)`
 `;
 
 const SidebarFooter = ({ ...rest }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const { accounts } = useMsal();
+  const user = accounts.length > 0 && accounts[0];
 
   return (
     <Footer {...rest}>
@@ -51,23 +54,12 @@ const SidebarFooter = ({ ...rest }) => {
             }}
             variant="dot"
           >
-            {!!user && <Avatar alt={user.displayName} src={user.avatar} />}
-            {/* Demo data */}
-            {!user && (
-              <Avatar
-                alt="Lucy Lavender"
-                src="/static/img/avatars/avatar-1.jpg"
-              />
-            )}
+            {!!user && <Avatar alt={user.name} />}
           </FooterBadge>
         </Grid>
         <Grid item>
-          {!!user && (
-            <FooterText variant="body2">{user.displayName}</FooterText>
-          )}
-          {/* Demo data */}
-          {!user && <FooterText variant="body2">Lucy Lavender</FooterText>}
-          <FooterSubText variant="caption">UX Designer</FooterSubText>
+          {!!user && <FooterText variant="body2">{user.name}</FooterText>}
+          {/*<FooterSubText variant="caption">UX Designer</FooterSubText>*/}
         </Grid>
       </Grid>
     </Footer>

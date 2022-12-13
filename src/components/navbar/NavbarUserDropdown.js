@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { Power } from "react-feather";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 import {
   Tooltip,
@@ -9,8 +9,9 @@ import {
   MenuItem,
   IconButton as MuiIconButton,
 } from "@mui/material";
+import { useMsal } from "@azure/msal-react";
 
-import useAuth from "../../hooks/useAuth";
+// import useAuth from "../../hooks/useAuth";
 
 const IconButton = styled(MuiIconButton)`
   svg {
@@ -21,8 +22,9 @@ const IconButton = styled(MuiIconButton)`
 
 function NavbarUserDropdown() {
   const [anchorMenu, setAnchorMenu] = React.useState(null);
-  const navigate = useNavigate();
-  const { signOut } = useAuth();
+  // const navigate = useNavigate();
+  // const { signOut } = useAuth();
+  const { instance } = useMsal();
 
   const toggleMenu = (event) => {
     setAnchorMenu(event.currentTarget);
@@ -33,8 +35,11 @@ function NavbarUserDropdown() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth/sign-in");
+    await instance.logoutRedirect({
+      postLogoutRedirectUri: "/",
+    });
+    // await signOut();
+    // navigate("/auth/sign-in");
   };
 
   return (
