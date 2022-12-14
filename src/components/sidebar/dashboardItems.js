@@ -77,6 +77,10 @@ const configurationSection = [
     title: "Settings",
     children: [
       {
+        href: "/settings/organization-units",
+        title: "Organization Units",
+      },
+      {
         href: "/settings/donors",
         title: "Donors",
       },

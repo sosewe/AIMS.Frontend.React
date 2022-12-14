@@ -10,6 +10,7 @@ export const apiRoutes = {
   amrefEntity: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/AmrefEntity`,
   organizationUnit: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/OrganizationUnit`,
   administrativeUnit: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/AdministrativeUnit`,
+  processLevel: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/ProcessLevel`,
   //Indicator
   project: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Project`,
   donorProcessLevel: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/DonorProcessLevel`,

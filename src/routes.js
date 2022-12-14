@@ -140,6 +140,11 @@ const Programmes = async(() => import("./pages/programmes/Programmes"));
 // Donors
 const Donors = async(() => import("./pages/donor/Donors"));
 const NewDonor = async(() => import("./pages/donor/NewDonor"));
+// Organization Units
+const OrganizationUnits = async(() => import("./pages/organization-units"));
+const NewOrganizationUnit = async(() =>
+  import("./pages/organization-units/NewOrganizationUnit")
+);
 
 const routes = [
   {
@@ -226,6 +231,18 @@ const routes = [
     path: "settings",
     element: <DashboardLayout />,
     children: [
+      {
+        path: "organization-units",
+        element: <OrganizationUnits />,
+      },
+      {
+        path: "new-organization-unit",
+        element: <NewOrganizationUnit />,
+      },
+      {
+        path: "new-organization-unit/:id",
+        element: <NewOrganizationUnit />,
+      },
       {
         path: "donors",
         element: <Donors />,
