@@ -16,18 +16,11 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getLookupMasterItemsByName } from "../../api/lookup";
 import {
-  getAdministrativeProgrammeById,
-  newAdministrativeProgramme,
-} from "../../api/administrative-programme";
-import {
-  getAMREFStaffList,
-  getLookupMasterItemsByName,
-} from "../../api/lookup";
-import {
-  getOrganizationUnitByEntityType,
+  getOrganizationUnitById,
   newOrganizationUnit,
 } from "../../api/organization-unit";
 import { useFormik } from "formik";
@@ -55,9 +48,10 @@ const initialValues = {
 
 const NewOrganizationUnitForm = () => {
   let { id } = useParams();
+  const navigate = useNavigate();
   const { data: OrganizationUnitData } = useQuery(
-    ["getAdministrativeProgrammeById", id],
-    getAdministrativeProgrammeById,
+    ["getOrganizationUnitById", id],
+    getOrganizationUnitById,
     {
       refetchOnWindowFocus: false,
       enabled: !!id,
@@ -108,13 +102,14 @@ const NewOrganizationUnitForm = () => {
       }
       try {
         await mutation.mutateAsync(values);
+        toast("Successfully Created Organization Unit", {
+          type: "success",
+        });
+        navigate("/settings/organization-units");
       } catch (error) {
         toast(error.response.data, {
           type: "error",
         });
-      } finally {
-        resetForm();
-        setSubmitting(false);
       }
     },
   });
@@ -122,12 +117,13 @@ const NewOrganizationUnitForm = () => {
     function setCurrentFormValues() {
       if (OrganizationUnitData) {
         formik.setValues({
-          // shortTitle: OrganizationUnitData.data.shortTitle,
-          // longTitle: OrganizationUnitData.data.longTitle,
-          // description: OrganizationUnitData.data.description,
-          // goal: OrganizationUnitData.data.goal,
-          // organisationUnitId: OrganizationUnitData.data.organisationUnitId,
-          // managerEmail: OrganizationUnitData.data.managerEmail,
+          name: OrganizationUnitData.data.name,
+          initials: OrganizationUnitData.data.initials,
+          countryId: OrganizationUnitData.data.countryId,
+          processLevelId: OrganizationUnitData.data.processLevelId,
+          amrefEntityId: OrganizationUnitData.data.amrefEntityId,
+          contactPerson: OrganizationUnitData.data.contactPerson,
+          contactEmail: OrganizationUnitData.data.contactEmail,
         });
       }
     }

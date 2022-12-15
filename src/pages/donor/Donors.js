@@ -58,9 +58,19 @@ const DonorsData = () => {
     }
   }
 
-  const { refetch } = useQuery(["deleteDonorById", id], deleteDonorById, {
+  const {
+    refetch,
+    isError: isErrorDeleteDonor,
+    error: errorDeleteDonor,
+  } = useQuery(["deleteDonorById", id], deleteDonorById, {
     enabled: false,
   });
+
+  if (isErrorDeleteDonor) {
+    toast(errorDeleteDonor.response.data, {
+      type: "error",
+    });
+  }
 
   function handleClickOpen(id) {
     setOpen(true);

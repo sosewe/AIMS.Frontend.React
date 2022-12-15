@@ -155,7 +155,9 @@ const OrganizationUnitsData = () => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink to={`/settings/new-donor/${params.id}`}>
+                    <NavLink
+                      to={`/settings/new-organization-unit/${params.id}`}
+                    >
                       <Button startIcon={<Edit2 />} size="small"></Button>
                     </NavLink>
                     <Button

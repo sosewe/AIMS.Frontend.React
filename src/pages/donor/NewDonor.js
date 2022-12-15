@@ -78,9 +78,6 @@ const NewDonorForm = () => {
         toast(error.response.data, {
           type: "error",
         });
-      } finally {
-        resetForm();
-        setSubmitting(false);
       }
     },
   });
