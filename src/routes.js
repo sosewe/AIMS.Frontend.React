@@ -145,6 +145,9 @@ const OrganizationUnits = async(() => import("./pages/organization-units"));
 const NewOrganizationUnit = async(() =>
   import("./pages/organization-units/NewOrganizationUnit")
 );
+//Entities
+const Entities = async(() => import("./pages/entities/Entities"));
+const NewEntity = async(() => import("./pages/entities/NewEntity"));
 
 const routes = [
   {
@@ -231,6 +234,18 @@ const routes = [
     path: "settings",
     element: <DashboardLayout />,
     children: [
+      {
+        path: "entities",
+        element: <Entities />,
+      },
+      {
+        path: "new-entity",
+        element: <NewEntity />,
+      },
+      {
+        path: "new-entity/:id",
+        element: <NewEntity />,
+      },
       {
         path: "organization-units",
         element: <OrganizationUnits />,
