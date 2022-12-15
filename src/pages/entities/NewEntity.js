@@ -18,14 +18,7 @@ import {
 import { spacing } from "@mui/system";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  getAdministrativeProgrammeById,
-  newAdministrativeProgramme,
-} from "../../api/administrative-programme";
-import {
-  getAMREFStaffList,
-  getLookupMasterItemsByName,
-} from "../../api/lookup";
+import { getLookupMasterItemsByName } from "../../api/lookup";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";

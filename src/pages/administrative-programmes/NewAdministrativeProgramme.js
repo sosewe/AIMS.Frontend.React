@@ -254,7 +254,6 @@ const NewAdministrativeProgrammeForm = () => {
                         "managerEmail",
                         e.target.value.Company_E_Mail
                       );
-                      console.log(e.target.value);
                     }}
                     variant="outlined"
                     my={2}

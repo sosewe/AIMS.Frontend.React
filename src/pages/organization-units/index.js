@@ -19,7 +19,6 @@ import {
 import { spacing } from "@mui/system";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteDonorById, getDonors } from "../../api/donor";
 import { toast } from "react-toastify";
 import { lookupItem } from "../../api/lookup";
 import { Add as AddIcon } from "@mui/icons-material";

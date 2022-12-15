@@ -24,6 +24,9 @@ export const apiRoutes = {
   location: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Location`,
   projectObjectives: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/SetObjective`,
   thematicArea: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ThematicArea`,
+  thematicAreaSubTheme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ThematicAreaSubTheme`,
+  thematicFocus: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ThematicFocus`,
+  subTheme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/SubTheme`,
   // external
   ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,

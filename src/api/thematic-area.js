@@ -8,3 +8,8 @@ export const newProjectThematicArea = async (values) => {
 export const getAllThematicAreas = async () => {
   return await axios.get(apiRoutes.thematicArea);
 };
+
+export const getThematicArea = async ({ queryKey }) => {
+  const [_, thematicAreaId] = queryKey;
+  return await axios.get(`${apiRoutes.thematicArea}/${thematicAreaId}`);
+};

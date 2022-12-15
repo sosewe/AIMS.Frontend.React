@@ -23,11 +23,7 @@ import { toast } from "react-toastify";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Trash as TrashIcon } from "react-feather";
-import {
-  deleteEntity,
-  getAmrefEntities,
-  getEntityTypeId,
-} from "../../api/amref-entity";
+import { deleteEntity, getAmrefEntities } from "../../api/amref-entity";
 import { lookupItem } from "../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
