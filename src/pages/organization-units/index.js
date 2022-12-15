@@ -81,6 +81,22 @@ const OrganizationUnitsData = () => {
     await queryClient.invalidateQueries(["organizationUnits"]);
   };
 
+  function GetAMREFEntityName(params) {
+    const amrefEntityId = params.value;
+    const result = useQuery(["amrefEntityId", amrefEntityId], lookupItem);
+    if (result && result.data) {
+      return result.data.data.name;
+    }
+  }
+
+  function GetCountryName(params) {
+    const countryId = params.value;
+    const result = useQuery(["countryId", countryId], lookupItem);
+    if (result && result.data) {
+      return result.data.data.name;
+    }
+  }
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -123,12 +139,14 @@ const OrganizationUnitsData = () => {
                 headerName: "Amref Entity",
                 editable: false,
                 flex: 1,
+                valueGetter: GetAMREFEntityName,
               },
               {
                 field: "countryId",
                 headerName: "Country",
                 editable: false,
                 flex: 1,
+                valueGetter: GetCountryName,
               },
               {
                 field: "action",

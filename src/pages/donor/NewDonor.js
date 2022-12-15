@@ -16,13 +16,14 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../api/lookup";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getDonorById, newDonor } from "../../api/donor";
+import { Guid } from "../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -39,6 +40,7 @@ const initialValues = {
 
 const NewDonorForm = () => {
   let { id } = useParams();
+  const navigate = useNavigate();
   const { data: DonorData } = useQuery(["getDonorById", id], getDonorById, {
     refetchOnWindowFocus: false,
     enabled: !!id,
@@ -63,9 +65,15 @@ const NewDonorForm = () => {
       values.createDate = new Date();
       if (id) {
         values.id = id;
+      } else {
+        values.id = new Guid().toString();
       }
       try {
         await mutation.mutateAsync(values);
+        toast("Successfully Created a Donor", {
+          type: "success",
+        });
+        navigate("/settings/donors");
       } catch (error) {
         toast(error.response.data, {
           type: "error",

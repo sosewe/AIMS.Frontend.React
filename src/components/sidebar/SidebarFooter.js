@@ -4,8 +4,6 @@ import styled from "@emotion/styled";
 import { Badge, Grid, Avatar, Typography } from "@mui/material";
 import { useMsal } from "@azure/msal-react";
 
-// import useAuth from "../../hooks/useAuth";
-
 const Footer = styled.div`
   background-color: ${(props) =>
     props.theme.sidebar.footer.background} !important;
@@ -38,7 +36,6 @@ const FooterBadge = styled(Badge)`
 `;
 
 const SidebarFooter = ({ ...rest }) => {
-  // const { user } = useAuth();
   const { accounts } = useMsal();
   const user = accounts.length > 0 && accounts[0];
 
