@@ -239,6 +239,7 @@ const NewAdministrativeProgrammeForm = () => {
                     name="managerName"
                     label="Project Manager's Name"
                     select
+                    required
                     value={formik.values.managerName}
                     error={Boolean(
                       formik.touched.managerName && formik.errors.managerName
@@ -274,6 +275,7 @@ const NewAdministrativeProgrammeForm = () => {
                   <TextField
                     name="projectManagerEmail"
                     label="Project Manager's Email"
+                    required
                     value={formik.values.managerEmail}
                     error={Boolean(
                       formik.touched.managerEmail && formik.errors.managerEmail

@@ -17,6 +17,7 @@ import {
   Layers,
   Clipboard,
   Settings,
+  Slack,
 } from "react-feather";
 
 const projectSection = [
@@ -46,6 +47,17 @@ const programmeSection = [
       {
         href: "/programme/administrative-programmes",
         title: "Administrative Programmes",
+      },
+    ],
+  },
+  {
+    href: "/indicator",
+    icon: Slack,
+    title: "Indicators",
+    children: [
+      {
+        href: "/indicator/indicators",
+        title: "Indicators",
       },
     ],
   },

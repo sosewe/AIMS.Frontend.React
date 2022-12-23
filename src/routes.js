@@ -145,9 +145,12 @@ const OrganizationUnits = async(() => import("./pages/organization-units"));
 const NewOrganizationUnit = async(() =>
   import("./pages/organization-units/NewOrganizationUnit")
 );
-//Entities
+// Entities
 const Entities = async(() => import("./pages/entities/Entities"));
 const NewEntity = async(() => import("./pages/entities/NewEntity"));
+// Indicators
+const Indicators = async(() => import("./pages/indicators/Indicators"));
+const NewIndicator = async(() => import("./pages/indicators/NewIndicator"));
 
 const routes = [
   {
@@ -183,6 +186,20 @@ const routes = [
       {
         path: "new-administrative-programme/:id",
         element: <NewAdministrativeProgramme />,
+      },
+    ],
+  },
+  {
+    path: "indicator",
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "indicators",
+        element: <Indicators />,
+      },
+      {
+        path: "new-indicator",
+        element: <NewIndicator />,
       },
     ],
   },
