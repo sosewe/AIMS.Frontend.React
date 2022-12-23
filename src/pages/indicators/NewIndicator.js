@@ -7,15 +7,31 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Chip,
   CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider as MuiDivider,
+  FormControl as MuiFormControl,
   Grid,
+  InputLabel,
   Link,
   MenuItem,
+  OutlinedInput,
+  Paper as MuiPaper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { NavLink, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -34,6 +50,9 @@ import {
   GetUniqueSubThemesByThematicAreaId,
   GetUniqueThematicAreasByProgrammeId,
 } from "../../api/programme-thematic-area-sub-theme";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { getAllAggregates } from "../../api/aggregate";
+import { getAggregateDisaggregates } from "../../api/aggregate-disaggregate";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -41,6 +60,30 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
+const Paper = styled(MuiPaper)(spacing);
+const FormControl = styled(MuiFormControl)(spacing);
+
+const theme = createTheme({
+  palette: {
+    neutral: {
+      main: "#64748B",
+      contrastText: "#fff",
+    },
+  },
+});
+
+const aggregateInitial = {
+  indicatorAggregateId: "",
+  indicatorAggregateDisaggregateId: "",
+  indicatorSecondaryAggregateId: "",
+  indicatorSecondaryAggregateDisaggregateId: [],
+};
+
+const subThemeInitial = {
+  indicatorProgrammeId: "",
+  indicatorThematicAreaId: "",
+  indicatorSubThemeId: "",
+};
 
 const initialValues = {
   name: "",
@@ -52,19 +95,450 @@ const initialValues = {
   numeratorId: "",
   denominatorId: "",
   indicatorCumulative: "",
-  indicatorProgrammeId: "",
-  indicatorThematicAreaId: "",
-  indicatorSubThemeId: "",
 };
 
-const IndicatorProgrammesForm = () => {
+const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
+  const [aggregateId, setAggregateId] = useState();
+  const [secondaryAggregateId, setSecondaryAggregateId] = useState();
+  const { data: aggregatesData, isLoading: isLoadingAggregates } = useQuery(
+    ["getAllAggregates"],
+    getAllAggregates
+  );
+  const {
+    data: aggregateDisaggregatesData,
+    isLoading: isLoadingAggregateDisaggregates,
+    isError: isErrorAggregateDisaggregates,
+  } = useQuery(
+    ["getAggregateDisaggregates", aggregateId],
+    getAggregateDisaggregates,
+    {
+      enabled: !!aggregateId,
+    }
+  );
 
+  const {
+    data: secondaryAggregateDisaggregatesData,
+    isLoading: isLoadingSecondaryAggregateDisaggregates,
+    isError: isErrorSecondaryAggregateDisaggregates,
+  } = useQuery(
+    ["getSecondaryAggregateDisaggregates", secondaryAggregateId],
+    getAggregateDisaggregates,
+    {
+      enabled: !!secondaryAggregateId,
+    }
+  );
+  const formik = useFormik({
+    initialValues: aggregateInitial,
+    validationSchema: Yup.object().shape({
+      indicatorAggregateId: Yup.object().required("Required"),
+      indicatorAggregateDisaggregateId: Yup.object().required("Required"),
+      indicatorSecondaryAggregateId: Yup.object().required("Required"),
+      indicatorSecondaryAggregateDisaggregateId:
+        Yup.array().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        handleClickAggregate(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const onSelectedAggregate = (e) => {
+    setAggregateId(e.target.value.id);
+  };
+
+  const onSelectedSecondaryAggregate = (e) => {
+    setSecondaryAggregateId(e.target.value.id);
+  };
+
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    formik.setFieldValue("indicatorSecondaryAggregateDisaggregateId", value);
+  };
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item md={3}>
+              <TextField
+                name="indicatorAggregateId"
+                label="Aggregate"
+                required
+                select
+                value={formik.values.indicatorAggregateId}
+                error={Boolean(
+                  formik.touched.indicatorAggregateId &&
+                    formik.errors.indicatorAggregateId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.indicatorAggregateId &&
+                  formik.errors.indicatorAggregateId
+                }
+                onBlur={formik.handleBlur}
+                onChange={(e) => {
+                  formik.handleChange(e);
+                  onSelectedAggregate(e);
+                }}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Aggregate
+                </MenuItem>
+                {!isLoadingAggregates
+                  ? aggregatesData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="indicatorAggregateDisaggregateId"
+                label="Aggregate Disaggregate"
+                required
+                select
+                value={formik.values.indicatorAggregateDisaggregateId}
+                error={Boolean(
+                  formik.touched.indicatorAggregateDisaggregateId &&
+                    formik.errors.indicatorAggregateDisaggregateId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.indicatorAggregateDisaggregateId &&
+                  formik.errors.indicatorAggregateDisaggregateId
+                }
+                onBlur={formik.handleBlur}
+                onChange={(e) => {
+                  formik.handleChange(e);
+                }}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Aggregate Disaggregate
+                </MenuItem>
+                {!isLoadingAggregateDisaggregates &&
+                !isErrorAggregateDisaggregates
+                  ? aggregateDisaggregatesData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.disaggregate.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="indicatorSecondaryAggregateId"
+                label="Secondary Aggregate"
+                required
+                select
+                value={formik.values.indicatorSecondaryAggregateId}
+                error={Boolean(
+                  formik.touched.indicatorSecondaryAggregateId &&
+                    formik.errors.indicatorSecondaryAggregateId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.indicatorSecondaryAggregateId &&
+                  formik.errors.indicatorSecondaryAggregateId
+                }
+                onBlur={formik.handleBlur}
+                onChange={(e) => {
+                  formik.handleChange(e);
+                  onSelectedSecondaryAggregate(e);
+                }}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Secondary Aggregate
+                </MenuItem>
+                {!isLoadingAggregates
+                  ? aggregatesData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <FormControl fullWidth my={2} variant="outlined">
+                <InputLabel id="indicatorSecondaryAggregateDisaggregateId">
+                  Select Secondary Aggregate Disaggregate
+                </InputLabel>
+                <Select
+                  labelId="indicatorSecondaryAggregateDisaggregateId"
+                  id="indicatorSecondaryAggregateDisaggregateId"
+                  multiple
+                  value={
+                    formik.values.indicatorSecondaryAggregateDisaggregateId
+                  }
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    handleChange(e);
+                  }}
+                  input={
+                    <OutlinedInput
+                      id="select-multiple-chip"
+                      label="Select Secondary Aggregate Disaggregate"
+                    />
+                  }
+                  renderValue={(selected) => (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip
+                          key={value.disaggregate.id}
+                          label={value.disaggregate.name}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  <MenuItem disabled value="">
+                    Select Secondary Aggregate Disaggregate
+                  </MenuItem>
+                  {!isLoadingSecondaryAggregateDisaggregates &&
+                  !isErrorSecondaryAggregateDisaggregates
+                    ? secondaryAggregateDisaggregatesData.data.map((option) => (
+                        <MenuItem key={option.id} value={option}>
+                          {option.disaggregate.name}
+                        </MenuItem>
+                      ))
+                    : []}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item md={3}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+
+const IndicatorProgrammesForm = ({ handleClick }) => {
+  const [indicatorProgrammeId, setIndicatorProgrammeId] = useState();
+  const [thematicAreaId, setThematicAreaId] = useState();
+
+  const { data: programmesData, isLoading: isLoadingProgrammes } = useQuery(
+    ["getProgrammes"],
+    getProgrammes
+  );
+  const {
+    data: thematicAreasData,
+    isLoading: isLoadingThematicAreas,
+    isError,
+  } = useQuery(
+    ["GetUniqueThematicAreasByProgrammeId", indicatorProgrammeId],
+    GetUniqueThematicAreasByProgrammeId,
+    { enabled: !!indicatorProgrammeId }
+  );
+  const {
+    data: subThemesData,
+    isLoading: isLoadingSubThemes,
+    isError: isErrorSubThemes,
+  } = useQuery(
+    [
+      "GetUniqueSubThemesByThematicAreaId",
+      indicatorProgrammeId,
+      thematicAreaId,
+    ],
+    GetUniqueSubThemesByThematicAreaId,
+    { enabled: !!indicatorProgrammeId && !!thematicAreaId }
+  );
+  const formik = useFormik({
+    initialValues: subThemeInitial,
+    validationSchema: Yup.object().shape({
+      indicatorProgrammeId: Yup.object().required("Required"),
+      indicatorThematicAreaId: Yup.object().required("Required"),
+      indicatorSubThemeId: Yup.object().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        handleClick(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const onProgrammeSelected = (e) => {
+    setIndicatorProgrammeId(e.target.value.id);
+    formik.setFieldValue("indicatorThematicAreaId", "");
+    formik.setFieldValue("indicatorSubThemeId", "");
+  };
+
+  const onThematicAreaSelected = (e) => {
+    setThematicAreaId(e.target.value.id);
+    formik.setFieldValue("indicatorSubThemeId", "");
+  };
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item md={3}>
+              <TextField
+                name="indicatorProgrammeId"
+                label="Programme"
+                required
+                select
+                value={formik.values.indicatorProgrammeId}
+                error={Boolean(
+                  formik.touched.indicatorProgrammeId &&
+                    formik.errors.indicatorProgrammeId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.indicatorProgrammeId &&
+                  formik.errors.indicatorProgrammeId
+                }
+                onBlur={formik.handleBlur}
+                onChange={(e) => {
+                  formik.handleChange(e);
+                  onProgrammeSelected(e);
+                }}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Programme
+                </MenuItem>
+                {!isLoadingProgrammes
+                  ? programmesData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.code + " - " + option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="indicatorThematicAreaId"
+                label="Thematic Area"
+                required
+                select
+                value={formik.values.indicatorThematicAreaId}
+                error={Boolean(
+                  formik.touched.indicatorThematicAreaId &&
+                    formik.errors.indicatorThematicAreaId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.indicatorThematicAreaId &&
+                  formik.errors.indicatorThematicAreaId
+                }
+                onBlur={formik.handleBlur}
+                onChange={(e) => {
+                  formik.handleChange(e);
+                  onThematicAreaSelected(e);
+                }}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Thematic Area
+                </MenuItem>
+                {!isLoadingThematicAreas && !isError
+                  ? thematicAreasData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.code + " - " + option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="indicatorSubThemeId"
+                label="Sub Theme"
+                required
+                select
+                value={formik.values.indicatorSubThemeId}
+                error={Boolean(
+                  formik.touched.indicatorSubThemeId &&
+                    formik.errors.indicatorSubThemeId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.indicatorSubThemeId &&
+                  formik.errors.indicatorSubThemeId
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Sub Theme
+                </MenuItem>
+                {!isLoadingSubThemes && !isErrorSubThemes
+                  ? subThemesData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.code + " - " + option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
 };
 
 const NewIndicatorForm = () => {
   let { id } = useParams();
-  const [indicatorProgrammeId, setIndicatorProgrammeId] = useState();
-  const [thematicAreaId, setThematicAreaId] = useState();
+  const [open, setOpen] = useState(false);
+  const [openAggregate, setOpenAggregate] = useState(false);
+  const [subThemesArray, setSubThemesArray] = useState([]);
+  const [aggregateDisAggregateArray, setAggregateDisAggregateArray] = useState(
+    []
+  );
   const { data: OrganizationUnitData } = useQuery(
     ["getAdministrativeProgrammeById", id],
     getAdministrativeProgrammeById,
@@ -98,32 +572,6 @@ const NewIndicatorForm = () => {
     {
       refetchOnWindowFocus: false,
     }
-  );
-  const { data: programmesData, isLoading: isLoadingProgrammes } = useQuery(
-    ["getProgrammes"],
-    getProgrammes
-  );
-  const {
-    data: thematicAreasData,
-    isLoading: isLoadingThematicAreas,
-    isError,
-  } = useQuery(
-    ["GetUniqueThematicAreasByProgrammeId", indicatorProgrammeId],
-    GetUniqueThematicAreasByProgrammeId,
-    { enabled: !!indicatorProgrammeId }
-  );
-  const {
-    data: subThemesData,
-    isLoading: isLoadingSubThemes,
-    isError: isErrorSubThemes,
-  } = useQuery(
-    [
-      "GetUniqueSubThemesByThematicAreaId",
-      indicatorProgrammeId,
-      thematicAreaId,
-    ],
-    GetUniqueSubThemesByThematicAreaId,
-    { enabled: !!indicatorProgrammeId && !!thematicAreaId }
   );
   const mutation = useMutation({ mutationFn: newIndicator });
 
@@ -180,13 +628,38 @@ const NewIndicatorForm = () => {
     setCurrentFormValues();
   }, []);
 
-  const onProgrammeSelected = (e) => {
-    setIndicatorProgrammeId(e.target.value.id);
-    formik.setFieldValue("indicatorThematicAreaId", "");
+  const handleClick = (values) => {
+    const res = subThemesArray.find(
+      (obj) =>
+        obj &&
+        obj.indicatorProgrammeId.id === values.indicatorProgrammeId.id &&
+        obj.indicatorThematicAreaId.id === values.indicatorThematicAreaId.id &&
+        obj.indicatorSubThemeId.id === values.indicatorSubThemeId.id
+    );
+    if (!res) {
+      setSubThemesArray((current) => [...current, values]);
+      setOpen(false);
+    } else {
+      toast("Duplicate SubTheme Selected", {
+        type: "error",
+      });
+    }
   };
 
-  const onThematicAreaSelected = (e) => {
-    setThematicAreaId(e.target.value);
+  const handleClickAggregate = (values) => {
+    console.log(values);
+    setAggregateDisAggregateArray((current) => [...current, values]);
+    setOpenAggregate(false);
+  };
+
+  const removeSubTheme = (row) => {
+    setSubThemesArray((current) =>
+      current.filter(
+        (subTheme) =>
+          subTheme.indicatorSubThemeId.id !== row.indicatorSubThemeId.id ||
+          subTheme.indicatorThematicAreaId.id !== row.indicatorThematicAreaId.id
+      )
+    );
   };
 
   return (
@@ -473,114 +946,146 @@ const NewIndicatorForm = () => {
                     variant="outlined"
                     style={{ borderStyle: "dashed", borderRadius: 1 }}
                   >
-                    <Grid container spacing={2}>
-                      <Grid item md={3}>
-                        <TextField
-                          name="indicatorProgrammeId"
-                          label="Programme"
-                          required
-                          select
-                          value={formik.values.indicatorProgrammeId}
-                          error={Boolean(
-                            formik.touched.indicatorProgrammeId &&
-                              formik.errors.indicatorProgrammeId
-                          )}
-                          fullWidth
-                          helperText={
-                            formik.touched.indicatorProgrammeId &&
-                            formik.errors.indicatorProgrammeId
-                          }
-                          onBlur={formik.handleBlur}
-                          onChange={(e) => {
-                            formik.handleChange(e);
-                            onProgrammeSelected(e);
-                          }}
-                          variant="outlined"
-                          my={2}
-                        >
-                          <MenuItem disabled value="">
-                            Select Programme
-                          </MenuItem>
-                          {!isLoadingProgrammes
-                            ? programmesData.data.map((option) => (
-                                <MenuItem key={option.id} value={option}>
-                                  {option.code + " - " + option.name}
-                                </MenuItem>
-                              ))
-                            : []}
-                        </TextField>
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        &nbsp;
                       </Grid>
-                      <Grid item md={3}>
-                        <TextField
-                          name="indicatorThematicAreaId"
-                          label="Thematic Area"
-                          required
-                          select
-                          value={formik.values.indicatorThematicAreaId}
-                          error={Boolean(
-                            formik.touched.indicatorThematicAreaId &&
-                              formik.errors.indicatorThematicAreaId
-                          )}
-                          fullWidth
-                          helperText={
-                            formik.touched.indicatorThematicAreaId &&
-                            formik.errors.indicatorThematicAreaId
-                          }
-                          onBlur={formik.handleBlur}
-                          onChange={(e) => {
-                            formik.handleChange(e);
-                            onThematicAreaSelected(e);
-                          }}
-                          variant="outlined"
-                          my={2}
-                        >
-                          <MenuItem disabled value="">
-                            Select Thematic Area
-                          </MenuItem>
-                          {!isLoadingThematicAreas && !isError
-                            ? thematicAreasData.data.map((option) => (
-                                <MenuItem key={option.id} value={option.id}>
-                                  {option.code + " - " + option.name}
-                                </MenuItem>
-                              ))
-                            : []}
-                        </TextField>
-                      </Grid>
-                      <Grid item md={3}>
-                        <TextField
-                          name="indicatorSubThemeId"
-                          label="Sub Theme"
-                          required
-                          select
-                          value={formik.values.indicatorSubThemeId}
-                          error={Boolean(
-                            formik.touched.indicatorSubThemeId &&
-                              formik.errors.indicatorSubThemeId
-                          )}
-                          fullWidth
-                          helperText={
-                            formik.touched.indicatorSubThemeId &&
-                            formik.errors.indicatorSubThemeId
-                          }
-                          onBlur={formik.handleBlur}
-                          onChange={formik.handleChange}
-                          variant="outlined"
-                          my={2}
-                        >
-                          <MenuItem disabled value="">
-                            Select Sub Theme
-                          </MenuItem>
-                          {!isLoadingSubThemes && !isErrorSubThemes
-                            ? subThemesData.data.map((option) => (
-                                <MenuItem key={option.id} value={option.id}>
-                                  {option.code + " - " + option.name}
-                                </MenuItem>
-                              ))
-                            : []}
-                        </TextField>
-                      </Grid>
-                      <Grid item md={3}></Grid>
                     </Grid>
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        <ThemeProvider theme={theme}>
+                          <Button
+                            variant="contained"
+                            color="neutral"
+                            onClick={() => setOpen(true)}
+                          >
+                            <AddIcon /> ADD SUB-THEME
+                          </Button>
+                        </ThemeProvider>
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        <Paper>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>PROGRAMME</TableCell>
+                                <TableCell align="right">
+                                  THEMATIC AREA
+                                </TableCell>
+                                <TableCell align="right">SUB THEME</TableCell>
+                                <TableCell align="right">Action</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {subThemesArray.map((row) => (
+                                <TableRow
+                                  key={
+                                    row.indicatorThematicAreaId.id +
+                                    row.indicatorSubThemeId.id
+                                  }
+                                >
+                                  <TableCell component="th" scope="row">
+                                    {row.indicatorProgrammeId.name}
+                                  </TableCell>
+                                  <TableCell align="right">
+                                    {row.indicatorThematicAreaId.code +
+                                      "-" +
+                                      row.indicatorThematicAreaId.name}
+                                  </TableCell>
+                                  <TableCell align="right">
+                                    {row.indicatorSubThemeId.code +
+                                      "-" +
+                                      row.indicatorSubThemeId.name}
+                                  </TableCell>
+                                  <TableCell align="right">
+                                    <Button
+                                      variant="contained"
+                                      color="primary"
+                                      onClick={() => removeSubTheme(row)}
+                                    >
+                                      <DeleteIcon />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                    <br />
+                  </Card>
+                </Grid>
+                <Grid item md={12}>
+                  <Card
+                    variant="outlined"
+                    style={{ borderStyle: "dashed", borderRadius: 1 }}
+                  >
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        &nbsp;
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        <ThemeProvider theme={theme}>
+                          <Button
+                            variant="contained"
+                            color="neutral"
+                            onClick={() => setOpenAggregate(true)}
+                          >
+                            <AddIcon /> ADD AGGREGATE DISAGGREGATES
+                          </Button>
+                        </ThemeProvider>
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        <Paper>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>AGGREGATE</TableCell>
+                                <TableCell align="right">
+                                  DISAGGREGATE
+                                </TableCell>
+                                <TableCell align="right">
+                                  PRIMARY/SECONDARY
+                                </TableCell>
+                                <TableCell align="right">Action</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {aggregateDisAggregateArray.map((row) => (
+                                <TableRow key={row.aggregate.id}>
+                                  {/*<TableCell component="th" scope="row">*/}
+                                  {/*  {row.indicatorAggregateDisaggregateId.aggregate.name}*/}
+                                  {/*</TableCell>*/}
+                                  {/*<TableCell align="right">*/}
+                                  {/*  {row.disaggregate.name}*/}
+                                  {/*</TableCell>*/}
+                                  {/*<TableCell align="right">*/}
+                                  {/*  {row.isPrimary ? "Primary" : "Secondary"}*/}
+                                  {/*</TableCell>*/}
+                                  <TableCell align="right">
+                                    <Button
+                                      variant="contained"
+                                      color="primary"
+                                      onClick={() => removeSubTheme(row)}
+                                    >
+                                      <DeleteIcon />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                    <br />
                   </Card>
                 </Grid>
               </Grid>
@@ -591,6 +1096,36 @@ const NewIndicatorForm = () => {
           )}
         </CardContent>
       </Card>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={open}
+        onClose={() => setOpen(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">
+          PROGRAMME/THEMATIC-AREA/SUB-THEME
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>ADD SUB-THEME</DialogContentText>
+          <IndicatorProgrammesForm handleClick={handleClick} />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAggregate}
+        onClose={() => setOpenAggregate(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">AGGREGATE/DISAGGREGATE</DialogTitle>
+        <DialogContent>
+          <DialogContentText>ADD AGGREGATE/DISAGGREGATE</DialogContentText>
+          <AggregateDisAggregateForm
+            handleClickAggregate={handleClickAggregate}
+          />
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };

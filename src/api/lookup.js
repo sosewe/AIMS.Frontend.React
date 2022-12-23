@@ -10,17 +10,17 @@ export const newLookupItem = async (values) => {
 };
 
 export const lookupItem = async ({ queryKey }) => {
-  const [_, id] = queryKey;
+  const [, id] = queryKey;
   return await axios.get(apiRoutes.lookupItem + "/item/" + id);
 };
 
 export const deleteLookupItem = async ({ queryKey }) => {
-  const [_, id] = queryKey;
+  const [, id] = queryKey;
   return await axios.delete(apiRoutes.lookupItem + "/Delete/" + id);
 };
 
 export const getLookupMasterItemsByName = async ({ queryKey }) => {
-  const [_, masterName] = queryKey;
+  const [, masterName] = queryKey;
   return await axios.get(
     apiRoutes.lookupOption + "/optionsByName/" + masterName
   );

@@ -8,14 +8,14 @@ export const getAdministrativeUnitTopLevel = async () => {
 };
 
 export const getAdministrativeUnitByParentName = async ({ queryKey }) => {
-  const [_, parent] = queryKey;
+  const [, parent] = queryKey;
   return await axios.get(
     `${apiRoutes.administrativeUnit}/GetByParentName/${parent}`
   );
 };
 
 export const getAdministrativeUnitById = async ({ queryKey }) => {
-  const [_, administrativeUnitId] = queryKey;
+  const [, administrativeUnitId] = queryKey;
   return await axios.get(
     `${apiRoutes.administrativeUnit}/${administrativeUnitId}`
   );

@@ -6,7 +6,7 @@ export const newProjectAdministrativeProgramme = async (values) => {
 };
 
 export const getProjectAdministrativeProgramme = async ({ queryKey }) => {
-  const [_, projectId] = queryKey;
+  const [, projectId] = queryKey;
   return await axios.get(
     `${apiRoutes.projectAdministrativeProgramme}/GetByProjectId/${projectId}`
   );

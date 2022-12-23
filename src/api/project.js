@@ -10,6 +10,6 @@ export const newProject = async (values) => {
 };
 
 export const getProjectById = async ({ queryKey }) => {
-  const [_, id] = queryKey;
+  const [, id] = queryKey;
   return await axios.get(apiRoutes.project + "/" + id);
 };

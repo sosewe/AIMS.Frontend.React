@@ -6,13 +6,13 @@ export const newProjectLocation = async (values) => {
 };
 
 export const getProjectLocations = async ({ queryKey }) => {
-  const [_, processLevelItemId] = queryKey;
+  const [, processLevelItemId] = queryKey;
   return await axios.get(
     `${apiRoutes.location}/GetGeographicalFocusByProcessLevelItemId/${processLevelItemId}`
   );
 };
 
 export const deleteProjectLocation = async ({ queryKey }) => {
-  const [_, projectLocationId] = queryKey;
+  const [, projectLocationId] = queryKey;
   return await axios.delete(`${apiRoutes.location}/${projectLocationId}`);
 };

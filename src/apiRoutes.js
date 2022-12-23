@@ -29,6 +29,8 @@ export const apiRoutes = {
   subTheme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/SubTheme`,
   indicator: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Indicator`,
   programmeThematicAreaSubTheme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ProgrammeThematicAreaSubTheme`,
+  aggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Aggregate`,
+  aggregateDisaggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AggregateDisaggergate`,
   // external
   ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,

@@ -8,7 +8,7 @@ export const newDonorProcessLevel = async (values) => {
 export const GetDonorByProcessLevelIdAndProcessLevelTypeId = async ({
   queryKey,
 }) => {
-  const [_, processLevelId, processLevelTypeId] = queryKey;
+  const [, processLevelId, processLevelTypeId] = queryKey;
   return await axios.get(
     `${apiRoutes.donorProcessLevel}/GetDonorByProcessLevelIdAndProcessLevelTypeId/${processLevelId}/${processLevelTypeId}`
   );

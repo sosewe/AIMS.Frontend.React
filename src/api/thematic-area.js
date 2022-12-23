@@ -10,6 +10,6 @@ export const getAllThematicAreas = async () => {
 };
 
 export const getThematicArea = async ({ queryKey }) => {
-  const [_, thematicAreaId] = queryKey;
+  const [, thematicAreaId] = queryKey;
   return await axios.get(`${apiRoutes.thematicArea}/${thematicAreaId}`);
 };

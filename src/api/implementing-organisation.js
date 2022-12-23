@@ -7,7 +7,7 @@ export const newImplementingOrganisation = async (values) => {
 
 export const getImplementingOrganisationByProcessLevelItemIdAndProcessLevelTypeId =
   async ({ queryKey }) => {
-    const [_, processLevelId, processLevelTypeId] = queryKey;
+    const [, processLevelId, processLevelTypeId] = queryKey;
     return await axios.get(
       `${apiRoutes.implementingOrganisation}/GetImplementingOrganisationByProcessLevelItemIdAndProcessLevelTypeId/${processLevelId}/${processLevelTypeId}`
     );

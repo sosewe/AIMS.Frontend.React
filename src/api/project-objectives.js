@@ -6,14 +6,14 @@ export const newProjectObjectives = async (values) => {
 };
 
 export const getObjectiveByProcessLevelItemId = async ({ queryKey }) => {
-  const [_, processLevelItemId] = queryKey;
+  const [, processLevelItemId] = queryKey;
   return await axios.get(
     `${apiRoutes.projectObjectives}/GetObjectiveByProcessLevelItemId/${processLevelItemId}`
   );
 };
 
 export const deleteProjectObjective = async ({ queryKey }) => {
-  const [_, projectObjectiveId] = queryKey;
+  const [, projectObjectiveId] = queryKey;
   return await axios.delete(
     `${apiRoutes.projectObjectives}/${projectObjectiveId}`
   );

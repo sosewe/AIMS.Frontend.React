@@ -10,7 +10,7 @@ export const newAdministrativeProgramme = async (values) => {
 };
 
 export const getAdministrativeProgrammeById = async ({ queryKey }) => {
-  const [_, id] = queryKey;
+  const [, id] = queryKey;
   return await axios.get(`${apiRoutes.administrativeProgramme}/${id}`);
 };
 

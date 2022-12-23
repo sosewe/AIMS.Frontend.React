@@ -10,11 +10,11 @@ export const getDonors = async () => {
 };
 
 export const getDonorById = async ({ queryKey }) => {
-  const [_, id] = queryKey;
+  const [, id] = queryKey;
   return await axios.get(`${apiRoutes.donor}/${id}`);
 };
 
 export const deleteDonorById = async ({ queryKey }) => {
-  const [_, id] = queryKey;
+  const [, id] = queryKey;
   return await axios.delete(`${apiRoutes.donor}/${id}`);
 };

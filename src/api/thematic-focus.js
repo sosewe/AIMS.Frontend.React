@@ -8,14 +8,14 @@ export const saveProjectThematicFocus = async (values) => {
 export const getProjectThematicFocusByProcessLevelItemId = async ({
   queryKey,
 }) => {
-  const [_, processLevelItemId] = queryKey;
+  const [, processLevelItemId] = queryKey;
   return await axios.get(
     `${apiRoutes.thematicFocus}/GetProjectThematicFocusByProcessLevelItemId/${processLevelItemId}`
   );
 };
 
 export const deleteProjectThematicFocus = async ({ queryKey }) => {
-  const [_, projectThematicFocusId] = queryKey;
+  const [, projectThematicFocusId] = queryKey;
   return await axios.delete(
     `${apiRoutes.thematicFocus}/${projectThematicFocusId}`
   );

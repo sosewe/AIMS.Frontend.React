@@ -6,7 +6,7 @@ export const newOfficeInvolvedProcessLevel = async (values) => {
 };
 
 export const getOfficeInvolvedByProcessLevelItemId = async ({ queryKey }) => {
-  const [_, processLevelItemId] = queryKey;
+  const [, processLevelItemId] = queryKey;
   return await axios.get(
     `${apiRoutes.officeInvolved}/GetByProcessLevelItemId/${processLevelItemId}`
   );
