@@ -37,22 +37,22 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  getAdministrativeProgrammeById,
-  newAdministrativeProgramme,
-} from "../../api/administrative-programme";
 import { getLookupMasterItemsByName } from "../../api/lookup";
 import { Guid } from "../../utils/guid";
 import { getAllIndicators, newIndicator } from "../../api/indicator";
 import { getProgrammes } from "../../api/programmes";
 import {
-  getProgrammeThematicAreaSubThemes,
   GetUniqueSubThemesByThematicAreaId,
   GetUniqueThematicAreasByProgrammeId,
 } from "../../api/programme-thematic-area-sub-theme";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import { getAllAggregates } from "../../api/aggregate";
+import { getAggregatesByName, getAllAggregates } from "../../api/aggregate";
 import { getAggregateDisaggregates } from "../../api/aggregate-disaggregate";
+import { getAttributeTypes } from "../../api/attribute-type";
+import { saveIndicatorProgrammes } from "../../api/indicator-programme";
+import { saveIndicatorThematicArea } from "../../api/indicator-thematic-area";
+import { saveIndicatorSubTheme } from "../../api/indicator-sub-theme";
+import { saveIndicatorAggregates } from "../../api/indicator-aggregate";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -72,9 +72,13 @@ const theme = createTheme({
   },
 });
 
+const attributesTypeInitial = {
+  attributeTypeId: [],
+};
+
 const aggregateInitial = {
   indicatorAggregateId: "",
-  indicatorAggregateDisaggregateId: "",
+  indicatorAggregateDisaggregateId: [],
   indicatorSecondaryAggregateId: "",
   indicatorSecondaryAggregateDisaggregateId: [],
 };
@@ -97,9 +101,108 @@ const initialValues = {
   indicatorCumulative: "",
 };
 
+const AttributesTypeForm = ({ handleClickAttributes }) => {
+  const { data, isLoading, isError } = useQuery(
+    ["getAttributeTypes"],
+    getAttributeTypes
+  );
+
+  const formik = useFormik({
+    initialValues: attributesTypeInitial,
+    validationSchema: Yup.object().shape({
+      attributeTypeId: Yup.array().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        handleClickAttributes(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const handleAttributeTypeChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    formik.setFieldValue("attributeTypeId", value);
+  };
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item md={3}>
+              <FormControl fullWidth my={2} variant="outlined">
+                <InputLabel id="attributeTypeId">
+                  Attribute Type(Multiple)
+                </InputLabel>
+                <Select
+                  labelId="attributeTypeId"
+                  id="attributeTypeId"
+                  multiple
+                  value={formik.values.attributeTypeId}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    handleAttributeTypeChange(e);
+                  }}
+                  input={
+                    <OutlinedInput
+                      id="select-multiple-chip"
+                      label="Attribute Type"
+                    />
+                  }
+                  renderValue={(selected) => (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip key={value.id} label={value.name} />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  <MenuItem disabled value="">
+                    Attribute Type(Multiple)
+                  </MenuItem>
+                  {!isLoading && !isError
+                    ? data.data.map((option) => (
+                        <MenuItem key={option.id} value={option}>
+                          {option.name}
+                        </MenuItem>
+                      ))
+                    : []}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item md={3}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+
 const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
   const [aggregateId, setAggregateId] = useState();
   const [secondaryAggregateId, setSecondaryAggregateId] = useState();
+  const { data, isLoading } = useQuery(
+    ["getAggregatesByName", "Gender"],
+    getAggregatesByName
+  );
   const { data: aggregatesData, isLoading: isLoadingAggregates } = useQuery(
     ["getAllAggregates"],
     getAllAggregates
@@ -131,7 +234,7 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
     initialValues: aggregateInitial,
     validationSchema: Yup.object().shape({
       indicatorAggregateId: Yup.object().required("Required"),
-      indicatorAggregateDisaggregateId: Yup.object().required("Required"),
+      indicatorAggregateDisaggregateId: Yup.array().required("Required"),
       indicatorSecondaryAggregateId: Yup.object().required("Required"),
       indicatorSecondaryAggregateDisaggregateId:
         Yup.array().required("Required"),
@@ -163,6 +266,13 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
       target: { value },
     } = event;
     formik.setFieldValue("indicatorSecondaryAggregateDisaggregateId", value);
+  };
+
+  const handleAggregateDisAggregateChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    formik.setFieldValue("indicatorAggregateDisaggregateId", value);
   };
 
   return (
@@ -197,8 +307,8 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
                 <MenuItem disabled value="">
                   Select Aggregate
                 </MenuItem>
-                {!isLoadingAggregates
-                  ? aggregatesData.data.map((option) => (
+                {!isLoading
+                  ? data.data.map((option) => (
                       <MenuItem key={option.id} value={option}>
                         {option.name}
                       </MenuItem>
@@ -207,40 +317,49 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
               </TextField>
             </Grid>
             <Grid item md={3}>
-              <TextField
-                name="indicatorAggregateDisaggregateId"
-                label="Aggregate Disaggregate"
-                required
-                select
-                value={formik.values.indicatorAggregateDisaggregateId}
-                error={Boolean(
-                  formik.touched.indicatorAggregateDisaggregateId &&
-                    formik.errors.indicatorAggregateDisaggregateId
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.indicatorAggregateDisaggregateId &&
-                  formik.errors.indicatorAggregateDisaggregateId
-                }
-                onBlur={formik.handleBlur}
-                onChange={(e) => {
-                  formik.handleChange(e);
-                }}
-                variant="outlined"
-                my={2}
-              >
-                <MenuItem disabled value="">
-                  Select Aggregate Disaggregate
-                </MenuItem>
-                {!isLoadingAggregateDisaggregates &&
-                !isErrorAggregateDisaggregates
-                  ? aggregateDisaggregatesData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.disaggregate.name}
-                      </MenuItem>
-                    ))
-                  : []}
-              </TextField>
+              <FormControl fullWidth my={2} variant="outlined">
+                <InputLabel id="indicatorAggregateDisaggregateId">
+                  Aggregate Disaggregate(Multiple)
+                </InputLabel>
+                <Select
+                  labelId="indicatorAggregateDisaggregateId"
+                  id="indicatorAggregateDisaggregateId"
+                  multiple
+                  value={formik.values.indicatorAggregateDisaggregateId}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    handleAggregateDisAggregateChange(e);
+                  }}
+                  input={
+                    <OutlinedInput
+                      id="select-multiple-chip"
+                      label="Aggregate Disaggregate"
+                    />
+                  }
+                  renderValue={(selected) => (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip
+                          key={value.disaggregate.id}
+                          label={value.disaggregate.name}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  <MenuItem disabled value="">
+                    Aggregate Disaggregate(Multiple)
+                  </MenuItem>
+                  {!isLoadingAggregateDisaggregates &&
+                  !isErrorAggregateDisaggregates
+                    ? aggregateDisaggregatesData.data.map((option) => (
+                        <MenuItem key={option.id} value={option}>
+                          {option.disaggregate.name}
+                        </MenuItem>
+                      ))
+                    : []}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item md={3}>
               <TextField
@@ -281,7 +400,7 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
             <Grid item md={3}>
               <FormControl fullWidth my={2} variant="outlined">
                 <InputLabel id="indicatorSecondaryAggregateDisaggregateId">
-                  Select Secondary Aggregate Disaggregate
+                  Secondary Aggregate Disaggregate(Multiple)
                 </InputLabel>
                 <Select
                   labelId="indicatorSecondaryAggregateDisaggregateId"
@@ -312,7 +431,7 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
                   )}
                 >
                   <MenuItem disabled value="">
-                    Select Secondary Aggregate Disaggregate
+                    Secondary Aggregate Disaggregate(Multiple)
                   </MenuItem>
                   {!isLoadingSecondaryAggregateDisaggregates &&
                   !isErrorSecondaryAggregateDisaggregates
@@ -535,18 +654,12 @@ const NewIndicatorForm = () => {
   let { id } = useParams();
   const [open, setOpen] = useState(false);
   const [openAggregate, setOpenAggregate] = useState(false);
+  const [openAttributeTypes, setOpenAttributeTypes] = useState(false);
   const [subThemesArray, setSubThemesArray] = useState([]);
   const [aggregateDisAggregateArray, setAggregateDisAggregateArray] = useState(
     []
   );
-  const { data: OrganizationUnitData } = useQuery(
-    ["getAdministrativeProgrammeById", id],
-    getAdministrativeProgrammeById,
-    {
-      refetchOnWindowFocus: false,
-      enabled: !!id,
-    }
-  );
+  const [attributesTypesArray, setAttributesTypesArray] = useState([]);
   // fetch all indicators
   const { data, isLoading } = useQuery(["getAllIndicators"], getAllIndicators, {
     retry: 0,
@@ -574,6 +687,18 @@ const NewIndicatorForm = () => {
     }
   );
   const mutation = useMutation({ mutationFn: newIndicator });
+  const mutationIndicatorProgramme = useMutation({
+    mutationFn: saveIndicatorProgrammes,
+  });
+  const mutationIndicatorThematicArea = useMutation({
+    mutationFn: saveIndicatorThematicArea,
+  });
+  const mutationIndicatorSubTheme = useMutation({
+    mutationFn: saveIndicatorSubTheme,
+  });
+  const mutationIndicatorAggregate = useMutation({
+    mutationFn: saveIndicatorAggregates,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -583,23 +708,37 @@ const NewIndicatorForm = () => {
       indicatorTypeId: Yup.string().required("Required"),
       indicatorCalculationId: Yup.string().required("Required"),
       definition: Yup.string().required("Required"),
-      indicatorMeasure: Yup.string().required("Required"),
-      numeratorId: Yup.string().required("Required"),
-      denominatorId: Yup.string().required("Required"),
+      indicatorMeasure: Yup.object().required("Required"),
+      numeratorId: Yup.string().when("indicatorMeasure", {
+        is: (val) => val.lookupItemName === "Percentage(%)",
+        then: Yup.string().required("Must enter Numerator"),
+      }),
+      // numeratorId: Yup.string().required("Required"),
+      denominatorId: Yup.string().when("indicatorMeasure", {
+        is: (val) => val.lookupItemName === "Percentage(%)",
+        then: Yup.string().required("Must enter Denominator"),
+      }),
       indicatorCumulative: Yup.string().required("Required"),
-      indicatorProgrammeId: Yup.object().required("Required"),
-      indicatorThematicAreaId: Yup.string().required("Required"),
-      indicatorSubThemeId: Yup.string().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       values.createDate = new Date();
+      values.indicatorMeasure = values.lookupItemId;
       if (id) {
         values.id = id;
       } else {
         values.id = new Guid().toString();
+        values.updateDate = new Date();
       }
       try {
         await mutation.mutateAsync(values);
+        // Programme
+        await mutationIndicatorProgramme.mutateAsync();
+        // Thematic Area
+        await mutationIndicatorThematicArea.mutateAsync();
+        // Sub Theme
+        await mutationIndicatorSubTheme.mutateAsync();
+        // Attribute Type
+        await mutationIndicatorAggregate.mutateAsync();
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -647,9 +786,25 @@ const NewIndicatorForm = () => {
   };
 
   const handleClickAggregate = (values) => {
-    console.log(values);
     setAggregateDisAggregateArray((current) => [...current, values]);
     setOpenAggregate(false);
+  };
+
+  const handleClickAttributes = (values) => {
+    for (const value of values.attributeTypeId) {
+      const res = attributesTypesArray.filter((obj) => obj.id === value.id);
+      if (res.length > 0) {
+        toast("Duplicate Attribute Type Selected", {
+          type: "error",
+        });
+        return;
+      }
+    }
+    setAttributesTypesArray((current) => [
+      ...current,
+      ...values.attributeTypeId,
+    ]);
+    setOpenAttributeTypes(false);
   };
 
   const removeSubTheme = (row) => {
@@ -661,6 +816,41 @@ const NewIndicatorForm = () => {
       )
     );
   };
+
+  const removeAggregateDisaggregate = (row, isPrimary) => {
+    if (isPrimary) {
+      setAggregateDisAggregateArray((current) =>
+        current.filter((aggregateDisaggregate) => {
+          const res =
+            aggregateDisaggregate.indicatorAggregateDisaggregateId.filter(
+              (obj) =>
+                obj.aggregateId !== row.aggregateId ||
+                obj.disaggregateId !== row.disaggregateId
+            );
+          return (aggregateDisaggregate.indicatorAggregateDisaggregateId = res);
+        })
+      );
+    } else {
+      setAggregateDisAggregateArray((current) =>
+        current.filter((aggregateDisaggregate) => {
+          const res =
+            aggregateDisaggregate.indicatorSecondaryAggregateDisaggregateId.filter(
+              (obj) =>
+                obj.aggregateId !== row.aggregateId ||
+                obj.disaggregateId !== row.disaggregateId
+            );
+          return (aggregateDisaggregate.indicatorSecondaryAggregateDisaggregateId =
+            res);
+        })
+      );
+    }
+  };
+
+  function removeAttributeType(row) {
+    setAttributesTypesArray((current) =>
+      current.filter((obj) => obj.id !== row.id)
+    );
+  }
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -774,10 +964,7 @@ const NewIndicatorForm = () => {
                     </MenuItem>
                     {!isLoadingIndicatorMeasure
                       ? indicatorMeasureData.data.map((option) => (
-                          <MenuItem
-                            key={option.lookupItemId}
-                            value={option.lookupItemId}
-                          >
+                          <MenuItem key={option.lookupItemId} value={option}>
                             {option.lookupItemName}
                           </MenuItem>
                         ))
@@ -845,7 +1032,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="numeratorId"
                     label="Indicator Numerator"
-                    required
                     select
                     value={formik.values.numeratorId}
                     error={Boolean(
@@ -876,7 +1062,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="denominatorId"
                     label="Indicator Denominator"
-                    required
                     select
                     value={formik.values.denominatorId}
                     error={Boolean(
@@ -1058,22 +1243,124 @@ const NewIndicatorForm = () => {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {aggregateDisAggregateArray.map((row) => (
-                                <TableRow key={row.aggregate.id}>
-                                  {/*<TableCell component="th" scope="row">*/}
-                                  {/*  {row.indicatorAggregateDisaggregateId.aggregate.name}*/}
-                                  {/*</TableCell>*/}
-                                  {/*<TableCell align="right">*/}
-                                  {/*  {row.disaggregate.name}*/}
-                                  {/*</TableCell>*/}
-                                  {/*<TableCell align="right">*/}
-                                  {/*  {row.isPrimary ? "Primary" : "Secondary"}*/}
-                                  {/*</TableCell>*/}
+                              {aggregateDisAggregateArray.map((row) =>
+                                row.indicatorAggregateDisaggregateId.map(
+                                  (agg) => (
+                                    <TableRow key={agg.id}>
+                                      <TableCell component="th" scope="row">
+                                        {agg.aggregate.name}
+                                      </TableCell>
+                                      <TableCell align="right">
+                                        {agg.disaggregate.name}
+                                      </TableCell>
+                                      <TableCell align="right">
+                                        Primary
+                                      </TableCell>
+                                      <TableCell align="right">
+                                        <Button
+                                          variant="contained"
+                                          color="primary"
+                                          onClick={() =>
+                                            removeAggregateDisaggregate(
+                                              agg,
+                                              true
+                                            )
+                                          }
+                                        >
+                                          <DeleteIcon />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  )
+                                )
+                              )}
+                              {aggregateDisAggregateArray.map((row) =>
+                                row.indicatorSecondaryAggregateDisaggregateId.map(
+                                  (agg) => (
+                                    <TableRow key={agg.id}>
+                                      <TableCell component="th" scope="row">
+                                        {agg.aggregate.name}
+                                      </TableCell>
+                                      <TableCell align="right">
+                                        {agg.disaggregate.name}
+                                      </TableCell>
+                                      <TableCell align="right">
+                                        Secondary
+                                      </TableCell>
+                                      <TableCell align="right">
+                                        <Button
+                                          variant="contained"
+                                          color="primary"
+                                          onClick={() =>
+                                            removeAggregateDisaggregate(
+                                              agg,
+                                              false
+                                            )
+                                          }
+                                        >
+                                          <DeleteIcon />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  )
+                                )
+                              )}
+                            </TableBody>
+                          </Table>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                    <br />
+                  </Card>
+                </Grid>
+                <Grid item md={12}>
+                  <Card
+                    variant="outlined"
+                    style={{ borderStyle: "dashed", borderRadius: 1 }}
+                  >
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        &nbsp;
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        <ThemeProvider theme={theme}>
+                          <Button
+                            variant="contained"
+                            color="neutral"
+                            onClick={() => setOpenAttributeTypes(true)}
+                          >
+                            <AddIcon /> ADD ATTRIBUTE TYPES
+                          </Button>
+                        </ThemeProvider>
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={12}>
+                      <Grid item md={12}>
+                        <Paper>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>NAME</TableCell>
+                                <TableCell align="right">DATA TYPE</TableCell>
+                                <TableCell align="right">Action</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {attributesTypesArray.map((row) => (
+                                <TableRow key={row.id}>
+                                  <TableCell component="th" scope="row">
+                                    {row.name}
+                                  </TableCell>
+                                  <TableCell align="right">
+                                    {row.attributeDataType.dataType}
+                                  </TableCell>
                                   <TableCell align="right">
                                     <Button
                                       variant="contained"
                                       color="primary"
-                                      onClick={() => removeSubTheme(row)}
+                                      onClick={() => removeAttributeType(row)}
                                     >
                                       <DeleteIcon />
                                     </Button>
@@ -1113,7 +1400,7 @@ const NewIndicatorForm = () => {
       </Dialog>
       <Dialog
         fullWidth={true}
-        maxWidth="md"
+        maxWidth="lg"
         open={openAggregate}
         onClose={() => setOpenAggregate(false)}
         aria-labelledby="form-dialog-title"
@@ -1124,6 +1411,19 @@ const NewIndicatorForm = () => {
           <AggregateDisAggregateForm
             handleClickAggregate={handleClickAggregate}
           />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAttributeTypes}
+        onClose={() => setOpenAttributeTypes(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">ATTRIBUTE TYPES</DialogTitle>
+        <DialogContent>
+          <DialogContentText>ADD ATTRIBUTE TYPE</DialogContentText>
+          <AttributesTypeForm handleClickAttributes={handleClickAttributes} />
         </DialogContent>
       </Dialog>
     </form>
