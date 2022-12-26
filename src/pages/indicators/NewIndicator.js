@@ -727,7 +727,7 @@ const NewIndicatorForm = () => {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       values.createDate = new Date();
-      values.indicatorMeasure = values.lookupItemId;
+      values.indicatorMeasure = values.indicatorMeasure.lookupItemId;
       if (id) {
         values.id = id;
       } else {
@@ -779,7 +779,6 @@ const NewIndicatorForm = () => {
         await mutationIndicatorProgramme.mutateAsync(indicatorProgrammes);
         // Thematic Area
         for (const arrayUniqueThematicAreaElement of arrayUniqueThematicArea) {
-          console.log(arrayUniqueThematicAreaElement);
           const indicatorThematicArea = {
             createDate: new Date(),
             indicatorId: indicator.data.id,
@@ -951,8 +950,6 @@ const NewIndicatorForm = () => {
       current.filter((obj) => obj.id !== row.id)
     );
   }
-
-  console.log(subThemesArray);
 
   return (
     <form onSubmit={formik.handleSubmit}>
