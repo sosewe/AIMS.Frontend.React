@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -50,6 +50,7 @@ const initialValues = {
 
 const NewAdministrativeProgrammeForm = () => {
   let { id } = useParams();
+  const navigate = useNavigate();
   const { data: OrganizationUnitData } = useQuery(
     ["getAdministrativeProgrammeById", id],
     getAdministrativeProgrammeById,
@@ -108,13 +109,14 @@ const NewAdministrativeProgrammeForm = () => {
       }
       try {
         await mutation.mutateAsync(values);
+        toast("Successfully Created an Administrative Programme", {
+          type: "success",
+        });
+        navigate("/programme/administrative-programmes");
       } catch (error) {
         toast(error.response.data, {
           type: "error",
         });
-      } finally {
-        resetForm();
-        setSubmitting(false);
       }
     },
   });

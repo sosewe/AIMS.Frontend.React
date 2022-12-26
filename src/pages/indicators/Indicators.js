@@ -14,6 +14,7 @@ import { spacing } from "@mui/system";
 import { Helmet } from "react-helmet-async";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
+import { Edit2, Trash as TrashIcon } from "react-feather";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -45,6 +46,8 @@ const IndicatorsData = () => {
     });
   }
 
+  function handleClickOpen(id) {}
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -71,43 +74,37 @@ const IndicatorsData = () => {
                 flex: 1,
               },
               {
-                field: "initials",
-                headerName: "Initials",
-                editable: false,
-                flex: 1,
-              },
-              {
                 field: "code",
                 headerName: "Code",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "description",
-                headerName: "Description",
+                field: "definition",
+                headerName: "Definition",
                 editable: false,
                 flex: 1,
               },
-              // {
-              //   field: "action",
-              //   headerName: "Action",
-              //   sortable: false,
-              //   flex: 1,
-              //   renderCell: (params) => (
-              //     <>
-              //       <NavLink
-              //         to={`/programme/new-administrative-programme/${params.id}`}
-              //       >
-              //         <Button startIcon={<Edit2 />} size="small"></Button>
-              //       </NavLink>
-              //       <Button
-              //         startIcon={<TrashIcon />}
-              //         size="small"
-              //         onClick={() => handleClickOpen(params.id)}
-              //       ></Button>
-              //     </>
-              //   ),
-              // },
+              {
+                field: "action",
+                headerName: "Action",
+                sortable: false,
+                flex: 1,
+                renderCell: (params) => (
+                  <>
+                    <NavLink
+                      to={`/programme/new-administrative-programme/${params.id}`}
+                    >
+                      <Button startIcon={<Edit2 />} size="small"></Button>
+                    </NavLink>
+                    <Button
+                      startIcon={<TrashIcon />}
+                      size="small"
+                      onClick={() => handleClickOpen(params.id)}
+                    ></Button>
+                  </>
+                ),
+              },
             ]}
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}

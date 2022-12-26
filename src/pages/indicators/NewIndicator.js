@@ -32,7 +32,7 @@ import {
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -50,9 +50,10 @@ import { getAggregatesByName, getAllAggregates } from "../../api/aggregate";
 import { getAggregateDisaggregates } from "../../api/aggregate-disaggregate";
 import { getAttributeTypes } from "../../api/attribute-type";
 import { saveIndicatorProgrammes } from "../../api/indicator-programme";
-import { saveIndicatorThematicArea } from "../../api/indicator-thematic-area";
-import { saveIndicatorSubTheme } from "../../api/indicator-sub-theme";
+import { saveIndicatorThematicAreas } from "../../api/indicator-thematic-area";
+import { saveIndicatorSubThemes } from "../../api/indicator-sub-theme";
 import { saveIndicatorAggregates } from "../../api/indicator-aggregate";
+import { saveIndicatorAttributeTypes } from "../../api/indicator-attribute-type";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -656,6 +657,7 @@ const NewIndicatorForm = () => {
   const [openAggregate, setOpenAggregate] = useState(false);
   const [openAttributeTypes, setOpenAttributeTypes] = useState(false);
   const [subThemesArray, setSubThemesArray] = useState([]);
+  const navigate = useNavigate();
   const [aggregateDisAggregateArray, setAggregateDisAggregateArray] = useState(
     []
   );
@@ -691,13 +693,16 @@ const NewIndicatorForm = () => {
     mutationFn: saveIndicatorProgrammes,
   });
   const mutationIndicatorThematicArea = useMutation({
-    mutationFn: saveIndicatorThematicArea,
+    mutationFn: saveIndicatorThematicAreas,
   });
   const mutationIndicatorSubTheme = useMutation({
-    mutationFn: saveIndicatorSubTheme,
+    mutationFn: saveIndicatorSubThemes,
   });
   const mutationIndicatorAggregate = useMutation({
     mutationFn: saveIndicatorAggregates,
+  });
+  const mutationIndicatorAttributeType = useMutation({
+    mutationFn: saveIndicatorAttributeTypes,
   });
 
   const formik = useFormik({
@@ -710,12 +715,12 @@ const NewIndicatorForm = () => {
       definition: Yup.string().required("Required"),
       indicatorMeasure: Yup.object().required("Required"),
       numeratorId: Yup.string().when("indicatorMeasure", {
-        is: (val) => val.lookupItemName === "Percentage(%)",
+        is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Must enter Numerator"),
       }),
       // numeratorId: Yup.string().required("Required"),
       denominatorId: Yup.string().when("indicatorMeasure", {
-        is: (val) => val.lookupItemName === "Percentage(%)",
+        is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Must enter Denominator"),
       }),
       indicatorCumulative: Yup.string().required("Required"),
@@ -730,22 +735,117 @@ const NewIndicatorForm = () => {
         values.updateDate = new Date();
       }
       try {
-        await mutation.mutateAsync(values);
+        const indicator = await mutation.mutateAsync(values);
         // Programme
-        await mutationIndicatorProgramme.mutateAsync();
+        const programmes = [];
+        const thematicAreas = [];
+        const subThemes = [];
+        for (const programmeThematicAreaSubTheme of subThemesArray) {
+          programmes.push(programmeThematicAreaSubTheme.indicatorProgrammeId);
+          thematicAreas.push(
+            programmeThematicAreaSubTheme.indicatorThematicAreaId
+          );
+          thematicAreas[thematicAreas.length - 1].programmeId =
+            programmeThematicAreaSubTheme.indicatorProgrammeId.id;
+          subThemes.push(programmeThematicAreaSubTheme.indicatorSubThemeId);
+          subThemes[subThemes.length - 1].programmeId =
+            programmeThematicAreaSubTheme.indicatorProgrammeId.id;
+          subThemes[subThemes.length - 1].thematicAreaId =
+            programmeThematicAreaSubTheme.indicatorThematicAreaId.id;
+        }
+        const key = "id";
+
+        const arrayUniqueProgramme = [
+          ...new Map(programmes.map((item) => [item[key], item])).values(),
+        ];
+        const arrayUniqueThematicArea = [
+          ...new Map(thematicAreas.map((item) => [item[key], item])).values(),
+        ];
+        const arrayUniqueSubTheme = [
+          ...new Map(subThemes.map((item) => [item[key], item])).values(),
+        ];
+        const indicatorProgrammes = [];
+        const indicatorThematicAreas = [];
+        const indicatorSubThemes = [];
+        const indicatorAggregates = [];
+        for (const arrayUniqueProgrammeElement of arrayUniqueProgramme) {
+          const indicatorProgramme = {
+            createDate: new Date(),
+            indicatorId: indicator.data.id,
+            programmeId: arrayUniqueProgrammeElement.id,
+          };
+          indicatorProgrammes.push(indicatorProgramme);
+        }
+        await mutationIndicatorProgramme.mutateAsync(indicatorProgrammes);
         // Thematic Area
-        await mutationIndicatorThematicArea.mutateAsync();
+        for (const arrayUniqueThematicAreaElement of arrayUniqueThematicArea) {
+          console.log(arrayUniqueThematicAreaElement);
+          const indicatorThematicArea = {
+            createDate: new Date(),
+            indicatorId: indicator.data.id,
+            thematicAreaId: arrayUniqueThematicAreaElement.id,
+            programmeId: arrayUniqueThematicAreaElement.programmeId,
+          };
+          indicatorThematicAreas.push(indicatorThematicArea);
+        }
+        await mutationIndicatorThematicArea.mutateAsync(indicatorThematicAreas);
         // Sub Theme
-        await mutationIndicatorSubTheme.mutateAsync();
+        for (const arrayUniqueSubThemeElement of arrayUniqueSubTheme) {
+          const indicatorSubTheme = {
+            createDate: new Date(),
+            indicatorId: indicator.data.id,
+            subThemeId: arrayUniqueSubThemeElement.id,
+            thematicAreaId: arrayUniqueSubThemeElement.thematicAreaId,
+            programmeId: arrayUniqueSubThemeElement.programmeId,
+          };
+          indicatorSubThemes.push(indicatorSubTheme);
+        }
+        await mutationIndicatorSubTheme.mutateAsync(indicatorSubThemes);
         // Attribute Type
-        await mutationIndicatorAggregate.mutateAsync();
+        const indicatorAttributeTypes = [];
+        for (const selectedAttributeType of attributesTypesArray) {
+          const indicatorAttributeType = {
+            createDate: new Date(),
+            attributeTypeId: selectedAttributeType.id,
+            indicatorId: indicator.data.id,
+          };
+          indicatorAttributeTypes.push(indicatorAttributeType);
+        }
+        await mutationIndicatorAttributeType.mutateAsync(
+          indicatorAttributeTypes
+        );
+        // Indicator Aggregates
+        for (const selectedAggregateDisaggregate of aggregateDisAggregateArray) {
+          for (const selectedAggregateDisaggregateElement of selectedAggregateDisaggregate.indicatorAggregateDisaggregateId) {
+            const aggregateDisaggregate = {
+              createDate: new Date(),
+              void: false,
+              indicatorId: indicator.data.id,
+              aggregateDisaggregateId: selectedAggregateDisaggregateElement.id,
+              isPrimary: true,
+            };
+            indicatorAggregates.push(aggregateDisaggregate);
+          }
+          for (const selectedAggregateDisaggregateElement of selectedAggregateDisaggregate.indicatorSecondaryAggregateDisaggregateId) {
+            const aggregateDisaggregate = {
+              createDate: new Date(),
+              void: false,
+              indicatorId: indicator.data.id,
+              aggregateDisaggregateId: selectedAggregateDisaggregateElement.id,
+              isPrimary: false,
+            };
+            indicatorAggregates.push(aggregateDisaggregate);
+          }
+        }
+        await mutationIndicatorAggregate.mutateAsync(indicatorAggregates);
+        toast("Successfully Created an Indicator", {
+          type: "success",
+        });
+        navigate("/indicator/indicators");
       } catch (error) {
         toast(error.response.data, {
           type: "error",
         });
-      } finally {
-        resetForm();
-        setSubmitting(false);
       }
     },
   });
@@ -851,6 +951,8 @@ const NewIndicatorForm = () => {
       current.filter((obj) => obj.id !== row.id)
     );
   }
+
+  console.log(subThemesArray);
 
   return (
     <form onSubmit={formik.handleSubmit}>
