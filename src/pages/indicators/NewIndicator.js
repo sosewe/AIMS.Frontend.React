@@ -39,7 +39,11 @@ import { toast } from "react-toastify";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../api/lookup";
 import { Guid } from "../../utils/guid";
-import { getAllIndicators, newIndicator } from "../../api/indicator";
+import {
+  getAllIndicators,
+  getIndicator,
+  newIndicator,
+} from "../../api/indicator";
 import { getProgrammes } from "../../api/programmes";
 import {
   GetUniqueSubThemesByThematicAreaId,
@@ -102,12 +106,12 @@ const initialValues = {
   indicatorCumulative: "",
 };
 
-const AttributesTypeForm = ({ handleClickAttributes }) => {
-  const { data, isLoading, isError } = useQuery(
-    ["getAttributeTypes"],
-    getAttributeTypes
-  );
-
+const AttributesTypeForm = ({
+  handleClickAttributes,
+  data,
+  isLoading,
+  isError,
+}) => {
   const formik = useFormik({
     initialValues: attributesTypeInitial,
     validationSchema: Yup.object().shape({
@@ -662,8 +666,18 @@ const NewIndicatorForm = () => {
     []
   );
   const [attributesTypesArray, setAttributesTypesArray] = useState([]);
+  // fetch indicator for update
+  const {
+    data: IndicatorData,
+    isError,
+    error,
+  } = useQuery(["getIndicator", id], getIndicator, { enabled: !!id });
   // fetch all indicators
-  const { data, isLoading } = useQuery(["getAllIndicators"], getAllIndicators, {
+  const {
+    data,
+    isLoading,
+    isError: isErrorAllIndicators,
+  } = useQuery(["getAllIndicators"], getAllIndicators, {
     retry: 0,
   });
   // fetch IndicatorType Lookup
@@ -688,6 +702,17 @@ const NewIndicatorForm = () => {
       refetchOnWindowFocus: false,
     }
   );
+  // fetch getAttributeTypes
+  const {
+    data: dataAttributeTypes,
+    isLoading: isLoadingAttributeTypes,
+    isError: isErrorAttributeTypes,
+  } = useQuery(["getAttributeTypes"], getAttributeTypes);
+  if (isError) {
+    toast(error.response.data, {
+      type: "error",
+    });
+  }
   const mutation = useMutation({ mutationFn: newIndicator });
   const mutationIndicatorProgramme = useMutation({
     mutationFn: saveIndicatorProgrammes,
@@ -850,21 +875,50 @@ const NewIndicatorForm = () => {
   });
   useEffect(() => {
     function setCurrentFormValues() {
-      // if (OrganizationUnitData) {
-      //   formik.setValues({
-      //     shortTitle: OrganizationUnitData.data.shortTitle,
-      //     longTitle: OrganizationUnitData.data.longTitle,
-      //     description: OrganizationUnitData.data.description,
-      //     goal: OrganizationUnitData.data.goal,
-      //     organisationUnitId: OrganizationUnitData.data.organisationUnitId,
-      //     managerName:
-      //       managerName && managerName.length > 0 ? managerName[0] : "",
-      //     managerEmail: OrganizationUnitData.data.managerEmail,
-      //   });
-      // }
+      let indicatorMeasure;
+      if (!isLoadingIndicatorMeasure && IndicatorData) {
+        indicatorMeasure = indicatorMeasureData.data.find(
+          (obj) => obj.lookupItemId === IndicatorData.data.indicatorMeasure
+        );
+      }
+      if (IndicatorData) {
+        formik.setValues({
+          name: IndicatorData.data.name,
+          code: IndicatorData.data.code,
+          indicatorTypeId: IndicatorData.data.indicatorTypeId,
+          indicatorMeasure: indicatorMeasure,
+          definition: IndicatorData.data.definition,
+          indicatorCalculationId: IndicatorData.data.indicatorCalculationId,
+          numeratorId: IndicatorData.data.numeratorId
+            ? IndicatorData.data.numeratorId
+            : "",
+          denominatorId: IndicatorData.data.denominatorId
+            ? IndicatorData.data.denominatorId
+            : "",
+          indicatorCumulative: IndicatorData.data.indicatorCumulative,
+        });
+        for (const indicatorAttributeType of IndicatorData.data
+          .indicatorAttributeTypes) {
+          const val =
+            !isLoadingAttributeTypes &&
+            dataAttributeTypes.data.find(
+              (obj) => obj.id === indicatorAttributeType.attributeTypeId
+            );
+          const res = attributesTypesArray.filter((obj) => obj.id === val.id);
+          if (val && res.length === 0) {
+            setAttributesTypesArray((current) => [...current, val]);
+          }
+        }
+      }
     }
     setCurrentFormValues();
-  }, []);
+  }, [
+    IndicatorData,
+    indicatorMeasureData,
+    isLoadingIndicatorMeasure,
+    isLoadingAttributeTypes,
+    dataAttributeTypes,
+  ]);
 
   const handleClick = (values) => {
     const res = subThemesArray.find(
@@ -1133,6 +1187,7 @@ const NewIndicatorForm = () => {
                     label="Indicator Numerator"
                     select
                     value={formik.values.numeratorId}
+                    defaultValue={""}
                     error={Boolean(
                       formik.touched.numeratorId && formik.errors.numeratorId
                     )}
@@ -1148,7 +1203,7 @@ const NewIndicatorForm = () => {
                     <MenuItem disabled value="">
                       Select Indicator Numerator
                     </MenuItem>
-                    {!isLoading
+                    {!isLoading && !isErrorAllIndicators
                       ? data.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>
                             {option.name}
@@ -1163,6 +1218,7 @@ const NewIndicatorForm = () => {
                     label="Indicator Denominator"
                     select
                     value={formik.values.denominatorId}
+                    defaultValue={""}
                     error={Boolean(
                       formik.touched.denominatorId &&
                         formik.errors.denominatorId
@@ -1180,7 +1236,7 @@ const NewIndicatorForm = () => {
                     <MenuItem disabled value="">
                       Select Indicator Denominator
                     </MenuItem>
-                    {!isLoading
+                    {!isLoading && !isErrorAllIndicators
                       ? data.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>
                             {option.name}
@@ -1522,7 +1578,12 @@ const NewIndicatorForm = () => {
         <DialogTitle id="form-dialog-title">ATTRIBUTE TYPES</DialogTitle>
         <DialogContent>
           <DialogContentText>ADD ATTRIBUTE TYPE</DialogContentText>
-          <AttributesTypeForm handleClickAttributes={handleClickAttributes} />
+          <AttributesTypeForm
+            handleClickAttributes={handleClickAttributes}
+            data={dataAttributeTypes}
+            isLoading={isLoadingAttributeTypes}
+            isError={isErrorAttributeTypes}
+          />
         </DialogContent>
       </Dialog>
     </form>

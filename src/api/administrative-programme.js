@@ -15,6 +15,6 @@ export const getAdministrativeProgrammeById = async ({ queryKey }) => {
 };
 
 export const deleteAdministrativeProgrammeById = async ({ queryKey }) => {
-  const [_, id] = queryKey;
+  const [, id] = queryKey;
   return await axios.delete(`${apiRoutes.administrativeProgramme}/${id}`);
 };

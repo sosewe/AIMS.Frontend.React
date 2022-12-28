@@ -5,6 +5,11 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider as MuiDivider,
   Link,
   Paper as MuiPaper,
@@ -18,7 +23,7 @@ import { Edit2, Trash as TrashIcon } from "react-feather";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { getAllIndicators } from "../../api/indicator";
+import { deleteIndicatorById, getAllIndicators } from "../../api/indicator";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -28,6 +33,8 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const IndicatorsData = () => {
+  const [open, setOpen] = React.useState(false);
+  const [id, setId] = React.useState();
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -46,7 +53,26 @@ const IndicatorsData = () => {
     });
   }
 
-  function handleClickOpen(id) {}
+  const { refetch } = useQuery(
+    ["deleteIndicatorById", id],
+    deleteIndicatorById,
+    { enabled: false }
+  );
+
+  function handleClickOpen(id) {
+    setOpen(true);
+    setId(id);
+  }
+
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const handleDeleteIndicator = async () => {
+    await refetch();
+    setOpen(false);
+    await queryClient.invalidateQueries(["getAllIndicators"]);
+  };
 
   return (
     <Card mb={6}>
@@ -92,9 +118,7 @@ const IndicatorsData = () => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/programme/new-administrative-programme/${params.id}`}
-                    >
+                    <NavLink to={`/indicator/new-indicator/${params.id}`}>
                       <Button startIcon={<Edit2 />} size="small"></Button>
                     </NavLink>
                     <Button
@@ -113,6 +137,27 @@ const IndicatorsData = () => {
             getRowHeight={() => "auto"}
           />
         </div>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Delete Indicator</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete Indicator?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDeleteIndicator} color="primary">
+              Yes
+            </Button>
+            <Button onClick={handleClose} color="error" autoFocus>
+              No
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
     </Card>
   );

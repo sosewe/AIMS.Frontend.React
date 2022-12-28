@@ -201,6 +201,10 @@ const routes = [
         path: "new-indicator",
         element: <NewIndicator />,
       },
+      {
+        path: "new-indicator/:id",
+        element: <NewIndicator />,
+      },
     ],
   },
   {
