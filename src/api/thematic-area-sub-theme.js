@@ -7,3 +7,10 @@ export const getSubThemesByThematicAreaId = async ({ queryKey }) => {
     `${apiRoutes.thematicAreaSubTheme}/ThematicAreaSubThemeByThematicAreaId/${thematicAreaId}`
   );
 };
+
+export const getAllSubThemesByThematicAreaId = async ({ queryKey }) => {
+  const [, thematicAreaId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.thematicAreaSubTheme}/GetSubThemesByThematicAreaId/${thematicAreaId}`
+  );
+};

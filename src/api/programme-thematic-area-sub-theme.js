@@ -21,3 +21,7 @@ export const GetUniqueSubThemesByThematicAreaId = async ({ queryKey }) => {
     `${apiRoutes.programmeThematicAreaSubTheme}/GetUniqueSubThemesByThematicAreaId/${programmeId}/${thematicAreaId}`
   );
 };
+
+export const addProgrammeThematicAreaSubTheme = async (values) => {
+  return await axios.post(`${apiRoutes.programmeThematicAreaSubTheme}`, values);
+};

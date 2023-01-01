@@ -99,11 +99,15 @@ const initialValues = {
   code: "",
   indicatorTypeId: "",
   indicatorCalculationId: "",
+  indicatorCalculationType: "",
   definition: "",
   indicatorMeasure: "",
+  indicatorMeasureType: "",
   numeratorId: "",
   denominatorId: "",
   indicatorCumulative: "",
+  indicatorStatus: "",
+  reference: "",
 };
 
 const AttributesTypeForm = ({
@@ -208,10 +212,11 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
     ["getAggregatesByName", "Gender"],
     getAggregatesByName
   );
-  const { data: aggregatesData, isLoading: isLoadingAggregates } = useQuery(
-    ["getAllAggregates"],
-    getAllAggregates
-  );
+  const {
+    data: aggregatesData,
+    isLoading: isLoadingAggregates,
+    isError,
+  } = useQuery(["getAllAggregates"], getAllAggregates);
   const {
     data: aggregateDisaggregatesData,
     isLoading: isLoadingAggregateDisaggregates,
@@ -393,7 +398,7 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
                 <MenuItem disabled value="">
                   Select Secondary Aggregate
                 </MenuItem>
-                {!isLoadingAggregates
+                {!isLoadingAggregates && !isError
                   ? aggregatesData.data.map((option) => (
                       <MenuItem key={option.id} value={option}>
                         {option.name}
@@ -702,6 +707,37 @@ const NewIndicatorForm = () => {
       refetchOnWindowFocus: false,
     }
   );
+  // IndicatorCalculationType
+  const {
+    data: dataIndicatorCalculationType,
+    isLoading: isLoadingIndicatorCalculationType,
+  } = useQuery(
+    ["IndicatorCalculationType", "IndicatorCalculationType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  // IndicatorMeasureType
+  const {
+    data: IndicatorMeasureTypeData,
+    isLoading: isLoadingIndicatorMeasureType,
+  } = useQuery(
+    ["IndicatorMeasureType", "IndicatorMeasureType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  // IndicatorStatus
+  const { data: IndicatorStatusData, isLoading: isLoadingIndicatorStatus } =
+    useQuery(
+      ["IndicatorStatus", "IndicatorStatus"],
+      getLookupMasterItemsByName,
+      {
+        refetchOnWindowFocus: false,
+      }
+    );
   // fetch getAttributeTypes
   const {
     data: dataAttributeTypes,
@@ -1124,6 +1160,39 @@ const NewIndicatorForm = () => {
                       : []}
                   </TextField>
                 </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="indicatorMeasureType"
+                    label="Indicator Measure Type"
+                    required
+                    select
+                    value={formik.values.indicatorMeasureType}
+                    error={Boolean(
+                      formik.touched.indicatorMeasureType &&
+                        formik.errors.indicatorMeasureType
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.indicatorMeasureType &&
+                      formik.errors.indicatorMeasureType
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Indicator Measure Type
+                    </MenuItem>
+                    {!isLoadingIndicatorMeasureType
+                      ? IndicatorMeasureTypeData.data.map((option) => (
+                          <MenuItem key={option.lookupItemId} value={option}>
+                            {option.lookupItemName}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
               </Grid>
               <TextField
                 name="definition"
@@ -1171,6 +1240,42 @@ const NewIndicatorForm = () => {
                     </MenuItem>
                     {!isLoadingYesNo
                       ? yesNoData.data.map((option) => (
+                          <MenuItem
+                            key={option.lookupItemId}
+                            value={option.lookupItemId}
+                          >
+                            {option.lookupItemName}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+                <Grid item md={3}>
+                  <TextField
+                    name="indicatorCalculationType"
+                    label="Indicator Calculation Type"
+                    required
+                    select
+                    value={formik.values.indicatorCalculationType}
+                    error={Boolean(
+                      formik.touched.indicatorCalculationType &&
+                        formik.errors.indicatorCalculationType
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.indicatorCalculationType &&
+                      formik.errors.indicatorCalculationType
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Indicator Calculation Type
+                    </MenuItem>
+                    {!isLoadingIndicatorCalculationType
+                      ? dataIndicatorCalculationType.data.map((option) => (
                           <MenuItem
                             key={option.lookupItemId}
                             value={option.lookupItemId}
@@ -1280,6 +1385,61 @@ const NewIndicatorForm = () => {
                         ))
                       : []}
                   </TextField>
+                </Grid>
+                <Grid item md={3}>
+                  <TextField
+                    name="IndicatorStatus"
+                    label="Indicator Status"
+                    required
+                    select
+                    value={formik.values.IndicatorStatus}
+                    error={Boolean(
+                      formik.touched.IndicatorStatus &&
+                        formik.errors.IndicatorStatus
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.IndicatorStatus &&
+                      formik.errors.IndicatorStatus
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Indicator Status
+                    </MenuItem>
+                    {!isLoadingIndicatorStatus
+                      ? IndicatorStatusData.data.map((option) => (
+                          <MenuItem
+                            key={option.lookupItemId}
+                            value={option.lookupItemId}
+                          >
+                            {option.lookupItemName}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+                <Grid item md={6}>
+                  <TextField
+                    name="reference"
+                    label="Reference"
+                    required
+                    value={formik.values.reference}
+                    error={Boolean(
+                      formik.touched.reference && formik.errors.reference
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.reference && formik.errors.reference
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  />
                 </Grid>
                 <Grid item md={12}>
                   <Card
