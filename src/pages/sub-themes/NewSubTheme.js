@@ -76,14 +76,10 @@ const NewSubThemeForm = () => {
     function setCurrentFormValues() {
       if (SubThemeData) {
         formik.setValues({
-          // shortTitle: OrganizationUnitData.data.shortTitle,
-          // longTitle: OrganizationUnitData.data.longTitle,
-          // description: OrganizationUnitData.data.description,
-          // goal: OrganizationUnitData.data.goal,
-          // organisationUnitId: OrganizationUnitData.data.organisationUnitId,
-          // managerName:
-          //   managerName && managerName.length > 0 ? managerName[0] : "",
-          // managerEmail: OrganizationUnitData.data.managerEmail,
+          name: SubThemeData.data.name,
+          initial: SubThemeData.data.initial,
+          description: SubThemeData.data.description,
+          code: SubThemeData.data.code,
         });
       }
     }
