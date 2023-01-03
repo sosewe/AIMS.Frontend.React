@@ -144,6 +144,7 @@ const ThematicAreas = async(() =>
 );
 // Sub Themes
 const SubThemes = async(() => import("./pages/sub-themes/SubThemes"));
+const NewSubTheme = async(() => import("./pages/sub-themes/NewSubTheme"));
 // Donors
 const Donors = async(() => import("./pages/donor/Donors"));
 const NewDonor = async(() => import("./pages/donor/NewDonor"));
@@ -205,6 +206,14 @@ const routes = [
       {
         path: "sub-themes",
         element: <SubThemes />,
+      },
+      {
+        path: "new-sub-theme",
+        element: <NewSubTheme />,
+      },
+      {
+        path: "new-sub-theme/:id",
+        element: <NewSubTheme />,
       },
     ],
   },

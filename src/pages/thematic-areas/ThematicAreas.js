@@ -178,7 +178,7 @@ const ThematicAreasData = () => {
   const [id, setId] = useState();
   // const navigate = useNavigate();
   const queryClient = useQueryClient();
-  // fetch Administrative Programmes
+  // fetch Thematic Areas
   const { data, isLoading, isError, error } = useQuery(
     ["getAllThematicAreas"],
     getAllThematicAreas,
