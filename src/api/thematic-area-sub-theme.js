@@ -14,3 +14,7 @@ export const getAllSubThemesByThematicAreaId = async ({ queryKey }) => {
     `${apiRoutes.thematicAreaSubTheme}/GetSubThemesByThematicAreaId/${thematicAreaId}`
   );
 };
+
+export const saveThematicAreaSubTheme = async (values) => {
+  return await axios.post(`${apiRoutes.thematicAreaSubTheme}`, values);
+};

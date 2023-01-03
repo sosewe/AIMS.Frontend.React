@@ -13,3 +13,8 @@ export const getThematicArea = async ({ queryKey }) => {
   const [, thematicAreaId] = queryKey;
   return await axios.get(`${apiRoutes.thematicArea}/${thematicAreaId}`);
 };
+
+export const deleteThematicArea = async ({ queryKey }) => {
+  const [, thematicAreaId] = queryKey;
+  return await axios.delete(`${apiRoutes.thematicArea}/${thematicAreaId}`);
+};

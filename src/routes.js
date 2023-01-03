@@ -128,15 +128,22 @@ const DesignProject = async(() =>
   import("./pages/project/design/DesignProject")
 );
 
-// Programmes
+// Administrative Programmes
 const AdministrativeProgrammes = async(() =>
   import("./pages/administrative-programmes/AdministrativeProgrammes")
 );
 const NewAdministrativeProgramme = async(() =>
   import("./pages/administrative-programmes/NewAdministrativeProgramme")
 );
+// Programmes
 const Programmes = async(() => import("./pages/programmes/Programmes"));
-
+const ViewProgramme = async(() => import("./pages/programmes/ViewProgramme"));
+// Thematic Areas
+const ThematicAreas = async(() =>
+  import("./pages/thematic-areas/ThematicAreas")
+);
+// Sub Themes
+const SubThemes = async(() => import("./pages/sub-themes/SubThemes"));
 // Donors
 const Donors = async(() => import("./pages/donor/Donors"));
 const NewDonor = async(() => import("./pages/donor/NewDonor"));
@@ -176,6 +183,10 @@ const routes = [
         element: <Programmes />,
       },
       {
+        path: "view-programme/:id",
+        element: <ViewProgramme />,
+      },
+      {
         path: "administrative-programmes",
         element: <AdministrativeProgrammes />,
       },
@@ -186,6 +197,14 @@ const routes = [
       {
         path: "new-administrative-programme/:id",
         element: <NewAdministrativeProgramme />,
+      },
+      {
+        path: "thematic-areas",
+        element: <ThematicAreas />,
+      },
+      {
+        path: "sub-themes",
+        element: <SubThemes />,
       },
     ],
   },

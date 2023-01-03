@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styled from "@emotion/styled";
+import { Helmet } from "react-helmet-async";
 import {
   Box,
   Breadcrumbs as MuiBreadcrumbs,
@@ -23,20 +23,22 @@ import {
   Select,
   Typography,
 } from "@mui/material";
-import { spacing } from "@mui/system";
-import { Helmet } from "react-helmet-async";
 import { NavLink } from "react-router-dom";
-// import { Add as AddIcon } from "@mui/icons-material";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import styled from "@emotion/styled";
+import { spacing } from "@mui/system";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { deleteProgrammeById, getProgrammes } from "../../api/programmes";
-import { Edit2, Trash as TrashIcon, PlusCircle, Eye } from "react-feather";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { Edit2, Eye, PlusCircle, Trash as TrashIcon } from "react-feather";
+import {
+  deleteThematicArea,
+  getAllThematicAreas,
+} from "../../api/thematic-area";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { getAllThematicAreas } from "../../api/thematic-area";
-import { getAllSubThemesByThematicAreaId } from "../../api/thematic-area-sub-theme";
-import { addProgrammeThematicAreaSubTheme } from "../../api/programme-thematic-area-sub-theme";
+import { getAllSubThemes } from "../../api/sub-theme";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { saveThematicAreaSubTheme } from "../../api/thematic-area-sub-theme";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -46,30 +48,27 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 const FormControl = styled(MuiFormControl)(spacing);
 
-const addThematicAreaInitial = {
-  selectedThematicArea: "",
+const theme = createTheme({
+  palette: {
+    neutral: {
+      main: "#64748B",
+      contrastText: "#fff",
+    },
+  },
+});
+
+const addSubThemeInitial = {
   selectedSubTheme: [],
 };
 
-const AddThematicAreaForm = ({ handleClick, handleCloseThematicAreaPopup }) => {
-  const [thematicAreaId, setThematicAreaId] = useState();
+const AddSubThemeForm = ({ handleClick, handleCloseSubThemePopup }) => {
   const { data, isLoading, isError } = useQuery(
-    ["getAllThematicAreas"],
-    getAllThematicAreas
-  );
-  const {
-    data: subThemesData,
-    isLoading: isLoadingSubThemes,
-    isError: isErrorSubThemes,
-  } = useQuery(
-    ["getAllSubThemesByThematicAreaId", thematicAreaId],
-    getAllSubThemesByThematicAreaId,
-    { enabled: !!thematicAreaId }
+    ["getAllSubThemes"],
+    getAllSubThemes
   );
   const formik = useFormik({
-    initialValues: addThematicAreaInitial,
+    initialValues: addSubThemeInitial,
     validationSchema: Yup.object().shape({
-      selectedThematicArea: Yup.string().required("Required"),
       selectedSubTheme: Yup.array().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
@@ -86,53 +85,11 @@ const AddThematicAreaForm = ({ handleClick, handleCloseThematicAreaPopup }) => {
     },
   });
 
-  const handleSelectedThematicAreaChange = (event) => {
-    setThematicAreaId(event.target.value);
-    formik.setFieldValue("selectedSubTheme", []);
-  };
-
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item md={6}>
-              <FormControl fullWidth my={2} variant="outlined">
-                <InputLabel id="selectedThematicArea">
-                  Select Thematic Area
-                </InputLabel>
-                <Select
-                  labelId="selectedThematicArea"
-                  id="selectedThematicArea"
-                  name="selectedThematicArea"
-                  value={formik.values.selectedThematicArea}
-                  label="Select Thematic Area"
-                  error={Boolean(
-                    formik.touched.selectedThematicArea &&
-                      formik.errors.selectedThematicArea
-                  )}
-                  onBlur={formik.handleBlur}
-                  onChange={(e) => {
-                    formik.handleChange(e);
-                    handleSelectedThematicAreaChange(e);
-                  }}
-                  fullWidth
-                  variant="outlined"
-                  my={2}
-                >
-                  <MenuItem disabled value="">
-                    Select Thematic Area
-                  </MenuItem>
-                  {!isLoading && !isError
-                    ? data.data.map((option) => (
-                        <MenuItem key={option.id} value={option.id}>
-                          {option.name}
-                        </MenuItem>
-                      ))
-                    : []}
-                </Select>
-              </FormControl>
-            </Grid>
             <Grid item md={6}>
               <FormControl fullWidth my={2} variant="outlined">
                 <InputLabel id="selectedSubTheme">
@@ -164,8 +121,8 @@ const AddThematicAreaForm = ({ handleClick, handleCloseThematicAreaPopup }) => {
                   <MenuItem disabled value="">
                     Select Sub Theme(Multiple)
                   </MenuItem>
-                  {!isLoadingSubThemes && !isErrorSubThemes
-                    ? subThemesData.data.map((option) => (
+                  {!isLoading && !isError
+                    ? data.data.map((option) => (
                         <MenuItem key={option.id} value={option}>
                           {option.code + "-" + option.name}
                         </MenuItem>
@@ -174,32 +131,39 @@ const AddThematicAreaForm = ({ handleClick, handleCloseThematicAreaPopup }) => {
                 </Select>
               </FormControl>
             </Grid>
+            <Grid item md={6}>
+              &nbsp;
+            </Grid>
             <Grid item md={5}>
               &nbsp;
             </Grid>
-            <Grid item md={3}>
+            <Grid item md={2}>
               &nbsp;
             </Grid>
             <Grid item md={2}>
-              <Button
-                type="button"
-                variant="contained"
-                color="secondary"
-                mt={3}
-                onClick={handleCloseThematicAreaPopup}
-              >
-                Cancel
-              </Button>
+              <ThemeProvider theme={theme}>
+                <Button
+                  type="button"
+                  variant="contained"
+                  color="neutral"
+                  mt={3}
+                  onClick={handleCloseSubThemePopup}
+                >
+                  Cancel
+                </Button>
+              </ThemeProvider>
             </Grid>
-            <Grid item md={2}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="secondary"
-                mt={3}
-              >
-                Save Changes
-              </Button>
+            <Grid item md={3}>
+              <ThemeProvider theme={theme}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  mt={3}
+                >
+                  Save Changes
+                </Button>
+              </ThemeProvider>
             </Grid>
           </Grid>
         </CardContent>
@@ -207,17 +171,17 @@ const AddThematicAreaForm = ({ handleClick, handleCloseThematicAreaPopup }) => {
     </form>
   );
 };
-const ProgrammesData = () => {
+const ThematicAreasData = () => {
   const [pageSize, setPageSize] = useState(5);
   const [open, setOpen] = useState(false);
-  const [openThematicAreaPopup, setOpenThematicAreaPopup] = useState(false);
+  const [openSubThemePopup, setOpenSubThemePopup] = useState(false);
   const [id, setId] = useState();
   // const navigate = useNavigate();
   const queryClient = useQueryClient();
   // fetch Administrative Programmes
   const { data, isLoading, isError, error } = useQuery(
-    ["programmes"],
-    getProgrammes,
+    ["getAllThematicAreas"],
+    getAllThematicAreas,
     {
       retry: 0,
     }
@@ -229,14 +193,12 @@ const ProgrammesData = () => {
     });
   }
 
-  const { refetch } = useQuery(
-    ["deleteProgrammeById", id],
-    deleteProgrammeById,
-    { enabled: false }
-  );
+  const { refetch } = useQuery(["deleteThematicArea", id], deleteThematicArea, {
+    enabled: false,
+  });
 
-  const mutationProgrammeThematicAreaSubTheme = useMutation({
-    mutationFn: addProgrammeThematicAreaSubTheme,
+  const mutationThematicAreaSubTheme = useMutation({
+    mutationFn: saveThematicAreaSubTheme,
   });
 
   function handleClickOpen(id) {
@@ -244,43 +206,39 @@ const ProgrammesData = () => {
     setId(id);
   }
 
-  function handleClickOpenThematicAreaPopup(id) {
-    setOpenThematicAreaPopup(true);
+  function handleClickOpenSubThemePopup(id) {
+    setOpenSubThemePopup(true);
     setId(id);
   }
 
-  function handleCloseThematicAreaPopup() {
-    setOpenThematicAreaPopup(false);
+  function handleCloseSubThemePopup() {
+    setOpenSubThemePopup(false);
   }
 
   function handleClose() {
     setOpen(false);
   }
 
-  const handleDeleteProgramme = async () => {
+  const handleDeleteThematicArea = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["programmes"]);
+    await queryClient.invalidateQueries(["getAllThematicAreas"]);
   };
 
   const handleClick = async (values) => {
     for (const selectedSubThemeElement of values.selectedSubTheme) {
-      const programmeThematicAreaSubTheme = {
+      const thematicAreaSubTheme = {
         createDate: new Date(),
-        programmeId: id,
         subThemeId: selectedSubThemeElement.id,
-        thematicAreaId: values.selectedThematicArea,
+        thematicAreaId: id,
         void: false,
       };
-
-      await mutationProgrammeThematicAreaSubTheme.mutateAsync(
-        programmeThematicAreaSubTheme
-      );
+      await mutationThematicAreaSubTheme.mutateAsync(thematicAreaSubTheme);
     }
-    toast("Successfully Added Programme Thematic Area Sub Theme", {
+    toast("Successfully Added Thematic Area Sub Theme", {
       type: "success",
     });
-    setOpenThematicAreaPopup(false);
+    setOpenSubThemePopup(false);
   };
 
   return (
@@ -309,8 +267,8 @@ const ProgrammesData = () => {
                 flex: 1,
               },
               {
-                field: "initials",
-                headerName: "Initials",
+                field: "initial",
+                headerName: "Initial",
                 editable: false,
                 flex: 1,
               },
@@ -333,11 +291,11 @@ const ProgrammesData = () => {
                 flex: 2,
                 renderCell: (params) => (
                   <>
-                    {/*<NavLink*/}
-                    {/*  to={`/programme/new-administrative-programme/${params.id}`}*/}
-                    {/*>*/}
-                    {/*  <Button startIcon={<Edit2 />} size="small"></Button>*/}
-                    {/*</NavLink>*/}
+                    <NavLink
+                      to={`/programme/new-administrative-programme/${params.id}`}
+                    >
+                      <Button startIcon={<Edit2 />} size="small"></Button>
+                    </NavLink>
                     <NavLink to={`/programme/view-programme/${params.id}`}>
                       <Button startIcon={<Eye />} size="small"></Button>
                     </NavLink>
@@ -351,11 +309,9 @@ const ProgrammesData = () => {
                       size="small"
                       variant="contained"
                       color="error"
-                      onClick={() =>
-                        handleClickOpenThematicAreaPopup(params.id)
-                      }
+                      onClick={() => handleClickOpenSubThemePopup(params.id)}
                     >
-                      Add Thematic Area
+                      Add Sub Theme
                     </Button>
                   </>
                 ),
@@ -375,14 +331,16 @@ const ProgrammesData = () => {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">Delete Programme</DialogTitle>
+          <DialogTitle id="alert-dialog-title">
+            Delete Thematic Area
+          </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Programme?
+              Are you sure you want to delete Thematic Area?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleDeleteProgramme} color="primary">
+            <Button onClick={handleDeleteThematicArea} color="primary">
               Yes
             </Button>
             <Button onClick={handleClose} color="error" autoFocus>
@@ -393,19 +351,19 @@ const ProgrammesData = () => {
         <Dialog
           fullWidth={true}
           maxWidth="md"
-          open={openThematicAreaPopup}
-          onClose={handleCloseThematicAreaPopup}
+          open={openSubThemePopup}
+          onClose={handleCloseSubThemePopup}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Add Thematic Area
+            Add Sub Theme
             <Divider my={6} />
           </DialogTitle>
           <DialogContent>
-            <AddThematicAreaForm
+            <AddSubThemeForm
               handleClick={handleClick}
-              handleCloseThematicAreaPopup={handleCloseThematicAreaPopup}
+              handleCloseSubThemePopup={handleCloseSubThemePopup}
             />
           </DialogContent>
         </Dialog>
@@ -413,24 +371,24 @@ const ProgrammesData = () => {
     </Card>
   );
 };
-const Programmes = () => {
+const ThematicAreas = () => {
   return (
     <React.Fragment>
-      <Helmet title="Programmes" />
+      <Helmet title="Thematic Areas" />
       <Typography variant="h3" gutterBottom display="inline">
-        Programmes
+        Thematic Areas
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} to="/programme/administrative-programmes">
-          Programmes
+          Thematic Areas
         </Link>
-        <Typography>Programmes List</Typography>
+        <Typography>Thematic Areas List</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
-      <ProgrammesData />
+      <ThematicAreasData />
     </React.Fragment>
   );
 };
-export default Programmes;
+export default ThematicAreas;

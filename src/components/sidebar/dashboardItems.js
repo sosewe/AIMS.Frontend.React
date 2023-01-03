@@ -45,6 +45,14 @@ const programmeSection = [
         title: "Programmes",
       },
       {
+        href: "/programme/thematic-areas",
+        title: "Thematic Areas",
+      },
+      {
+        href: "/programme/sub-themes",
+        title: "Sub Themes",
+      },
+      {
         href: "/programme/administrative-programmes",
         title: "Administrative Programmes",
       },
