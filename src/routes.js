@@ -142,6 +142,12 @@ const ViewProgramme = async(() => import("./pages/programmes/ViewProgramme"));
 const ThematicAreas = async(() =>
   import("./pages/thematic-areas/ThematicAreas")
 );
+const NewThematicArea = async(() =>
+  import("./pages/thematic-areas/NewThematicArea")
+);
+const ViewThematicArea = async(() =>
+  import("./pages/thematic-areas/ViewThematicArea")
+);
 // Sub Themes
 const SubThemes = async(() => import("./pages/sub-themes/SubThemes"));
 const NewSubTheme = async(() => import("./pages/sub-themes/NewSubTheme"));
@@ -202,6 +208,18 @@ const routes = [
       {
         path: "thematic-areas",
         element: <ThematicAreas />,
+      },
+      {
+        path: "new-thematic-area",
+        element: <NewThematicArea />,
+      },
+      {
+        path: "new-thematic-area/:id",
+        element: <NewThematicArea />,
+      },
+      {
+        path: "view-thematic-area/:id",
+        element: <ViewThematicArea />,
       },
       {
         path: "sub-themes",

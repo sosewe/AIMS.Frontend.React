@@ -21,7 +21,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { Edit2, Eye, Trash as TrashIcon } from "react-feather";
+import { Edit2, Trash as TrashIcon } from "react-feather";
 import { Add as AddIcon } from "@mui/icons-material";
 import { deleteSubTheme, getAllSubThemes } from "../../api/sub-theme";
 
@@ -124,9 +124,6 @@ export const SubThemesData = () => {
                   <>
                     <NavLink to={`/programme/new-sub-theme/${params.id}`}>
                       <Button startIcon={<Edit2 />} size="small"></Button>
-                    </NavLink>
-                    <NavLink to={`/programme/view-programme/${params.id}`}>
-                      <Button startIcon={<Eye />} size="small"></Button>
                     </NavLink>
                     <Button
                       startIcon={<TrashIcon />}

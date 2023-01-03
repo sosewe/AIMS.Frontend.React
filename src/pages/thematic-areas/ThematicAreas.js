@@ -291,12 +291,10 @@ const ThematicAreasData = () => {
                 flex: 2,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/programme/new-administrative-programme/${params.id}`}
-                    >
+                    <NavLink to={`/programme/new-thematic-area/${params.id}`}>
                       <Button startIcon={<Edit2 />} size="small"></Button>
                     </NavLink>
-                    <NavLink to={`/programme/view-programme/${params.id}`}>
+                    <NavLink to={`/programme/view-thematic-area/${params.id}`}>
                       <Button startIcon={<Eye />} size="small"></Button>
                     </NavLink>
                     <Button
