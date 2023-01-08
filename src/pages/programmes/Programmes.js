@@ -31,7 +31,7 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { deleteProgrammeById, getProgrammes } from "../../api/programmes";
-import { Edit2, Trash as TrashIcon, PlusCircle, Eye } from "react-feather";
+import { Trash as TrashIcon, PlusCircle, Eye } from "react-feather";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { getAllThematicAreas } from "../../api/thematic-area";

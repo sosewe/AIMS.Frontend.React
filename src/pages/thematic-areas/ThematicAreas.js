@@ -23,13 +23,14 @@ import {
   Select,
   Typography,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Eye, PlusCircle, Trash as TrashIcon } from "react-feather";
+import { Add as AddIcon } from "@mui/icons-material";
 import {
   deleteThematicArea,
   getAllThematicAreas,
@@ -176,7 +177,7 @@ const ThematicAreasData = () => {
   const [open, setOpen] = useState(false);
   const [openSubThemePopup, setOpenSubThemePopup] = useState(false);
   const [id, setId] = useState();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   // fetch Thematic Areas
   const { data, isLoading, isError, error } = useQuery(
@@ -243,16 +244,16 @@ const ThematicAreasData = () => {
 
   return (
     <Card mb={6}>
-      {/*<CardContent pb={1}>*/}
-      {/*  <Button*/}
-      {/*    mr={2}*/}
-      {/*    variant="contained"*/}
-      {/*    color="error"*/}
-      {/*    onClick={() => navigate("/programme/new-programme")}*/}
-      {/*  >*/}
-      {/*    <AddIcon /> New Programme*/}
-      {/*  </Button>*/}
-      {/*</CardContent>*/}
+      <CardContent pb={1}>
+        <Button
+          mr={2}
+          variant="contained"
+          color="error"
+          onClick={() => navigate("/programme/new-thematic-area")}
+        >
+          <AddIcon /> New Thematic Area
+        </Button>
+      </CardContent>
       <br />
       <Paper>
         <div style={{ height: 600, width: "100%" }}>
@@ -378,7 +379,7 @@ const ThematicAreas = () => {
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/programme/administrative-programmes">
+        <Link component={NavLink} to="/programme/thematic-areas">
           Thematic Areas
         </Link>
         <Typography>Thematic Areas List</Typography>

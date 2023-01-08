@@ -22,6 +22,7 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getSubTheme, saveSubTheme } from "../../api/sub-theme";
 import { Check } from "react-feather";
+import { Guid } from "../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -58,6 +59,8 @@ const NewSubThemeForm = () => {
       values.createDate = new Date();
       if (id) {
         values.id = id;
+      } else {
+        values.id = new Guid().toString();
       }
       try {
         await mutation.mutateAsync(values);

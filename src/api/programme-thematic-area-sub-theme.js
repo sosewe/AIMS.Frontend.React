@@ -25,3 +25,26 @@ export const GetUniqueSubThemesByThematicAreaId = async ({ queryKey }) => {
 export const addProgrammeThematicAreaSubTheme = async (values) => {
   return await axios.post(`${apiRoutes.programmeThematicAreaSubTheme}`, values);
 };
+
+export const getProgrammeThematicAreaSubThemesByThematicAreaId = async ({
+  queryKey,
+}) => {
+  const [, thematicAreaId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.programmeThematicAreaSubTheme}/GetAllByThematicAreaId/${thematicAreaId}`
+  );
+};
+
+export const getUniqueProgrammesByThematicAreaId = async ({ queryKey }) => {
+  const [, thematicAreaId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.programmeThematicAreaSubTheme}/GetUniqueProgrammesByThematicAreaId/${thematicAreaId}`
+  );
+};
+
+export const getUniqueSubThemeByThematicAreaId = async ({ queryKey }) => {
+  const [, thematicAreaId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.programmeThematicAreaSubTheme}/GetUniqueSubThemeByThematicAreaId/${thematicAreaId}`
+  );
+};

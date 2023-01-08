@@ -1,7 +1,7 @@
 import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
-export const newProjectThematicArea = async (values) => {
+export const newThematicArea = async (values) => {
   return await axios.post(apiRoutes.thematicArea, values);
 };
 
