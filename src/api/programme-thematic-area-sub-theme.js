@@ -48,3 +48,10 @@ export const getUniqueSubThemeByThematicAreaId = async ({ queryKey }) => {
     `${apiRoutes.programmeThematicAreaSubTheme}/GetUniqueSubThemeByThematicAreaId/${thematicAreaId}`
   );
 };
+
+export const getUniqueSubThemesByProgrammeId = async ({ queryKey }) => {
+  const [, programmeId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.programmeThematicAreaSubTheme}/GetUniqueSubThemesByProgrammeId/${programmeId}`
+  );
+};

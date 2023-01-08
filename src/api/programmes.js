@@ -9,3 +9,8 @@ export const deleteProgrammeById = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.delete(`${apiRoutes.programme}/${id}`);
 };
+
+export const getProgramme = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.programme}/${id}`);
+};

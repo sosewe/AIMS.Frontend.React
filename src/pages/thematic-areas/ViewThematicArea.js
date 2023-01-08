@@ -186,7 +186,6 @@ const ViewThematicAreaCard = () => {
     </Grid>
   );
 };
-
 const ViewThematicArea = () => {
   return (
     <React.Fragment>
