@@ -128,7 +128,7 @@ const AdministrativeProgrammesData = () => {
                 valueGetter: GetOrganization,
               },
               {
-                field: "managerName",
+                field: "personnelId",
                 headerName: "Manager Name",
                 editable: false,
                 flex: 1,

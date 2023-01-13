@@ -67,6 +67,8 @@ import {
   getOfficeInvolvedByProcessLevelItemId,
   newOfficeInvolvedProcessLevel,
 } from "../../../api/office-involved";
+import { Guid } from "../../../utils/guid";
+import { useNavigate } from "react-router-dom";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -90,7 +92,7 @@ const initialValues = {
   startingDate: "",
   endingDate: "",
   currentStatus: "",
-  projectManagerName: "",
+  personnelId: "",
   projectManagerEmail: "",
   totalBudget: "",
   currencyTypeId: "",
@@ -168,8 +170,11 @@ const StaffDetailsForm = ({
                 staffListData.data &&
                 staffListData.data.length > 0
                   ? staffListData.data.map((option) => (
-                      <MenuItem key={option.Full_Name} value={option.Full_Name}>
-                        {option.Full_Name}
+                      <MenuItem
+                        key={option.id}
+                        value={option.firstName + " " + option.lastName}
+                      >
+                        {option.firstName} {option.lastName}
                       </MenuItem>
                     ))
                   : []}
@@ -273,6 +278,7 @@ const StaffDetailsForm = ({
 };
 
 const NewProjectForm = ({ id }) => {
+  const navigate = useNavigate();
   const [errorSet, setIsErrorSet] = useState(false);
   const [open, setOpen] = useState(false);
   const [staffDetailsArray, setStaffDetailsArray] = useState([]);
@@ -471,7 +477,7 @@ const NewProjectForm = ({ id }) => {
       startingDate: Yup.date().min(new Date()).required("Required"),
       endingDate: Yup.date().min(new Date()).required("Required"),
       currentStatus: Yup.string().required("Required"),
-      projectManagerName: Yup.object(),
+      personnelId: Yup.object(),
       projectManagerEmail: Yup.string(),
       totalBudget: Yup.number().integer().required("Required"),
       currencyTypeId: Yup.string().required("Required"),
@@ -487,6 +493,8 @@ const NewProjectForm = ({ id }) => {
       values.createDate = new Date();
       if (id) {
         values.id = id;
+      } else {
+        values.id = new Guid().toString();
       }
       try {
         const project = await mutation.mutateAsync(values);
@@ -561,13 +569,14 @@ const NewProjectForm = ({ id }) => {
         await processLevelRoleMutation.mutateAsync(projectRoles);
         await officeInvolvedMutation.mutateAsync(eNAOfficeInvolved);
         await processLevelContactMutation.mutateAsync(projectContact);
+        toast("Successfully Created an Project", {
+          type: "success",
+        });
+        navigate("/project/projects");
       } catch (error) {
         toast(error.response.data, {
           type: "error",
         });
-      } finally {
-        // resetForm();
-        setSubmitting(false);
       }
     },
   });
@@ -919,27 +928,24 @@ const NewProjectForm = ({ id }) => {
               <Grid container spacing={6}>
                 <Grid item md={6}>
                   <TextField
-                    name="projectManagerName"
+                    name="personnelId"
                     label="Project Manager's Name"
                     select
-                    value={formik.values.projectManagerName}
+                    value={formik.values.personnelId}
                     error={Boolean(
-                      formik.touched.projectManagerName &&
-                        formik.errors.projectManagerName
+                      formik.touched.personnelId && formik.errors.personnelId
                     )}
                     fullWidth
                     helperText={
-                      formik.touched.projectManagerName &&
-                      formik.errors.projectManagerName
+                      formik.touched.personnelId && formik.errors.personnelId
                     }
                     onBlur={formik.handleBlur}
                     onChange={(e) => {
                       formik.handleChange(e);
                       formik.setFieldValue(
                         "projectManagerEmail",
-                        e.target.value.Company_E_Mail
+                        e.target.value.emailAddress
                       );
-                      console.log(e.target.value);
                     }}
                     variant="outlined"
                     my={2}
@@ -952,8 +958,8 @@ const NewProjectForm = ({ id }) => {
                     staffListData.data &&
                     staffListData.data.length > 0
                       ? staffListData.data.map((option) => (
-                          <MenuItem key={option.Full_Name} value={option}>
-                            {option.Full_Name}
+                          <MenuItem key={option.id} value={option}>
+                            {option.firstName} {option.lastName}
                           </MenuItem>
                         ))
                       : []}

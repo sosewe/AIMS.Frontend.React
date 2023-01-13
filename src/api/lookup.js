@@ -27,7 +27,7 @@ export const getLookupMasterItemsByName = async ({ queryKey }) => {
 };
 
 export const getAMREFStaffList = async () => {
-  return await axios.get(apiRoutes.ERPStaffList);
+  return await axios.get(apiRoutes.personnel);
 };
 
 export const getAdministrativeRoles = async () => {

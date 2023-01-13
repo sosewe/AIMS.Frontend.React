@@ -30,6 +30,7 @@ import {
   getAdministrativeProgrammeById,
   newAdministrativeProgramme,
 } from "../../api/administrative-programme";
+import { Guid } from "../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -44,7 +45,7 @@ const initialValues = {
   description: "",
   goal: "",
   organisationUnitId: "",
-  managerName: "",
+  personnelId: "",
   managerEmail: "",
 };
 
@@ -98,14 +99,16 @@ const NewAdministrativeProgrammeForm = () => {
       description: Yup.string().required("Required"),
       goal: Yup.string().required("Required"),
       organisationUnitId: Yup.string().required("Required"),
-      managerName: Yup.object().required("Required"),
+      personnelId: Yup.object().required("Required"),
       managerEmail: Yup.string().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       values.createDate = new Date();
-      values.managerName = values.managerName.Full_Name;
+      values.personnelId = values.personnelId.id;
       if (id) {
         values.id = id;
+      } else {
+        values.id = new Guid().toString();
       }
       try {
         await mutation.mutateAsync(values);
@@ -122,10 +125,10 @@ const NewAdministrativeProgrammeForm = () => {
   });
   useEffect(() => {
     function setCurrentFormValues() {
-      let managerName;
+      let personnel;
       if (staffListData && OrganizationUnitData) {
-        managerName = staffListData.data.filter(
-          (obj) => obj.Full_Name === OrganizationUnitData.data.managerName
+        personnel = staffListData.data.find(
+          (obj) => obj.id == OrganizationUnitData.data.personnelId
         );
       }
       if (OrganizationUnitData) {
@@ -135,9 +138,8 @@ const NewAdministrativeProgrammeForm = () => {
           description: OrganizationUnitData.data.description,
           goal: OrganizationUnitData.data.goal,
           organisationUnitId: OrganizationUnitData.data.organisationUnitId,
-          managerName:
-            managerName && managerName.length > 0 ? managerName[0] : "",
-          managerEmail: OrganizationUnitData.data.managerEmail,
+          personnelId: personnel,
+          managerEmail: personnel.emailAddress,
         });
       }
     }
@@ -238,24 +240,24 @@ const NewAdministrativeProgrammeForm = () => {
               <Grid container spacing={6}>
                 <Grid item md={6}>
                   <TextField
-                    name="managerName"
+                    name="personnelId"
                     label="Project Manager's Name"
                     select
                     required
-                    value={formik.values.managerName}
+                    value={formik.values.personnelId}
                     error={Boolean(
-                      formik.touched.managerName && formik.errors.managerName
+                      formik.touched.personnelId && formik.errors.personnelId
                     )}
                     fullWidth
                     helperText={
-                      formik.touched.managerName && formik.errors.managerName
+                      formik.touched.personnelId && formik.errors.personnelId
                     }
                     onBlur={formik.handleBlur}
                     onChange={(e) => {
                       formik.handleChange(e);
                       formik.setFieldValue(
                         "managerEmail",
-                        e.target.value.Company_E_Mail
+                        e.target.value.emailAddress
                       );
                     }}
                     variant="outlined"
@@ -266,8 +268,8 @@ const NewAdministrativeProgrammeForm = () => {
                     </MenuItem>
                     {!isLoadingStaffList && !isErrorStaffList
                       ? staffListData.data.map((option) => (
-                          <MenuItem key={option.Full_Name} value={option}>
-                            {option.Full_Name}
+                          <MenuItem key={option.id} value={option}>
+                            {option.firstName} {option.lastName}
                           </MenuItem>
                         ))
                       : []}

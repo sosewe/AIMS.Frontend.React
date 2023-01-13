@@ -34,15 +34,19 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const ProjectsData = () => {
+  const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
   // fetch projects
-  const { data, isLoading, isError, error } = useQuery(
-    ["projects"],
+  const { data, isLoading, isError, error, pageInfo } = useQuery(
+    ["projects", page, pageSize],
     getProjects,
     {
       retry: 0,
     }
+  );
+  const [rowCountState, setRowCountState] = React.useState(
+    pageInfo?.totalRowCount || 0
   );
 
   if (isError) {
@@ -126,6 +130,11 @@ const ProjectsData = () => {
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
+            paginationMode="server"
+            rowCount={rowCountState}
+            pagination
+            page={page}
+            onPageChange={(newPage) => setPage(newPage)}
           />
         </div>
       </Paper>

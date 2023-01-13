@@ -37,6 +37,7 @@ export const apiRoutes = {
   indicatorSubTheme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/IndicatorSubTheme`,
   indicatorAggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/IndicatorAggregate`,
   indicatorAttributeType: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/IndicatorAttributeType`,
+  personnel: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Personnel`,
   // external
   ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,
