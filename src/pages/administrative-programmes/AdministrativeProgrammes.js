@@ -28,6 +28,7 @@ import {
   getAdministrativeProgrammes,
 } from "../../api/administrative-programme";
 import { getOrganizationUnitById } from "../../api/organization-unit";
+import { getAMREFPersonnelById } from "../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -65,6 +66,17 @@ const AdministrativeProgrammesData = () => {
     );
     if (result && result.data) {
       return result.data.data.name;
+    }
+  }
+
+  function GetManagerName(params) {
+    const personnelId = params.value;
+    const { isLoading, data } = useQuery(
+      ["getAMREFPersonnelById", personnelId],
+      getAMREFPersonnelById
+    );
+    if (!isLoading) {
+      return data.data.firstName + " " + data.data.lastName;
     }
   }
 
@@ -132,6 +144,7 @@ const AdministrativeProgrammesData = () => {
                 headerName: "Manager Name",
                 editable: false,
                 flex: 1,
+                valueGetter: GetManagerName,
               },
               {
                 field: "goal",

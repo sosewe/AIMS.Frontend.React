@@ -30,6 +30,13 @@ export const getAMREFStaffList = async () => {
   return await axios.get(apiRoutes.personnel);
 };
 
+export const getAMREFPersonnelById = async ({ queryKey }) => {
+  const [, personnelId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.personnel}/GetPersonnelById/${personnelId}`
+  );
+};
+
 export const getAdministrativeRoles = async () => {
   return await axios.get(apiRoutes.administrativeRoles);
 };
