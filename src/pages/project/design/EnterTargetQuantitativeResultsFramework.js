@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
 import {
   Box,
@@ -6,25 +6,41 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  CardHeader,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider as MuiDivider,
   Grid,
   Link,
   MenuItem,
+  Paper as MuiPaper,
+  Stack,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
-import { purple } from "@mui/material/colors";
+import { purple, grey } from "@mui/material/colors";
 import { spacing } from "@mui/system";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Helmet } from "react-helmet-async";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../api/lookup";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getProjectLocations } from "../../../api/location";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { getObjectiveByProcessLevelItemId } from "../../../api/project-objectives";
+import {
+  getResultChainByObjectiveId,
+  getResultChainByOutcomeId,
+  saveResultChain,
+} from "../../../api/result-chain";
+import { Guid } from "../../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -32,22 +48,312 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 const TextField = styled(MuiTextField)(spacing);
+const Paper = styled(MuiPaper)(spacing);
 
 const theme = createTheme({
   palette: {
     secondary: {
-      // This is green.A700 as hex.
       main: purple[500],
+    },
+    secondaryGray: {
+      main: grey[500],
     },
   },
 });
+
+const initialValuesOutcome = {
+  outcome: "",
+  code: "",
+  order: "",
+};
 
 const initialValues = {
   implementationYear: "",
   location: "",
 };
 
-const EnterTargetQuantitativeResultsFrameworkForm = () => {
+const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
+  const {
+    data: projectOutcomesOutputs,
+    isLoading: isLoadingProjectOutcomesOutputs,
+    isError: isErrorProjectOutcomesOutputs,
+  } = useQuery(
+    ["getResultChainByOutcomeId", outcomeId],
+    getResultChainByOutcomeId,
+    { enabled: !!outcomeId }
+  );
+  const result =
+    !isLoadingProjectOutcomesOutputs &&
+    !isErrorProjectOutcomesOutputs &&
+    projectOutcomesOutputs &&
+    projectOutcomesOutputs.data.length > 0
+      ? projectOutcomesOutputs.data.filter(
+          (obj) => obj.resultLevelId === resultLevelOptionId
+        )
+      : [];
+  if (result.length === 0) {
+    return `This Objective does not have Outputs, Please add output`;
+  }
+  return (
+    <Grid container spacing={2}>
+      <Grid item md={12}>
+        {result.map((output) => (
+          <Grid container spacing={2} key={output.id} sx={{ width: "100%" }}>
+            <Grid item md={12}>
+              <Paper elevation={24} square={true}>
+                <Card mb={2}>
+                  <CardContent>
+                    <Typography variant="h4" gutterBottom display="inline">
+                      {output.code}
+                    </Typography>
+                    &nbsp;&nbsp;
+                    <Typography variant="h6" gutterBottom display="inline">
+                      {output.name}
+                    </Typography>
+                    <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
+                      <ThemeProvider theme={theme}>
+                        <Stack direction="row" spacing={2}>
+                          <Button variant="contained" color="secondaryGray">
+                            <DeleteIcon />
+                          </Button>
+                        </Stack>
+                      </ThemeProvider>
+                    </Grid>
+                    <Divider sx={{ backgroundColor: "#000000" }} />
+                    <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
+                      <ThemeProvider theme={theme}>
+                        <Stack direction="row" spacing={2}>
+                          <Button variant="contained" color="secondaryGray">
+                            <AddIcon /> Indicator
+                          </Button>
+                        </Stack>
+                      </ThemeProvider>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Paper>
+            </Grid>
+          </Grid>
+        ))}
+      </Grid>
+    </Grid>
+  );
+};
+
+const GetProjectOutcomes = ({
+  objectiveId,
+  lookupItemId,
+  resultLevelOptionId,
+}) => {
+  const {
+    data: projectObjectivesOutcomes,
+    isLoading: isLoadingProjectObjectivesOutcomes,
+    isError: isErrorProjectObjectivesOutcomes,
+  } = useQuery(
+    ["getResultChainByObjectiveId", objectiveId],
+    getResultChainByObjectiveId,
+    { enabled: !!objectiveId }
+  );
+
+  const result =
+    !isLoadingProjectObjectivesOutcomes &&
+    !isErrorProjectObjectivesOutcomes &&
+    projectObjectivesOutcomes &&
+    projectObjectivesOutcomes.data.length > 0
+      ? projectObjectivesOutcomes.data.filter(
+          (obj) => obj.resultLevelId === lookupItemId
+        )
+      : [];
+  if (result.length === 0) {
+    return `This Objective does not have Outcome, Please add outcome`;
+  }
+  return (
+    <Grid container spacing={2}>
+      <Grid item md={12}>
+        {result.map((outcome) => (
+          <Grid container spacing={2} key={outcome.id} sx={{ width: "100%" }}>
+            <Grid item md={6}>
+              <Paper elevation={24} square={true}>
+                <Card mb={2} sx={{ backgroundColor: "gray" }}>
+                  <CardContent>
+                    <Typography variant="h4" gutterBottom display="inline">
+                      {outcome.code}
+                    </Typography>
+                    &nbsp;&nbsp;
+                    <Typography variant="h6" gutterBottom display="inline">
+                      {outcome.name}
+                    </Typography>
+                    <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
+                      <ThemeProvider theme={theme}>
+                        <Stack direction="row" spacing={2}>
+                          <Button variant="contained" color="secondary">
+                            <AddIcon /> Output
+                          </Button>
+                          <Button variant="contained" color="secondaryGray">
+                            <DeleteIcon />
+                          </Button>
+                        </Stack>
+                      </ThemeProvider>
+                    </Grid>
+                    <Divider sx={{ backgroundColor: "#000000" }} />
+                    <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
+                      <ThemeProvider theme={theme}>
+                        <Stack direction="row" spacing={2}>
+                          <Button variant="contained" color="secondaryGray">
+                            <AddIcon /> Indicator
+                          </Button>
+                        </Stack>
+                      </ThemeProvider>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Paper>
+            </Grid>
+            <Grid item md={6}>
+              <Paper elevation={24} square={true}>
+                <Card mb={2} sx={{ backgroundColor: "gray" }}>
+                  <CardHeader title={`Output(s)`} />
+                  <Divider />
+                  <CardContent>
+                    <GetProjectOutputs
+                      outcomeId={outcome.id}
+                      resultLevelOptionId={resultLevelOptionId}
+                    />
+                  </CardContent>
+                </Card>
+              </Paper>
+            </Grid>
+          </Grid>
+        ))}
+      </Grid>
+    </Grid>
+  );
+};
+
+const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
+  let { processLevelItemId, processLevelTypeId } = useParams();
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({ mutationFn: saveResultChain });
+  const formik = useFormik({
+    initialValues: initialValuesOutcome,
+    validationSchema: Yup.object().shape({
+      outcome: Yup.string().required("Required"),
+      code: Yup.string().required("Required"),
+      order: Yup.number().required("Required"),
+    }),
+    onSubmit: async (values) => {
+      try {
+        console.log(values);
+        const resultChain = {
+          id: new Guid().toString(),
+          code: values.code,
+          name: values.outcome,
+          order: values.order,
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
+          createDate: new Date(),
+          resultLevelId: lookupItemId,
+          resultLevelNameId: projectObjective.id,
+        };
+        await mutation.mutateAsync(resultChain);
+        await queryClient.invalidateQueries(["getResultChainByObjectiveId"]);
+        await queryClient.invalidateQueries(["getResultChainByOutcomeId"]);
+        handleClick();
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
+    },
+  });
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={6}>
+        <CardContent>
+          <Typography variant="body2" gutterBottom>
+            {projectObjective.objective}
+          </Typography>
+        </CardContent>
+      </Card>
+      <Card mb={12}>
+        <CardContent>
+          {formik.isSubmitting ? (
+            <Box display="flex" justifyContent="center" my={6}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <Grid container spacing={6}>
+                <Grid item md={4}>
+                  <TextField
+                    name="outcome"
+                    label="Outcome"
+                    required
+                    value={formik.values.outcome}
+                    error={Boolean(
+                      formik.touched.outcome && formik.errors.outcome
+                    )}
+                    fullWidth
+                    helperText={formik.touched.outcome && formik.errors.outcome}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  />
+                </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="code"
+                    label="Code"
+                    required
+                    value={formik.values.code}
+                    error={Boolean(formik.touched.code && formik.errors.code)}
+                    fullWidth
+                    helperText={formik.touched.code && formik.errors.code}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  />
+                </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="order"
+                    label="Order"
+                    required
+                    value={formik.values.order}
+                    error={Boolean(formik.touched.order && formik.errors.order)}
+                    fullWidth
+                    helperText={formik.touched.order && formik.errors.order}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  />
+                </Grid>
+              </Grid>
+              <ThemeProvider theme={theme}>
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    mt={3}
+                  >
+                    Save
+                  </Button>
+                </Stack>
+              </ThemeProvider>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+const EnterTargetByLocationForm = () => {
   let { processLevelItemId, processLevelTypeId } = useParams();
   const navigate = useNavigate();
   const {
@@ -192,14 +498,181 @@ const EnterTargetQuantitativeResultsFrameworkForm = () => {
     </form>
   );
 };
+const EnterTargetQuantitativeResultsFrameworkForm = ({
+  processLevelItemId,
+}) => {
+  const [open, setOpen] = useState(false);
+  const [openOutcomeModal, setOpenOutcomeModal] = useState(false);
+  const [projectObjectiveVal, setProjectObjective] = useState(false);
+  const {
+    data: projectObjectives,
+    isLoading: isLoadingProjectObjectives,
+    isError: isErrorProjectObjectives,
+  } = useQuery(
+    ["getObjectiveByProcessLevelItemId", processLevelItemId],
+    getObjectiveByProcessLevelItemId,
+    { enabled: !!processLevelItemId }
+  );
+  const {
+    data: dataResultLevel,
+    isLoading: isLoadingResultLevel,
+    isError: isErrorResultLevel,
+  } = useQuery(["ResultLevel", "ResultLevel"], getLookupMasterItemsByName);
+  const resultLevelOption =
+    !isLoadingResultLevel &&
+    !isErrorResultLevel &&
+    dataResultLevel &&
+    dataResultLevel.data.length > 0 &&
+    dataResultLevel.data.find((obj) => obj.lookupItemName === "Outcome");
+  const resultLevelOptionOutput =
+    !isLoadingResultLevel &&
+    !isErrorResultLevel &&
+    dataResultLevel &&
+    dataResultLevel.data.length > 0 &&
+    dataResultLevel.data.find((obj) => obj.lookupItemName === "Output");
+  const { lookupItemId } = resultLevelOption ? resultLevelOption : {};
+  const { lookupItemId: resultLevelOptionId } = resultLevelOptionOutput
+    ? resultLevelOptionOutput
+    : {};
 
+  const handleClick = () => {
+    console.log(`hre`);
+    setOpenOutcomeModal(false);
+  };
+
+  return (
+    <Grid container spacing={12}>
+      <Grid item md={12}>
+        <ThemeProvider theme={theme}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setOpen(true)}
+          >
+            <AddIcon /> Enter Target By Location
+          </Button>
+        </ThemeProvider>
+        <Dialog
+          fullWidth={true}
+          maxWidth="md"
+          open={open}
+          onClose={() => setOpen(false)}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Targets</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Enter Target By Location</DialogContentText>
+            <EnterTargetByLocationForm />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Grid>
+      <Grid item md={12}>
+        <Grid container spacing={2}>
+          {!isLoadingProjectObjectives &&
+            !isErrorProjectObjectives &&
+            projectObjectives.data.map((projectObjective) => (
+              <Grid item md={12} key={projectObjective.id}>
+                <ThemeProvider theme={theme}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="body2" gutterBottom display="inline">
+                        {projectObjective.objective}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </ThemeProvider>
+                <br />
+                <Grid container spacing={2}>
+                  <Grid item md={4}>
+                    <Card>
+                      <CardHeader title={"Objective(s)"}></CardHeader>
+                      <Divider />
+                      <CardContent>
+                        <Grid container spacing={6}>
+                          <Grid item>{projectObjective.objective}</Grid>
+                          <Grid item>
+                            <ThemeProvider theme={theme}>
+                              <Stack direction="row" spacing={2}>
+                                <Button
+                                  variant="contained"
+                                  color="secondaryGray"
+                                  onClick={() => {
+                                    setOpenOutcomeModal(true);
+                                    setProjectObjective(projectObjective);
+                                  }}
+                                >
+                                  <AddIcon /> Outcome
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  color="secondaryGray"
+                                >
+                                  <DeleteIcon />
+                                </Button>
+                              </Stack>
+                            </ThemeProvider>
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item md={8}>
+                    <Card>
+                      <CardHeader title={"Outcome(s)"}></CardHeader>
+                      <Divider />
+                      <CardContent>
+                        <GetProjectOutcomes
+                          objectiveId={projectObjective.id}
+                          lookupItemId={lookupItemId}
+                          resultLevelOptionId={resultLevelOptionId}
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </Grid>
+            ))}
+        </Grid>
+      </Grid>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openOutcomeModal}
+        onClose={() => setOpenOutcomeModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <AddOutcomeModal
+            lookupItemId={lookupItemId}
+            projectObjective={projectObjectiveVal}
+            handleClick={handleClick}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenOutcomeModal(false)}
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Grid>
+  );
+};
 const EnterTargetQuantitativeResultsFramework = () => {
   let { processLevelItemId } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="Results Framework: Enter Targets" />
+      <Helmet title="Results Framework" />
       <Typography variant="h3" gutterBottom display="inline">
-        Results Framework: Enter Targets By Location
+        Results Framework
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
@@ -209,12 +682,12 @@ const EnterTargetQuantitativeResultsFramework = () => {
         >
           Project Design
         </Link>
-        <Typography>
-          Project Quantitative Result Framework: Enter Target By Location
-        </Typography>
+        <Typography>Project Quantitative Result Framework</Typography>
       </Breadcrumbs>
       <Divider my={6} />
-      <EnterTargetQuantitativeResultsFrameworkForm />
+      <EnterTargetQuantitativeResultsFrameworkForm
+        processLevelItemId={processLevelItemId}
+      />
     </React.Fragment>
   );
 };
