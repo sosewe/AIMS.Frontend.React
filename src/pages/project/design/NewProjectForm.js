@@ -508,8 +508,7 @@ const NewProjectForm = ({ id }) => {
         };
         const projectContact = {
           createDate: new Date(),
-          managerEmail: values.projectManagerEmail,
-          managerName: values.projectManagerName.Full_Name,
+          personnelId: values.personnelId.id,
           processLevelItemId: project.data.id,
           processLevelTypeId: processLevelTypeId,
           void: false,
@@ -595,7 +594,7 @@ const NewProjectForm = ({ id }) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (ProjectData) {
-        let managerName = [];
+        let managerName;
         if (
           !isLoadingStaffList &&
           !isErrorStaffList &&
@@ -603,8 +602,7 @@ const NewProjectForm = ({ id }) => {
           processLevelContactsData.data.length > 0
         ) {
           managerName = staffListData.data.filter(
-            (obj) =>
-              obj.Full_Name === processLevelContactsData.data[0].managerName
+            (obj) => obj.id === processLevelContactsData.data[0].personnelId
           );
         }
         formik.setValues({
@@ -617,9 +615,9 @@ const NewProjectForm = ({ id }) => {
           startingDate: new Date(ProjectData.data.startingDate),
           endingDate: new Date(ProjectData.data.endingDate),
           currentStatus: ProjectData.data.currentStatus,
-          projectManagerName: managerName.length > 0 ? managerName[0] : "",
+          personnelId: managerName.length > 0 ? managerName[0] : "",
           projectManagerEmail:
-            managerName.length > 0 ? managerName[0].Company_E_Mail : "",
+            managerName.length > 0 ? managerName[0].emailAddress : "",
           //check email
           totalBudget: ProjectData.data.totalBudget,
           currencyTypeId: ProjectData.data.currencyTypeId,
