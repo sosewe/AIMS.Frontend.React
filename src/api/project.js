@@ -4,7 +4,7 @@ import axios from "axios";
 export const getProjects = async ({ queryKey }) => {
   const [, page, pageSize] = queryKey;
   return await axios.get(
-    `${apiRoutes.project}?MaxPageSize=${pageSize}&PageNumber=${page}&PageSize=${pageSize}`
+    `${apiRoutes.project}?PageNumber=${page}&PageSize=${pageSize}`
   );
 };
 

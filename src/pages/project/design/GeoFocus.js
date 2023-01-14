@@ -115,6 +115,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
         let administrativeUnitId = "";
+        let administrativeUnitName = "";
         if (
           values.selectedCountry &&
           !values.firstLevel &&
@@ -123,6 +124,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           !values.fourthLevel
         ) {
           administrativeUnitId = values.selectedCountry.id;
+          administrativeUnitName = values.selectedCountry.adminUnit;
         } else if (
           values.firstLevel &&
           !values.secondLevel &&
@@ -130,19 +132,24 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           !values.fourthLevel
         ) {
           administrativeUnitId = values.firstLevel.id;
+          administrativeUnitName = values.firstLevel.adminUnit;
         } else if (
           values.secondLevel &&
           !values.thirdLevel &&
           !values.fourthLevel
         ) {
           administrativeUnitId = values.secondLevel.id;
+          administrativeUnitName = values.secondLevel.adminUnit;
         } else if (values.thirdLevel && !values.fourthLevel) {
           administrativeUnitId = values.thirdLevel.id;
+          administrativeUnitName = values.thirdLevel.adminUnit;
         } else if (values.fourthLevel) {
           administrativeUnitId = values.fourthLevel.id;
+          administrativeUnitName = values.fourthLevel.adminUnit;
         }
         const projectLocation = {
           administrativeUnitId,
+          administrativeUnitName,
           processLevelItemId: id,
           processLevelTypeId: processLevelTypeId,
           createDate: new Date(),

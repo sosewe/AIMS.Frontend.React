@@ -615,9 +615,12 @@ const NewProjectForm = ({ id }) => {
           startingDate: new Date(ProjectData.data.startingDate),
           endingDate: new Date(ProjectData.data.endingDate),
           currentStatus: ProjectData.data.currentStatus,
-          personnelId: managerName.length > 0 ? managerName[0] : "",
+          personnelId:
+            managerName && managerName.length > 0 ? managerName[0] : "",
           projectManagerEmail:
-            managerName.length > 0 ? managerName[0].emailAddress : "",
+            managerName && managerName.length > 0
+              ? managerName[0].emailAddress
+              : "",
           //check email
           totalBudget: ProjectData.data.totalBudget,
           currencyTypeId: ProjectData.data.currencyTypeId,

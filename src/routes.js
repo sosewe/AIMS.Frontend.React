@@ -127,6 +127,12 @@ const ProjectDetail = async(() =>
 const DesignProject = async(() =>
   import("./pages/project/design/DesignProject")
 );
+const EnterTargetQuantitativeResultsFramework = async(() =>
+  import("./pages/project/design/EnterTargetQuantitativeResultsFramework")
+);
+const ProjectIndicatorTargets = async(() =>
+  import("./pages/project/design/ProjectIndicatorTargets")
+);
 
 // Administrative Programmes
 const AdministrativeProgrammes = async(() =>
@@ -276,6 +282,14 @@ const routes = [
       {
         path: "design-project/:id",
         element: <DesignProject />,
+      },
+      {
+        path: "enter-target-quantitative-results-framework/:processLevelItemId/:processLevelTypeId",
+        element: <EnterTargetQuantitativeResultsFramework />,
+      },
+      {
+        path: "project-indicator-targets/:processLevelItemId/:processLevelTypeId/:projectLocationId/:year",
+        element: <ProjectIndicatorTargets />,
       },
     ],
   },
