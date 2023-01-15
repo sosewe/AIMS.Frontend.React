@@ -61,6 +61,12 @@ const theme = createTheme({
   },
 });
 
+const initialValuesOutput = {
+  output: "",
+  outputCode: "",
+  order: "",
+};
+
 const initialValuesOutcome = {
   outcome: "",
   code: "",
@@ -72,6 +78,135 @@ const initialValues = {
   location: "",
 };
 
+const AddOutputModal = ({ outcome, resultLevelOptionId, handleClick }) => {
+  let { processLevelItemId, processLevelTypeId } = useParams();
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({ mutationFn: saveResultChain });
+  const formik = useFormik({
+    initialValues: initialValuesOutput,
+    validationSchema: Yup.object().shape({
+      output: Yup.string().required("Required"),
+      outputCode: Yup.string().required("Required"),
+      order: Yup.number().required("Required"),
+    }),
+    onSubmit: async (values) => {
+      try {
+        const resultChain = {
+          id: new Guid().toString(),
+          code: values.outputCode,
+          name: values.output,
+          order: values.order,
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
+          createDate: new Date(),
+          resultLevelId: resultLevelOptionId,
+          resultLevelNameId: outcome.id,
+        };
+        await mutation.mutateAsync(resultChain);
+        await queryClient.invalidateQueries(["getResultChainByObjectiveId"]);
+        await queryClient.invalidateQueries(["getResultChainByOutcomeId"]);
+        handleClick();
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
+    },
+  });
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={6}>
+        <CardContent>
+          <Typography variant="h4" gutterBottom>
+            Output
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            {outcome.name}
+          </Typography>
+        </CardContent>
+      </Card>
+      <Card mb={12}>
+        <CardContent>
+          {formik.isSubmitting ? (
+            <Box display="flex" justifyContent="center" my={6}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <Grid container spacing={6}>
+                <Grid item md={4}>
+                  <TextField
+                    name="output"
+                    label="Output"
+                    required
+                    value={formik.values.output}
+                    error={Boolean(
+                      formik.touched.output && formik.errors.output
+                    )}
+                    fullWidth
+                    helperText={formik.touched.output && formik.errors.output}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  />
+                </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="outputCode"
+                    label="Output Code"
+                    required
+                    value={formik.values.outputCode}
+                    error={Boolean(
+                      formik.touched.outputCode && formik.errors.outputCode
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.outputCode && formik.errors.outputCode
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  />
+                </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="order"
+                    label="Order"
+                    required
+                    value={formik.values.order}
+                    error={Boolean(formik.touched.order && formik.errors.order)}
+                    fullWidth
+                    helperText={formik.touched.order && formik.errors.order}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  />
+                </Grid>
+              </Grid>
+              <ThemeProvider theme={theme}>
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    mt={3}
+                  >
+                    Save
+                  </Button>
+                </Stack>
+              </ThemeProvider>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
 const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
   const {
     data: projectOutcomesOutputs,
@@ -139,12 +274,13 @@ const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
     </Grid>
   );
 };
-
 const GetProjectOutcomes = ({
   objectiveId,
   lookupItemId,
   resultLevelOptionId,
 }) => {
+  const [openOutputModal, setOpenOutputModal] = useState(false);
+  const [outcomeVal, setOutcomeVal] = useState();
   const {
     data: projectObjectivesOutcomes,
     isLoading: isLoadingProjectObjectivesOutcomes,
@@ -167,6 +303,9 @@ const GetProjectOutcomes = ({
   if (result.length === 0) {
     return `This Objective does not have Outcome, Please add outcome`;
   }
+  const handleClick = () => {
+    setOpenOutputModal(false);
+  };
   return (
     <Grid container spacing={2}>
       <Grid item md={12}>
@@ -186,7 +325,14 @@ const GetProjectOutcomes = ({
                     <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
                       <ThemeProvider theme={theme}>
                         <Stack direction="row" spacing={2}>
-                          <Button variant="contained" color="secondary">
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => {
+                              setOpenOutputModal(true);
+                              setOutcomeVal(outcome);
+                            }}
+                          >
                             <AddIcon /> Output
                           </Button>
                           <Button variant="contained" color="secondaryGray">
@@ -226,10 +372,33 @@ const GetProjectOutcomes = ({
           </Grid>
         ))}
       </Grid>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openOutputModal}
+        onClose={() => setOpenOutputModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <AddOutputModal
+            outcome={outcomeVal}
+            resultLevelOptionId={resultLevelOptionId}
+            handleClick={handleClick}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenOutputModal(false)}
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };
-
 const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
   let { processLevelItemId, processLevelTypeId } = useParams();
   const queryClient = useQueryClient();
@@ -244,7 +413,6 @@ const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
     }),
     onSubmit: async (values) => {
       try {
-        console.log(values);
         const resultChain = {
           id: new Guid().toString(),
           code: values.code,
@@ -272,6 +440,9 @@ const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
     <form onSubmit={formik.handleSubmit}>
       <Card mb={6}>
         <CardContent>
+          <Typography variant="h4" gutterBottom>
+            Outcome
+          </Typography>
           <Typography variant="body2" gutterBottom>
             {projectObjective.objective}
           </Typography>
@@ -536,7 +707,6 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
     : {};
 
   const handleClick = () => {
-    console.log(`hre`);
     setOpenOutcomeModal(false);
   };
 
