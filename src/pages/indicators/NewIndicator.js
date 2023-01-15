@@ -785,10 +785,15 @@ const NewIndicatorForm = () => {
         then: Yup.string().required("Must enter Denominator"),
       }),
       indicatorCumulative: Yup.string().required("Required"),
+      indicatorMeasureType: Yup.object().required("Required"),
+      indicatorCalculationType: Yup.string().required("Required"),
+      indicatorStatus: Yup.string().required("Required"),
+      reference: Yup.string().required("Required"),
     }),
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
+    onSubmit: async (values) => {
       values.createDate = new Date();
       values.indicatorMeasure = values.indicatorMeasure.lookupItemId;
+      values.indicatorMeasureType = values.indicatorMeasureType.lookupItemId;
       if (id) {
         values.id = id;
       } else {
@@ -1388,19 +1393,19 @@ const NewIndicatorForm = () => {
                 </Grid>
                 <Grid item md={3}>
                   <TextField
-                    name="IndicatorStatus"
+                    name="indicatorStatus"
                     label="Indicator Status"
                     required
                     select
-                    value={formik.values.IndicatorStatus}
+                    value={formik.values.indicatorStatus}
                     error={Boolean(
-                      formik.touched.IndicatorStatus &&
-                        formik.errors.IndicatorStatus
+                      formik.touched.indicatorStatus &&
+                        formik.errors.indicatorStatus
                     )}
                     fullWidth
                     helperText={
-                      formik.touched.IndicatorStatus &&
-                      formik.errors.IndicatorStatus
+                      formik.touched.indicatorStatus &&
+                      formik.errors.indicatorStatus
                     }
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
