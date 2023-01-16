@@ -16,3 +16,8 @@ export const getProjectById = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.get(apiRoutes.project + "/" + id);
 };
+
+export const getProjectIndicators = async ({ queryKey }) => {
+  const [, projectId] = queryKey;
+  return await axios.get(`${apiRoutes.project}/ProjectIndicators/${projectId}`);
+};

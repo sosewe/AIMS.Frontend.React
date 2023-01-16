@@ -41,6 +41,7 @@ import {
   saveResultChain,
 } from "../../../api/result-chain";
 import { Guid } from "../../../utils/guid";
+import AddIndicatorModal from "./AddIndicatorModal";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -278,8 +279,10 @@ const GetProjectOutcomes = ({
   objectiveId,
   lookupItemId,
   resultLevelOptionId,
+  processLevelItemId,
 }) => {
   const [openOutputModal, setOpenOutputModal] = useState(false);
+  const [openIndicatorModal, setOpenIndicatorModal] = useState(false);
   const [outcomeVal, setOutcomeVal] = useState();
   const {
     data: projectObjectivesOutcomes,
@@ -305,6 +308,9 @@ const GetProjectOutcomes = ({
   }
   const handleClick = () => {
     setOpenOutputModal(false);
+  };
+  const handleClickIndicatorModal = () => {
+    setOpenIndicatorModal(false);
   };
   return (
     <Grid container spacing={2}>
@@ -345,7 +351,14 @@ const GetProjectOutcomes = ({
                     <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
                       <ThemeProvider theme={theme}>
                         <Stack direction="row" spacing={2}>
-                          <Button variant="contained" color="secondaryGray">
+                          <Button
+                            variant="contained"
+                            color="secondaryGray"
+                            onClick={() => {
+                              setOpenIndicatorModal(true);
+                              setOutcomeVal(outcome);
+                            }}
+                          >
                             <AddIcon /> Indicator
                           </Button>
                         </Stack>
@@ -390,6 +403,30 @@ const GetProjectOutcomes = ({
           <Button
             variant="contained"
             onClick={() => setOpenOutputModal(false)}
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openIndicatorModal}
+        onClose={() => setOpenIndicatorModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <AddIndicatorModal
+            processLevelItemId={processLevelItemId}
+            handleClick={handleClickIndicatorModal}
+            outcome={outcomeVal}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenIndicatorModal(false)}
             color="primary"
           >
             Close
@@ -800,6 +837,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
                           objectiveId={projectObjective.id}
                           lookupItemId={lookupItemId}
                           resultLevelOptionId={resultLevelOptionId}
+                          processLevelItemId={processLevelItemId}
                         />
                       </CardContent>
                     </Card>
