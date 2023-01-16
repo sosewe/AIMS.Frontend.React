@@ -35,18 +35,21 @@ const Button = styled(MuiButton)(spacing);
 const IndicatorsData = () => {
   const [open, setOpen] = React.useState(false);
   const [id, setId] = React.useState();
+  const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // fetch All Indicators
-  const { data, isLoading, isError, error } = useQuery(
-    ["getAllIndicators"],
+  const { data, isLoading, isError, error, pageInfo } = useQuery(
+    ["getAllIndicators", page, pageSize],
     getAllIndicators,
     {
       retry: 0,
     }
   );
-
+  const [rowCountState, setRowCountState] = React.useState(
+    pageInfo?.totalRowCount || 0
+  );
   if (isError) {
     toast(error.response.data, {
       type: "error",
@@ -137,7 +140,11 @@ const IndicatorsData = () => {
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
-            getRowHeight={() => "auto"}
+            paginationMode="server"
+            rowCount={rowCountState}
+            pagination
+            page={page}
+            onPageChange={(newPage) => setPage(newPage)}
           />
         </div>
         <Dialog

@@ -22,15 +22,10 @@ import { toast } from "react-toastify";
 import { Link2 } from "react-feather";
 
 const Card = styled(MuiCard)(spacing);
-
 const Paper = styled(MuiPaper)(spacing);
-
 const Divider = styled(MuiDivider)(spacing);
-
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
-
 const CardContent = styled(MuiCardContent)(spacing);
-
 const Button = styled(MuiButton)(spacing);
 
 const ProjectsData = () => {
