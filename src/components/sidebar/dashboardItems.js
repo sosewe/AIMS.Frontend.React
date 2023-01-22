@@ -1,18 +1,4 @@
 import {
-  BookOpen,
-  Briefcase,
-  Calendar,
-  CheckSquare,
-  CreditCard,
-  Grid,
-  Heart,
-  Layout,
-  List,
-  Map,
-  ShoppingCart,
-  PieChart,
-  Sliders,
-  Users,
   Shuffle,
   Layers,
   Clipboard,
@@ -82,7 +68,7 @@ const configurationSection = [
         title: "Lookup Master Items",
       },
       {
-        href: "/lookup/lookupMaster",
+        href: "/lookup/lookupMasters",
         title: "Lookup Master",
       },
       {

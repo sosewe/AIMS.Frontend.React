@@ -27,6 +27,9 @@ import Home from "./pages/home";
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
 const NewLookupItem = async(() => import("./pages/lookup/NewLookupItem"));
+const LookupMasters = async(() =>
+  import("./pages/lookup-master/LookupMasters")
+);
 
 // Project
 const Projects = async(() => import("./pages/project/design/Projects"));
@@ -220,7 +223,8 @@ const routes = [
         element: <NewLookupItem />,
       },
       {
-        path: "lookupMaster",
+        path: "lookupMasters",
+        element: <LookupMasters />,
       },
     ],
   },

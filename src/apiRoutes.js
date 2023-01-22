@@ -4,6 +4,7 @@ const path = protocol + "//" + hostname;
 export const apiRoutes = {
   // Lookup
   lookupItem: `${path}${process.env.REACT_APP_LOOKUP_PORT}/api/LookupItem`,
+  lookupMaster: `${path}${process.env.REACT_APP_LOOKUP_PORT}/api/LookupMaster`,
   lookupOption: `${path}${process.env.REACT_APP_LOOKUP_PORT}/api/LookupOption`,
   //Settings
   donor: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/Donor`,
