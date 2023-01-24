@@ -18,3 +18,8 @@ export const deleteProjectObjective = async ({ queryKey }) => {
     `${apiRoutes.projectObjectives}/${projectObjectiveId}`
   );
 };
+
+export const getProjectObjectiveById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.projectObjectives}/${id}`);
+};

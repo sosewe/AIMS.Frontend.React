@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { DataGrid } from "@mui/x-data-grid";
-import { Plus, Trash as TrashIcon } from "react-feather";
+import { Plus, Edit2, Trash as TrashIcon } from "react-feather";
 import styled from "@emotion/styled";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,6 +26,7 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
+import EditProjectObjective from "./EditProjectObjective";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -40,6 +41,7 @@ const initialValues = {
 const ProjectObjectives = ({ id, processLevelTypeId }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = React.useState(false);
+  const [openEdit, setOpenEdit] = React.useState(false);
   const [objectiveId, setObjectiveId] = React.useState();
 
   const { data, isLoading } = useQuery(
@@ -52,8 +54,15 @@ const ProjectObjectives = ({ id, processLevelTypeId }) => {
     setObjectiveId(objectiveId);
   };
 
+  const handleClickEditOpen = (objectiveId) => {
+    setOpenEdit(true);
+    setObjectiveId(objectiveId);
+  };
   const handleClose = () => {
     setOpen(false);
+  };
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
   };
   const mutation = useMutation({ mutationFn: newProjectObjectives });
 
@@ -96,6 +105,11 @@ const ProjectObjectives = ({ id, processLevelTypeId }) => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries(["getObjectiveByProcessLevelItemId"]);
+  };
+
+  const handleClick = async () => {
+    await queryClient.invalidateQueries(["getObjectiveByProcessLevelItemId"]);
+    setOpenEdit(false);
   };
 
   return (
@@ -171,6 +185,11 @@ const ProjectObjectives = ({ id, processLevelTypeId }) => {
                     renderCell: (params) => (
                       <>
                         <Button
+                          startIcon={<Edit2 />}
+                          size="small"
+                          onClick={() => handleClickEditOpen(params.id)}
+                        ></Button>
+                        <Button
                           startIcon={<TrashIcon />}
                           size="small"
                           onClick={() => handleClickOpen(params.id)}
@@ -207,6 +226,24 @@ const ProjectObjectives = ({ id, processLevelTypeId }) => {
               No
             </Button>
           </DialogActions>
+        </Dialog>
+        <Dialog
+          fullWidth={true}
+          maxWidth="md"
+          open={openEdit}
+          onClose={handleCloseEdit}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Edit Project Objective
+          </DialogTitle>
+          <DialogContent>
+            <EditProjectObjective
+              objectiveId={objectiveId}
+              handleClick={handleClick}
+            />
+          </DialogContent>
         </Dialog>
       </CardContent>
     </Card>
