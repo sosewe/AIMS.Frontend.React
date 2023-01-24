@@ -14,7 +14,7 @@ import {
 import { spacing } from "@mui/system";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
-import { Eye } from "react-feather";
+import { Edit2 } from "react-feather";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { getLookupMasters } from "../../api/lookup-master";
 import { useQuery } from "@tanstack/react-query";
@@ -73,10 +73,8 @@ const LookupMastersData = () => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/programme/new-administrative-programme/${params.id}`}
-                    >
-                      <Button startIcon={<Eye />} size="small"></Button>
+                    <NavLink to={`/lookup/new-lookup-master/${params.id}`}>
+                      <Button startIcon={<Edit2 />} size="small"></Button>
                     </NavLink>
                   </>
                 ),

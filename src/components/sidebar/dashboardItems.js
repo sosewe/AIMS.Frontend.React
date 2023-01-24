@@ -1,10 +1,4 @@
-import {
-  Shuffle,
-  Layers,
-  Clipboard,
-  Settings,
-  Slack,
-} from "react-feather";
+import { Shuffle, Layers, Clipboard, Settings, Slack } from "react-feather";
 
 const projectSection = [
   {

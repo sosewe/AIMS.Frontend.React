@@ -224,7 +224,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                           {!isLoadingSubThemes &&
                             subThemesData.data.map((value, index) => {
                               return (
-                                <Grid container item spacing={2}>
+                                <Grid container item spacing={2} key={index}>
                                   <Grid item md={2}>
                                     <FormGroup>
                                       <FormControlLabel

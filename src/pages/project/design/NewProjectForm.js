@@ -69,6 +69,11 @@ import {
 } from "../../../api/office-involved";
 import { Guid } from "../../../utils/guid";
 import { useNavigate } from "react-router-dom";
+import CostCentreForm from "./CostCentreForm";
+import {
+  getProcessLevelCostCentreByProcessLevelItemId,
+  newProcessLevelCostCentre,
+} from "../../../api/process-level-cost-centre";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -281,7 +286,9 @@ const NewProjectForm = ({ id }) => {
   const navigate = useNavigate();
   const [errorSet, setIsErrorSet] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openCostCentre, setOpenCostCentre] = useState(false);
   const [staffDetailsArray, setStaffDetailsArray] = useState([]);
+  const [costCentreArray, setCostCentreArray] = useState([]);
   let processLevelTypeId;
   const { isLoading: isLoadingAimsRole, data: aimsRolesData } = useQuery(
     ["aimsRoles", "AIMSRoles"],
@@ -444,6 +451,11 @@ const NewProjectForm = ({ id }) => {
       enabled: !!id,
     }
   );
+  const { data: processLevelCostCentreData } = useQuery(
+    ["getProcessLevelCostCentreByProcessLevelItemId", id],
+    getProcessLevelCostCentreByProcessLevelItemId,
+    { enabled: !!id }
+  );
 
   const mutation = useMutation({ mutationFn: newProject });
   const donorProcessMutation = useMutation({
@@ -463,6 +475,9 @@ const NewProjectForm = ({ id }) => {
   });
   const officeInvolvedMutation = useMutation({
     mutationFn: newOfficeInvolvedProcessLevel,
+  });
+  const processLevelCostCentreMutation = useMutation({
+    mutationFn: newProcessLevelCostCentre,
   });
 
   const formik = useFormik({
@@ -558,6 +573,18 @@ const NewProjectForm = ({ id }) => {
           projectRoles.push(projectRole);
         }
 
+        const processLevelCostCentres = [];
+        for (const costCentre of costCentreArray) {
+          const processLevelCostCentre = {
+            id: new Guid().toString(),
+            createDate: new Date(),
+            processLevelTypeId: processLevelTypeId,
+            processLevelId: project.data.id,
+            costCentreCode: costCentre.name,
+          };
+          processLevelCostCentres.push(processLevelCostCentre);
+        }
+
         await donorProcessMutation.mutateAsync(projectDonor);
         await administrativeProgrammeMutation.mutateAsync(
           projectAdministrativeProgramme
@@ -568,6 +595,9 @@ const NewProjectForm = ({ id }) => {
         await processLevelRoleMutation.mutateAsync(projectRoles);
         await officeInvolvedMutation.mutateAsync(eNAOfficeInvolved);
         await processLevelContactMutation.mutateAsync(projectContact);
+        await processLevelCostCentreMutation.mutateAsync(
+          processLevelCostCentres
+        );
         toast("Successfully Created an Project", {
           type: "success",
         });
@@ -584,9 +614,19 @@ const NewProjectForm = ({ id }) => {
     setStaffDetailsArray((current) => [...current, values]);
   };
 
+  const handleCostCentreAdd = (values) => {
+    setCostCentreArray((current) => [...current, values]);
+  };
+
   function removeStaff(row) {
     setStaffDetailsArray((current) =>
       current.filter((staff) => staff.staffDetailsName !== row.staffDetailsName)
+    );
+  }
+
+  function removeCostCentre(row) {
+    setCostCentreArray((current) =>
+      current.filter((obj) => obj.name !== row.name)
     );
   }
 
@@ -672,6 +712,16 @@ const NewProjectForm = ({ id }) => {
           }
           setStaffDetailsArray(allStaff);
         }
+        if (
+          processLevelCostCentreData &&
+          processLevelCostCentreData.data.length > 0
+        ) {
+          const processLevelCostCentre = [];
+          for (const datum of processLevelCostCentreData.data) {
+            processLevelCostCentre.push({ name: datum.costCentreCode });
+          }
+          setCostCentreArray(processLevelCostCentre);
+        }
       }
     }
     setCurrentFormValues();
@@ -688,6 +738,7 @@ const NewProjectForm = ({ id }) => {
     isLoadingAimsRole,
     isLoadingStaffList,
     staffListData,
+    processLevelCostCentreData,
   ]);
 
   return (
@@ -1053,29 +1104,6 @@ const NewProjectForm = ({ id }) => {
                 </Grid>
                 <Grid item md={3}>
                   <TextField
-                    name="costCentre"
-                    label="Cost Centre"
-                    select
-                    value={formik.values.costCentre}
-                    error={Boolean(
-                      formik.touched.costCentre && formik.errors.costCentre
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.costCentre && formik.errors.costCentre
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Cost Centre
-                    </MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid item md={3}>
-                  <TextField
                     name="donors"
                     label="Donors"
                     select
@@ -1103,8 +1131,6 @@ const NewProjectForm = ({ id }) => {
                       : []}
                   </TextField>
                 </Grid>
-              </Grid>
-              <Grid container spacing={3}>
                 <Grid item md={3}>
                   <TextField
                     name="recipientTypeId"
@@ -1142,6 +1168,57 @@ const NewProjectForm = ({ id }) => {
                   </TextField>
                 </Grid>
               </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Typography variant="h3" gutterBottom display="inline">
+                    Cost Centre
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setOpenCostCentre(true)}
+                  >
+                    <AddIcon /> Add Cost Centre
+                  </Button>
+                </Grid>
+              </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Paper>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Cost Centre Name</TableCell>
+                          <TableCell align="right">Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {costCentreArray.map((row) => (
+                          <TableRow key={Math.random().toString(36)}>
+                            <TableCell component="th" scope="row">
+                              {row.name}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => removeCostCentre(row)}
+                              >
+                                <DeleteIcon />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Paper>
+                </Grid>
+              </Grid>
+              <br />
               <Grid container spacing={12}>
                 <Grid item md={12}>
                   <Typography variant="h3" gutterBottom display="inline">
@@ -1388,6 +1465,24 @@ const NewProjectForm = ({ id }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openCostCentre}
+        onClose={() => setOpenCostCentre(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Cost Centre</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Add Cost Centre</DialogContentText>
+          <CostCentreForm handleClick={handleCostCentreAdd} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCostCentre(false)} color="primary">
             Close
           </Button>
         </DialogActions>
