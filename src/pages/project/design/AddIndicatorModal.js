@@ -1,5 +1,4 @@
 import React from "react";
-import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -7,18 +6,15 @@ import { Guid } from "../../../utils/guid";
 import { toast } from "react-toastify";
 import {
   Box,
-  Breadcrumbs as MuiBreadcrumbs,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
   Checkbox,
   CircularProgress,
-  Divider as MuiDivider,
   FormControlLabel,
   FormGroup,
   Grid,
   MenuItem,
-  Paper as MuiPaper,
   Stack,
   TextField as MuiTextField,
   Typography,
@@ -30,12 +26,9 @@ import { getLookupMasterItemsByName } from "../../../api/lookup";
 import { saveResultChainIndicator } from "../../../api/result-chain-indicator";
 
 const Card = styled(MuiCard)(spacing);
-const Divider = styled(MuiDivider)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Paper = styled(MuiPaper)(spacing);
 
 const initialValuesIndicator = {
   indicatorId: "",
@@ -119,7 +112,6 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
           type: "success",
         });
       } catch (error) {
-        console.log(error);
         toast(error.response.data, {
           type: "error",
         });

@@ -42,6 +42,7 @@ import {
 } from "../../../api/result-chain";
 import { Guid } from "../../../utils/guid";
 import AddIndicatorModal from "./AddIndicatorModal";
+import ResultChainIndicators from "./ResultChainIndicators";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -231,19 +232,24 @@ const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
     return `This Objective does not have Outputs, Please add output`;
   }
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={0}>
       <Grid item md={12}>
         {result.map((output) => (
-          <Grid container spacing={2} key={output.id} sx={{ width: "100%" }}>
+          <Grid
+            container
+            spacing={0}
+            key={output.id}
+            sx={{ width: "100%", borderStyle: "dotted" }}
+          >
             <Grid item md={12}>
               <Paper elevation={24} square={true}>
                 <Card mb={2}>
                   <CardContent>
-                    <Typography variant="h4" gutterBottom display="inline">
+                    <Typography variant="h6" gutterBottom display="inline">
                       {output.code}
                     </Typography>
                     &nbsp;&nbsp;
-                    <Typography variant="h6" gutterBottom display="inline">
+                    <Typography variant="body2" gutterBottom display="inline">
                       {output.name}
                     </Typography>
                     <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
@@ -280,7 +286,9 @@ const GetProjectOutcomes = ({
   lookupItemId,
   resultLevelOptionId,
   processLevelItemId,
+  processLevelTypeId,
 }) => {
+  const queryClient = useQueryClient();
   const [openOutputModal, setOpenOutputModal] = useState(false);
   const [openIndicatorModal, setOpenIndicatorModal] = useState(false);
   const [outcomeVal, setOutcomeVal] = useState();
@@ -309,8 +317,11 @@ const GetProjectOutcomes = ({
   const handleClick = () => {
     setOpenOutputModal(false);
   };
-  const handleClickIndicatorModal = () => {
+  const handleClickIndicatorModal = async () => {
     setOpenIndicatorModal(false);
+    await queryClient.invalidateQueries([
+      "getResultChainIndicatorsByResultChainId",
+    ]);
   };
   return (
     <Grid container spacing={2}>
@@ -319,13 +330,13 @@ const GetProjectOutcomes = ({
           <Grid container spacing={2} key={outcome.id} sx={{ width: "100%" }}>
             <Grid item md={6}>
               <Paper elevation={24} square={true}>
-                <Card mb={2} sx={{ backgroundColor: "gray" }}>
+                <Card mb={2} sx={{ borderStyle: "dashed" }}>
                   <CardContent>
-                    <Typography variant="h4" gutterBottom display="inline">
+                    <Typography variant="h6" gutterBottom display="inline">
                       {outcome.code}
                     </Typography>
                     &nbsp;&nbsp;
-                    <Typography variant="h6" gutterBottom display="inline">
+                    <Typography variant="body2" gutterBottom display="inline">
                       {outcome.name}
                     </Typography>
                     <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
@@ -364,13 +375,21 @@ const GetProjectOutcomes = ({
                         </Stack>
                       </ThemeProvider>
                     </Grid>
+                    <Divider sx={{ backgroundColor: "#000000" }} />
+                    <Grid item md={12}>
+                      <ResultChainIndicators
+                        outcomeId={outcome.id}
+                        processLevelItemId={processLevelItemId}
+                        processLevelTypeId={processLevelTypeId}
+                      />
+                    </Grid>
                   </CardContent>
                 </Card>
               </Paper>
             </Grid>
             <Grid item md={6}>
               <Paper elevation={24} square={true}>
-                <Card mb={2} sx={{ backgroundColor: "gray" }}>
+                <Card mb={2} sx={{ borderStyle: "dashed" }}>
                   <CardHeader title={`Output(s)`} />
                   <Divider />
                   <CardContent>
@@ -708,6 +727,7 @@ const EnterTargetByLocationForm = () => {
 };
 const EnterTargetQuantitativeResultsFrameworkForm = ({
   processLevelItemId,
+  processLevelTypeId,
 }) => {
   const [open, setOpen] = useState(false);
   const [openOutcomeModal, setOpenOutcomeModal] = useState(false);
@@ -838,6 +858,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
                           lookupItemId={lookupItemId}
                           resultLevelOptionId={resultLevelOptionId}
                           processLevelItemId={processLevelItemId}
+                          processLevelTypeId={processLevelTypeId}
                         />
                       </CardContent>
                     </Card>
@@ -875,7 +896,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
   );
 };
 const EnterTargetQuantitativeResultsFramework = () => {
-  let { processLevelItemId } = useParams();
+  let { processLevelItemId, processLevelTypeId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="Results Framework" />
@@ -895,6 +916,7 @@ const EnterTargetQuantitativeResultsFramework = () => {
       <Divider my={6} />
       <EnterTargetQuantitativeResultsFrameworkForm
         processLevelItemId={processLevelItemId}
+        processLevelTypeId={processLevelTypeId}
       />
     </React.Fragment>
   );
