@@ -20,3 +20,11 @@ export const getAdministrativeUnitById = async ({ queryKey }) => {
     `${apiRoutes.administrativeUnit}/${administrativeUnitId}`
   );
 };
+
+export const getAdministrativeUnits = async () => {
+  return await axios.get(`${apiRoutes.administrativeUnit}`);
+};
+
+export const newAdministrativeUnit = async (values) => {
+  return await axios.post(`${apiRoutes.administrativeUnit}`, values);
+};

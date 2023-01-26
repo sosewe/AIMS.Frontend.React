@@ -207,7 +207,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
   );
 
   const onSelectedCountry = (e) => {
-    setParentTopLevel(e.target.value.parent);
+    setParentTopLevel(e.target.value.adminUnit);
     formik.setFieldValue("firstLevel", "");
     formik.setFieldValue("secondLevel", "");
     formik.setFieldValue("thirdLevel", "");
@@ -397,7 +397,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
                     {!isLoading && !isError && data.data && data.data.length > 0
                       ? data.data.map((option) => (
                           <MenuItem key={option.id} value={option}>
-                            {option.parent}
+                            {option.adminUnit}
                           </MenuItem>
                         ))
                       : []}

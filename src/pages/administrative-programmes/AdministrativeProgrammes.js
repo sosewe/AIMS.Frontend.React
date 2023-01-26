@@ -210,7 +210,6 @@ const AdministrativeProgrammesData = () => {
     </Card>
   );
 };
-
 const AdministrativeProgrammes = () => {
   return (
     <React.Fragment>
@@ -218,7 +217,6 @@ const AdministrativeProgrammes = () => {
       <Typography variant="h3" gutterBottom display="inline">
         Administrative Programmes
       </Typography>
-
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} to="/programme/administrative-programmes">
           Administrative Programmes

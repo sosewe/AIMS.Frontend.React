@@ -87,6 +87,12 @@ const NewEntity = async(() => import("./pages/entities/NewEntity"));
 // Indicators
 const Indicators = async(() => import("./pages/indicators/Indicators"));
 const NewIndicator = async(() => import("./pages/indicators/NewIndicator"));
+const AdministrativeUnits = async(() =>
+  import("./pages/administrative-units/AdministrativeUnits")
+);
+const NewAdministrativeUnit = async(() =>
+  import("./pages/administrative-units/NewAdministrativeUnit")
+);
 
 const routes = [
   {
@@ -278,6 +284,18 @@ const routes = [
       {
         path: "new-donor/:id",
         element: <NewDonor />,
+      },
+      {
+        path: "administrative-units",
+        element: <AdministrativeUnits />,
+      },
+      {
+        path: "new-administrative-unit",
+        element: <NewAdministrativeUnit />,
+      },
+      {
+        path: "new-administrative-unit/:id",
+        element: <NewAdministrativeUnit />,
       },
     ],
   },
