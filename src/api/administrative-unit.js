@@ -28,3 +28,10 @@ export const getAdministrativeUnits = async () => {
 export const newAdministrativeUnit = async (values) => {
   return await axios.post(`${apiRoutes.administrativeUnit}`, values);
 };
+
+export const deleteAdministrativeUnit = async ({ queryKey }) => {
+  const [, administrativeUnitId] = queryKey;
+  return await axios.delete(
+    `${apiRoutes.administrativeUnit}/${administrativeUnitId}`
+  );
+};

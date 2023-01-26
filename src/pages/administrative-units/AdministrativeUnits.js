@@ -22,7 +22,10 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Trash as TrashIcon } from "react-feather";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAdministrativeUnits } from "../../api/administrative-unit";
+import {
+  deleteAdministrativeUnit,
+  getAdministrativeUnits,
+} from "../../api/administrative-unit";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -32,6 +35,8 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const AdministrativeUnitsData = () => {
+  const [open, setOpen] = React.useState(false);
+  const [id, setId] = React.useState();
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -40,6 +45,28 @@ const AdministrativeUnitsData = () => {
     ["getAdministrativeUnits"],
     getAdministrativeUnits
   );
+
+  const { refetch } = useQuery(
+    ["deleteAdministrativeUnit", id],
+    deleteAdministrativeUnit,
+    { enabled: false }
+  );
+
+  function handleClickOpen(id) {
+    setOpen(true);
+    setId(id);
+  }
+
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const handleDeleteAdministrativeUnit = async () => {
+    await refetch();
+    setOpen(false);
+    await queryClient.invalidateQueries(["deleteAdministrativeUnit"]);
+  };
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -98,7 +125,7 @@ const AdministrativeUnitsData = () => {
                     <Button
                       startIcon={<TrashIcon />}
                       size="small"
-                      // onClick={() => handleClickOpen(params.id)}
+                      onClick={() => handleClickOpen(params.id)}
                     ></Button>
                   </>
                 ),
@@ -111,32 +138,29 @@ const AdministrativeUnitsData = () => {
             getRowHeight={() => "auto"}
           />
         </div>
-        {/*<Dialog*/}
-        {/*  open={open}*/}
-        {/*  onClose={handleClose}*/}
-        {/*  aria-labelledby="alert-dialog-title"*/}
-        {/*  aria-describedby="alert-dialog-description"*/}
-        {/*>*/}
-        {/*  <DialogTitle id="alert-dialog-title">*/}
-        {/*    Delete Administrative Programme*/}
-        {/*  </DialogTitle>*/}
-        {/*  <DialogContent>*/}
-        {/*    <DialogContentText id="alert-dialog-description">*/}
-        {/*      Are you sure you want to delete Administrative Programme?*/}
-        {/*    </DialogContentText>*/}
-        {/*  </DialogContent>*/}
-        {/*  <DialogActions>*/}
-        {/*    <Button*/}
-        {/*      onClick={handleDeleteAdministrativeProgramme}*/}
-        {/*      color="primary"*/}
-        {/*    >*/}
-        {/*      Yes*/}
-        {/*    </Button>*/}
-        {/*    <Button onClick={handleClose} color="error" autoFocus>*/}
-        {/*      No*/}
-        {/*    </Button>*/}
-        {/*  </DialogActions>*/}
-        {/*</Dialog>*/}
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Delete Administrative Unit
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete Administrative Unit?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDeleteAdministrativeUnit} color="primary">
+              Yes
+            </Button>
+            <Button onClick={handleClose} color="error" autoFocus>
+              No
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
     </Card>
   );
