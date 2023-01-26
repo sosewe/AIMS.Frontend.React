@@ -64,7 +64,7 @@ const AdministrativeUnitsData = () => {
   const handleDeleteAdministrativeUnit = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["deleteAdministrativeUnit"]);
+    await queryClient.invalidateQueries(["getAdministrativeUnits"]);
   };
 
   return (
