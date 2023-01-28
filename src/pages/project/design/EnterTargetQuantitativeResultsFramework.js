@@ -34,7 +34,10 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getProjectLocations } from "../../../api/location";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import { getObjectiveByProcessLevelItemId } from "../../../api/project-objectives";
+import {
+  deleteProjectObjective,
+  getObjectiveByProcessLevelItemId,
+} from "../../../api/project-objectives";
 import {
   deleteResultChain,
   getResultChainByObjectiveId,
@@ -834,9 +837,17 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
   processLevelItemId,
   processLevelTypeId,
 }) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [openOutcomeModal, setOpenOutcomeModal] = useState(false);
   const [projectObjectiveVal, setProjectObjective] = useState(false);
+  const [openDeleteObjective, setOpenDeleteObjective] = useState(false);
+  const [projectObjectiveId, setProjectObjectiveId] = useState();
+  const { refetch } = useQuery(
+    ["deleteProjectObjective", projectObjectiveId],
+    deleteProjectObjective,
+    { enabled: false }
+  );
   const {
     data: projectObjectives,
     isLoading: isLoadingProjectObjectives,
@@ -871,7 +882,11 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
   const handleClick = () => {
     setOpenOutcomeModal(false);
   };
-
+  const onClickDeleteProjectObjective = async () => {
+    await refetch();
+    setOpenDeleteObjective(false);
+    await queryClient.invalidateQueries(["getObjectiveByProcessLevelItemId"]);
+  };
   return (
     <Grid container spacing={12}>
       <Grid item md={12}>
@@ -943,6 +958,10 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
                                 <Button
                                   variant="contained"
                                   color="secondaryGray"
+                                  onClick={() => {
+                                    setOpenDeleteObjective(true);
+                                    setProjectObjectiveId(projectObjective.id);
+                                  }}
                                 >
                                   <DeleteIcon />
                                 </Button>
@@ -994,6 +1013,34 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
             color="primary"
           >
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openDeleteObjective}
+        onClose={() => setOpenDeleteObjective(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle>Delete Project Objective</DialogTitle>
+        <Divider />
+        <DialogContent>
+          Are you sure you want to delete projective objective?
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => onClickDeleteProjectObjective()}
+            color="primary"
+          >
+            Yes
+          </Button>
+          <Button
+            onClick={() => setOpenDeleteObjective(false)}
+            color="error"
+            autoFocus
+          >
+            No
           </Button>
         </DialogActions>
       </Dialog>
