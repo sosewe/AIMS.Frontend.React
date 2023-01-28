@@ -1,8 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { getResultChainIndicatorsByResultChainId } from "../../../api/result-chain-indicator";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  deleteResultChainIndicator,
+  getResultChainIndicatorsByResultChainId,
+} from "../../../api/result-chain-indicator";
 import {
   Button as MuiButton,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
@@ -37,8 +41,11 @@ const ResultChainIndicators = ({
   processLevelTypeId,
 }) => {
   const [openDisaggregatesModal, setOpenDisaggregatesModal] = useState(false);
+  const [openDeleteResultChainModal, setDeleteResultChainModal] =
+    useState(false);
   const [resultChainIndicatorId, setResultChainIndicatorId] = useState();
   const [indicatorAggregates, setIndicatorAggregates] = useState([]);
+  const queryClient = useQueryClient();
   const {
     data: resultChainData,
     isLoading: isLoadingResultChainData,
@@ -48,12 +55,29 @@ const ResultChainIndicators = ({
     getResultChainIndicatorsByResultChainId,
     { enabled: !!outcomeId }
   );
+  const { refetch } = useQuery(
+    ["deleteResultChainIndicator", resultChainIndicatorId],
+    deleteResultChainIndicator,
+    { enabled: false }
+  );
   if (isLoadingResultChainData || isErrorResultChainData) {
     return ``;
   }
 
   const handleClick = () => {
     setOpenDisaggregatesModal(false);
+  };
+
+  function handleCloseDeleteResultIndicator() {
+    setDeleteResultChainModal(false);
+  }
+
+  const handleDeleteResultChainIndicator = async () => {
+    await refetch();
+    setDeleteResultChainModal(false);
+    await queryClient.invalidateQueries([
+      "getResultChainIndicatorsByResultChainId",
+    ]);
   };
 
   return (
@@ -84,7 +108,14 @@ const ResultChainIndicators = ({
           </Grid>
           <Grid item md={2}>
             <ThemeProvider theme={theme}>
-              <Button variant="contained" color="secondaryGray">
+              <Button
+                variant="contained"
+                color="secondaryGray"
+                onClick={() => {
+                  setDeleteResultChainModal(true);
+                  setResultChainIndicatorId(resultChain.id);
+                }}
+              >
                 <DeleteIcon />
               </Button>
             </ThemeProvider>
@@ -109,6 +140,34 @@ const ResultChainIndicators = ({
             handleClick={handleClick}
           />
         </DialogContent>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openDeleteResultChainModal}
+        onClose={() => setDeleteResultChainModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle>Delete Indicator</DialogTitle>
+        <Divider />
+        <DialogContent>
+          Are you sure you want to delete indicator?
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => handleDeleteResultChainIndicator()}
+            color="primary"
+          >
+            Yes
+          </Button>
+          <Button
+            onClick={() => handleCloseDeleteResultIndicator()}
+            color="error"
+            autoFocus
+          >
+            No
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   );

@@ -36,6 +36,7 @@ import { getProjectLocations } from "../../../api/location";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { getObjectiveByProcessLevelItemId } from "../../../api/project-objectives";
 import {
+  deleteResultChain,
   getResultChainByObjectiveId,
   getResultChainByOutcomeId,
   saveResultChain,
@@ -209,7 +210,15 @@ const AddOutputModal = ({ outcome, resultLevelOptionId, handleClick }) => {
     </form>
   );
 };
-const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
+const GetProjectOutputs = ({
+  outcomeId,
+  resultLevelOptionId,
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
+  const [openDeleteResultChain, setOpenDeleteResultChain] = useState(false);
+  const [outputId, setOutputId] = useState();
+  const queryClient = useQueryClient();
   const {
     data: projectOutcomesOutputs,
     isLoading: isLoadingProjectOutcomesOutputs,
@@ -228,8 +237,21 @@ const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
           (obj) => obj.resultLevelId === resultLevelOptionId
         )
       : [];
+  const { refetch } = useQuery(
+    ["deleteResultChain", outputId],
+    deleteResultChain,
+    { enabled: false }
+  );
   if (result.length === 0) {
     return `This Objective does not have Outputs, Please add output`;
+  }
+  const handleDeleteResultChain = async () => {
+    await refetch();
+    setOpenDeleteResultChain(false);
+    await queryClient.invalidateQueries(["getResultChainByOutcomeId"]);
+  };
+  function handleCloseDeleteResult() {
+    setOpenDeleteResultChain(false);
   }
   return (
     <Grid container spacing={0}>
@@ -255,7 +277,14 @@ const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
                     <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
                       <ThemeProvider theme={theme}>
                         <Stack direction="row" spacing={2}>
-                          <Button variant="contained" color="secondaryGray">
+                          <Button
+                            variant="contained"
+                            color="secondaryGray"
+                            onClick={() => {
+                              setOutputId(output.id);
+                              setOpenDeleteResultChain(true);
+                            }}
+                          >
                             <DeleteIcon />
                           </Button>
                         </Stack>
@@ -271,6 +300,14 @@ const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
                         </Stack>
                       </ThemeProvider>
                     </Grid>
+                    <Divider sx={{ backgroundColor: "#000000" }} />
+                    <Grid item md={12}>
+                      <ResultChainIndicators
+                        outcomeId={output.id}
+                        processLevelItemId={processLevelItemId}
+                        processLevelTypeId={processLevelTypeId}
+                      />
+                    </Grid>
                   </CardContent>
                 </Card>
               </Paper>
@@ -278,6 +315,29 @@ const GetProjectOutputs = ({ outcomeId, resultLevelOptionId }) => {
           </Grid>
         ))}
       </Grid>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openDeleteResultChain}
+        onClose={() => setOpenDeleteResultChain(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle>Delete Output</DialogTitle>
+        <Divider />
+        <DialogContent>Are you sure you want to delete Output?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleDeleteResultChain()} color="primary">
+            Yes
+          </Button>
+          <Button
+            onClick={() => handleCloseDeleteResult()}
+            color="error"
+            autoFocus
+          >
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };
@@ -291,6 +351,8 @@ const GetProjectOutcomes = ({
   const queryClient = useQueryClient();
   const [openOutputModal, setOpenOutputModal] = useState(false);
   const [openIndicatorModal, setOpenIndicatorModal] = useState(false);
+  const [openDeleteResultChain, setDeleteResultChain] = useState(false);
+  const [outcomeId, setOutcomeId] = useState();
   const [outcomeVal, setOutcomeVal] = useState();
   const {
     data: projectObjectivesOutcomes,
@@ -301,7 +363,11 @@ const GetProjectOutcomes = ({
     getResultChainByObjectiveId,
     { enabled: !!objectiveId }
   );
-
+  const { refetch } = useQuery(
+    ["deleteResultChain", outcomeId],
+    deleteResultChain,
+    { enabled: false }
+  );
   const result =
     !isLoadingProjectObjectivesOutcomes &&
     !isErrorProjectObjectivesOutcomes &&
@@ -311,6 +377,7 @@ const GetProjectOutcomes = ({
           (obj) => obj.resultLevelId === lookupItemId
         )
       : [];
+
   if (result.length === 0) {
     return `This Objective does not have Outcome, Please add outcome`;
   }
@@ -322,6 +389,14 @@ const GetProjectOutcomes = ({
     await queryClient.invalidateQueries([
       "getResultChainIndicatorsByResultChainId",
     ]);
+  };
+  const handleDeleteResultChain = () => {
+    setDeleteResultChain(false);
+  };
+  const onClickDeleteResultChain = async () => {
+    await refetch();
+    setDeleteResultChain(false);
+    await queryClient.invalidateQueries(["getResultChainByObjectiveId"]);
   };
   return (
     <Grid container spacing={2}>
@@ -352,7 +427,14 @@ const GetProjectOutcomes = ({
                           >
                             <AddIcon /> Output
                           </Button>
-                          <Button variant="contained" color="secondaryGray">
+                          <Button
+                            variant="contained"
+                            color="secondaryGray"
+                            onClick={() => {
+                              setOutcomeId(outcome.id);
+                              setDeleteResultChain(true);
+                            }}
+                          >
                             <DeleteIcon />
                           </Button>
                         </Stack>
@@ -449,6 +531,29 @@ const GetProjectOutcomes = ({
             color="primary"
           >
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openDeleteResultChain}
+        onClose={() => setDeleteResultChain(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle>Delete Outcome</DialogTitle>
+        <Divider />
+        <DialogContent>Are you sure you want to delete Outcome?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => onClickDeleteResultChain()} color="primary">
+            Yes
+          </Button>
+          <Button
+            onClick={() => handleDeleteResultChain()}
+            color="error"
+            autoFocus
+          >
+            No
           </Button>
         </DialogActions>
       </Dialog>

@@ -18,3 +18,8 @@ export const getResultChainByOutcomeId = async ({ queryKey }) => {
 export const saveResultChain = async (values) => {
   return await axios.post(`${apiRoutes.resultChain}`, values);
 };
+
+export const deleteResultChain = async ({ queryKey }) => {
+  const [, resultChainId] = queryKey;
+  return await axios.delete(`${apiRoutes.resultChain}/${resultChainId}`);
+};
