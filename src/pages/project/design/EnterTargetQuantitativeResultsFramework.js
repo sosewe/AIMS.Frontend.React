@@ -805,10 +805,7 @@ const EnterTargetByLocationForm = () => {
                     </MenuItem>
                     {!isLoadingGeoFocus && !isErrorGeoFocus
                       ? projectGeographicalFocus.data.map((option) => (
-                          <MenuItem
-                            key={option.id}
-                            value={option.administrativeUnitId}
-                          >
+                          <MenuItem key={option.id} value={option.id}>
                             {option.administrativeUnitName}
                           </MenuItem>
                         ))
