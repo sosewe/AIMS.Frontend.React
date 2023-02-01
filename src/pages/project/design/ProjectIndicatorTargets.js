@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import styled from "@emotion/styled";
 import {
   Breadcrumbs as MuiBreadcrumbs,
@@ -136,6 +136,7 @@ const ResultIndicatorTargetsForm = ({
       let disabledVal = false;
       if (data.data.name === "Monthly(30 days)") {
         const field = {
+          id: resultChainIndicator.id,
           name: resultChainIndicator.id + "/" + i.toString(),
           label: resultChainIndicator.id + "/" + i.toString(),
           initialValue: "",
@@ -148,6 +149,7 @@ const ResultIndicatorTargetsForm = ({
         if (i !== 3 && i !== 6 && i !== 9 && i !== 12) {
           disabledVal = true;
           field = {
+            id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
             label: resultChainIndicator.id + "/" + i.toString(),
             initialValue: "",
@@ -157,6 +159,7 @@ const ResultIndicatorTargetsForm = ({
         } else {
           disabledVal = false;
           field = {
+            id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
             label: resultChainIndicator.id + "/" + i.toString(),
             initialValue: "",
@@ -170,6 +173,7 @@ const ResultIndicatorTargetsForm = ({
         if (i !== 6 && i !== 12) {
           disabledVal = true;
           field = {
+            id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
             label: resultChainIndicator.id + "/" + i.toString(),
             initialValue: "",
@@ -179,6 +183,7 @@ const ResultIndicatorTargetsForm = ({
         } else {
           disabledVal = false;
           field = {
+            id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
             label: resultChainIndicator.id + "/" + i.toString(),
             initialValue: "",
@@ -192,6 +197,7 @@ const ResultIndicatorTargetsForm = ({
         if (i !== 12) {
           disabledVal = true;
           field = {
+            id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
             label: resultChainIndicator.id + "/" + i.toString(),
             initialValue: "",
@@ -201,6 +207,7 @@ const ResultIndicatorTargetsForm = ({
         } else {
           disabledVal = false;
           field = {
+            id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
             label: resultChainIndicator.id + "/" + i.toString(),
             initialValue: "",
@@ -215,6 +222,7 @@ const ResultIndicatorTargetsForm = ({
   const initialValues = Object.fromEntries(
     fields.map((field) => [field.name, field.initialValue])
   );
+  const idValues = Object.values(fields.map((field) => field.id));
   const SchemaObject = Object.fromEntries(
     fields.map((field) => [field.name, field.type])
   );
@@ -224,10 +232,22 @@ const ResultIndicatorTargetsForm = ({
       `/project/enter-target-quantitative-results-framework/${processLevelItemId}/${processLevelTypeId}`
     );
   };
+  // console.log(idValues);
+  // const indicatorTargets = Object.entries(initialValues);
+  // if (indicatorTargets.length > 0) {
+  //   for (const target of indicatorTargets) {
+  //     const resultChainIndicatorArray = target[0].toString().split("/");
+  //     console.log(resultChainIndicatorArray);
+  //   }
+  // }
+  const logResult = useCallback(() => {
+    for (let i = 0; i < 12; i++) {
+      console.log(idValues);
+    }
+  }, []);
   useEffect(() => {
-    function setCurrentFormValues() {}
-    setCurrentFormValues();
-  });
+    logResult();
+  }, [logResult]);
   return (
     <Formik
       initialValues={initialValues}

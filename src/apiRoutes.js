@@ -6,6 +6,7 @@ export const apiRoutes = {
   lookupItem: `${path}${process.env.REACT_APP_LOOKUP_PORT}/api/LookupItem`,
   lookupMaster: `${path}${process.env.REACT_APP_LOOKUP_PORT}/api/LookupMaster`,
   lookupOption: `${path}${process.env.REACT_APP_LOOKUP_PORT}/api/LookupOption`,
+  lookupMasterItem: `${path}${process.env.REACT_APP_LOOKUP_PORT}/api/LookupMasterItem`,
   //Settings
   donor: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/Donor`,
   amrefEntity: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/AmrefEntity`,

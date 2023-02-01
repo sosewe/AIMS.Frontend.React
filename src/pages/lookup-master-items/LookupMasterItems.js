@@ -5,6 +5,9 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Divider as MuiDivider,
   Link,
   Paper as MuiPaper,
@@ -14,8 +17,12 @@ import { NavLink } from "react-router-dom";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { Edit2 } from "react-feather";
 import { useQuery } from "@tanstack/react-query";
+import { getLookupMasters } from "../../api/lookup-master";
+import ManageLookup from "./ManageLookup";
+import { Eye } from "react-feather";
+import { getLookupOptionsById } from "../../api/lookup-option";
+import { toast } from "react-toastify";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -25,8 +32,37 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const LookupMasterItemsData = () => {
+  const [open, setOpen] = useState(false);
+  const [openLookupItem, setOpenLookupItem] = useState(false);
+  const [lookupMasterId, setLookupMasterId] = useState();
   const [pageSize, setPageSize] = useState(10);
-  const { data, isLoading, isError } = useQuery([""]);
+  const { data, isLoading, isError } = useQuery(
+    ["getLookupMasters"],
+    getLookupMasters
+  );
+  const {
+    data: lookupOptions,
+    isLoading: isLoadingLookupOption,
+    isError: isErrorLookupOptions,
+  } = useQuery(["getLookupOptionsById", lookupMasterId], getLookupOptionsById, {
+    enabled: !!lookupMasterId,
+  });
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleClickOpenLookupItems = (id) => {
+    setOpenLookupItem(true);
+    setLookupMasterId(id);
+  };
+  const handleCloseLookupItems = () => {
+    setOpenLookupItem(false);
+  };
+  const handleClick = () => {
+    setOpen(false);
+    toast("Successfully Configured Lookups", {
+      type: "success",
+    });
+  };
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -34,16 +70,15 @@ const LookupMasterItemsData = () => {
           mr={2}
           variant="contained"
           color="error"
-          // onClick={() => navigate("/lookup/new-lookup-master")}
+          onClick={() => setOpen(true)}
         >
           Manage Lookups
         </Button>
       </CardContent>
       <br />
       <Paper>
-        <div style={{ height: 400, width: "80%" }}>
+        <div style={{ height: 400, width: "100%" }}>
           <DataGrid
-            treeData
             rowsPerPageOptions={[5, 10, 25]}
             rows={isLoading || isError ? [] : data ? data.data : []}
             columns={[
@@ -66,9 +101,11 @@ const LookupMasterItemsData = () => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink to={`/lookup/new-lookup-master/${params.id}`}>
-                      <Button startIcon={<Edit2 />} size="small"></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<Eye />}
+                      size="small"
+                      onClick={() => handleClickOpenLookupItems(params.id)}
+                    ></Button>
                   </>
                 ),
               },
@@ -80,6 +117,45 @@ const LookupMasterItemsData = () => {
             getRowHeight={() => "auto"}
           />
         </div>
+        <Dialog
+          fullWidth={true}
+          maxWidth="md"
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Manage Lookups</DialogTitle>
+          <Divider />
+          <DialogContent>
+            <ManageLookup handleClick={handleClick} />
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          fullWidth={true}
+          maxWidth="md"
+          open={openLookupItem}
+          onClose={handleCloseLookupItems}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Lookup Items</DialogTitle>
+          <Divider />
+          <DialogContent>
+            {!isLoadingLookupOption && !isErrorLookupOptions
+              ? lookupOptions.data.map((lookupOption) => (
+                  <Typography
+                    variant="h3"
+                    gutterBottom
+                    display="inline"
+                    key={lookupOption.id}
+                  >
+                    {lookupOption.lookupItemName},&nbsp;
+                  </Typography>
+                ))
+              : ""}
+          </DialogContent>
+        </Dialog>
       </Paper>
     </Card>
   );
