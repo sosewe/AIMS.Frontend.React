@@ -17,11 +17,12 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { lookupItem, newLookupItem } from "../../api/lookup";
 import { toast } from "react-toastify";
+import { Guid } from "../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -44,6 +45,7 @@ const initialValues = {
 
 const LookupItemForm = () => {
   let { id } = useParams();
+  const navigate = useNavigate();
   const { data: lookupItemData } = useQuery(["lookup", id], lookupItem, {
     enabled: !!id,
   });
@@ -64,13 +66,27 @@ const LookupItemForm = () => {
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
       name: Yup.string().required("Required"),
-      alias: Yup.string().required("Required"),
+      alias: Yup.string(),
     }),
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
-      values.createDate = new Date();
-      mutation.mutate(values);
-      resetForm();
-      setSubmitting(false);
+    onSubmit: async (values) => {
+      try {
+        values.createDate = new Date();
+        if (id) {
+          values.id = id;
+          values.updateDate = new Date();
+        } else {
+          values.id = new Guid().toString();
+        }
+        mutation.mutate(values);
+        toast("Successfully Created LookupItem", {
+          type: "success",
+        });
+        navigate("/lookup/lookupItem");
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
     },
   });
 
