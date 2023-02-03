@@ -220,6 +220,8 @@ const GetProjectOutputs = ({
   processLevelTypeId,
 }) => {
   const [openDeleteResultChain, setOpenDeleteResultChain] = useState(false);
+  const [openIndicatorModal, setOpenIndicatorModal] = useState(false);
+  const [outcomeVal, setOutcomeVal] = useState();
   const [outputId, setOutputId] = useState();
   const queryClient = useQueryClient();
   const {
@@ -252,6 +254,12 @@ const GetProjectOutputs = ({
     await refetch();
     setOpenDeleteResultChain(false);
     await queryClient.invalidateQueries(["getResultChainByOutcomeId"]);
+  };
+  const handleClickIndicatorModal = async () => {
+    setOpenIndicatorModal(false);
+    await queryClient.invalidateQueries([
+      "getResultChainIndicatorsByResultChainId",
+    ]);
   };
   function handleCloseDeleteResult() {
     setOpenDeleteResultChain(false);
@@ -297,7 +305,14 @@ const GetProjectOutputs = ({
                     <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
                       <ThemeProvider theme={theme}>
                         <Stack direction="row" spacing={2}>
-                          <Button variant="contained" color="secondaryGray">
+                          <Button
+                            variant="contained"
+                            color="secondaryGray"
+                            onClick={() => {
+                              setOpenIndicatorModal(true);
+                              setOutcomeVal(output);
+                            }}
+                          >
                             <AddIcon /> Indicator
                           </Button>
                         </Stack>
@@ -338,6 +353,30 @@ const GetProjectOutputs = ({
             autoFocus
           >
             No
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openIndicatorModal}
+        onClose={() => setOpenIndicatorModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <AddIndicatorModal
+            processLevelItemId={processLevelItemId}
+            handleClick={handleClickIndicatorModal}
+            outcome={outcomeVal}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenIndicatorModal(false)}
+            color="primary"
+          >
+            Close
           </Button>
         </DialogActions>
       </Dialog>
@@ -481,6 +520,8 @@ const GetProjectOutcomes = ({
                     <GetProjectOutputs
                       outcomeId={outcome.id}
                       resultLevelOptionId={resultLevelOptionId}
+                      processLevelItemId={processLevelItemId}
+                      processLevelTypeId={processLevelTypeId}
                     />
                   </CardContent>
                 </Card>
