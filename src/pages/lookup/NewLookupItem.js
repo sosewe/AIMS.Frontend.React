@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -46,6 +46,7 @@ const initialValues = {
 const LookupItemForm = () => {
   let { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: lookupItemData } = useQuery(["lookup", id], lookupItem, {
     enabled: !!id,
   });
@@ -81,6 +82,7 @@ const LookupItemForm = () => {
         toast("Successfully Created LookupItem", {
           type: "success",
         });
+        await queryClient.invalidateQueries(["lookupItems"]);
         navigate("/lookup/lookupItem");
       } catch (error) {
         toast(error.response.data, {
