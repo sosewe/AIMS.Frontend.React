@@ -74,7 +74,7 @@ const ProjectView = () => {
           <Grid item xs={12} md={6}>
             <Link
               component={NavLink}
-              to="/project/projects"
+              to={`/project/monitoring/project-monitoring/${id}`}
               color="indianred"
               variant="h3"
             >

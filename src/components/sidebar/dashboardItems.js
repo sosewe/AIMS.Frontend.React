@@ -1,4 +1,11 @@
-import { Shuffle, Layers, Clipboard, Settings, Slack } from "react-feather";
+import {
+  Shuffle,
+  Layers,
+  Clipboard,
+  Settings,
+  Slack,
+  Grid,
+} from "react-feather";
 
 const projectSection = [
   {
@@ -97,6 +104,16 @@ const configurationSection = [
 ];
 
 const navItems = [
+  {
+    title: "",
+    pages: [
+      {
+        title: "Implementation Offices",
+        href: "/",
+        icon: Grid,
+      },
+    ],
+  },
   {
     title: "Programmes",
     pages: programmeSection,

@@ -45,25 +45,25 @@ function Footer() {
           xs={12}
           md={6}
         >
-          <List>
-            <ListItemButton component="a" href="#">
-              <ListItemText primary="Support" />
-            </ListItemButton>
-            <ListItemButton component="a" href="#">
-              <ListItemText primary="Help Center" />
-            </ListItemButton>
-            <ListItemButton component="a" href="#">
-              <ListItemText primary="Privacy" />
-            </ListItemButton>
-            <ListItemButton component="a" href="#">
-              <ListItemText primary="Terms of Service" />
-            </ListItemButton>
-          </List>
+          {/*<List>*/}
+          {/*  <ListItemButton component="a" href="#">*/}
+          {/*    <ListItemText primary="Support" />*/}
+          {/*  </ListItemButton>*/}
+          {/*  <ListItemButton component="a" href="#">*/}
+          {/*    <ListItemText primary="Help Center" />*/}
+          {/*  </ListItemButton>*/}
+          {/*  <ListItemButton component="a" href="#">*/}
+          {/*    <ListItemText primary="Privacy" />*/}
+          {/*  </ListItemButton>*/}
+          {/*  <ListItemButton component="a" href="#">*/}
+          {/*    <ListItemText primary="Terms of Service" />*/}
+          {/*  </ListItemButton>*/}
+          {/*</List>*/}
         </Grid>
         <Grid container item xs={12} md={6} justifyContent="flex-end">
           <List>
             <ListItemButton>
-              <ListItemText primary={`© ${new Date().getFullYear()} - Mira`} />
+              <ListItemText primary={`© ${new Date().getFullYear()} - AMREF`} />
             </ListItemButton>
           </List>
         </Grid>

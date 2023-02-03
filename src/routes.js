@@ -96,6 +96,9 @@ const AdministrativeUnits = async(() =>
 const NewAdministrativeUnit = async(() =>
   import("./pages/administrative-units/NewAdministrativeUnit")
 );
+const ProjectMonitoring = async(() =>
+  import("./pages/project/monitoring/ProjectMonitoring")
+);
 
 const routes = [
   {
@@ -215,6 +218,10 @@ const routes = [
       {
         path: "project-indicator-targets/:processLevelItemId/:processLevelTypeId/:projectLocationId/:year",
         element: <ProjectIndicatorTargets />,
+      },
+      {
+        path: "monitoring/project-monitoring/:id",
+        element: <ProjectMonitoring />,
       },
     ],
   },
