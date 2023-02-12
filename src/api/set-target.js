@@ -15,6 +15,7 @@ export const getSetTarget = async ({ queryKey }) => {
     implementationYearId,
     monthId,
   ] = queryKey;
+  console.log(queryKey);
   return await axios.get(
     `${apiRoutes.setTarget}/GetSetTarget/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${resultChainIndicatorId}/${implementationYearId}/${monthId}`
   );

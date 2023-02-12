@@ -99,6 +99,9 @@ const NewAdministrativeUnit = async(() =>
 const ProjectMonitoring = async(() =>
   import("./pages/project/monitoring/ProjectMonitoring")
 );
+const TableQuantitativeResults = async(() =>
+  import("./pages/project/monitoring/TableQuantitativeResults")
+);
 
 const routes = [
   {
@@ -208,7 +211,7 @@ const routes = [
         element: <ProjectDetail />,
       },
       {
-        path: "design-project/:id",
+        path: "design-project/:id/:processLevelTypeId",
         element: <DesignProject />,
       },
       {
@@ -220,8 +223,12 @@ const routes = [
         element: <ProjectIndicatorTargets />,
       },
       {
-        path: "monitoring/project-monitoring/:id",
+        path: "monitoring/project-monitoring/:processLevelItemId/:processLevelTypeId",
         element: <ProjectMonitoring />,
+      },
+      {
+        path: "monitoring/table-quantitative-results/:processLevelItemId/:processLevelTypeId/:projectLocationId/:year",
+        element: <TableQuantitativeResults />,
       },
     ],
   },

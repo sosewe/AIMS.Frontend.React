@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { getProjectById } from "../../../api/project";
 import { toast } from "react-toastify";
+import { getLookupMasterItemsByName } from "../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -23,6 +24,7 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
 const ProjectView = () => {
+  let processLevelTypeId;
   let { id } = useParams();
   const { isLoading, data, error } = useQuery(
     ["getProjectById", id],
@@ -35,6 +37,22 @@ const ProjectView = () => {
     toast(error.response.data, {
       type: "error",
     });
+  }
+  const { isLoading: isLoadingProcessLevelType, data: processLevelData } =
+    useQuery(
+      ["processLevelType", "ProcessLevelType"],
+      getLookupMasterItemsByName,
+      {
+        refetchOnWindowFocus: false,
+      }
+    );
+  if (!isLoadingProcessLevelType) {
+    const projectProcessLevel = processLevelData.data.filter(
+      (obj) => obj.lookupItemName === "Project"
+    );
+    if (projectProcessLevel.length > 0) {
+      processLevelTypeId = projectProcessLevel[0].lookupItemId;
+    }
   }
   return (
     <Card mb={12}>
@@ -50,9 +68,10 @@ const ProjectView = () => {
           <Grid item xs={12} md={6}>
             <Link
               component={NavLink}
-              to={`/project/design-project/${id}`}
+              to={`/project/design-project/${id}/${processLevelTypeId}`}
               color="indianred"
               variant="h3"
+              disabled={!!processLevelTypeId}
             >
               Design
             </Link>
@@ -74,9 +93,10 @@ const ProjectView = () => {
           <Grid item xs={12} md={6}>
             <Link
               component={NavLink}
-              to={`/project/monitoring/project-monitoring/${id}`}
+              to={`/project/monitoring/project-monitoring/${id}/${processLevelTypeId}`}
               color="indianred"
               variant="h3"
+              disabled={!!processLevelTypeId}
             >
               Monitoring
             </Link>
