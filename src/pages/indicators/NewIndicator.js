@@ -665,6 +665,7 @@ const NewIndicatorForm = () => {
   const [open, setOpen] = useState(false);
   const [openAggregate, setOpenAggregate] = useState(false);
   const [openAttributeTypes, setOpenAttributeTypes] = useState(false);
+  const [isNumberMeasure, setIsNumberMeasure] = useState(false);
   const [subThemesArray, setSubThemesArray] = useState([]);
   const navigate = useNavigate();
   const [aggregateDisAggregateArray, setAggregateDisAggregateArray] = useState(
@@ -682,7 +683,7 @@ const NewIndicatorForm = () => {
     data,
     isLoading,
     isError: isErrorAllIndicators,
-  } = useQuery(["getAllIndicators"], getAllIndicators, {
+  } = useQuery(["getAllIndicators", 1, 5], getAllIndicators, {
     retry: 0,
   });
   // fetch IndicatorType Lookup
@@ -1046,6 +1047,17 @@ const NewIndicatorForm = () => {
     );
   }
 
+  const onChangeIndicatorMeasure = (e) => {
+    const indicatorMeasure = e.target.value;
+    if (indicatorMeasure.lookupItemName === "Number(#)") {
+      setIsNumberMeasure(true);
+    } else if (indicatorMeasure.lookupItemName === "Percentage(%)") {
+      setIsNumberMeasure(false);
+    } else {
+      setIsNumberMeasure(false);
+    }
+  };
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card mb={12}>
@@ -1149,7 +1161,10 @@ const NewIndicatorForm = () => {
                       formik.errors.indicatorMeasure
                     }
                     onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      onChangeIndicatorMeasure(e);
+                    }}
                     variant="outlined"
                     my={2}
                   >
@@ -1239,6 +1254,12 @@ const NewIndicatorForm = () => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
+                    disabled={!isNumberMeasure}
+                    sx={{
+                      "& .MuiInputBase-input.Mui-disabled": {
+                        backgroundColor: "#e9ecef",
+                      },
+                    }}
                   >
                     <MenuItem disabled value="">
                       Select Indicator Calculation
@@ -1375,6 +1396,12 @@ const NewIndicatorForm = () => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
+                    disabled={!isNumberMeasure}
+                    sx={{
+                      "& .MuiInputBase-input.Mui-disabled": {
+                        backgroundColor: "#e9ecef",
+                      },
+                    }}
                   >
                     <MenuItem disabled value="">
                       Select Indicator Cumulative

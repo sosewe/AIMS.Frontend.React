@@ -31,6 +31,13 @@ export const getLookupItemByName = async ({ queryKey }) => {
   return await axios.get(`${apiRoutes.lookupItem}/getLookupItemByName/${name}`);
 };
 
+export const getLookupItemByAlias = async ({ queryKey }) => {
+  const [, alias] = queryKey;
+  return await axios.get(
+    `${apiRoutes.lookupItem}/getLookupItemByAlias/${alias}`
+  );
+};
+
 export const getAMREFStaffList = async () => {
   return await axios.get(apiRoutes.personnel);
 };

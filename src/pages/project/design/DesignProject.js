@@ -75,6 +75,8 @@ const DesignProject = () => {
         <Tab label="Geographic Focus" {...a11yProps(2)} />
         <Tab label="Objectives" {...a11yProps(3)} />
         <Tab label="Results Framework" {...a11yProps(4)} />
+        <Tab label="Innovation" {...a11yProps(5)} />
+        <Tab label="Advocacy" {...a11yProps(6)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <NewProjectForm id={id} />
@@ -90,6 +92,12 @@ const DesignProject = () => {
       </TabPanel>
       <TabPanel value={value} index={4}>
         <ResultsFramework id={id} processLevelTypeId={processLevelTypeId} />
+      </TabPanel>
+      <TabPanel index={5} value={value}>
+        Innovation
+      </TabPanel>
+      <TabPanel index={6} value={value}>
+        Advocacy
       </TabPanel>
     </Box>
   );
