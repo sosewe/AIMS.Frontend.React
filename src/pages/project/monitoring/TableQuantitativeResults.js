@@ -54,6 +54,8 @@ const TableRowReturned = ({
   projectTargets,
   year,
   processLevelItemId,
+  processLevelTypeId,
+  projectLocationId,
 }) => {
   let hasTargets = false;
   let hasResults = false;
@@ -114,11 +116,19 @@ const TableRowReturned = ({
       )}
       {hasResults ? (
         <TableCell align="center">
-          <NavLink to={``}>Edit Actual</NavLink>
+          <NavLink
+            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}`}
+          >
+            Edit Actual
+          </NavLink>
         </TableCell>
       ) : (
         <TableCell align="center">
-          <NavLink to={``}>Create Actual</NavLink>
+          <NavLink
+            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}`}
+          >
+            Create Actual
+          </NavLink>
         </TableCell>
       )}
     </TableRow>
@@ -352,6 +362,8 @@ const TableQuantitativeResultsGrid = () => {
                       projectTargets={projectTargets.data}
                       year={implementingYear}
                       processLevelItemId={processLevelItemId}
+                      processLevelTypeId={processLevelTypeId}
+                      projectLocationId={projectLocationId}
                     />
                   ) : (
                     ""
