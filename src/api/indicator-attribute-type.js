@@ -7,3 +7,10 @@ export const saveIndicatorAttributeTypes = async (values) => {
     values
   );
 };
+
+export const getIndicatorAttributeType = async ({ queryKey }) => {
+  const [, indicatorAttributeTypeId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.indicatorAttributeType}/${indicatorAttributeTypeId}`
+  );
+};

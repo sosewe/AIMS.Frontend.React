@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { lookupItem } from "../../../api/lookup";
 import ResultChainAggregateField from "./ResultChainAggregateField";
 import ResultChainIndicatorField from "./ResultChainIndicatorField";
+import EnterQuantitativeResultsIndicatorAttribute from "./EnterQuantitativeResultsIndicatorAttribute";
 
 const EnterQuantitativeResultField = ({ resultChainIndicator, formik }) => {
   let measureType;
@@ -58,6 +59,23 @@ const EnterQuantitativeResultField = ({ resultChainIndicator, formik }) => {
             </React.Fragment>
           )}
         </Grid>
+      </Grid>
+      <Grid item md={5}>
+        {resultChainIndicator.indicator.indicatorAttributeTypes.length > 0
+          ? resultChainIndicator.indicator.indicatorAttributeTypes.map(
+              (indicatorAttributeType) => {
+                return (
+                  <React.Fragment key={Math.random().toString(36)}>
+                    <EnterQuantitativeResultsIndicatorAttribute
+                      indicatorAttributeType={indicatorAttributeType}
+                      formik={formik}
+                      resultChainIndicator={resultChainIndicator}
+                    />
+                  </React.Fragment>
+                );
+              }
+            )
+          : ""}
       </Grid>
     </Grid>
   );
