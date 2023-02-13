@@ -234,7 +234,7 @@ const routes = [
         element: <TableQuantitativeResults />,
       },
       {
-        path: "monitoring/enter-quantitative-results/:processLevelItemId/:processLevelTypeId/:projectLocationId/:monthId",
+        path: "monitoring/enter-quantitative-results/:processLevelItemId/:processLevelTypeId/:projectLocationId/:monthId/:year",
         element: <EnterQuantitativeResults />,
       },
     ],

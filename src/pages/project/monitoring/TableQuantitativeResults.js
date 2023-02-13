@@ -117,7 +117,7 @@ const TableRowReturned = ({
       {hasResults ? (
         <TableCell align="center">
           <NavLink
-            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}`}
+            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}/${year}`}
           >
             Edit Actual
           </NavLink>
@@ -125,7 +125,7 @@ const TableRowReturned = ({
       ) : (
         <TableCell align="center">
           <NavLink
-            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}`}
+            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}/${year}`}
           >
             Create Actual
           </NavLink>
