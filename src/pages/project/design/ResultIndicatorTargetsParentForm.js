@@ -205,7 +205,6 @@ const ResultIndicatorTargetsParentForm = ({
     validationSchema: ValidationSchema,
     onSubmit: async (values) => {
       try {
-        console.log(values);
         const InData = [];
         const e = new Guid();
         const indicatorTargets = Object.entries(values);

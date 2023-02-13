@@ -7,3 +7,10 @@ export const saveResultChainAggregate = async (resultChainAggregate) => {
     resultChainAggregate
   );
 };
+
+export const getResultChainAggregate = async ({ queryKey }) => {
+  const [, resultChainAggregateId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.resultChainAggregate}/${resultChainAggregateId}`
+  );
+};

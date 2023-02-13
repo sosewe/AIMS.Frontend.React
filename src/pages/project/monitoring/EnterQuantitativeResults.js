@@ -12,7 +12,6 @@ import {
   Grid,
   Link,
   MenuItem,
-  Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
@@ -24,6 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName, lookupItem } from "../../../api/lookup";
 import { getProjectLocation, getProjectLocations } from "../../../api/location";
 import EnterQuantitativeResultsForm from "./EnterQuantitativeResultsForm";
+import { getResultChainIndicatorByProjectId } from "../../../api/result-chain-indicator";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -31,7 +31,6 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
   location: "",
@@ -93,6 +92,15 @@ const EnterQuantitativeResultsFormContainer = ({
   } = useQuery(["Months", "Months"], getLookupMasterItemsByName, {
     refetchOnWindowFocus: false,
   });
+  const {
+    data: resultChainIndicators,
+    isLoading: isLoadingResultChainIndicators,
+    isError: isErrorResultChainIndicators,
+  } = useQuery(
+    ["getResultChainIndicatorByProjectId", processLevelItemId],
+    getResultChainIndicatorByProjectId,
+    { enabled: !!processLevelItemId }
+  );
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -259,14 +267,25 @@ const EnterQuantitativeResultsFormContainer = ({
         <Grid
           container
           direction="row"
-          justifyContent="center"
-          alignItems="center"
+          justifyContent="left"
+          alignItems="left"
+          spacing={6}
         >
           <Grid item md={1}>
             #
           </Grid>
           <Grid item md={11}>
-            <EnterQuantitativeResultsForm />
+            &nbsp;
+          </Grid>
+          <Grid item md={12}>
+            {!isLoadingResultChainIndicators &&
+            !isErrorResultChainIndicators ? (
+              <EnterQuantitativeResultsForm
+                resultChainIndicators={resultChainIndicators.data}
+              />
+            ) : (
+              ""
+            )}
           </Grid>
         </Grid>
       </Card>
