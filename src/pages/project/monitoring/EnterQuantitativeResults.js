@@ -23,6 +23,7 @@ import * as Yup from "yup";
 import { useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName, lookupItem } from "../../../api/lookup";
 import { getProjectLocation, getProjectLocations } from "../../../api/location";
+import EnterQuantitativeResultsForm from "./EnterQuantitativeResultsForm";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -30,6 +31,7 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 const TextField = styled(MuiTextField)(spacing);
+const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
   location: "",
@@ -253,6 +255,21 @@ const EnterQuantitativeResultsFormContainer = ({
           </CardContent>
         </Card>
       </form>
+      <Card mb={6}>
+        <Grid
+          container
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Grid item md={1}>
+            #
+          </Grid>
+          <Grid item md={11}>
+            <EnterQuantitativeResultsForm />
+          </Grid>
+        </Grid>
+      </Card>
     </React.Fragment>
   );
 };
