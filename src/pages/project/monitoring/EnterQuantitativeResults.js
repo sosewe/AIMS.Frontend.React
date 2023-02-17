@@ -22,8 +22,10 @@ import * as Yup from "yup";
 import { useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName, lookupItem } from "../../../api/lookup";
 import { getProjectLocation, getProjectLocations } from "../../../api/location";
-import EnterQuantitativeResultsForm from "./EnterQuantitativeResultsForm";
 import { getResultChainIndicatorByProjectId } from "../../../api/result-chain-indicator";
+import EnterQuantitativeResultsForm from "./EnterQuantitativeResultsForm";
+import { getIndicatorAttributeTypes } from "../../../api/indicator-attribute-type";
+import { getAllAttributeResponseOptions } from "../../../api/attribute-response-option";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -100,6 +102,19 @@ const EnterQuantitativeResultsFormContainer = ({
     ["getResultChainIndicatorByProjectId", processLevelItemId],
     getResultChainIndicatorByProjectId,
     { enabled: !!processLevelItemId }
+  );
+  const {
+    data: IndicatorAttributesTypes,
+    isLoading: isLoadingIndicatorAttributesTypes,
+    isError: isErrorIndicatorAttributesTypes,
+  } = useQuery(["getIndicatorAttributeTypes"], getIndicatorAttributeTypes);
+  const {
+    data: AllAttributeResponseOptions,
+    isLoading: isLoadingAttributeResponseOptions,
+    isError: isErrorAttributeResponseOptions,
+  } = useQuery(
+    ["getAllAttributeResponseOptions"],
+    getAllAttributeResponseOptions
   );
   const formik = useFormik({
     initialValues: initialValues,
@@ -279,9 +294,15 @@ const EnterQuantitativeResultsFormContainer = ({
           </Grid>
           <Grid item md={12}>
             {!isLoadingResultChainIndicators &&
-            !isErrorResultChainIndicators ? (
+            !isErrorResultChainIndicators &&
+            !isLoadingIndicatorAttributesTypes &&
+            !isErrorIndicatorAttributesTypes &&
+            !isLoadingAttributeResponseOptions &&
+            !isErrorAttributeResponseOptions ? (
               <EnterQuantitativeResultsForm
                 resultChainIndicators={resultChainIndicators.data}
+                indicatorAttributesTypes={IndicatorAttributesTypes.data}
+                allAttributeResponseOptions={AllAttributeResponseOptions.data}
               />
             ) : (
               ""

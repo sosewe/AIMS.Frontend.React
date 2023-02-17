@@ -14,3 +14,7 @@ export const getIndicatorAttributeType = async ({ queryKey }) => {
     `${apiRoutes.indicatorAttributeType}/${indicatorAttributeTypeId}`
   );
 };
+
+export const getIndicatorAttributeTypes = async () => {
+  return await axios.get(`${apiRoutes.indicatorAttributeType}`);
+};

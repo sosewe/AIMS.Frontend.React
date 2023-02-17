@@ -7,3 +7,7 @@ export const getAttributeResponseOptions = async ({ queryKey }) => {
     `${apiRoutes.attributeResponseOption}/GetAllByAttributeTypeId/${attributeTypeId}`
   );
 };
+
+export const getAllAttributeResponseOptions = async () => {
+  return await axios.get(`${apiRoutes.attributeResponseOption}`);
+};
