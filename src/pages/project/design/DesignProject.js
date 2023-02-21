@@ -10,6 +10,8 @@ import GeoFocus from "./GeoFocus";
 import ProjectObjectives from "./ProjectObjectives";
 import ThematicFocus from "./ThematicFocus";
 import ResultsFramework from "./ResultsFramework";
+import Innovation from "./Innovation/Innovation";
+import Advocacy from "./Advocacy/Advocacy";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -94,10 +96,10 @@ const DesignProject = () => {
         <ResultsFramework id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel index={5} value={value}>
-        Innovation
+        <Innovation id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel index={6} value={value}>
-        Advocacy
+        <Advocacy id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
     </Box>
   );

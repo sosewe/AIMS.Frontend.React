@@ -108,6 +108,7 @@ const initialValues = {
   indicatorCumulative: "",
   indicatorStatus: "",
   reference: "",
+  indicatorRelationshipTypeId: "",
 };
 
 const AttributesTypeForm = ({
@@ -739,6 +740,18 @@ const NewIndicatorForm = () => {
         refetchOnWindowFocus: false,
       }
     );
+  // IndicatorRelationshipType
+  const {
+    data: IndicatorRelationshipType,
+    isLoading: isLoadingIndicatorRelationshipType,
+    isError: isErrorIndicatorRelationshipType,
+  } = useQuery(
+    ["IndicatorRelationshipType", "IndicatorRelationshipType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
   // fetch getAttributeTypes
   const {
     data: dataAttributeTypes,
@@ -772,10 +785,13 @@ const NewIndicatorForm = () => {
     validationSchema: Yup.object().shape({
       name: Yup.string().required("Required"),
       code: Yup.string().required("Required"),
-      indicatorTypeId: Yup.string().required("Required"),
-      indicatorCalculationId: Yup.string().required("Required"),
+      indicatorTypeId: Yup.object().required("Required"),
       definition: Yup.string().required("Required"),
       indicatorMeasure: Yup.object().required("Required"),
+      indicatorCalculationId: Yup.string().when("indicatorMeasure", {
+        is: (val) => val && val.lookupItemName === "Percentage(%)",
+        then: Yup.string().required("Indicator Calculation Is Required"),
+      }),
       numeratorId: Yup.string().when("indicatorMeasure", {
         is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Must enter Numerator"),
@@ -785,9 +801,19 @@ const NewIndicatorForm = () => {
         is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Must enter Denominator"),
       }),
-      indicatorCumulative: Yup.string().required("Required"),
+      indicatorCumulative: Yup.string().when("indicatorMeasure", {
+        is: (val) => val && val.lookupItemName === "Number(#)",
+        then: Yup.string().required("Indicator Cumulative Is Required"),
+      }),
+      indicatorCalculationType: Yup.string().when("indicatorMeasure", {
+        is: (val) => val && val.lookupItemName === "Percentage(%)",
+        then: Yup.string().required("Indicator Calculation Type Is Required"),
+      }),
       indicatorMeasureType: Yup.object().required("Required"),
-      indicatorCalculationType: Yup.string().required("Required"),
+      indicatorRelationshipTypeId: Yup.string().when("indicatorTypeId", {
+        is: (val) => val && val.lookupItemName === "SI",
+        then: Yup.string().required("Indicator Relationship Type Is Required"),
+      }),
       indicatorStatus: Yup.string().required("Required"),
       reference: Yup.string().required("Required"),
     }),
@@ -795,6 +821,7 @@ const NewIndicatorForm = () => {
       values.createDate = new Date();
       values.indicatorMeasure = values.indicatorMeasure.lookupItemId;
       values.indicatorMeasureType = values.indicatorMeasureType.lookupItemId;
+      values.indicatorTypeId = values.indicatorTypeId.lookupItemId;
       if (id) {
         values.id = id;
       } else {
@@ -918,16 +945,22 @@ const NewIndicatorForm = () => {
   useEffect(() => {
     function setCurrentFormValues() {
       let indicatorMeasure;
+      let indicatorTypeId;
       if (!isLoadingIndicatorMeasure && IndicatorData) {
         indicatorMeasure = indicatorMeasureData.data.find(
           (obj) => obj.lookupItemId === IndicatorData.data.indicatorMeasure
+        );
+      }
+      if (!isLoadingIndicatorType && IndicatorData) {
+        indicatorTypeId = IndicatorData.data.find(
+          (obj) => obj.lookupItemId === IndicatorData.data.indicatorTypeId
         );
       }
       if (IndicatorData) {
         formik.setValues({
           name: IndicatorData.data.name,
           code: IndicatorData.data.code,
-          indicatorTypeId: IndicatorData.data.indicatorTypeId,
+          indicatorTypeId: indicatorTypeId,
           indicatorMeasure: indicatorMeasure,
           definition: IndicatorData.data.definition,
           indicatorCalculationId: IndicatorData.data.indicatorCalculationId,
@@ -1080,7 +1113,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="name"
                     label="Indicator Name"
-                    required
                     value={formik.values.name}
                     error={Boolean(formik.touched.name && formik.errors.name)}
                     fullWidth
@@ -1097,7 +1129,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="code"
                     label="Indicator Code"
-                    required
                     value={formik.values.code}
                     error={Boolean(formik.touched.code && formik.errors.code)}
                     fullWidth
@@ -1112,7 +1143,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="indicatorTypeId"
                     label="Indicator Type"
-                    required
                     select
                     value={formik.values.indicatorTypeId}
                     error={Boolean(
@@ -1134,10 +1164,7 @@ const NewIndicatorForm = () => {
                     </MenuItem>
                     {!isLoadingIndicatorType
                       ? indicatorTypeData.data.map((option) => (
-                          <MenuItem
-                            key={option.lookupItemId}
-                            value={option.lookupItemId}
-                          >
+                          <MenuItem key={option.lookupItemId} value={option}>
                             {option.lookupItemName}
                           </MenuItem>
                         ))
@@ -1148,7 +1175,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="indicatorMeasure"
                     label="Indicator Measure"
-                    required
                     select
                     value={formik.values.indicatorMeasure}
                     error={Boolean(
@@ -1184,7 +1210,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="indicatorMeasureType"
                     label="Indicator Measure Type"
-                    required
                     select
                     value={formik.values.indicatorMeasureType}
                     error={Boolean(
@@ -1213,6 +1238,42 @@ const NewIndicatorForm = () => {
                       : []}
                   </TextField>
                 </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="indicatorRelationshipTypeId"
+                    label="Indicator Relationship Type"
+                    select
+                    value={formik.values.indicatorRelationshipTypeId}
+                    error={Boolean(
+                      formik.touched.indicatorRelationshipTypeId &&
+                        formik.errors.indicatorRelationshipTypeId
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.indicatorRelationshipTypeId &&
+                      formik.errors.indicatorRelationshipTypeId
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Indicator Relationship Type
+                    </MenuItem>
+                    {!isLoadingIndicatorRelationshipType &&
+                    !isErrorIndicatorRelationshipType
+                      ? IndicatorRelationshipType.data.map((option) => (
+                          <MenuItem
+                            key={option.lookupItemId}
+                            value={option.lookupItemId}
+                          >
+                            {option.lookupItemName}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
               </Grid>
               <TextField
                 name="definition"
@@ -1228,7 +1289,6 @@ const NewIndicatorForm = () => {
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 multiline
-                required
                 variant="outlined"
                 rows={3}
                 my={2}
@@ -1238,7 +1298,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="indicatorCalculationId"
                     label="Indicator Calculation"
-                    required
                     select
                     value={formik.values.indicatorCalculationId}
                     error={Boolean(
@@ -1254,7 +1313,7 @@ const NewIndicatorForm = () => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
-                    disabled={!isNumberMeasure}
+                    disabled={isNumberMeasure}
                     sx={{
                       "& .MuiInputBase-input.Mui-disabled": {
                         backgroundColor: "#e9ecef",
@@ -1280,7 +1339,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="indicatorCalculationType"
                     label="Indicator Calculation Type"
-                    required
                     select
                     value={formik.values.indicatorCalculationType}
                     error={Boolean(
@@ -1296,6 +1354,12 @@ const NewIndicatorForm = () => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
+                    disabled={isNumberMeasure}
+                    sx={{
+                      "& .MuiInputBase-input.Mui-disabled": {
+                        backgroundColor: "#e9ecef",
+                      },
+                    }}
                   >
                     <MenuItem disabled value="">
                       Select Indicator Calculation Type
@@ -1380,7 +1444,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="indicatorCumulative"
                     label="Indicator Cumulative"
-                    required
                     select
                     value={formik.values.indicatorCumulative}
                     error={Boolean(
@@ -1422,7 +1485,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="indicatorStatus"
                     label="Indicator Status"
-                    required
                     select
                     value={formik.values.indicatorStatus}
                     error={Boolean(
@@ -1458,7 +1520,6 @@ const NewIndicatorForm = () => {
                   <TextField
                     name="reference"
                     label="Reference"
-                    required
                     value={formik.values.reference}
                     error={Boolean(
                       formik.touched.reference && formik.errors.reference
