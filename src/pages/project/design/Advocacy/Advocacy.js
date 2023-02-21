@@ -1,12 +1,10 @@
 import React from "react";
 import styled from "@emotion/styled";
 import {
-  Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
   Grid,
   MenuItem,
-  Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
@@ -20,8 +18,6 @@ import { toast } from "react-toastify";
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Button = styled(MuiButton)(spacing);
-const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
   title: "",
