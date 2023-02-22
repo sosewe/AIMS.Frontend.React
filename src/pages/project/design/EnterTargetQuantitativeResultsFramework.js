@@ -69,14 +69,10 @@ const theme = createTheme({
 
 const initialValuesOutput = {
   output: "",
-  outputCode: "",
-  order: "",
 };
 
 const initialValuesOutcome = {
   outcome: "",
-  code: "",
-  order: "",
 };
 
 const initialValues = {
@@ -87,27 +83,26 @@ const initialValues = {
 const AddOutputModal = ({ outcome, resultLevelOptionId, handleClick }) => {
   let { processLevelItemId, processLevelTypeId } = useParams();
   const queryClient = useQueryClient();
-
   const mutation = useMutation({ mutationFn: saveResultChain });
   const formik = useFormik({
     initialValues: initialValuesOutput,
     validationSchema: Yup.object().shape({
       output: Yup.string().required("Required"),
-      outputCode: Yup.string().required("Required"),
-      order: Yup.number().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const resultChain = {
           id: new Guid().toString(),
-          code: values.outputCode,
+          // code: values.outputCode,
           name: values.output,
-          order: values.order,
+          // order: values.order,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
           createDate: new Date(),
           resultLevelId: resultLevelOptionId,
           resultLevelNameId: outcome.id,
+          type: "Output",
+          prev: outcome.code,
         };
         await mutation.mutateAsync(resultChain);
         await queryClient.invalidateQueries(["getResultChainByObjectiveId"]);
@@ -142,7 +137,7 @@ const AddOutputModal = ({ outcome, resultLevelOptionId, handleClick }) => {
           ) : (
             <>
               <Grid container spacing={6}>
-                <Grid item md={4}>
+                <Grid item md={12}>
                   <TextField
                     name="output"
                     label="Output"
@@ -157,40 +152,8 @@ const AddOutputModal = ({ outcome, resultLevelOptionId, handleClick }) => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
-                  />
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="outputCode"
-                    label="Output Code"
-                    required
-                    value={formik.values.outputCode}
-                    error={Boolean(
-                      formik.touched.outputCode && formik.errors.outputCode
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.outputCode && formik.errors.outputCode
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  />
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="order"
-                    label="Order"
-                    required
-                    value={formik.values.order}
-                    error={Boolean(formik.touched.order && formik.errors.order)}
-                    fullWidth
-                    helperText={formik.touched.order && formik.errors.order}
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
+                    multiline
+                    rows={3}
                   />
                 </Grid>
               </Grid>
@@ -604,7 +567,12 @@ const GetProjectOutcomes = ({
     </Grid>
   );
 };
-const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
+const AddOutcomeModal = ({
+  lookupItemId,
+  projectObjective,
+  projectObjectiveIndex,
+  handleClick,
+}) => {
   let { processLevelItemId, processLevelTypeId } = useParams();
   const queryClient = useQueryClient();
 
@@ -613,21 +581,19 @@ const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
     initialValues: initialValuesOutcome,
     validationSchema: Yup.object().shape({
       outcome: Yup.string().required("Required"),
-      code: Yup.string().required("Required"),
-      order: Yup.number().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const resultChain = {
           id: new Guid().toString(),
-          code: values.code,
           name: values.outcome,
-          order: values.order,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
           createDate: new Date(),
           resultLevelId: lookupItemId,
           resultLevelNameId: projectObjective.id,
+          type: "Outcome",
+          prev: projectObjectiveIndex + 1,
         };
         await mutation.mutateAsync(resultChain);
         await queryClient.invalidateQueries(["getResultChainByObjectiveId"]);
@@ -662,7 +628,7 @@ const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
           ) : (
             <>
               <Grid container spacing={6}>
-                <Grid item md={4}>
+                <Grid item md={12}>
                   <TextField
                     name="outcome"
                     label="Outcome"
@@ -677,36 +643,8 @@ const AddOutcomeModal = ({ lookupItemId, projectObjective, handleClick }) => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
-                  />
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="code"
-                    label="Code"
-                    required
-                    value={formik.values.code}
-                    error={Boolean(formik.touched.code && formik.errors.code)}
-                    fullWidth
-                    helperText={formik.touched.code && formik.errors.code}
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  />
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="order"
-                    label="Order"
-                    required
-                    value={formik.values.order}
-                    error={Boolean(formik.touched.order && formik.errors.order)}
-                    fullWidth
-                    helperText={formik.touched.order && formik.errors.order}
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
+                    rows={3}
+                    multiline
                   />
                 </Grid>
               </Grid>
@@ -878,6 +816,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [openOutcomeModal, setOpenOutcomeModal] = useState(false);
+  const [projectObjectiveIndex, setProjectObjectiveIndex] = useState(false);
   const [projectObjectiveVal, setProjectObjective] = useState(false);
   const [openDeleteObjective, setOpenDeleteObjective] = useState(false);
   const [projectObjectiveId, setProjectObjectiveId] = useState();
@@ -960,7 +899,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
         <Grid container spacing={2}>
           {!isLoadingProjectObjectives &&
             !isErrorProjectObjectives &&
-            projectObjectives.data.map((projectObjective) => (
+            projectObjectives.data.map((projectObjective, index) => (
               <Grid item md={12} key={projectObjective.id}>
                 <ThemeProvider theme={theme}>
                   <Card>
@@ -988,6 +927,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
                                   color="secondaryGray"
                                   onClick={() => {
                                     setOpenOutcomeModal(true);
+                                    setProjectObjectiveIndex(index);
                                     setProjectObjective(projectObjective);
                                   }}
                                 >
@@ -1041,6 +981,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
           <AddOutcomeModal
             lookupItemId={lookupItemId}
             projectObjective={projectObjectiveVal}
+            projectObjectiveIndex={projectObjectiveIndex}
             handleClick={handleClick}
           />
         </DialogContent>
