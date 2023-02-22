@@ -26,7 +26,7 @@ import { purple, grey } from "@mui/material/colors";
 import { spacing } from "@mui/system";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Helmet } from "react-helmet-async";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../api/lookup";
 import { useFormik } from "formik";
@@ -80,8 +80,14 @@ const initialValues = {
   location: "",
 };
 
-const AddOutputModal = ({ outcome, resultLevelOptionId, handleClick }) => {
-  let { processLevelItemId, processLevelTypeId } = useParams();
+const AddOutputModal = ({
+  outcome,
+  resultLevelOptionId,
+  handleClick,
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
+  // let { processLevelItemId, processLevelTypeId } = useParams();
   const queryClient = useQueryClient();
   const mutation = useMutation({ mutationFn: saveResultChain });
   const formik = useFormik({
@@ -505,6 +511,8 @@ const GetProjectOutcomes = ({
             outcome={outcomeVal}
             resultLevelOptionId={resultLevelOptionId}
             handleClick={handleClick}
+            processLevelItemId={processLevelItemId}
+            processLevelTypeId={processLevelTypeId}
           />
         </DialogContent>
         <DialogActions>
@@ -572,8 +580,10 @@ const AddOutcomeModal = ({
   projectObjective,
   projectObjectiveIndex,
   handleClick,
+  processLevelItemId,
+  processLevelTypeId,
 }) => {
-  let { processLevelItemId, processLevelTypeId } = useParams();
+  // let { processLevelItemId, processLevelTypeId } = useParams();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({ mutationFn: saveResultChain });
@@ -667,8 +677,11 @@ const AddOutcomeModal = ({
     </form>
   );
 };
-const EnterTargetByLocationForm = () => {
-  let { processLevelItemId, processLevelTypeId } = useParams();
+const EnterTargetByLocationForm = ({
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
+  // let { processLevelItemId, processLevelTypeId } = useParams();
   const navigate = useNavigate();
   const {
     data: projectGeographicalFocus,
@@ -886,7 +899,10 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
           <DialogTitle id="form-dialog-title">Targets</DialogTitle>
           <DialogContent>
             <DialogContentText>Enter Target By Location</DialogContentText>
-            <EnterTargetByLocationForm />
+            <EnterTargetByLocationForm
+              processLevelItemId={processLevelItemId}
+              processLevelTypeId={processLevelTypeId}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpen(false)} color="primary">
@@ -983,6 +999,8 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
             projectObjective={projectObjectiveVal}
             projectObjectiveIndex={projectObjectiveIndex}
             handleClick={handleClick}
+            processLevelItemId={processLevelItemId}
+            processLevelTypeId={processLevelTypeId}
           />
         </DialogContent>
         <DialogActions>
@@ -1026,8 +1044,10 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
     </Grid>
   );
 };
-const EnterTargetQuantitativeResultsFramework = () => {
-  let { processLevelItemId, processLevelTypeId } = useParams();
+const EnterTargetQuantitativeResultsFramework = ({
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
   return (
     <React.Fragment>
       <Helmet title="Results Framework" />

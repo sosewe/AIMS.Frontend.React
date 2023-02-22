@@ -9,9 +9,10 @@ import { useParams } from "react-router-dom";
 import GeoFocus from "./GeoFocus";
 import ProjectObjectives from "./ProjectObjectives";
 import ThematicFocus from "./ThematicFocus";
-import ResultsFramework from "./ResultsFramework";
+// import ResultsFramework from "./ResultsFramework";
 import Innovation from "./Innovation/Innovation";
 import Advocacy from "./Advocacy/Advocacy";
+import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -93,7 +94,11 @@ const DesignProject = () => {
         <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={4}>
-        <ResultsFramework id={id} processLevelTypeId={processLevelTypeId} />
+        <EnterTargetQuantitativeResultsFramework
+          processLevelItemId={id}
+          processLevelTypeId={processLevelTypeId}
+        />
+        {/*<ResultsFramework id={id} processLevelTypeId={processLevelTypeId} />*/}
       </TabPanel>
       <TabPanel index={5} value={value}>
         <Innovation id={id} processLevelTypeId={processLevelTypeId} />
