@@ -21,3 +21,11 @@ export const getIndicator = async ({ queryKey }) => {
   const [, indicatorId] = queryKey;
   return await axios.get(`${apiRoutes.indicator}/${indicatorId}`);
 };
+
+export const GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId =
+  async ({ queryKey }) => {
+    const [, indicatorTypeId, indicatorRelationshipTypeId] = queryKey;
+    return await axios.get(
+      `${apiRoutes.indicator}/GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId/${indicatorTypeId}/${indicatorRelationshipTypeId}`
+    );
+  };

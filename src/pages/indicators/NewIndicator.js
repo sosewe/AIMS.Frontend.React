@@ -42,6 +42,7 @@ import { Guid } from "../../utils/guid";
 import {
   getAllIndicators,
   getIndicator,
+  GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId,
   newIndicator,
 } from "../../api/indicator";
 import { getProgrammes } from "../../api/programmes";
@@ -668,6 +669,9 @@ const NewIndicatorForm = () => {
   const [openAttributeTypes, setOpenAttributeTypes] = useState(false);
   const [isNumberMeasure, setIsNumberMeasure] = useState(false);
   const [subThemesArray, setSubThemesArray] = useState([]);
+  let siId;
+  let numeratorId;
+  let denominatorId;
   const navigate = useNavigate();
   const [aggregateDisAggregateArray, setAggregateDisAggregateArray] = useState(
     []
@@ -676,22 +680,34 @@ const NewIndicatorForm = () => {
   // fetch indicator for update
   const {
     data: IndicatorData,
+    isLoading,
     isError,
     error,
   } = useQuery(["getIndicator", id], getIndicator, { enabled: !!id });
   // fetch all indicators
-  const {
-    data,
-    isLoading,
-    isError: isErrorAllIndicators,
-  } = useQuery(["getAllIndicators", 1, 5], getAllIndicators, {
-    retry: 0,
-  });
+  // const {
+  //   data,
+  //   isLoading,
+  //   isError: isErrorAllIndicators,
+  // } = useQuery(["getAllIndicators", 1, 5], getAllIndicators, {
+  //   retry: 0,
+  // });
   // fetch IndicatorType Lookup
-  const { data: indicatorTypeData, isLoading: isLoadingIndicatorType } =
-    useQuery(["IndicatorType", "IndicatorType"], getLookupMasterItemsByName, {
-      refetchOnWindowFocus: false,
-    });
+  const {
+    data: indicatorTypeData,
+    isLoading: isLoadingIndicatorType,
+    isError: isErrorIndicatorType,
+  } = useQuery(["IndicatorType", "IndicatorType"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
+  if (!isLoadingIndicatorType && !isErrorIndicatorType) {
+    const SIIndicatorType = indicatorTypeData.data.find(
+      (obj) => obj.lookupItemName === "SI"
+    );
+    if (SIIndicatorType) {
+      siId = SIIndicatorType.lookupItemId;
+    }
+  }
   // fetch IndicatorMeasure Lookup
   const { data: indicatorMeasureData, isLoading: isLoadingIndicatorMeasure } =
     useQuery(
@@ -724,6 +740,7 @@ const NewIndicatorForm = () => {
   const {
     data: IndicatorMeasureTypeData,
     isLoading: isLoadingIndicatorMeasureType,
+    isError: isErrorIndicatorMeasureType,
   } = useQuery(
     ["IndicatorMeasureType", "IndicatorMeasureType"],
     getLookupMasterItemsByName,
@@ -763,6 +780,50 @@ const NewIndicatorForm = () => {
       type: "error",
     });
   }
+  if (
+    !isLoadingIndicatorRelationshipType &&
+    !isErrorIndicatorRelationshipType &&
+    IndicatorRelationshipType
+  ) {
+    const denominator = IndicatorRelationshipType.data.find(
+      (obj) => obj.lookupItemName === "Denominator"
+    );
+    const numerator = IndicatorRelationshipType.data.find(
+      (obj) => obj.lookupItemName === "Numerator"
+    );
+    if (denominator) {
+      denominatorId = denominator.lookupItemId;
+    }
+    if (numerator) {
+      numeratorId = numerator.lookupItemId;
+    }
+  }
+  const {
+    data: NumeratorData,
+    isLoading: isLoadingNumerator,
+    isError: isErrorNumerator,
+  } = useQuery(
+    [
+      "GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId",
+      siId,
+      numeratorId,
+    ],
+    GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId,
+    { enabled: !!siId && !!numeratorId }
+  );
+  const {
+    data: DenominatorData,
+    isLoading: isLoadingDenominator,
+    isError: isErrorDenominator,
+  } = useQuery(
+    [
+      "GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId",
+      siId,
+      denominatorId,
+    ],
+    GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId,
+    { enabled: !!siId && !!denominatorId }
+  );
   const mutation = useMutation({ mutationFn: newIndicator });
   const mutationIndicatorProgramme = useMutation({
     mutationFn: saveIndicatorProgrammes,
@@ -787,7 +848,10 @@ const NewIndicatorForm = () => {
       code: Yup.string().required("Required"),
       indicatorTypeId: Yup.object().required("Required"),
       definition: Yup.string().required("Required"),
-      indicatorMeasure: Yup.object().required("Required"),
+      indicatorMeasure: Yup.object().when("indicatorTypeId", {
+        is: (val) => val && val.lookupItemName !== "SI",
+        then: Yup.object().required("Indicator Measure Is Required"),
+      }),
       indicatorCalculationId: Yup.string().when("indicatorMeasure", {
         is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Indicator Calculation Is Required"),
@@ -809,19 +873,35 @@ const NewIndicatorForm = () => {
         is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Indicator Calculation Type Is Required"),
       }),
-      indicatorMeasureType: Yup.object().required("Required"),
+      indicatorMeasureType: Yup.object().when("indicatorTypeId", {
+        is: (val) => val && val.lookupItemName !== "SI",
+        then: Yup.object().required("Indicator Measure Type Is Required"),
+      }),
       indicatorRelationshipTypeId: Yup.string().when("indicatorTypeId", {
         is: (val) => val && val.lookupItemName === "SI",
         then: Yup.string().required("Indicator Relationship Type Is Required"),
       }),
-      indicatorStatus: Yup.string().required("Required"),
-      reference: Yup.string().required("Required"),
+      indicatorStatus: Yup.string().when("indicatorTypeId", {
+        is: (val) => val && val.lookupItemName !== "SI",
+        then: Yup.string().required("Indicator Status Is Required"),
+      }),
+      reference: Yup.string().when("indicatorTypeId", {
+        is: (val) => val && val.lookupItemName !== "SI",
+        then: Yup.string().required("Reference Is Required"),
+      }),
     }),
     onSubmit: async (values) => {
+      console.log(values);
       values.createDate = new Date();
-      values.indicatorMeasure = values.indicatorMeasure.lookupItemId;
-      values.indicatorMeasureType = values.indicatorMeasureType.lookupItemId;
-      values.indicatorTypeId = values.indicatorTypeId.lookupItemId;
+      values.indicatorMeasure = values.indicatorMeasure
+        ? values.indicatorMeasure.lookupItemId
+        : "";
+      values.indicatorMeasureType = values.indicatorMeasureType
+        ? values.indicatorMeasureType.lookupItemId
+        : "";
+      values.indicatorTypeId = values.indicatorTypeId
+        ? values.indicatorTypeId.lookupItemId
+        : "";
       if (id) {
         values.id = id;
       } else {
@@ -936,6 +1016,7 @@ const NewIndicatorForm = () => {
         });
         navigate("/indicator/indicators");
       } catch (error) {
+        console.log(error);
         toast(error.response.data, {
           type: "error",
         });
@@ -946,31 +1027,59 @@ const NewIndicatorForm = () => {
     function setCurrentFormValues() {
       let indicatorMeasure;
       let indicatorTypeId;
-      if (!isLoadingIndicatorMeasure && IndicatorData) {
+      let indicatorMeasureType;
+      if (!isLoading && !isLoadingIndicatorMeasure && IndicatorData) {
         indicatorMeasure = indicatorMeasureData.data.find(
           (obj) => obj.lookupItemId === IndicatorData.data.indicatorMeasure
         );
       }
-      if (!isLoadingIndicatorType && IndicatorData) {
-        indicatorTypeId = IndicatorData.data.find(
+      if (!isLoading && !isLoadingIndicatorType && IndicatorData) {
+        indicatorTypeId = indicatorTypeData.data.find(
           (obj) => obj.lookupItemId === IndicatorData.data.indicatorTypeId
+        );
+      }
+      if (
+        !isLoadingIndicatorMeasureType &&
+        !isErrorIndicatorMeasureType &&
+        IndicatorMeasureTypeData &&
+        IndicatorData
+      ) {
+        indicatorMeasureType = IndicatorMeasureTypeData.data.find(
+          (obj) => obj.lookupItemId === IndicatorData.data.indicatorMeasureType
         );
       }
       if (IndicatorData) {
         formik.setValues({
           name: IndicatorData.data.name,
           code: IndicatorData.data.code,
-          indicatorTypeId: indicatorTypeId,
-          indicatorMeasure: indicatorMeasure,
+          indicatorTypeId: indicatorTypeId ? indicatorTypeId : "",
+          indicatorMeasure: indicatorMeasure ? indicatorMeasure : "",
           definition: IndicatorData.data.definition,
-          indicatorCalculationId: IndicatorData.data.indicatorCalculationId,
+          indicatorCalculationId: IndicatorData.data.indicatorCalculationId
+            ? IndicatorData.data.indicatorCalculationId
+            : "",
           numeratorId: IndicatorData.data.numeratorId
             ? IndicatorData.data.numeratorId
             : "",
           denominatorId: IndicatorData.data.denominatorId
             ? IndicatorData.data.denominatorId
             : "",
-          indicatorCumulative: IndicatorData.data.indicatorCumulative,
+          indicatorCumulative: IndicatorData.data.indicatorCumulative
+            ? IndicatorData.data.indicatorCumulative
+            : "",
+          indicatorRelationshipTypeId: IndicatorData.data
+            .indicatorRelationshipTypeId
+            ? IndicatorData.data.indicatorRelationshipTypeId
+            : "",
+          indicatorStatus: IndicatorData.data.indicatorStatus
+            ? IndicatorData.data.indicatorStatus
+            : "",
+          indicatorMeasureType: indicatorMeasureType
+            ? indicatorMeasureType
+            : "",
+          indicatorCalculationType: IndicatorData.data.indicatorCalculationType
+            ? IndicatorData.data.indicatorCalculationType
+            : "",
         });
         for (const indicatorAttributeType of IndicatorData.data
           .indicatorAttributeTypes) {
@@ -993,6 +1102,11 @@ const NewIndicatorForm = () => {
     isLoadingIndicatorMeasure,
     isLoadingAttributeTypes,
     dataAttributeTypes,
+    isLoading,
+    isError,
+    IndicatorMeasureTypeData,
+    isLoadingIndicatorMeasureType,
+    isErrorIndicatorMeasureType,
   ]);
 
   const handleClick = (values) => {
@@ -1398,8 +1512,8 @@ const NewIndicatorForm = () => {
                     <MenuItem disabled value="">
                       Select Indicator Numerator
                     </MenuItem>
-                    {!isLoading && !isErrorAllIndicators
-                      ? data.data.map((option) => (
+                    {!isLoadingNumerator && !isErrorNumerator
+                      ? NumeratorData.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>
                             {option.name}
                           </MenuItem>
@@ -1431,8 +1545,8 @@ const NewIndicatorForm = () => {
                     <MenuItem disabled value="">
                       Select Indicator Denominator
                     </MenuItem>
-                    {!isLoading && !isErrorAllIndicators
-                      ? data.data.map((option) => (
+                    {!isLoadingDenominator && !isErrorDenominator
+                      ? DenominatorData.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>
                             {option.name}
                           </MenuItem>
