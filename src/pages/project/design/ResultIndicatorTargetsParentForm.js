@@ -442,7 +442,7 @@ const ResultIndicatorTargetsParentForm = ({
                   const allFields = field.map(
                     ({ label, name, disabled }, index) => (
                       <React.Fragment key={index}>
-                        <Grid item xl={1} zeroMinWidth>
+                        <Grid item md={1}>
                           <TextField
                             name={name}
                             value={formik.values[name] || ""}
@@ -482,6 +482,8 @@ const ResultIndicatorTargetsParentForm = ({
                       <Grid item md={11}>
                         <Grid
                           container
+                          wrap="nowrap"
+                          sx={{ overflow: "auto" }}
                           direction="row"
                           justifyContent="center"
                           alignItems="center"

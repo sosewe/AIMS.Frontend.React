@@ -117,7 +117,7 @@ const ProjectIndicatorTargetsForm = () => {
     isError: isErrorDEC,
   } = useQuery(["getLookupItemByName", "DEC"], getLookupItemByName);
   return (
-    <Card mb={6}>
+    <Card mb={6} sx={{ minWidth: "1000px" }}>
       <CardContent>
         <Grid container spacing={12}>
           <Grid item md={6}>
@@ -138,6 +138,8 @@ const ProjectIndicatorTargetsForm = () => {
           <Grid item md={1}>
             <Grid
               container
+              wrap="nowrap"
+              sx={{ overflow: "auto" }}
               direction="row"
               justifyContent="center"
               alignItems="center"
@@ -150,6 +152,8 @@ const ProjectIndicatorTargetsForm = () => {
           <Grid item md={11}>
             <Grid
               container
+              wrap="nowrap"
+              sx={{ overflow: "auto" }}
               direction="row"
               justifyContent="center"
               alignItems="center"
@@ -245,47 +249,6 @@ const ProjectIndicatorTargetsForm = () => {
               ""
             )}
           </Grid>
-          {/*{!isLoadingResultChainIndicators &&*/}
-          {/*  !isErrorResultChainIndicators &&*/}
-          {/*  resultChainIndicators.data.map((resultChainIndicator, index) => (*/}
-          {/*    <React.Fragment key={resultChainIndicator.id}>*/}
-          {/*      <Grid item md={1}>*/}
-          {/*        <Grid*/}
-          {/*          container*/}
-          {/*          direction="row"*/}
-          {/*          justifyContent="center"*/}
-          {/*          alignItems="center"*/}
-          {/*        >*/}
-          {/*          <Grid item md={1}>*/}
-          {/*            {index}*/}
-          {/*          </Grid>*/}
-          {/*        </Grid>*/}
-          {/*      </Grid>*/}
-          {/*      <Grid item md={11}>*/}
-          {/*        <Grid*/}
-          {/*          container*/}
-          {/*          direction="row"*/}
-          {/*          justifyContent="center"*/}
-          {/*          alignItems="center"*/}
-          {/*        >*/}
-          {/*          <Grid item md={12}>*/}
-          {/*            <ResultIndicatorHeader*/}
-          {/*              resultChainIndicator={resultChainIndicator}*/}
-          {/*            />*/}
-          {/*          </Grid>*/}
-          {/*          <Grid item md={12}>*/}
-          {/*            <ResultIndicatorTargetsForm*/}
-          {/*              resultChainIndicator={resultChainIndicator}*/}
-          {/*              processLevelItemId={processLevelItemId}*/}
-          {/*              processLevelTypeId={processLevelTypeId}*/}
-          {/*              projectLocationId={projectLocationId}*/}
-          {/*              implementationYearId={year}*/}
-          {/*            />*/}
-          {/*          </Grid>*/}
-          {/*        </Grid>*/}
-          {/*      </Grid>*/}
-          {/*    </React.Fragment>*/}
-          {/*  ))}*/}
         </Grid>
       </CardContent>
     </Card>

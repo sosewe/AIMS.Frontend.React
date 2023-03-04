@@ -87,7 +87,6 @@ const AddOutputModal = ({
   processLevelItemId,
   processLevelTypeId,
 }) => {
-  // let { processLevelItemId, processLevelTypeId } = useParams();
   const queryClient = useQueryClient();
   const mutation = useMutation({ mutationFn: saveResultChain });
   const formik = useFormik({
@@ -579,11 +578,10 @@ const AddOutcomeModal = ({
   lookupItemId,
   projectObjective,
   projectObjectiveIndex,
-  handleClick,
   processLevelItemId,
   processLevelTypeId,
+  handleClick,
 }) => {
-  // let { processLevelItemId, processLevelTypeId } = useParams();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({ mutationFn: saveResultChain });
@@ -998,9 +996,9 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
             lookupItemId={lookupItemId}
             projectObjective={projectObjectiveVal}
             projectObjectiveIndex={projectObjectiveIndex}
-            handleClick={handleClick}
             processLevelItemId={processLevelItemId}
             processLevelTypeId={processLevelTypeId}
+            handleClick={handleClick}
           />
         </DialogContent>
         <DialogActions>

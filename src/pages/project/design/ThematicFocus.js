@@ -81,7 +81,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     validationSchema: Yup.object().shape({
       thematicArea: Yup.object().required("Required"),
     }),
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
+    onSubmit: async (values) => {
       try {
         for (const subThemesDatum of subThemesData.data) {
           if (
@@ -106,9 +106,15 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
           type: "success",
         });
       } catch (error) {
-        toast(error.response.data, {
-          type: "error",
-        });
+        if (error.response !== undefined) {
+          toast(error.response.data, {
+            type: "error",
+          });
+        } else {
+          toast(error, {
+            type: "error",
+          });
+        }
       }
     },
   });
@@ -225,7 +231,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                             subThemesData.data.map((value, index) => {
                               return (
                                 <Grid container item spacing={2} key={index}>
-                                  <Grid item md={2}>
+                                  <Grid item md={12}>
                                     <FormGroup>
                                       <FormControlLabel
                                         control={
@@ -275,7 +281,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                           {
                             field: "subThemeId",
                             colId: "subThemeId&thematicAreaId",
-                            headerName: "SUB-THEME(THEMATICAREA)",
+                            headerName: "SUB-THEME(THEMATIC AREA)",
                             editable: false,
                             flex: 1,
                             valueGetter: GetSubTheme,
