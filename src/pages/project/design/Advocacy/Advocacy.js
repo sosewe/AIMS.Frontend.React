@@ -14,6 +14,7 @@ import { getAMREFStaffList } from "../../../../api/lookup";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
+import { DatePicker } from "@mui/x-date-pickers";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -21,6 +22,7 @@ const TextField = styled(MuiTextField)(spacing);
 
 const initialValues = {
   title: "",
+  dateOfEntry: "",
   staffNameId: "",
   beneficiary: "",
   advocacyNeed: "",
@@ -39,6 +41,7 @@ const AdvocacyForm = () => {
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
       title: Yup.string().required("Required"),
+      dateOfEntry: Yup.date().required("Required"),
       staffNameId: Yup.string().required("Required"),
       beneficiary: Yup.string().required("Required"),
       advocacyNeed: Yup.string().required("Required"),
@@ -57,7 +60,7 @@ const AdvocacyForm = () => {
   return (
     <form onSubmit={formik.handleSubmit}>
       <Grid container item spacing={2}>
-        <Grid item md={6}>
+        <Grid item md={4}>
           <TextField
             name="title"
             label="Title"
@@ -73,10 +76,36 @@ const AdvocacyForm = () => {
             my={2}
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={4}>
+          <DatePicker
+            label="Date Of Entry"
+            value={formik.values.dateOfEntry}
+            onChange={(value) =>
+              formik.setFieldValue("dateOfEntry", value, true)
+            }
+            renderInput={(params) => (
+              <TextField
+                error={Boolean(
+                  formik.touched.dateOfEntry && formik.errors.dateOfEntry
+                )}
+                helperText={
+                  formik.touched.dateOfEntry && formik.errors.dateOfEntry
+                }
+                margin="normal"
+                name="dateOfEntry"
+                variant="outlined"
+                fullWidth
+                my={2}
+                {...params}
+              />
+            )}
+          />
+        </Grid>
+        <Grid item md={4}></Grid>
+        <Grid item md={4}>
           <TextField
             name="staffNameId"
-            label="Staff Name"
+            label="Lead/Staff Name"
             select
             required
             value={formik.values.staffNameId}
@@ -104,10 +133,10 @@ const AdvocacyForm = () => {
               : []}
           </TextField>
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={12}>
           <TextField
             name="beneficiary"
-            label="Beneficiary"
+            label="What is the advocacy objective?"
             value={formik.values.beneficiary}
             error={Boolean(
               formik.touched.beneficiary && formik.errors.beneficiary
@@ -120,12 +149,32 @@ const AdvocacyForm = () => {
             required
             variant="outlined"
             my={2}
+            rows={3}
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={12}>
+          <TextField
+            name="beneficiary"
+            label="Who are the target beneficiaries?"
+            value={formik.values.beneficiary}
+            error={Boolean(
+              formik.touched.beneficiary && formik.errors.beneficiary
+            )}
+            fullWidth
+            helperText={formik.touched.beneficiary && formik.errors.beneficiary}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            multiline
+            required
+            variant="outlined"
+            my={2}
+            rows={3}
+          />
+        </Grid>
+        <Grid item md={12}>
           <TextField
             name="advocacyNeed"
-            label="Advocacy Need"
+            label="Why was this advocacy needed (in your country/context)? *this will serve as the baseline"
             value={formik.values.advocacyNeed}
             error={Boolean(
               formik.touched.advocacyNeed && formik.errors.advocacyNeed
@@ -140,12 +189,13 @@ const AdvocacyForm = () => {
             required
             variant="outlined"
             my={2}
+            rows={3}
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={12}>
           <TextField
             name="expectedResult"
-            label="expectedResult"
+            label="What are the expected results of the advocacy?"
             value={formik.values.expectedResult}
             error={Boolean(
               formik.touched.expectedResult && formik.errors.expectedResult
@@ -160,6 +210,28 @@ const AdvocacyForm = () => {
             required
             variant="outlined"
             my={2}
+            rows={3}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="expectedResult"
+            label="Expected final concrete outputs at the end of the strategy (documents: e.g. standard, policy, guideline etc.)"
+            value={formik.values.expectedResult}
+            error={Boolean(
+              formik.touched.expectedResult && formik.errors.expectedResult
+            )}
+            fullWidth
+            helperText={
+              formik.touched.expectedResult && formik.errors.expectedResult
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            multiline
+            required
+            variant="outlined"
+            my={2}
+            rows={3}
           />
         </Grid>
       </Grid>

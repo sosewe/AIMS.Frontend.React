@@ -4,12 +4,10 @@ import { number, object } from "yup";
 import styled from "@emotion/styled";
 import {
   Box,
-  Breadcrumbs as MuiBreadcrumbs,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
   CircularProgress,
-  Divider as MuiDivider,
   Grid,
   Stack,
   TextField as MuiTextField,
@@ -25,8 +23,6 @@ import { toast } from "react-toastify";
 import ResultIndicatorHeader from "./ResultIndicatorHeader";
 
 const Card = styled(MuiCard)(spacing);
-const Divider = styled(MuiDivider)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);

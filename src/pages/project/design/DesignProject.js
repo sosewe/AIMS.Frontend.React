@@ -101,7 +101,10 @@ const DesignProject = () => {
         {/*<ResultsFramework id={id} processLevelTypeId={processLevelTypeId} />*/}
       </TabPanel>
       <TabPanel index={5} value={value}>
-        <Innovation id={id} processLevelTypeId={processLevelTypeId} />
+        <Innovation
+          processLevelItemId={id}
+          processLevelTypeId={processLevelTypeId}
+        />
       </TabPanel>
       <TabPanel index={6} value={value}>
         <Advocacy id={id} processLevelTypeId={processLevelTypeId} />

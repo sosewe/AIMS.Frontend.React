@@ -603,9 +603,21 @@ const NewProjectForm = ({ id }) => {
         });
         navigate("/project/projects");
       } catch (error) {
-        toast(error.response.data, {
-          type: "error",
-        });
+        if (error.response !== undefined) {
+          toast(error.response.data, {
+            type: "error",
+          });
+        } else {
+          if (error.response !== undefined) {
+            toast(error.response.data, {
+              type: "error",
+            });
+          } else {
+            toast(error, {
+              type: "error",
+            });
+          }
+        }
       }
     },
   });
@@ -1125,7 +1137,7 @@ const NewProjectForm = ({ id }) => {
                     {!isLoadingDonor
                       ? donorData.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>
-                            {option.donorInitial}
+                            {option.donorName}({option.donorInitial})
                           </MenuItem>
                         ))
                       : []}
