@@ -16,7 +16,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAMREFStaffList } from "../../../../api/lookup";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getAmrefEntities } from "../../../../api/amref-entity";
@@ -43,6 +43,7 @@ const initialValues = {
   sustainability: "",
 };
 const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
+  const queryClient = useQueryClient();
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -101,6 +102,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
         toast("Successfully Created an Innovation", {
           type: "success",
         });
+        await queryClient.invalidateQueries(["getInnovations"]);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -415,11 +417,6 @@ const Innovation = ({ processLevelItemId, processLevelTypeId }) => {
     <Card mb={12}>
       <CardContent>
         <Grid container spacing={12}>
-          <Grid item md={12}>
-            <Typography variant="h3" gutterBottom display="inline">
-              Innovation
-            </Typography>
-          </Grid>
           <Grid item md={12}>
             <InnovationForm
               processLevelItemId={processLevelItemId}

@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "@emotion/styled";
 import {
+  Autocomplete as MuiAutocomplete,
+  Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
   Grid,
@@ -9,26 +11,37 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAMREFStaffList } from "../../../../api/lookup";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { DatePicker } from "@mui/x-date-pickers";
+import { getAllThematicAreas } from "../../../../api/thematic-area";
+import { getAmrefEntities } from "../../../../api/amref-entity";
+import { newAdvocacy } from "../../../../api/advocacy";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
+const Autocomplete = styled(MuiAutocomplete)(spacing);
+const Button = styled(MuiButton)(spacing);
 
 const initialValues = {
   title: "",
   dateOfEntry: "",
+  duration_from: "",
+  duration_to: "",
   staffNameId: "",
+  thematicAreaId: "",
+  countryId: "",
   beneficiary: "",
+  objective: "",
   advocacyNeed: "",
   expectedResult: "",
 };
-const AdvocacyForm = () => {
+const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
+  const queryClient = useQueryClient();
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -37,18 +50,62 @@ const AdvocacyForm = () => {
     refetchOnWindowFocus: false,
     retry: 0,
   });
+  const {
+    data: ThematicAreas,
+    isLoading: isLoadingThematicAreas,
+    isError: isErrorThematicAreas,
+  } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    isLoading: isLoadingAmrefEntities,
+    data: amrefEntities,
+    isError: isErrorAmrefEntities,
+  } = useQuery(["amrefEntities"], getAmrefEntities, {
+    refetchOnWindowFocus: false,
+  });
+  const mutation = useMutation({ mutationFn: newAdvocacy });
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
       title: Yup.string().required("Required"),
       dateOfEntry: Yup.date().required("Required"),
+      duration_from: Yup.date().required("Required"),
+      duration_to: Yup.date().required("Required"),
       staffNameId: Yup.string().required("Required"),
+      thematicAreaId: Yup.string().required("Required"),
+      countryId: Yup.array().required("Required"),
       beneficiary: Yup.string().required("Required"),
+      objective: Yup.string().required("Required"),
       advocacyNeed: Yup.string().required("Required"),
       expectedResult: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
+        console.log(values);
+        const saveAdvocacy = {
+          createDate: new Date(),
+          title: values.title,
+          staffNameId: values.staffNameId,
+          beneficiary: values.beneficiary,
+          advocacyNeed: values.advocacyNeed,
+          expectedResult: values.expectedResult,
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
+          advocacyObjective: {
+            createDate: new Date(),
+            objective: values.objective,
+          },
+          advocacyOutput: {
+            createDate: new Date(),
+            output: values.output,
+          },
+        };
+        await mutation.mutateAsync(saveAdvocacy);
+        toast("Successfully Created an Innovation", {
+          type: "success",
+        });
+        await queryClient.invalidateQueries(["getAdvocates"]);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -60,7 +117,7 @@ const AdvocacyForm = () => {
   return (
     <form onSubmit={formik.handleSubmit}>
       <Grid container item spacing={2}>
-        <Grid item md={4}>
+        <Grid item md={12}>
           <TextField
             name="title"
             label="Title"
@@ -74,6 +131,7 @@ const AdvocacyForm = () => {
             required
             variant="outlined"
             my={2}
+            rows={3}
           />
         </Grid>
         <Grid item md={4}>
@@ -101,7 +159,56 @@ const AdvocacyForm = () => {
             )}
           />
         </Grid>
-        <Grid item md={4}></Grid>
+        <Grid item md={4}>
+          <DatePicker
+            label="From"
+            value={formik.values.duration_from}
+            onChange={(value) =>
+              formik.setFieldValue("duration_from", value, true)
+            }
+            renderInput={(params) => (
+              <TextField
+                error={Boolean(
+                  formik.touched.duration_from && formik.errors.duration_from
+                )}
+                helperText={
+                  formik.touched.duration_from && formik.errors.duration_from
+                }
+                margin="normal"
+                name="duration_from"
+                variant="outlined"
+                fullWidth
+                my={2}
+                {...params}
+              />
+            )}
+          />
+        </Grid>
+        <Grid item md={4}>
+          <DatePicker
+            label="To"
+            value={formik.values.duration_to}
+            onChange={(value) =>
+              formik.setFieldValue("duration_to", value, true)
+            }
+            renderInput={(params) => (
+              <TextField
+                error={Boolean(
+                  formik.touched.duration_to && formik.errors.duration_to
+                )}
+                helperText={
+                  formik.touched.duration_to && formik.errors.duration_to
+                }
+                margin="normal"
+                name="duration_to"
+                variant="outlined"
+                fullWidth
+                my={2}
+                {...params}
+              />
+            )}
+          />
+        </Grid>
         <Grid item md={4}>
           <TextField
             name="staffNameId"
@@ -133,16 +240,78 @@ const AdvocacyForm = () => {
               : []}
           </TextField>
         </Grid>
-        <Grid item md={12}>
+        <Grid item md={4}>
           <TextField
-            name="beneficiary"
-            label="What is the advocacy objective?"
-            value={formik.values.beneficiary}
+            name="thematicAreaId"
+            label="Thematic Area(s)"
+            select
+            value={formik.values.thematicAreaId}
             error={Boolean(
-              formik.touched.beneficiary && formik.errors.beneficiary
+              formik.touched.thematicAreaId && formik.errors.thematicAreaId
             )}
             fullWidth
-            helperText={formik.touched.beneficiary && formik.errors.beneficiary}
+            helperText={
+              formik.touched.thematicAreaId && formik.errors.thematicAreaId
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          >
+            <MenuItem disabled value="">
+              Select Thematic Area(s)
+            </MenuItem>
+            {!isLoadingThematicAreas && !isErrorThematicAreas
+              ? ThematicAreas.data.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}({option.initial})
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
+        </Grid>
+        <Grid item md={4}>
+          <Autocomplete
+            id="countryId"
+            multiple
+            options={
+              !isLoadingAmrefEntities && !isErrorAmrefEntities
+                ? amrefEntities.data
+                : []
+            }
+            getOptionLabel={(entity) => `${entity?.name}`}
+            renderOption={(props, option) => {
+              return (
+                <li {...props} key={option.id}>
+                  {option.name}
+                </li>
+              );
+            }}
+            onChange={(_, val) => formik.setFieldValue("countryId", val)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                error={Boolean(
+                  formik.touched.countryId && formik.errors.countryId
+                )}
+                fullWidth
+                helperText={formik.touched.countryId && formik.errors.countryId}
+                label="Select Countries/entities of implementation"
+                name="countryId"
+                variant="outlined"
+                my={2}
+              />
+            )}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="objective"
+            label="What is the advocacy objective?"
+            value={formik.values.objective}
+            error={Boolean(formik.touched.objective && formik.errors.objective)}
+            fullWidth
+            helperText={formik.touched.objective && formik.errors.objective}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
@@ -215,16 +384,12 @@ const AdvocacyForm = () => {
         </Grid>
         <Grid item md={12}>
           <TextField
-            name="expectedResult"
+            name="output"
             label="Expected final concrete outputs at the end of the strategy (documents: e.g. standard, policy, guideline etc.)"
-            value={formik.values.expectedResult}
-            error={Boolean(
-              formik.touched.expectedResult && formik.errors.expectedResult
-            )}
+            value={formik.values.output}
+            error={Boolean(formik.touched.output && formik.errors.output)}
             fullWidth
-            helperText={
-              formik.touched.expectedResult && formik.errors.expectedResult
-            }
+            helperText={formik.touched.output && formik.errors.output}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
@@ -235,22 +400,23 @@ const AdvocacyForm = () => {
           />
         </Grid>
       </Grid>
+      <Button type="submit" variant="contained" color="primary" mt={3}>
+        Save
+      </Button>
     </form>
   );
 };
 
-const Advocacy = () => {
+const Advocacy = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <Card mb={12}>
       <CardContent>
         <Grid container spacing={12}>
           <Grid item md={12}>
-            <Typography variant="h3" gutterBottom display="inline">
-              Advocacy
-            </Typography>
-          </Grid>
-          <Grid item md={12}>
-            <AdvocacyForm />
+            <AdvocacyForm
+              processLevelItemId={processLevelItemId}
+              processLevelTypeId={processLevelTypeId}
+            />
           </Grid>
         </Grid>
       </CardContent>

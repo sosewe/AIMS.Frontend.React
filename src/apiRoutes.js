@@ -49,6 +49,7 @@ export const apiRoutes = {
   disaggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Disaggregate`,
   attributeResponseOption: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AttributeResponseOption`,
   innovation: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Innovation`,
+  advocacy: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Advocacy`,
   // external
   ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,
