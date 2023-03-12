@@ -106,7 +106,6 @@ const initialValues = {
   indicatorMeasureType: "",
   numeratorId: "",
   denominatorId: "",
-  indicatorCumulative: "",
   indicatorStatus: "",
   reference: "",
   indicatorRelationshipTypeId: "",
@@ -865,10 +864,6 @@ const NewIndicatorForm = () => {
         is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Must enter Denominator"),
       }),
-      indicatorCumulative: Yup.string().when("indicatorMeasure", {
-        is: (val) => val && val.lookupItemName === "Number(#)",
-        then: Yup.string().required("Indicator Cumulative Is Required"),
-      }),
       indicatorCalculationType: Yup.string().when("indicatorMeasure", {
         is: (val) => val && val.lookupItemName === "Percentage(%)",
         then: Yup.string().required("Indicator Calculation Type Is Required"),
@@ -1063,9 +1058,6 @@ const NewIndicatorForm = () => {
             : "",
           denominatorId: IndicatorData.data.denominatorId
             ? IndicatorData.data.denominatorId
-            : "",
-          indicatorCumulative: IndicatorData.data.indicatorCumulative
-            ? IndicatorData.data.indicatorCumulative
             : "",
           indicatorRelationshipTypeId: IndicatorData.data
             .indicatorRelationshipTypeId
@@ -1549,47 +1541,6 @@ const NewIndicatorForm = () => {
                       ? DenominatorData.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>
                             {option.name}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={3}>
-                  <TextField
-                    name="indicatorCumulative"
-                    label="Indicator Cumulative"
-                    select
-                    value={formik.values.indicatorCumulative}
-                    error={Boolean(
-                      formik.touched.indicatorCumulative &&
-                        formik.errors.indicatorCumulative
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorCumulative &&
-                      formik.errors.indicatorCumulative
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                    disabled={!isNumberMeasure}
-                    sx={{
-                      "& .MuiInputBase-input.Mui-disabled": {
-                        backgroundColor: "#e9ecef",
-                      },
-                    }}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Cumulative
-                    </MenuItem>
-                    {!isLoadingYesNo
-                      ? yesNoData.data.map((option) => (
-                          <MenuItem
-                            key={option.lookupItemId}
-                            value={option.lookupItemId}
-                          >
-                            {option.lookupItemName}
                           </MenuItem>
                         ))
                       : []}

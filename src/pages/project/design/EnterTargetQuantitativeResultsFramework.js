@@ -216,7 +216,7 @@ const GetProjectOutputs = ({
     { enabled: false }
   );
   if (result.length === 0) {
-    return `This Objective does not have Outputs, Please add output`;
+    return `This Outcome does not have Outputs, Please add output`;
   }
   const handleDeleteResultChain = async () => {
     await refetch();
@@ -240,7 +240,7 @@ const GetProjectOutputs = ({
             container
             spacing={0}
             key={output.id}
-            sx={{ width: "100%", borderStyle: "dotted" }}
+            sx={{ width: "100%", border: 1 }}
           >
             <Grid item md={12}>
               <Paper elevation={24} square={true}>
@@ -413,9 +413,9 @@ const GetProjectOutcomes = ({
       <Grid item md={12}>
         {result.map((outcome) => (
           <Grid container spacing={2} key={outcome.id} sx={{ width: "100%" }}>
-            <Grid item md={6}>
+            <Grid item md={12}>
               <Paper elevation={24} square={true}>
-                <Card mb={2} sx={{ borderStyle: "dashed" }}>
+                <Card mb={2} sx={{ borderStyle: "groove" }}>
                   <CardContent>
                     <Typography variant="h6" gutterBottom display="inline">
                       {outcome.code}
@@ -479,9 +479,9 @@ const GetProjectOutcomes = ({
                 </Card>
               </Paper>
             </Grid>
-            <Grid item md={6}>
+            <Grid item md={12}>
               <Paper elevation={24} square={true}>
-                <Card mb={2} sx={{ borderStyle: "dashed" }}>
+                <Card mb={2} sx={{ borderStyle: "groove" }}>
                   <CardHeader title={`Output(s)`} />
                   <Divider />
                   <CardContent>
@@ -914,25 +914,25 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
           {!isLoadingProjectObjectives &&
             !isErrorProjectObjectives &&
             projectObjectives.data.map((projectObjective, index) => (
-              <Grid item md={12} key={projectObjective.id}>
-                <ThemeProvider theme={theme}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="body2" gutterBottom display="inline">
-                        {projectObjective.objective}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </ThemeProvider>
-                <br />
-                <Grid container spacing={2}>
-                  <Grid item md={4}>
-                    <Card>
+              <React.Fragment>
+                <Grid
+                  item
+                  md={12}
+                  key={projectObjective.id}
+                  sx={{ border: 1, marginBottom: 10 }}
+                >
+                  <ThemeProvider theme={theme}>
+                    <Card sx={{ borderStyle: "groove" }}>
                       <CardHeader title={"Objective(s)"}></CardHeader>
-                      <Divider />
                       <CardContent>
+                        <Typography
+                          variant="body2"
+                          gutterBottom
+                          display="inline"
+                        >
+                          {projectObjective.objective}
+                        </Typography>
                         <Grid container spacing={6}>
-                          <Grid item>{projectObjective.objective}</Grid>
                           <Grid item>
                             <ThemeProvider theme={theme}>
                               <Stack direction="row" spacing={2}>
@@ -963,24 +963,27 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
                         </Grid>
                       </CardContent>
                     </Card>
-                  </Grid>
-                  <Grid item md={8}>
-                    <Card>
-                      <CardHeader title={"Outcome(s)"}></CardHeader>
-                      <Divider />
-                      <CardContent>
-                        <GetProjectOutcomes
-                          objectiveId={projectObjective.id}
-                          lookupItemId={lookupItemId}
-                          resultLevelOptionId={resultLevelOptionId}
-                          processLevelItemId={processLevelItemId}
-                          processLevelTypeId={processLevelTypeId}
-                        />
-                      </CardContent>
-                    </Card>
+                  </ThemeProvider>
+                  <br />
+                  <Grid container spacing={2}>
+                    <Grid item md={12}>
+                      <Card>
+                        <CardHeader title={"Outcome(s)"}></CardHeader>
+                        <Divider />
+                        <CardContent>
+                          <GetProjectOutcomes
+                            objectiveId={projectObjective.id}
+                            lookupItemId={lookupItemId}
+                            resultLevelOptionId={resultLevelOptionId}
+                            processLevelItemId={processLevelItemId}
+                            processLevelTypeId={processLevelTypeId}
+                          />
+                        </CardContent>
+                      </Card>
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
+              </React.Fragment>
             ))}
         </Grid>
       </Grid>
