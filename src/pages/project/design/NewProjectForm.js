@@ -291,7 +291,7 @@ const NewProjectForm = ({ id }) => {
   const [costCentreArray, setCostCentreArray] = useState([]);
   let processLevelTypeId;
   const { isLoading: isLoadingAimsRole, data: aimsRolesData } = useQuery(
-    ["aimsRoles", "AIMSRoles"],
+    ["aimsRoles", "Project Roles"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
