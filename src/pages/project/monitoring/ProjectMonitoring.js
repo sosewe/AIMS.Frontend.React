@@ -113,7 +113,7 @@ const ProjectMonitoringAccordion = ({
             <Typography>Log</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography>test</Typography>
+            <Typography>&nbsp;</Typography>
           </AccordionDetails>
         </Accordion>
         <Accordion>
@@ -135,84 +135,153 @@ const ProjectMonitoringAccordion = ({
                   ) : (
                     <>
                       <Grid container spacing={6}>
-                        <Grid item md={6}>
-                          <TextField
-                            name="implementationYear"
-                            label="Implementation Year"
-                            select
-                            required
-                            value={formik.values.implementationYear}
-                            error={Boolean(
-                              formik.touched.implementationYear &&
-                                formik.errors.implementationYear
-                            )}
-                            fullWidth
-                            helperText={
-                              formik.touched.implementationYear &&
-                              formik.errors.implementationYear
-                            }
-                            onBlur={formik.handleBlur}
-                            onChange={formik.handleChange}
-                            variant="outlined"
-                            my={2}
-                          >
-                            <MenuItem disabled value="">
-                              Select Implementation Year
-                            </MenuItem>
-                            {!isLoading && !isError
-                              ? implementationYears.data.map((option) => (
-                                  <MenuItem
-                                    key={option.lookupItemId}
-                                    value={option.lookupItemId}
+                        <Grid item md={12}>
+                          <Accordion>
+                            <AccordionSummary
+                              expandIcon={<ExpandMoreIcon />}
+                              aria-controls="panel1a-content"
+                              id="panel1a-header"
+                            >
+                              <Typography>Quantitative Results</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                              <Grid container spacing={6}>
+                                <Grid item md={4}>
+                                  <TextField
+                                    name="implementationYear"
+                                    label="Implementation Year"
+                                    select
+                                    required
+                                    value={formik.values.implementationYear}
+                                    error={Boolean(
+                                      formik.touched.implementationYear &&
+                                        formik.errors.implementationYear
+                                    )}
+                                    fullWidth
+                                    helperText={
+                                      formik.touched.implementationYear &&
+                                      formik.errors.implementationYear
+                                    }
+                                    onBlur={formik.handleBlur}
+                                    onChange={formik.handleChange}
+                                    variant="outlined"
+                                    my={2}
                                   >
-                                    {option.lookupItemName}
-                                  </MenuItem>
-                                ))
-                              : []}
-                          </TextField>
-                        </Grid>
-                        <Grid item md={6}>
-                          <TextField
-                            name="location"
-                            label="Location"
-                            select
-                            required
-                            value={formik.values.location}
-                            error={Boolean(
-                              formik.touched.location && formik.errors.location
-                            )}
-                            fullWidth
-                            helperText={
-                              formik.touched.location && formik.errors.location
-                            }
-                            onBlur={formik.handleBlur}
-                            onChange={formik.handleChange}
-                            variant="outlined"
-                            my={2}
-                          >
-                            <MenuItem disabled value="">
-                              Select Location
-                            </MenuItem>
-                            {!isLoadingGeoFocus && !isErrorGeoFocus
-                              ? projectGeographicalFocus.data.map((option) => (
-                                  <MenuItem key={option.id} value={option.id}>
-                                    {option.administrativeUnitName}
-                                  </MenuItem>
-                                ))
-                              : []}
-                          </TextField>
+                                    <MenuItem disabled value="">
+                                      Select Implementation Year
+                                    </MenuItem>
+                                    {!isLoading && !isError
+                                      ? implementationYears.data.map(
+                                          (option) => (
+                                            <MenuItem
+                                              key={option.lookupItemId}
+                                              value={option.lookupItemId}
+                                            >
+                                              {option.lookupItemName}
+                                            </MenuItem>
+                                          )
+                                        )
+                                      : []}
+                                  </TextField>
+                                </Grid>
+                                <Grid item md={4}>
+                                  <TextField
+                                    name="location"
+                                    label="Location"
+                                    select
+                                    required
+                                    value={formik.values.location}
+                                    error={Boolean(
+                                      formik.touched.location &&
+                                        formik.errors.location
+                                    )}
+                                    fullWidth
+                                    helperText={
+                                      formik.touched.location &&
+                                      formik.errors.location
+                                    }
+                                    onBlur={formik.handleBlur}
+                                    onChange={formik.handleChange}
+                                    variant="outlined"
+                                    my={2}
+                                  >
+                                    <MenuItem disabled value="">
+                                      Select Location
+                                    </MenuItem>
+                                    {!isLoadingGeoFocus && !isErrorGeoFocus
+                                      ? projectGeographicalFocus.data.map(
+                                          (option) => (
+                                            <MenuItem
+                                              key={option.id}
+                                              value={option.id}
+                                            >
+                                              {option.administrativeUnitName}
+                                            </MenuItem>
+                                          )
+                                        )
+                                      : []}
+                                  </TextField>
+                                </Grid>
+
+                                <Grid item md={4}>
+                                  <ThemeProvider theme={theme}>
+                                    <Button
+                                      type="submit"
+                                      variant="contained"
+                                      color="secondaryGray"
+                                      mt={2}
+                                    >
+                                      Continue
+                                    </Button>
+                                  </ThemeProvider>
+                                </Grid>
+                              </Grid>
+                            </AccordionDetails>
+                          </Accordion>
+                          <Accordion>
+                            <AccordionSummary
+                              expandIcon={<ExpandMoreIcon />}
+                              aria-controls="panel1a-content"
+                              id="panel1a-header"
+                            >
+                              <Typography>Qualitative Results</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                              <Grid
+                                container
+                                spacing={6}
+                                direction="column"
+                                alignItems="center"
+                                justifyContent="center"
+                              >
+                                <Grid item md={12}>
+                                  <NavLink to={``}>
+                                    <Typography
+                                      variant="h3"
+                                      gutterBottom
+                                      display="inline"
+                                    >
+                                      Innovation
+                                    </Typography>
+                                  </NavLink>
+                                </Grid>
+                                <Divider />
+                                <Grid item md={12}>
+                                  <NavLink to={``}>
+                                    <Typography
+                                      variant="h3"
+                                      gutterBottom
+                                      display="inline"
+                                    >
+                                      Advocacy
+                                    </Typography>
+                                  </NavLink>
+                                </Grid>
+                              </Grid>
+                            </AccordionDetails>
+                          </Accordion>
                         </Grid>
                       </Grid>
-                      <ThemeProvider theme={theme}>
-                        <Button
-                          type="submit"
-                          variant="contained"
-                          color="secondaryGray"
-                          mt={3}
-                        >
-                          Continue
-                        </Button>
-                      </ThemeProvider>
                     </>
                   )}
                 </CardContent>
