@@ -105,6 +105,9 @@ const TableQuantitativeResults = async(() =>
 const EnterQuantitativeResults = async(() =>
   import("./pages/project/monitoring/EnterQuantitativeResults")
 );
+const Innovation = async(() =>
+  import("./pages/project/design/Innovation/Innovation")
+);
 
 const routes = [
   {
@@ -236,6 +239,10 @@ const routes = [
       {
         path: "monitoring/enter-quantitative-results/:processLevelItemId/:processLevelTypeId/:projectLocationId/:monthId/:year",
         element: <EnterQuantitativeResults />,
+      },
+      {
+        path: "new-innovation/:processLevelItemId/:processLevelTypeId",
+        element: <Innovation />,
       },
     ],
   },

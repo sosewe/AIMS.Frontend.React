@@ -9,6 +9,9 @@ import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
+  Link,
+  Breadcrumbs as MuiBreadcrumbs,
+  Divider as MuiDivider,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -17,16 +20,26 @@ import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAMREFStaffList } from "../../../../api/lookup";
+import {
+  getAMREFStaffList,
+  getLookupMasterItemsByName,
+} from "../../../../api/lookup";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { newInnovation } from "../../../../api/innovation";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { newQualitativeCountry } from "../../../../api/qualitative-country";
+import { newQualitativePeriod } from "../../../../api/qualitative-period";
+import { newQualitativeThematicArea } from "../../../../api/qualitative-thematic-area";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
+const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
+const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
   title: "",
@@ -44,6 +57,8 @@ const initialValues = {
 };
 const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  let innovationQualitativeTypeId;
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -66,7 +81,33 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
   } = useQuery(["amrefEntities"], getAmrefEntities, {
     refetchOnWindowFocus: false,
   });
+  const {
+    data: QualitativeResultTypesData,
+    isLoading: isLoadingQualitativeResultTypes,
+    isError: isErrorQualitativeResultTypes,
+  } = useQuery(
+    ["qualitativeResultType", "QualitativeResultType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
+    const filterInnovation = QualitativeResultTypesData.data.find(
+      (obj) => obj.lookupItemName === "Innovation"
+    );
+    innovationQualitativeTypeId = filterInnovation.lookupItemId;
+  }
   const mutation = useMutation({ mutationFn: newInnovation });
+  const qualitativeCountryMutation = useMutation({
+    mutationFn: newQualitativeCountry,
+  });
+  const qualitativePeriodMutation = useMutation({
+    mutationFn: newQualitativePeriod,
+  });
+  const qualitativeThematicAreaMutation = useMutation({
+    mutationFn: newQualitativeThematicArea,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -87,7 +128,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
     onSubmit: async (values) => {
       try {
         const saveInnovation = {
-          createDate: new Date(),
+          createDate: new Date(values.dateOfEntry),
           title: values.title,
           staffNameId: values.staffNameId,
           proposedSolution: values.proposedSolution,
@@ -98,11 +139,30 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
         };
-        await mutation.mutateAsync(saveInnovation);
+        const innovation = await mutation.mutateAsync(saveInnovation);
+        const qualitativeCountry = {
+          createDate: new Date(values.dateOfEntry),
+          countryId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          organizationUnitId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          qualitativeTypeId: innovationQualitativeTypeId,
+          qualitativeTypeItemId: innovation.data.id,
+        };
+        const qualitativePeriod = {
+          createDate: new Date(values.dateOfEntry),
+          qualitativeTypeId: innovationQualitativeTypeId,
+          qualitativeTypeItemId: innovation.data.id,
+          periodTo: values.duration_to,
+          periodFrom: values.duration_from,
+        };
+        await qualitativeCountryMutation.mutateAsync(qualitativeCountry);
+        await qualitativePeriodMutation.mutateAsync(qualitativePeriod);
         toast("Successfully Created an Innovation", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
+        navigate(
+          `/project/design-project/${processLevelItemId}/${processLevelTypeId}`
+        );
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -412,20 +472,39 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const Innovation = ({ processLevelItemId, processLevelTypeId }) => {
+const Innovation = () => {
+  let { processLevelItemId, processLevelTypeId } = useParams();
   return (
-    <Card mb={12}>
-      <CardContent>
-        <Grid container spacing={12}>
-          <Grid item md={12}>
-            <InnovationForm
-              processLevelItemId={processLevelItemId}
-              processLevelTypeId={processLevelTypeId}
-            />
+    <React.Fragment>
+      <Helmet title="New Innovation" />
+      <Typography variant="h3" gutterBottom display="inline">
+        New Innovation
+      </Typography>
+
+      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+        <Link
+          component={NavLink}
+          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
+        >
+          Project Design
+        </Link>
+        <Typography>New Innovation</Typography>
+      </Breadcrumbs>
+
+      <Divider my={6} />
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <InnovationForm
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+              />
+            </Grid>
           </Grid>
-        </Grid>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </React.Fragment>
   );
 };
 export default Innovation;

@@ -24,7 +24,6 @@ import { Edit2, Trash as TrashIcon } from "react-feather";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { getInnovations } from "../../../../api/innovation";
-import Innovation from "./Innovation";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -48,11 +47,24 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <Card mb={6}>
       <CardContent pb={1}>
-        <Innovation
-          processLevelTypeId={processLevelTypeId}
-          processLevelItemId={processLevelItemId}
-        />
+        <Button
+          mr={2}
+          variant="contained"
+          color="error"
+          onClick={() =>
+            navigate(
+              `/project/new-innovation/${processLevelItemId}/${processLevelTypeId}`
+            )
+          }
+        >
+          <AddIcon /> New Innovation
+        </Button>
+        {/*<Innovation*/}
+        {/*  processLevelTypeId={processLevelTypeId}*/}
+        {/*  processLevelItemId={processLevelItemId}*/}
+        {/*/>*/}
       </CardContent>
+      <br />
       <Paper>
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid

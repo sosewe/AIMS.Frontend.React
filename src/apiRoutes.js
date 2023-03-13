@@ -50,6 +50,9 @@ export const apiRoutes = {
   attributeResponseOption: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AttributeResponseOption`,
   innovation: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Innovation`,
   advocacy: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Advocacy`,
+  qualitativeCountry: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativeCountry`,
+  qualitativePeriod: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativePeriod`,
+  qualitativeThematicArea: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativeThematicArea`,
   // external
   ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,
