@@ -2,17 +2,23 @@ import React from "react";
 import styled from "@emotion/styled";
 import {
   Autocomplete as MuiAutocomplete,
+  Breadcrumbs as MuiBreadcrumbs,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Divider as MuiDivider,
   Grid,
+  Link,
   MenuItem,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAMREFStaffList } from "../../../../api/lookup";
+import {
+  getAMREFStaffList,
+  getLookupMasterItemsByName,
+} from "../../../../api/lookup";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -20,12 +26,19 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { newAdvocacy } from "../../../../api/advocacy";
+import { newQualitativeCountry } from "../../../../api/qualitative-country";
+import { newQualitativePeriod } from "../../../../api/qualitative-period";
+import { newQualitativeThematicArea } from "../../../../api/qualitative-thematic-area";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
+const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
+const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
   title: "",
@@ -42,6 +55,8 @@ const initialValues = {
 };
 const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  let innovationQualitativeTypeId;
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -64,7 +79,34 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
   } = useQuery(["amrefEntities"], getAmrefEntities, {
     refetchOnWindowFocus: false,
   });
+  const {
+    data: QualitativeResultTypesData,
+    isLoading: isLoadingQualitativeResultTypes,
+    isError: isErrorQualitativeResultTypes,
+  } = useQuery(
+    ["qualitativeResultType", "QualitativeResultType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
+    const filterInnovation = QualitativeResultTypesData.data.find(
+      (obj) => obj.lookupItemName === "Advocacy"
+    );
+    innovationQualitativeTypeId = filterInnovation.lookupItemId;
+  }
   const mutation = useMutation({ mutationFn: newAdvocacy });
+  const qualitativeCountryMutation = useMutation({
+    mutationFn: newQualitativeCountry,
+  });
+  const qualitativePeriodMutation = useMutation({
+    mutationFn: newQualitativePeriod,
+  });
+  const qualitativeThematicAreaMutation = useMutation({
+    mutationFn: newQualitativeThematicArea,
+  });
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -82,7 +124,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
     }),
     onSubmit: async (values) => {
       try {
-        console.log(values);
         const saveAdvocacy = {
           createDate: new Date(),
           title: values.title,
@@ -101,11 +142,42 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             output: values.output,
           },
         };
-        await mutation.mutateAsync(saveAdvocacy);
-        toast("Successfully Created an Innovation", {
+        const advocacy = await mutation.mutateAsync(saveAdvocacy);
+        let qualitativeCountries = [];
+        for (const country of values.countryId) {
+          const qualitativeCountry = {
+            createDate: new Date(values.dateOfEntry),
+            organizationUnitId: country.id,
+            qualitativeTypeId: innovationQualitativeTypeId,
+            qualitativeTypeItemId: advocacy.data.id,
+          };
+          qualitativeCountries.push(qualitativeCountry);
+        }
+        const qualitativePeriod = {
+          createDate: new Date(values.dateOfEntry),
+          qualitativeTypeId: innovationQualitativeTypeId,
+          qualitativeTypeItemId: advocacy.data.id,
+          periodTo: values.duration_to,
+          periodFrom: values.duration_from,
+        };
+        const qualitativeThematicArea = {
+          createDate: new Date(values.dateOfEntry),
+          thematicAreaId: values.thematicAreaId,
+          qualitativeTypeId: innovationQualitativeTypeId,
+          qualitativeTypeItemId: advocacy.data.id,
+        };
+        await qualitativeCountryMutation.mutateAsync(qualitativeCountries);
+        await qualitativePeriodMutation.mutateAsync(qualitativePeriod);
+        await qualitativeThematicAreaMutation.mutateAsync(
+          qualitativeThematicArea
+        );
+        toast("Successfully Created an Advocacy", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getAdvocates"]);
+        navigate(
+          `/project/design-project/${processLevelItemId}/${processLevelTypeId}`
+        );
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -407,20 +479,39 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const Advocacy = ({ processLevelItemId, processLevelTypeId }) => {
+const Advocacy = () => {
+  let { processLevelItemId, processLevelTypeId } = useParams();
   return (
-    <Card mb={12}>
-      <CardContent>
-        <Grid container spacing={12}>
-          <Grid item md={12}>
-            <AdvocacyForm
-              processLevelItemId={processLevelItemId}
-              processLevelTypeId={processLevelTypeId}
-            />
+    <React.Fragment>
+      <Helmet title="New Advocacy" />
+      <Typography variant="h3" gutterBottom display="inline">
+        New Advocacy
+      </Typography>
+
+      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+        <Link
+          component={NavLink}
+          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
+        >
+          Project Design
+        </Link>
+        <Typography>New Advocacy</Typography>
+      </Breadcrumbs>
+
+      <Divider my={6} />
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <AdvocacyForm
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+              />
+            </Grid>
           </Grid>
-        </Grid>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </React.Fragment>
   );
 };
 export default Advocacy;

@@ -140,13 +140,16 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
           processLevelTypeId: processLevelTypeId,
         };
         const innovation = await mutation.mutateAsync(saveInnovation);
-        const qualitativeCountry = {
-          createDate: new Date(values.dateOfEntry),
-          countryId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          organizationUnitId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          qualitativeTypeId: innovationQualitativeTypeId,
-          qualitativeTypeItemId: innovation.data.id,
-        };
+        let qualitativeCountries = [];
+        for (const country of values.countryId) {
+          const qualitativeCountry = {
+            createDate: new Date(values.dateOfEntry),
+            organizationUnitId: country.id,
+            qualitativeTypeId: innovationQualitativeTypeId,
+            qualitativeTypeItemId: innovation.data.id,
+          };
+          qualitativeCountries.push(qualitativeCountry);
+        }
         const qualitativePeriod = {
           createDate: new Date(values.dateOfEntry),
           qualitativeTypeId: innovationQualitativeTypeId,
@@ -154,8 +157,17 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
           periodTo: values.duration_to,
           periodFrom: values.duration_from,
         };
-        await qualitativeCountryMutation.mutateAsync(qualitativeCountry);
+        const qualitativeThematicArea = {
+          createDate: new Date(values.dateOfEntry),
+          thematicAreaId: values.thematicAreaId,
+          qualitativeTypeId: innovationQualitativeTypeId,
+          qualitativeTypeItemId: innovation.data.id,
+        };
+        await qualitativeCountryMutation.mutateAsync(qualitativeCountries);
         await qualitativePeriodMutation.mutateAsync(qualitativePeriod);
+        await qualitativeThematicAreaMutation.mutateAsync(
+          qualitativeThematicArea
+        );
         toast("Successfully Created an Innovation", {
           type: "success",
         });

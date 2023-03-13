@@ -23,7 +23,6 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Trash as TrashIcon } from "react-feather";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import Advocacy from "./Advocacy";
 import { getAdvocates } from "../../../../api/advocacy";
 
 const Card = styled(MuiCard)(spacing);
@@ -48,11 +47,20 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <Card mb={6}>
       <CardContent pb={1}>
-        <Advocacy
-          processLevelTypeId={processLevelTypeId}
-          processLevelItemId={processLevelItemId}
-        />
+        <Button
+          mr={2}
+          variant="contained"
+          color="error"
+          onClick={() =>
+            navigate(
+              `/project/new-advocacy/${processLevelItemId}/${processLevelTypeId}`
+            )
+          }
+        >
+          <AddIcon /> New Advocacy
+        </Button>
       </CardContent>
+      <br />
       <Paper>
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid

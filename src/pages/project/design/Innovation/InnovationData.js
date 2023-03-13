@@ -59,10 +59,6 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
         >
           <AddIcon /> New Innovation
         </Button>
-        {/*<Innovation*/}
-        {/*  processLevelTypeId={processLevelTypeId}*/}
-        {/*  processLevelItemId={processLevelItemId}*/}
-        {/*/>*/}
       </CardContent>
       <br />
       <Paper>
