@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -26,12 +26,22 @@ import {
 } from "../../../../api/lookup";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getAmrefEntities } from "../../../../api/amref-entity";
-import { newInnovation } from "../../../../api/innovation";
+import { getInnovationById, newInnovation } from "../../../../api/innovation";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { newQualitativeCountry } from "../../../../api/qualitative-country";
-import { newQualitativePeriod } from "../../../../api/qualitative-period";
-import { newQualitativeThematicArea } from "../../../../api/qualitative-thematic-area";
+import {
+  getQualitativeCountryByTypeItemId,
+  newQualitativeCountry,
+} from "../../../../api/qualitative-country";
+import {
+  getQualitativePeriodByTypeItemId,
+  newQualitativePeriod,
+} from "../../../../api/qualitative-period";
+import {
+  getQualitativeThematicAreaByTypeItemId,
+  newQualitativeThematicArea,
+} from "../../../../api/qualitative-thematic-area";
+import { Guid } from "../../../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -48,17 +58,49 @@ const initialValues = {
   duration_to: "",
   staffNameId: "",
   thematicAreaId: "",
-  countryId: "",
+  countryId: [],
   proposedSolution: "",
   targetBeneficiary: "",
   difference: "",
   scaling: "",
   sustainability: "",
 };
-const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
+const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   let innovationQualitativeTypeId;
+  const {
+    data: InnovationData,
+    isLoading: isLoadingInnovationData,
+    isError: isErrorInnovationData,
+  } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
+  const {
+    data: QualitativeCountryData,
+    isLoading: isLoadingQualitativeCountry,
+    isError: isErrorQualitativeCountry,
+  } = useQuery(
+    ["getQualitativeCountryByTypeItemId", id],
+    getQualitativeCountryByTypeItemId,
+    { enabled: !!id }
+  );
+  const {
+    data: QualitativePeriodData,
+    isLoading: isLoadingQualitativePeriod,
+    isError: isErrorQualitativePeriod,
+  } = useQuery(
+    ["getQualitativePeriodByTypeItemId", id],
+    getQualitativePeriodByTypeItemId,
+    { enabled: !!id }
+  );
+  const {
+    data: QualitativeThematicAreaData,
+    isLoading: isLoadingQualitativeThematicArea,
+    isError: isErrorQualitativeThematicArea,
+  } = useQuery(
+    ["getQualitativeThematicAreaByTypeItemId", id],
+    getQualitativeThematicAreaByTypeItemId,
+    { enabled: !!id }
+  );
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -118,7 +160,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
       duration_to: Yup.date().required("Required"),
       thematicAreaId: Yup.string().required("Required"),
       countryId: Yup.array().required("Required"),
-      staffNameId: Yup.string().required("Required"),
+      staffNameId: Yup.object().required("Required"),
       proposedSolution: Yup.string().required("Required"),
       targetBeneficiary: Yup.string().required("Required"),
       difference: Yup.string().required("Required"),
@@ -127,10 +169,12 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
     }),
     onSubmit: async (values) => {
       try {
+        const guid = new Guid();
         const saveInnovation = {
+          id: id ? id : guid.toString(),
           createDate: new Date(values.dateOfEntry),
           title: values.title,
-          staffNameId: values.staffNameId,
+          staffNameId: values.staffNameId.id,
           proposedSolution: values.proposedSolution,
           targetBeneficiary: values.targetBeneficiary,
           difference: values.difference,
@@ -176,12 +220,89 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
           `/project/design-project/${processLevelItemId}/${processLevelTypeId}`
         );
       } catch (error) {
+        console.log(error);
         toast(error.response.data, {
           type: "error",
         });
       }
     },
   });
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingInnovationData &&
+        !isErrorInnovationData &&
+        !isLoadingQualitativeThematicArea &&
+        !isErrorQualitativeThematicArea &&
+        !isErrorQualitativePeriod &&
+        !isLoadingQualitativePeriod &&
+        !isLoadingQualitativeCountry &&
+        !isErrorQualitativeCountry
+      ) {
+        let staff;
+        let countries = [];
+        if (!isErrorStaffList && !isLoadingStaffList) {
+          staff = staffListData.data.find(
+            (obj) => obj.id === InnovationData.data.staffNameId
+          );
+        }
+        for (const qualitativeCountryFind of QualitativeCountryData.data) {
+          const result = amrefEntities.data.find(
+            (obj) => obj.id === qualitativeCountryFind.organizationUnitId
+          );
+          if (result) {
+            countries.push(result);
+          }
+        }
+        if (countries.length > 0) {
+          // setCountriesValues(countries);
+          // formik.setFieldValue("countryId", countries);
+        }
+        formik.setValues({
+          dateOfEntry: new Date(InnovationData.data.createDate),
+          title: InnovationData.data.title,
+          staffNameId: staff ? staff : "",
+          countryId: countries && countries.length > 0 ? countries : [],
+          proposedSolution: InnovationData.data.proposedSolution,
+          targetBeneficiary: InnovationData.data.targetBeneficiary,
+          difference: InnovationData.data.difference,
+          scaling: InnovationData.data.scaling,
+          sustainability: InnovationData.data.sustainability,
+          thematicAreaId:
+            QualitativeThematicAreaData.data.length > 0
+              ? QualitativeThematicAreaData.data[0].thematicAreaId
+              : "",
+          duration_from:
+            QualitativePeriodData.data.length > 0
+              ? new Date(QualitativePeriodData.data[0].periodFrom)
+              : "",
+          duration_to:
+            QualitativePeriodData.data.length > 0
+              ? new Date(QualitativePeriodData.data[0].periodTo)
+              : "",
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    InnovationData,
+    isLoadingInnovationData,
+    isErrorInnovationData,
+    isLoadingStaffList,
+    isErrorStaffList,
+    staffListData,
+    isErrorQualitativePeriod,
+    isLoadingQualitativePeriod,
+    isErrorQualitativeThematicArea,
+    isLoadingQualitativeThematicArea,
+    QualitativePeriodData,
+    QualitativeThematicAreaData,
+    QualitativeCountryData,
+    isLoadingQualitativeCountry,
+    isErrorQualitativeCountry,
+    amrefEntities,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -297,7 +418,8 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
                 </li>
               );
             }}
-            onChange={(_, val) => formik.setFieldValue("staffNameId", val.id)}
+            onChange={(_, val) => formik.setFieldValue("staffNameId", val)}
+            value={formik.values.staffNameId}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -364,6 +486,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
               );
             }}
             onChange={(_, val) => formik.setFieldValue("countryId", val)}
+            value={formik.values.countryId}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -485,7 +608,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId }) => {
 };
 
 const Innovation = () => {
-  let { processLevelItemId, processLevelTypeId } = useParams();
+  let { processLevelItemId, processLevelTypeId, id } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Innovation" />
@@ -511,6 +634,7 @@ const Innovation = () => {
               <InnovationForm
                 processLevelItemId={processLevelItemId}
                 processLevelTypeId={processLevelTypeId}
+                id={id}
               />
             </Grid>
           </Grid>

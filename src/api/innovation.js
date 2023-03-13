@@ -8,3 +8,13 @@ export const newInnovation = async (values) => {
 export const getInnovations = async () => {
   return await axios.get(apiRoutes.innovation);
 };
+
+export const getInnovationById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.innovation}/${id}`);
+};
+
+export const deleteInnovationById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.innovation}/${id}`);
+};

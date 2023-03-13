@@ -248,6 +248,10 @@ const routes = [
         element: <Innovation />,
       },
       {
+        path: "new-innovation/:processLevelItemId/:processLevelTypeId/:id",
+        element: <Innovation />,
+      },
+      {
         path: "new-advocacy/:processLevelItemId/:processLevelTypeId",
         element: <Advocacy />,
       },
