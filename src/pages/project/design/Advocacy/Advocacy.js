@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import {
   Autocomplete as MuiAutocomplete,
@@ -6,10 +6,20 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider as MuiDivider,
   Grid,
   Link,
   MenuItem,
+  Paper as MuiPaper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
@@ -23,14 +33,39 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { DatePicker } from "@mui/x-date-pickers";
-import { getAllThematicAreas } from "../../../../api/thematic-area";
-import { getAmrefEntities } from "../../../../api/amref-entity";
-import { newAdvocacy } from "../../../../api/advocacy";
-import { newQualitativeCountry } from "../../../../api/qualitative-country";
-import { newQualitativePeriod } from "../../../../api/qualitative-period";
-import { newQualitativeThematicArea } from "../../../../api/qualitative-thematic-area";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { getAllThematicAreas } from "../../../../api/thematic-area";
+import { getAmrefEntities } from "../../../../api/amref-entity";
+import { getAdvocacyById, newAdvocacy } from "../../../../api/advocacy";
+import {
+  getQualitativeCountryByTypeItemId,
+  newQualitativeCountry,
+} from "../../../../api/qualitative-country";
+import {
+  getQualitativePeriodByTypeItemId,
+  newQualitativePeriod,
+} from "../../../../api/qualitative-period";
+import {
+  getQualitativeThematicAreaByTypeItemId,
+  newQualitativeThematicArea,
+} from "../../../../api/qualitative-thematic-area";
+import {
+  getAdvocacyMilestoneByAdvocacyId,
+  newAdvocacyMilestoneRange,
+} from "../../../../api/advocacy-milestone";
+import { Guid } from "../../../../utils/guid";
+
+const theme = createTheme({
+  palette: {
+    neutral: {
+      main: "#64748B",
+      contrastText: "#fff",
+    },
+  },
+});
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -39,6 +74,7 @@ const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
+const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
   title: "",
@@ -47,16 +83,124 @@ const initialValues = {
   duration_to: "",
   staffNameId: "",
   thematicAreaId: "",
-  countryId: "",
+  countryId: [],
   beneficiary: "",
   objective: "",
   advocacyNeed: "",
   expectedResult: "",
+  output: "",
 };
-const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
+
+const milestonesInitial = {
+  milestone: "",
+};
+
+const AddMilestoneForm = ({ handleClick }) => {
+  const formik = useFormik({
+    initialValues: milestonesInitial,
+    validationSchema: Yup.object().shape({
+      milestone: Yup.string().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        handleClick(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item md={12}>
+              <TextField
+                name="milestone"
+                label="Milestone"
+                value={formik.values.milestone}
+                error={Boolean(
+                  formik.touched.milestone && formik.errors.milestone
+                )}
+                fullWidth
+                helperText={formik.touched.milestone && formik.errors.milestone}
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+                multiline
+                rows={3}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+  const [openMilestoneModal, setOpenMilestoneModal] = useState(false);
+  const [milestonesArray, setMilestonesArray] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   let innovationQualitativeTypeId;
+  const {
+    data: AdvocacyData,
+    isLoading: isLoadingAdvocacyData,
+    isError: isErrorAdvocacyData,
+  } = useQuery(["getAdvocacyById", id], getAdvocacyById, { enabled: !!id });
+  const {
+    data: QualitativeCountryData,
+    isLoading: isLoadingQualitativeCountry,
+    isError: isErrorQualitativeCountry,
+  } = useQuery(
+    ["getQualitativeCountryByTypeItemId", id],
+    getQualitativeCountryByTypeItemId,
+    { enabled: !!id }
+  );
+  const {
+    data: QualitativePeriodData,
+    isLoading: isLoadingQualitativePeriod,
+    isError: isErrorQualitativePeriod,
+  } = useQuery(
+    ["getQualitativePeriodByTypeItemId", id],
+    getQualitativePeriodByTypeItemId,
+    { enabled: !!id }
+  );
+  const {
+    data: QualitativeThematicAreaData,
+    isLoading: isLoadingQualitativeThematicArea,
+    isError: isErrorQualitativeThematicArea,
+  } = useQuery(
+    ["getQualitativeThematicAreaByTypeItemId", id],
+    getQualitativeThematicAreaByTypeItemId,
+    { enabled: !!id }
+  );
+  const {
+    data: AdvocacyMilestonesData,
+    isLoading: isLoadingAdvocacyMilestones,
+    isError: isErrorAdvocacyMilestones,
+  } = useQuery(
+    ["getAdvocacyMilestoneByAdvocacyId", id],
+    getAdvocacyMilestoneByAdvocacyId,
+    { enabled: !!id }
+  );
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -106,6 +250,9 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
   const qualitativeThematicAreaMutation = useMutation({
     mutationFn: newQualitativeThematicArea,
   });
+  const advocacyMilestonesRangeMutation = useMutation({
+    mutationFn: newAdvocacyMilestoneRange,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -121,10 +268,13 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
       objective: Yup.string().required("Required"),
       advocacyNeed: Yup.string().required("Required"),
       expectedResult: Yup.string().required("Required"),
+      output: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
+        const guid = new Guid();
         const saveAdvocacy = {
+          id: id ? id : guid.toString(),
           createDate: new Date(),
           title: values.title,
           staffNameId: values.staffNameId,
@@ -146,6 +296,10 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
         let qualitativeCountries = [];
         for (const country of values.countryId) {
           const qualitativeCountry = {
+            id:
+              "qualitativeCountryId" in country
+                ? country.qualitativeCountryId
+                : guid.toString(),
             createDate: new Date(values.dateOfEntry),
             organizationUnitId: country.id,
             qualitativeTypeId: innovationQualitativeTypeId,
@@ -166,11 +320,22 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
           qualitativeTypeId: innovationQualitativeTypeId,
           qualitativeTypeItemId: advocacy.data.id,
         };
+        const advocates = [];
+        for (const milestone of milestonesArray) {
+          const advocacyMilestone = {
+            id: milestone.id,
+            createDate: new Date(values.dateOfEntry),
+            advocacyId: advocacy.data.id,
+            milestone: milestone.milestone,
+          };
+          advocates.push(advocacyMilestone);
+        }
         await qualitativeCountryMutation.mutateAsync(qualitativeCountries);
         await qualitativePeriodMutation.mutateAsync(qualitativePeriod);
         await qualitativeThematicAreaMutation.mutateAsync(
           qualitativeThematicArea
         );
+        await advocacyMilestonesRangeMutation.mutateAsync(advocates);
         toast("Successfully Created an Advocacy", {
           type: "success",
         });
@@ -186,6 +351,99 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
     },
   });
 
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingAdvocacyData &&
+        !isErrorAdvocacyData &&
+        !isLoadingQualitativePeriod &&
+        !isErrorQualitativePeriod &&
+        !isLoadingQualitativeThematicArea &&
+        !isErrorQualitativeThematicArea &&
+        !isLoadingQualitativeCountry &&
+        !isErrorQualitativeCountry &&
+        !isLoadingAdvocacyMilestones &&
+        !isErrorAdvocacyMilestones
+      ) {
+        let countries = [];
+        let milestones = [];
+        for (const qualitativeCountryFind of QualitativeCountryData.data) {
+          const result = amrefEntities.data.find(
+            (obj) => obj.id === qualitativeCountryFind.organizationUnitId
+          );
+          if (result) {
+            const newResult = {
+              ...result,
+              qualitativeCountryId: qualitativeCountryFind.id,
+            };
+            countries.push(newResult);
+          }
+        }
+        for (const datum of AdvocacyMilestonesData.data) {
+          milestones.push({
+            id: datum.id,
+            milestone: datum.milestone,
+          });
+        }
+        setMilestonesArray(milestones);
+        formik.setValues({
+          title: AdvocacyData.data.title,
+          dateOfEntry: new Date(AdvocacyData.data.createDate),
+          duration_from:
+            QualitativePeriodData.data.length > 0
+              ? new Date(QualitativePeriodData.data[0].periodFrom)
+              : "",
+          duration_to:
+            QualitativePeriodData.data.length > 0
+              ? new Date(QualitativePeriodData.data[0].periodTo)
+              : "",
+          staffNameId: AdvocacyData.data.staffNameId,
+          thematicAreaId:
+            QualitativeThematicAreaData.data.length > 0
+              ? QualitativeThematicAreaData.data[0].thematicAreaId
+              : "",
+          countryId: countries && countries.length > 0 ? countries : [],
+          beneficiary: AdvocacyData.data.beneficiary,
+          objective: AdvocacyData.data.advocacyObjective.objective,
+          advocacyNeed: AdvocacyData.data.advocacyNeed,
+          expectedResult: AdvocacyData.data.expectedResult,
+          output: AdvocacyData.data.advocacyOutput.output,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    AdvocacyData,
+    isLoadingAdvocacyData,
+    isErrorAdvocacyData,
+    isLoadingQualitativePeriod,
+    isErrorQualitativePeriod,
+    isLoadingQualitativeThematicArea,
+    isErrorQualitativeThematicArea,
+    QualitativePeriodData,
+    QualitativeThematicAreaData,
+    QualitativeCountryData,
+    isLoadingQualitativeCountry,
+    isErrorQualitativeCountry,
+    isLoadingAdvocacyMilestones,
+    isErrorAdvocacyMilestones,
+    AdvocacyMilestonesData,
+  ]);
+
+  function removeMilestone(index) {
+    const newItems = [...milestonesArray];
+    newItems.splice(index, 1);
+    setMilestonesArray(newItems);
+  }
+
+  const handleClick = (values) => {
+    const guid = new Guid();
+    setMilestonesArray((current) => [
+      ...current,
+      { id: guid.toString(), milestone: values.milestone },
+    ]);
+  };
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <Grid container item spacing={2}>
@@ -200,7 +458,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
-            required
             variant="outlined"
             my={2}
             rows={3}
@@ -286,7 +543,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             name="staffNameId"
             label="Lead/Staff Name"
             select
-            required
             value={formik.values.staffNameId}
             error={Boolean(
               formik.touched.staffNameId && formik.errors.staffNameId
@@ -360,6 +616,7 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
               );
             }}
             onChange={(_, val) => formik.setFieldValue("countryId", val)}
+            value={formik.values.countryId}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -387,7 +644,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
-            required
             variant="outlined"
             my={2}
             rows={3}
@@ -406,7 +662,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
-            required
             variant="outlined"
             my={2}
             rows={3}
@@ -427,7 +682,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
-            required
             variant="outlined"
             my={2}
             rows={3}
@@ -448,7 +702,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
-            required
             variant="outlined"
             my={2}
             rows={3}
@@ -465,22 +718,92 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId }) => {
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
-            required
             variant="outlined"
             my={2}
             rows={3}
           />
         </Grid>
+        <Grid item md={12}>
+          <Card
+            variant="outlined"
+            style={{ borderStyle: "dashed", borderRadius: 1 }}
+          >
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                &nbsp;
+              </Grid>
+            </Grid>
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                <ThemeProvider theme={theme}>
+                  <Button
+                    variant="contained"
+                    color="neutral"
+                    onClick={() => setOpenMilestoneModal(true)}
+                  >
+                    <AddIcon /> ADD MILESTONE
+                  </Button>
+                </ThemeProvider>
+              </Grid>
+            </Grid>
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                <Paper>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="left">MILESTONE</TableCell>
+                        <TableCell align="left">Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {milestonesArray.map((row, index) => (
+                        <TableRow key={Math.random().toString(36)}>
+                          <TableCell component="th" scope="row">
+                            {row.milestone}
+                          </TableCell>
+                          <TableCell align="left">
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => removeMilestone(index)}
+                            >
+                              <DeleteIcon />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Grid>
+            </Grid>
+            <br />
+          </Card>
+        </Grid>
       </Grid>
       <Button type="submit" variant="contained" color="primary" mt={3}>
         Save
       </Button>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openMilestoneModal}
+        onClose={() => setOpenMilestoneModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">MILESTONES</DialogTitle>
+        <DialogContent>
+          <DialogContentText>ADD MILESTONE</DialogContentText>
+          <AddMilestoneForm handleClick={handleClick} />
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };
 
 const Advocacy = () => {
-  let { processLevelItemId, processLevelTypeId } = useParams();
+  let { processLevelItemId, processLevelTypeId, id } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Advocacy" />
@@ -506,6 +829,7 @@ const Advocacy = () => {
               <AdvocacyForm
                 processLevelItemId={processLevelItemId}
                 processLevelTypeId={processLevelTypeId}
+                id={id}
               />
             </Grid>
           </Grid>

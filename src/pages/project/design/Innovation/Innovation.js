@@ -255,10 +255,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             countries.push(result);
           }
         }
-        if (countries.length > 0) {
-          // setCountriesValues(countries);
-          // formik.setFieldValue("countryId", countries);
-        }
         formik.setValues({
           dateOfEntry: new Date(InnovationData.data.createDate),
           title: InnovationData.data.title,

@@ -255,6 +255,10 @@ const routes = [
         path: "new-advocacy/:processLevelItemId/:processLevelTypeId",
         element: <Advocacy />,
       },
+      {
+        path: "new-advocacy/:processLevelItemId/:processLevelTypeId/:id",
+        element: <Advocacy />,
+      },
     ],
   },
   {

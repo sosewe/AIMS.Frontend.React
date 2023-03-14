@@ -8,3 +8,13 @@ export const newAdvocacy = async (values) => {
 export const getAdvocates = async () => {
   return await axios.get(apiRoutes.advocacy);
 };
+
+export const getAdvocacyById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.advocacy}/${id}`);
+};
+
+export const deleteAdvocacyById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.advocacy}/${id}`);
+};

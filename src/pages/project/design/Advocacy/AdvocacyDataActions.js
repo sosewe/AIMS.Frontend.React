@@ -15,7 +15,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteInnovationById } from "../../../../api/innovation";
+import { deleteAdvocacyById } from "../../../../api/advocacy";
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -57,7 +57,7 @@ const StyledMenu = styled((props) => (
   },
 }));
 
-const InnovationDataActions = ({ params }) => {
+const AdvocacyDataActions = ({ params }) => {
   const navigate = useNavigate();
   const [openDeleteDialog, setDeleteDialog] = useState(false);
   const [id, setId] = useState();
@@ -67,27 +67,25 @@ const InnovationDataActions = ({ params }) => {
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  const { refetch } = useQuery(
-    ["deleteInnovationById", id],
-    deleteInnovationById,
-    { enabled: false }
-  );
+  const { refetch } = useQuery(["deleteAdvocacyById", id], deleteAdvocacyById, {
+    enabled: false,
+  });
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleEditInnovation = () => {
+  const handleEditAdvocacy = () => {
     navigate(
-      `/project/new-innovation/${params.row.processLevelItemId}/${params.row.processLevelTypeId}/${params.id}`
+      `/project/new-advocacy/${params.row.processLevelItemId}/${params.row.processLevelTypeId}/${params.id}`
     );
   };
-  const handleDeleteInnovation = () => {
+  const handleDeleteAdvocacy = () => {
     setDeleteDialog(true);
     setId(params.id);
   };
-  const onDeleteInnovation = async () => {
+  const onDeleteAdvocacy = async () => {
     await refetch();
     setDeleteDialog(false);
-    await queryClient.invalidateQueries(["getInnovations"]);
+    await queryClient.invalidateQueries(["getAdvocates"]);
   };
   return (
     <React.Fragment>
@@ -121,7 +119,7 @@ const InnovationDataActions = ({ params }) => {
         onClose={handleClose}
       >
         <MenuItem
-          onClick={() => handleEditInnovation()}
+          onClick={() => handleEditAdvocacy()}
           sx={{ color: "#014d88", fontWeight: "bolder" }}
           disableRipple
         >
@@ -129,7 +127,7 @@ const InnovationDataActions = ({ params }) => {
           Edit
         </MenuItem>
         <MenuItem
-          onClick={() => handleDeleteInnovation()}
+          onClick={() => handleDeleteAdvocacy()}
           sx={{ color: "#992E62", fontWeight: "bolder" }}
           disableRipple
         >
@@ -143,14 +141,14 @@ const InnovationDataActions = ({ params }) => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">Delete Innovation</DialogTitle>
+        <DialogTitle id="alert-dialog-title">Delete Advocacy</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete Innovation?
+            Are you sure you want to delete Advocacy?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onDeleteInnovation} color="primary">
+          <Button onClick={onDeleteAdvocacy} color="primary">
             Yes
           </Button>
           <Button onClick={handleClose} color="error" autoFocus>
@@ -161,4 +159,4 @@ const InnovationDataActions = ({ params }) => {
     </React.Fragment>
   );
 };
-export default InnovationDataActions;
+export default AdvocacyDataActions;
