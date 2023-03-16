@@ -55,7 +55,7 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
           color="error"
           onClick={() =>
             navigate(
-              `/project/new-advocacy/${processLevelItemId}/${processLevelTypeId}`
+              `/project/design/new-advocacy/${processLevelItemId}/${processLevelTypeId}`
             )
           }
         >

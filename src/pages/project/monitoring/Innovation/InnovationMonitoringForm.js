@@ -1,0 +1,448 @@
+import React, { useEffect, useState } from "react";
+import {
+  Autocomplete as MuiAutocomplete,
+  Button as MuiButton,
+  Card as MuiCard,
+  CardContent as MuiCardContent,
+  Grid,
+  Link,
+  MenuItem,
+  Paper as MuiPaper,
+  TextField as MuiTextField,
+} from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { toast } from "react-toastify";
+import styled from "@emotion/styled";
+import { spacing } from "@mui/system";
+import { useQuery } from "@tanstack/react-query";
+import { getInnovationById, getInnovations } from "../../../../api/innovation";
+import { getAMREFStaffList } from "../../../../api/lookup";
+import { getAmrefEntities } from "../../../../api/amref-entity";
+import { getQualitativeCountryByTypeItemId } from "../../../../api/qualitative-country";
+
+const Card = styled(MuiCard)(spacing);
+const Paper = styled(MuiPaper)(spacing);
+const CardContent = styled(MuiCardContent)(spacing);
+const Button = styled(MuiButton)(spacing);
+const Autocomplete = styled(MuiAutocomplete)(spacing);
+const TextField = styled(MuiTextField)(spacing);
+
+const initialValues = {
+  name: "",
+  staffNameId: "",
+  countryId: [],
+  duration_from: "",
+  duration_to: "",
+  currentStageId: "",
+  updateProgress: "",
+  bragStatusId: "",
+  plaDeviations: "",
+};
+
+const InnovationMonitoringForm = () => {
+  const [innovationId, setInnovationId] = useState();
+  const [innovation, setInnovation] = useState();
+  const {
+    isLoading: isLoadingStaffList,
+    isError: isErrorStaffList,
+    data: staffListData,
+  } = useQuery(["staffList"], getAMREFStaffList, {
+    refetchOnWindowFocus: false,
+    retry: 0,
+  });
+  const {
+    isLoading: isLoadingAmrefEntities,
+    data: amrefEntities,
+    isError: isErrorAmrefEntities,
+  } = useQuery(["amrefEntities"], getAmrefEntities, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    data: InnovationsData,
+    isLoading: isLoadingInnovations,
+    isError: isErrorInnovations,
+  } = useQuery(["getInnovations"], getInnovations, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    data: InnovationData,
+    isLoading: isLoadingInnovationData,
+    isError: isErrorInnovationData,
+  } = useQuery(["getInnovationById", innovationId], getInnovationById, {
+    enabled: !!innovationId,
+  });
+  const {
+    data: QualitativeCountryData,
+    isLoading: isLoadingQualitativeCountry,
+    isError: isErrorQualitativeCountry,
+  } = useQuery(
+    ["getQualitativeCountryByTypeItemId", innovationId],
+    getQualitativeCountryByTypeItemId,
+    { enabled: !!innovationId }
+  );
+
+  const onInnovationNameChange = (event, val) => {
+    setInnovationId(val.id);
+    setInnovation(val);
+  };
+  const formik = useFormik({
+    initialValues: initialValues,
+    validationSchema: Yup.object().shape({
+      name: Yup.object().required("Required"),
+      staffNameId: Yup.object().required("Required"),
+      countryId: Yup.array().required("Required"),
+      duration_from: Yup.date().required("Required"),
+      duration_to: Yup.date().required("Required"),
+      currentStageId: Yup.string().required("Required"),
+      updateProgress: Yup.string().required("Required"),
+      bragStatusId: Yup.string().required("Required"),
+      plaDeviations: Yup.string().required("Required"),
+    }),
+    onSubmit: async (values) => {
+      try {
+        console.log(values);
+      } catch (error) {
+        console.log(error);
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
+    },
+  });
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingInnovationData &&
+        !isErrorInnovationData &&
+        !isErrorStaffList &&
+        !isLoadingStaffList &&
+        !isLoadingQualitativeCountry &&
+        !isErrorQualitativeCountry
+      ) {
+        let staff;
+        let countries = [];
+        if (!isErrorStaffList && !isLoadingStaffList) {
+          staff = staffListData.data.find(
+            (obj) => obj.id === InnovationData.data.staffNameId
+          );
+        }
+        for (const qualitativeCountryFind of QualitativeCountryData.data) {
+          const result = amrefEntities.data.find(
+            (obj) => obj.id === qualitativeCountryFind.organizationUnitId
+          );
+          if (result) {
+            countries.push(result);
+          }
+        }
+        formik.setValues({
+          // dateOfEntry: new Date(InnovationData.data.createDate),
+          name: innovation,
+          staffNameId: staff ? staff : "",
+          countryId: countries && countries.length > 0 ? countries : [],
+          // proposedSolution: InnovationData.data.proposedSolution,
+          // targetBeneficiary: InnovationData.data.targetBeneficiary,
+          // difference: InnovationData.data.difference,
+          // scaling: InnovationData.data.scaling,
+          // sustainability: InnovationData.data.sustainability,
+          // thematicAreaId:
+          //   QualitativeThematicAreaData.data.length > 0
+          //     ? QualitativeThematicAreaData.data[0].thematicAreaId
+          //     : "",
+          // duration_from:
+          //   QualitativePeriodData.data.length > 0
+          //     ? new Date(QualitativePeriodData.data[0].periodFrom)
+          //     : "",
+          // duration_to:
+          //   QualitativePeriodData.data.length > 0
+          //     ? new Date(QualitativePeriodData.data[0].periodTo)
+          //     : "",
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadingInnovationData,
+    isErrorInnovationData,
+    InnovationData,
+    isErrorStaffList,
+    isLoadingStaffList,
+    staffListData,
+    innovationId,
+    isErrorQualitativeCountry,
+    isLoadingQualitativeCountry,
+    QualitativeCountryData,
+    innovation,
+  ]);
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Grid container item spacing={2}>
+        <Grid item md={6}>
+          <Autocomplete
+            id="name"
+            options={
+              !isLoadingInnovations && !isErrorInnovations
+                ? InnovationsData.data
+                : []
+            }
+            getOptionLabel={(innovation) => {
+              if (!innovation) {
+                return ""; // Return an empty string for null or undefined values
+              }
+              return `${innovation.title}`;
+            }}
+            renderOption={(props, option) => {
+              return (
+                <li {...props} key={option.id}>
+                  {option?.title}
+                </li>
+              );
+            }}
+            onChange={(e, val) => {
+              formik.setFieldValue("name", val);
+              onInnovationNameChange(e, val);
+            }}
+            value={formik.values.name}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                error={Boolean(formik.touched.name && formik.errors.name)}
+                fullWidth
+                helperText={formik.touched.name && formik.errors.name}
+                label="Name"
+                name="name"
+                variant="outlined"
+                my={2}
+              />
+            )}
+          />
+        </Grid>
+        <Grid item md={6}>
+          <Autocomplete
+            id="staffNameId"
+            options={
+              !isLoadingStaffList && !isErrorStaffList ? staffListData.data : []
+            }
+            getOptionLabel={(staff) => {
+              if (!staff) {
+                return "";
+              }
+              return `${staff?.firstName} ${staff?.lastName}`;
+            }}
+            renderOption={(props, option) => {
+              return (
+                <li {...props} key={option.id}>
+                  {option.firstName} {option.lastName}
+                </li>
+              );
+            }}
+            onChange={(_, val) => formik.setFieldValue("staffNameId", val)}
+            value={formik.values.staffNameId}
+            disabled={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                error={Boolean(
+                  formik.touched.staffNameId && formik.errors.staffNameId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffNameId && formik.errors.staffNameId
+                }
+                label="Lead/Staff Name"
+                name="staffNameId"
+                variant="outlined"
+                my={2}
+              />
+            )}
+          />
+        </Grid>
+        <Grid item md={6}>
+          <Autocomplete
+            id="countryId"
+            multiple
+            options={
+              !isLoadingAmrefEntities && !isErrorAmrefEntities
+                ? amrefEntities.data
+                : []
+            }
+            getOptionLabel={(entity) => `${entity?.name}`}
+            renderOption={(props, option) => {
+              return (
+                <li {...props} key={option.id}>
+                  {option.name}
+                </li>
+              );
+            }}
+            onChange={(_, val) => formik.setFieldValue("countryId", val)}
+            value={formik.values.countryId}
+            disabled={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                error={Boolean(
+                  formik.touched.countryId && formik.errors.countryId
+                )}
+                fullWidth
+                helperText={formik.touched.countryId && formik.errors.countryId}
+                label="Select Countries/entities of implementation"
+                name="countryId"
+                variant="outlined"
+                my={2}
+              />
+            )}
+          />
+        </Grid>
+        <Grid item md={6}></Grid>
+        <Grid item md={6}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="From"
+              value={formik.values.duration_from}
+              onChange={(value) =>
+                formik.setFieldValue("duration_from", value, true)
+              }
+              renderInput={(params) => (
+                <TextField
+                  error={Boolean(
+                    formik.touched.duration_from && formik.errors.duration_from
+                  )}
+                  helperText={
+                    formik.touched.duration_from && formik.errors.duration_from
+                  }
+                  margin="normal"
+                  name="duration_from"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                  {...params}
+                />
+              )}
+            />
+          </LocalizationProvider>
+        </Grid>
+        <Grid item md={6}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="To"
+              value={formik.values.duration_to}
+              onChange={(value) =>
+                formik.setFieldValue("duration_to", value, true)
+              }
+              renderInput={(params) => (
+                <TextField
+                  error={Boolean(
+                    formik.touched.duration_to && formik.errors.duration_to
+                  )}
+                  helperText={
+                    formik.touched.duration_to && formik.errors.duration_to
+                  }
+                  margin="normal"
+                  name="duration_to"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                  {...params}
+                />
+              )}
+            />
+          </LocalizationProvider>
+        </Grid>
+        <Grid item md={6}>
+          <TextField
+            name="currentStageId"
+            label="Current stage of the innovation"
+            select
+            required
+            value={formik.values.currentStageId}
+            error={Boolean(
+              formik.touched.currentStageId && formik.errors.currentStageId
+            )}
+            fullWidth
+            helperText={
+              formik.touched.currentStageId && formik.errors.currentStageId
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          >
+            <MenuItem disabled value="">
+              Select current stage of the innovation
+            </MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="updateProgress"
+            label="Update progress on innovation from last quarter or from setup"
+            value={formik.values.updateProgress}
+            error={Boolean(
+              formik.touched.updateProgress && formik.errors.updateProgress
+            )}
+            fullWidth
+            helperText={
+              formik.touched.updateProgress && formik.errors.updateProgress
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            multiline
+            variant="outlined"
+            rows={3}
+            my={2}
+          />
+        </Grid>
+        <Grid item md={6}>
+          <TextField
+            name="bragStatusId"
+            label="BRAG Status"
+            select
+            required
+            value={formik.values.bragStatusId}
+            error={Boolean(
+              formik.touched.bragStatusId && formik.errors.bragStatusId
+            )}
+            fullWidth
+            helperText={
+              formik.touched.bragStatusId && formik.errors.bragStatusId
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          >
+            <MenuItem disabled value="">
+              Select BRAG Status
+            </MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="plaDeviations"
+            label="Update any deviations from original plan for innovation"
+            value={formik.values.plaDeviations}
+            error={Boolean(
+              formik.touched.plaDeviations && formik.errors.plaDeviations
+            )}
+            fullWidth
+            helperText={
+              formik.touched.plaDeviations && formik.errors.plaDeviations
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            multiline
+            variant="outlined"
+            rows={3}
+            my={2}
+          />
+        </Grid>
+        <Grid item md={12}></Grid>
+      </Grid>
+    </form>
+  );
+};
+export default InnovationMonitoringForm;

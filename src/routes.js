@@ -111,6 +111,9 @@ const Innovation = async(() =>
 const Advocacy = async(() =>
   import("./pages/project/design/Advocacy/Advocacy")
 );
+const InnovationMonitoring = async(() =>
+  import("./pages/project/monitoring/Innovation/InnovationMonitoring")
+);
 
 const routes = [
   {
@@ -244,20 +247,24 @@ const routes = [
         element: <EnterQuantitativeResults />,
       },
       {
-        path: "new-innovation/:processLevelItemId/:processLevelTypeId",
+        path: "design/new-innovation/:processLevelItemId/:processLevelTypeId",
         element: <Innovation />,
       },
       {
-        path: "new-innovation/:processLevelItemId/:processLevelTypeId/:id",
+        path: "design/new-innovation/:processLevelItemId/:processLevelTypeId/:id",
         element: <Innovation />,
       },
       {
-        path: "new-advocacy/:processLevelItemId/:processLevelTypeId",
+        path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId",
         element: <Advocacy />,
       },
       {
-        path: "new-advocacy/:processLevelItemId/:processLevelTypeId/:id",
+        path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId/:id",
         element: <Advocacy />,
+      },
+      {
+        path: "monitoring/innovation-monitoring",
+        element: <InnovationMonitoring />,
       },
     ],
   },

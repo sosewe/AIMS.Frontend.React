@@ -255,7 +255,9 @@ const ProjectMonitoringAccordion = ({
                                 justifyContent="center"
                               >
                                 <Grid item md={12}>
-                                  <NavLink to={``}>
+                                  <NavLink
+                                    to={`/project/monitoring/innovation-monitoring`}
+                                  >
                                     <Typography
                                       variant="h3"
                                       gutterBottom

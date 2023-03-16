@@ -55,7 +55,7 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
           color="error"
           onClick={() =>
             navigate(
-              `/project/new-innovation/${processLevelItemId}/${processLevelTypeId}`
+              `/project/design/new-innovation/${processLevelItemId}/${processLevelTypeId}`
             )
           }
         >

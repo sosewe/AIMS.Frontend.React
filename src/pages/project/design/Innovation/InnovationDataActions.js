@@ -77,7 +77,7 @@ const InnovationDataActions = ({ params }) => {
   };
   const handleEditInnovation = () => {
     navigate(
-      `/project/new-innovation/${params.row.processLevelItemId}/${params.row.processLevelTypeId}/${params.id}`
+      `/project/design/new-innovation/${params.row.processLevelItemId}/${params.row.processLevelTypeId}/${params.id}`
     );
   };
   const handleDeleteInnovation = () => {

@@ -75,7 +75,7 @@ const AdvocacyDataActions = ({ params }) => {
   };
   const handleEditAdvocacy = () => {
     navigate(
-      `/project/new-advocacy/${params.row.processLevelItemId}/${params.row.processLevelTypeId}/${params.id}`
+      `/project/design/new-advocacy/${params.row.processLevelItemId}/${params.row.processLevelTypeId}/${params.id}`
     );
   };
   const handleDeleteAdvocacy = () => {
