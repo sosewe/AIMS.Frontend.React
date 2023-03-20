@@ -4,10 +4,19 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   Link,
   MenuItem,
   Paper as MuiPaper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField as MuiTextField,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -22,6 +31,19 @@ import { getInnovationById, getInnovations } from "../../../../api/innovation";
 import { getAMREFStaffList } from "../../../../api/lookup";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getQualitativeCountryByTypeItemId } from "../../../../api/qualitative-country";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import InnovationChallengesForm from "./InnovationChallengesForm";
+import { Guid } from "../../../../utils/guid";
+
+const theme = createTheme({
+  palette: {
+    neutral: {
+      main: "#64748B",
+      contrastText: "#fff",
+    },
+  },
+});
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -43,8 +65,10 @@ const initialValues = {
 };
 
 const InnovationMonitoringForm = () => {
+  const [openChallengesModal, setOpenChallengesModal] = useState(false);
   const [innovationId, setInnovationId] = useState();
   const [innovation, setInnovation] = useState();
+  const [challengesArray, setChallengesArray] = useState([]);
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -88,6 +112,17 @@ const InnovationMonitoringForm = () => {
     setInnovationId(val.id);
     setInnovation(val);
   };
+
+  const handleClick = (values) => {
+    console.log(values);
+  };
+
+  function removeChallenge(index) {
+    const newItems = [...challengesArray];
+    newItems.splice(index, 1);
+    setChallengesArray(newItems);
+  }
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -176,6 +211,7 @@ const InnovationMonitoringForm = () => {
     isLoadingQualitativeCountry,
     QualitativeCountryData,
     innovation,
+    amrefEntities,
   ]);
 
   return (
@@ -440,8 +476,69 @@ const InnovationMonitoringForm = () => {
             my={2}
           />
         </Grid>
-        <Grid item md={12}></Grid>
       </Grid>
+      <Grid container spacing={12}>
+        <Grid item md={12}>
+          <ThemeProvider theme={theme}>
+            <Button
+              variant="contained"
+              color="neutral"
+              onClick={() => setOpenChallengesModal(true)}
+            >
+              <AddIcon /> ADD CHALLENGES
+            </Button>
+          </ThemeProvider>
+        </Grid>
+      </Grid>
+      <Grid container spacing={12}>
+        <Grid item md={12}>
+          <Paper>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="left">CHALLENGE</TableCell>
+                  <TableCell align="left">Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {challengesArray.map((row, index) => (
+                  <TableRow key={Math.random().toString(36)}>
+                    <TableCell component="th" scope="row">
+                      {row.challenge}
+                    </TableCell>
+                    <TableCell align="left">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => removeChallenge(index)}
+                      >
+                        <DeleteIcon />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Paper>
+        </Grid>
+      </Grid>
+      <br />
+      <Button type="submit" variant="contained" color="primary" mt={3}>
+        Save
+      </Button>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openChallengesModal}
+        onClose={() => setOpenChallengesModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">CHALLENGES</DialogTitle>
+        <DialogContent>
+          <DialogContentText>ADD CHALLENGE</DialogContentText>
+          <InnovationChallengesForm handleClick={handleClick} />
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };
