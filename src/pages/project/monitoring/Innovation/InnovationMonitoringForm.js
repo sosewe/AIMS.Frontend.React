@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import {
   Autocomplete as MuiAutocomplete,
+  Box,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Grid,
-  Link,
   MenuItem,
   Paper as MuiPaper,
   Table,
@@ -139,6 +140,7 @@ const InnovationMonitoringForm = () => {
     onSubmit: async (values) => {
       try {
         console.log(values);
+        values.id = new Guid().toString();
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -216,316 +218,350 @@ const InnovationMonitoringForm = () => {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      <Grid container item spacing={2}>
-        <Grid item md={6}>
-          <Autocomplete
-            id="name"
-            options={
-              !isLoadingInnovations && !isErrorInnovations
-                ? InnovationsData.data
-                : []
-            }
-            getOptionLabel={(innovation) => {
-              if (!innovation) {
-                return ""; // Return an empty string for null or undefined values
-              }
-              return `${innovation.title}`;
-            }}
-            renderOption={(props, option) => {
-              return (
-                <li {...props} key={option.id}>
-                  {option?.title}
-                </li>
-              );
-            }}
-            onChange={(e, val) => {
-              formik.setFieldValue("name", val);
-              onInnovationNameChange(e, val);
-            }}
-            value={formik.values.name}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={Boolean(formik.touched.name && formik.errors.name)}
-                fullWidth
-                helperText={formik.touched.name && formik.errors.name}
-                label="Name"
-                name="name"
-                variant="outlined"
-                my={2}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={6}>
-          <Autocomplete
-            id="staffNameId"
-            options={
-              !isLoadingStaffList && !isErrorStaffList ? staffListData.data : []
-            }
-            getOptionLabel={(staff) => {
-              if (!staff) {
-                return "";
-              }
-              return `${staff?.firstName} ${staff?.lastName}`;
-            }}
-            renderOption={(props, option) => {
-              return (
-                <li {...props} key={option.id}>
-                  {option.firstName} {option.lastName}
-                </li>
-              );
-            }}
-            onChange={(_, val) => formik.setFieldValue("staffNameId", val)}
-            value={formik.values.staffNameId}
-            disabled={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={Boolean(
-                  formik.touched.staffNameId && formik.errors.staffNameId
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.staffNameId && formik.errors.staffNameId
-                }
-                label="Lead/Staff Name"
-                name="staffNameId"
-                variant="outlined"
-                my={2}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={6}>
-          <Autocomplete
-            id="countryId"
-            multiple
-            options={
-              !isLoadingAmrefEntities && !isErrorAmrefEntities
-                ? amrefEntities.data
-                : []
-            }
-            getOptionLabel={(entity) => `${entity?.name}`}
-            renderOption={(props, option) => {
-              return (
-                <li {...props} key={option.id}>
-                  {option.name}
-                </li>
-              );
-            }}
-            onChange={(_, val) => formik.setFieldValue("countryId", val)}
-            value={formik.values.countryId}
-            disabled={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={Boolean(
-                  formik.touched.countryId && formik.errors.countryId
-                )}
-                fullWidth
-                helperText={formik.touched.countryId && formik.errors.countryId}
-                label="Select Countries/entities of implementation"
-                name="countryId"
-                variant="outlined"
-                my={2}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={6}></Grid>
-        <Grid item md={6}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="From"
-              value={formik.values.duration_from}
-              onChange={(value) =>
-                formik.setFieldValue("duration_from", value, true)
-              }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.duration_from && formik.errors.duration_from
-                  )}
-                  helperText={
-                    formik.touched.duration_from && formik.errors.duration_from
-                  }
-                  margin="normal"
-                  name="duration_from"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
-              )}
-            />
-          </LocalizationProvider>
-        </Grid>
-        <Grid item md={6}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="To"
-              value={formik.values.duration_to}
-              onChange={(value) =>
-                formik.setFieldValue("duration_to", value, true)
-              }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.duration_to && formik.errors.duration_to
-                  )}
-                  helperText={
-                    formik.touched.duration_to && formik.errors.duration_to
-                  }
-                  margin="normal"
-                  name="duration_to"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
-              )}
-            />
-          </LocalizationProvider>
-        </Grid>
-        <Grid item md={6}>
-          <TextField
-            name="currentStageId"
-            label="Current stage of the innovation"
-            select
-            required
-            value={formik.values.currentStageId}
-            error={Boolean(
-              formik.touched.currentStageId && formik.errors.currentStageId
-            )}
-            fullWidth
-            helperText={
-              formik.touched.currentStageId && formik.errors.currentStageId
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            variant="outlined"
-            my={2}
-          >
-            <MenuItem disabled value="">
-              Select current stage of the innovation
-            </MenuItem>
-          </TextField>
-        </Grid>
-        <Grid item md={12}>
-          <TextField
-            name="updateProgress"
-            label="Update progress on innovation from last quarter or from setup"
-            value={formik.values.updateProgress}
-            error={Boolean(
-              formik.touched.updateProgress && formik.errors.updateProgress
-            )}
-            fullWidth
-            helperText={
-              formik.touched.updateProgress && formik.errors.updateProgress
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            rows={3}
-            my={2}
-          />
-        </Grid>
-        <Grid item md={6}>
-          <TextField
-            name="bragStatusId"
-            label="BRAG Status"
-            select
-            required
-            value={formik.values.bragStatusId}
-            error={Boolean(
-              formik.touched.bragStatusId && formik.errors.bragStatusId
-            )}
-            fullWidth
-            helperText={
-              formik.touched.bragStatusId && formik.errors.bragStatusId
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            variant="outlined"
-            my={2}
-          >
-            <MenuItem disabled value="">
-              Select BRAG Status
-            </MenuItem>
-          </TextField>
-        </Grid>
-        <Grid item md={12}>
-          <TextField
-            name="plaDeviations"
-            label="Update any deviations from original plan for innovation"
-            value={formik.values.plaDeviations}
-            error={Boolean(
-              formik.touched.plaDeviations && formik.errors.plaDeviations
-            )}
-            fullWidth
-            helperText={
-              formik.touched.plaDeviations && formik.errors.plaDeviations
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            rows={3}
-            my={2}
-          />
-        </Grid>
-      </Grid>
-      <Grid container spacing={12}>
-        <Grid item md={12}>
-          <ThemeProvider theme={theme}>
-            <Button
-              variant="contained"
-              color="neutral"
-              onClick={() => setOpenChallengesModal(true)}
-            >
-              <AddIcon /> ADD CHALLENGES
-            </Button>
-          </ThemeProvider>
-        </Grid>
-      </Grid>
-      <Grid container spacing={12}>
-        <Grid item md={12}>
-          <Paper>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell align="left">CHALLENGE</TableCell>
-                  <TableCell align="left">Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {challengesArray.map((row, index) => (
-                  <TableRow key={Math.random().toString(36)}>
-                    <TableCell component="th" scope="row">
-                      {row.challenge}
-                    </TableCell>
-                    <TableCell align="left">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => removeChallenge(index)}
-                      >
-                        <DeleteIcon />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
-        </Grid>
-      </Grid>
-      <br />
-      <Button type="submit" variant="contained" color="primary" mt={3}>
-        Save
-      </Button>
+      <Card mb={12}>
+        <CardContent>
+          {formik.isSubmitting ? (
+            <Box display="flex" justifyContent="center" my={6}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <Grid container item spacing={2}>
+                <Grid item md={6}>
+                  <Autocomplete
+                    id="name"
+                    options={
+                      !isLoadingInnovations && !isErrorInnovations
+                        ? InnovationsData.data
+                        : []
+                    }
+                    getOptionLabel={(innovation) => {
+                      if (!innovation) {
+                        return ""; // Return an empty string for null or undefined values
+                      }
+                      return `${innovation.title}`;
+                    }}
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option?.title}
+                        </li>
+                      );
+                    }}
+                    onChange={(e, val) => {
+                      formik.setFieldValue("name", val);
+                      onInnovationNameChange(e, val);
+                    }}
+                    value={formik.values.name}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={Boolean(
+                          formik.touched.name && formik.errors.name
+                        )}
+                        fullWidth
+                        helperText={formik.touched.name && formik.errors.name}
+                        label="Name"
+                        name="name"
+                        variant="outlined"
+                        my={2}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item md={6}>
+                  <Autocomplete
+                    id="staffNameId"
+                    options={
+                      !isLoadingStaffList && !isErrorStaffList
+                        ? staffListData.data
+                        : []
+                    }
+                    getOptionLabel={(staff) => {
+                      if (!staff) {
+                        return "";
+                      }
+                      return `${staff?.firstName} ${staff?.lastName}`;
+                    }}
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option.firstName} {option.lastName}
+                        </li>
+                      );
+                    }}
+                    onChange={(_, val) =>
+                      formik.setFieldValue("staffNameId", val)
+                    }
+                    value={formik.values.staffNameId}
+                    disabled={true}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={Boolean(
+                          formik.touched.staffNameId &&
+                            formik.errors.staffNameId
+                        )}
+                        fullWidth
+                        helperText={
+                          formik.touched.staffNameId &&
+                          formik.errors.staffNameId
+                        }
+                        label="Lead/Staff Name"
+                        name="staffNameId"
+                        variant="outlined"
+                        my={2}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item md={6}>
+                  <Autocomplete
+                    id="countryId"
+                    multiple
+                    options={
+                      !isLoadingAmrefEntities && !isErrorAmrefEntities
+                        ? amrefEntities.data
+                        : []
+                    }
+                    getOptionLabel={(entity) => `${entity?.name}`}
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option.name}
+                        </li>
+                      );
+                    }}
+                    onChange={(_, val) =>
+                      formik.setFieldValue("countryId", val)
+                    }
+                    value={formik.values.countryId}
+                    disabled={true}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={Boolean(
+                          formik.touched.countryId && formik.errors.countryId
+                        )}
+                        fullWidth
+                        helperText={
+                          formik.touched.countryId && formik.errors.countryId
+                        }
+                        label="Select Countries/entities of implementation"
+                        name="countryId"
+                        variant="outlined"
+                        my={2}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item md={6}></Grid>
+                <Grid item md={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="From"
+                      value={formik.values.duration_from}
+                      onChange={(value) =>
+                        formik.setFieldValue("duration_from", value, true)
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          error={Boolean(
+                            formik.touched.duration_from &&
+                              formik.errors.duration_from
+                          )}
+                          helperText={
+                            formik.touched.duration_from &&
+                            formik.errors.duration_from
+                          }
+                          margin="normal"
+                          name="duration_from"
+                          variant="outlined"
+                          fullWidth
+                          my={2}
+                          {...params}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item md={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="To"
+                      value={formik.values.duration_to}
+                      onChange={(value) =>
+                        formik.setFieldValue("duration_to", value, true)
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          error={Boolean(
+                            formik.touched.duration_to &&
+                              formik.errors.duration_to
+                          )}
+                          helperText={
+                            formik.touched.duration_to &&
+                            formik.errors.duration_to
+                          }
+                          margin="normal"
+                          name="duration_to"
+                          variant="outlined"
+                          fullWidth
+                          my={2}
+                          {...params}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item md={6}>
+                  <TextField
+                    name="currentStageId"
+                    label="Current stage of the innovation"
+                    select
+                    required
+                    value={formik.values.currentStageId}
+                    error={Boolean(
+                      formik.touched.currentStageId &&
+                        formik.errors.currentStageId
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.currentStageId &&
+                      formik.errors.currentStageId
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select current stage of the innovation
+                    </MenuItem>
+                  </TextField>
+                </Grid>
+                <Grid item md={12}>
+                  <TextField
+                    name="updateProgress"
+                    label="Update progress on innovation from last quarter or from setup"
+                    value={formik.values.updateProgress}
+                    error={Boolean(
+                      formik.touched.updateProgress &&
+                        formik.errors.updateProgress
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.updateProgress &&
+                      formik.errors.updateProgress
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    multiline
+                    variant="outlined"
+                    rows={3}
+                    my={2}
+                  />
+                </Grid>
+                <Grid item md={6}>
+                  <TextField
+                    name="bragStatusId"
+                    label="BRAG Status"
+                    select
+                    required
+                    value={formik.values.bragStatusId}
+                    error={Boolean(
+                      formik.touched.bragStatusId && formik.errors.bragStatusId
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.bragStatusId && formik.errors.bragStatusId
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select BRAG Status
+                    </MenuItem>
+                  </TextField>
+                </Grid>
+                <Grid item md={12}>
+                  <TextField
+                    name="plaDeviations"
+                    label="Update any deviations from original plan for innovation"
+                    value={formik.values.plaDeviations}
+                    error={Boolean(
+                      formik.touched.plaDeviations &&
+                        formik.errors.plaDeviations
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.plaDeviations &&
+                      formik.errors.plaDeviations
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    multiline
+                    variant="outlined"
+                    rows={3}
+                    my={2}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <ThemeProvider theme={theme}>
+                    <Button
+                      variant="contained"
+                      color="neutral"
+                      onClick={() => setOpenChallengesModal(true)}
+                    >
+                      <AddIcon /> ADD CHALLENGES
+                    </Button>
+                  </ThemeProvider>
+                </Grid>
+              </Grid>
+              <Grid container spacing={12}>
+                <Grid item md={12}>
+                  <Paper>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align="left">CHALLENGE</TableCell>
+                          <TableCell align="left">Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {challengesArray.map((row, index) => (
+                          <TableRow key={Math.random().toString(36)}>
+                            <TableCell component="th" scope="row">
+                              {row.challenge}
+                            </TableCell>
+                            <TableCell align="left">
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => removeChallenge(index)}
+                              >
+                                <DeleteIcon />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Paper>
+                </Grid>
+              </Grid>
+              <br />
+              <Button type="submit" variant="contained" color="primary" mt={3}>
+                Save
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
       <Dialog
         fullWidth={true}
         maxWidth="md"

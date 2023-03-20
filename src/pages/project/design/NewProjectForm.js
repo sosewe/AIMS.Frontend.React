@@ -115,6 +115,7 @@ const StaffDetailsForm = ({
   administrativeRoles,
   isLoading,
   isLoadingAdministrativeRoles,
+  isErrorAdministrativeRoles,
   staffListData,
   isLoadingStaffList,
   isErrorStaffList,
@@ -242,7 +243,7 @@ const StaffDetailsForm = ({
                 <MenuItem disabled value="">
                   Select DQA Work Flow Role
                 </MenuItem>
-                {!isLoadingAdministrativeRoles
+                {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
                   ? administrativeRoles.data.map((option) => (
                       <MenuItem key={option.roleId} value={option}>
                         {option.roleName}
@@ -297,10 +298,13 @@ const NewProjectForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const { isLoading: isLoadingAdministrativeRoles, data: administrativeRoles } =
-    useQuery(["administrativeRoles"], getAdministrativeRoles, {
-      refetchOnWindowFocus: false,
-    });
+  const {
+    isLoading: isLoadingAdministrativeRoles,
+    isError: isErrorAdministrativeRoles,
+    data: administrativeRoles,
+  } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
+    refetchOnWindowFocus: false,
+  });
   const { data: ProjectData } = useQuery(
     ["getProjectById", id],
     getProjectById,
@@ -1469,6 +1473,7 @@ const NewProjectForm = ({ id }) => {
             administrativeRoles={administrativeRoles}
             isLoading={isLoadingAimsRole}
             isLoadingAdministrativeRoles={isLoadingAdministrativeRoles}
+            isErrorAdministrativeRoles={isErrorAdministrativeRoles}
             staffListData={staffListData}
             isLoadingStaffList={isLoadingStaffList}
             isErrorStaffList={isErrorStaffList}

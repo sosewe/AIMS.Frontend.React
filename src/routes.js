@@ -23,6 +23,7 @@ import Page500 from "./pages/auth/Page500";
 
 // Home
 import Home from "./pages/home";
+import AdvocacyMonitoring from "./pages/project/monitoring/Advocacy/AdvocacyMonitoring";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
@@ -265,6 +266,10 @@ const routes = [
       {
         path: "monitoring/innovation-monitoring",
         element: <InnovationMonitoring />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring",
+        element: <AdvocacyMonitoring />,
       },
     ],
   },
