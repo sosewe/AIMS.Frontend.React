@@ -529,6 +529,13 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     isLoadingAdvocacyMilestones,
     isErrorAdvocacyMilestones,
     AdvocacyMilestonesData,
+    amrefEntities,
+    isErrorQuartersData,
+    isErrorYearsData,
+    isLoadingQuartersData,
+    isLoadingYearsData,
+    quartersData,
+    yearsData,
   ]);
 
   function removeMilestone(index) {

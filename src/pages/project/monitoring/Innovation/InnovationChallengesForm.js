@@ -27,13 +27,16 @@ const InnovationChallengesForm = ({ handleClick }) => {
     validationSchema: Yup.object().shape({
       challenge: Yup.string().required("Required"),
     }),
-    onSubmit: async (values) => {
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
         handleClick(values);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
         });
+      } finally {
+        resetForm();
+        setSubmitting(false);
       }
     },
   });

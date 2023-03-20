@@ -27,7 +27,7 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getInnovationById, getInnovations } from "../../../../api/innovation";
 import {
   getAMREFStaffList,
@@ -39,6 +39,8 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import InnovationChallengesForm from "./InnovationChallengesForm";
 import { Guid } from "../../../../utils/guid";
+import { newInnovationProgress } from "../../../../api/innovation-progress";
+import { newInnovationChallenge } from "../../../../api/innovation-challenge";
 
 const theme = createTheme({
   palette: {
@@ -149,6 +151,10 @@ const InnovationMonitoringForm = () => {
     setChallengesArray(newItems);
   }
 
+  const mutation = useMutation({ mutationFn: newInnovationProgress });
+  const mutationInnovationChallenge = useMutation({
+    mutationFn: newInnovationChallenge,
+  });
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -165,7 +171,31 @@ const InnovationMonitoringForm = () => {
     onSubmit: async (values) => {
       try {
         console.log(values);
-        values.id = new Guid().toString();
+        const innovationProgress = {
+          id: new Guid().toString(),
+          createDate: new Date(),
+          innovationId: values.name.id,
+          currentStageId: values.currentStageId,
+          updateProgress: values.updateProgress,
+          bragStatusId: values.bragStatusId,
+          plaDeviations: values.plaDeviations,
+        };
+        const innovationProgressResult = await mutation.mutateAsync(
+          innovationProgress
+        );
+        for (const challengeVal of challengesArray) {
+          const innovationChallenges = {
+            id: new Guid().toString(),
+            createDate: new Date(),
+            innovationProgressId: innovationProgressResult.data.id,
+            challengesExperienced: challengeVal.challenge,
+            challengeResolution: "",
+          };
+          await mutationInnovationChallenge.mutateAsync(innovationChallenges);
+        }
+        toast("Successfully Innovation Monitoring", {
+          type: "success",
+        });
       } catch (error) {
         console.log(error);
         toast(error.response.data, {

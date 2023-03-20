@@ -8,6 +8,7 @@ import {
   CardContent as MuiCardContent,
   CircularProgress,
   Grid,
+  MenuItem,
   Paper as MuiPaper,
   TextField as MuiTextField,
 } from "@mui/material";
@@ -19,6 +20,10 @@ import { toast } from "react-toastify";
 import { useQuery } from "@tanstack/react-query";
 import { getAdvocates } from "../../../../api/advocacy";
 import { getAMREFStaffList } from "../../../../api/lookup";
+import { getAllThematicAreas } from "../../../../api/thematic-area";
+import { getAmrefEntities } from "../../../../api/amref-entity";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -45,6 +50,20 @@ const AdvocacyMonitoringForm = () => {
   } = useQuery(["staffList"], getAMREFStaffList, {
     refetchOnWindowFocus: false,
     retry: 0,
+  });
+  const {
+    data: ThematicAreas,
+    isLoading: isLoadingThematicAreas,
+    isError: isErrorThematicAreas,
+  } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    isLoading: isLoadingAmrefEntities,
+    data: amrefEntities,
+    isError: isErrorAmrefEntities,
+  } = useQuery(["amrefEntities"], getAmrefEntities, {
+    refetchOnWindowFocus: false,
   });
 
   const onAdvocacyNameChange = (event, val) => {
@@ -177,7 +196,140 @@ const AdvocacyMonitoringForm = () => {
                     )}
                   />
                 </Grid>
+                <Grid item md={6}>
+                  <TextField
+                    name="thematicAreaId"
+                    label="Thematic Area(s)"
+                    select
+                    value={formik.values.thematicAreaId}
+                    error={Boolean(
+                      formik.touched.thematicAreaId &&
+                        formik.errors.thematicAreaId
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.thematicAreaId &&
+                      formik.errors.thematicAreaId
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Thematic Area(s)
+                    </MenuItem>
+                    {!isLoadingThematicAreas && !isErrorThematicAreas
+                      ? ThematicAreas.data.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.name}({option.initial})
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+                <Grid item md={6}>
+                  <Autocomplete
+                    id="countryId"
+                    multiple
+                    options={
+                      !isLoadingAmrefEntities && !isErrorAmrefEntities
+                        ? amrefEntities.data
+                        : []
+                    }
+                    getOptionLabel={(entity) => `${entity?.name}`}
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option.name}
+                        </li>
+                      );
+                    }}
+                    onChange={(_, val) =>
+                      formik.setFieldValue("countryId", val)
+                    }
+                    value={formik.values.countryId}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={Boolean(
+                          formik.touched.countryId && formik.errors.countryId
+                        )}
+                        fullWidth
+                        helperText={
+                          formik.touched.countryId && formik.errors.countryId
+                        }
+                        label="Select Countries/entities of implementation"
+                        name="countryId"
+                        variant="outlined"
+                        my={2}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item md={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="From"
+                      value={formik.values.duration_from}
+                      onChange={(value) =>
+                        formik.setFieldValue("duration_from", value, true)
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          error={Boolean(
+                            formik.touched.duration_from &&
+                              formik.errors.duration_from
+                          )}
+                          helperText={
+                            formik.touched.duration_from &&
+                            formik.errors.duration_from
+                          }
+                          margin="normal"
+                          name="duration_from"
+                          variant="outlined"
+                          fullWidth
+                          my={2}
+                          {...params}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item md={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="To"
+                      value={formik.values.duration_to}
+                      onChange={(value) =>
+                        formik.setFieldValue("duration_to", value, true)
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          error={Boolean(
+                            formik.touched.duration_to &&
+                              formik.errors.duration_to
+                          )}
+                          helperText={
+                            formik.touched.duration_to &&
+                            formik.errors.duration_to
+                          }
+                          margin="normal"
+                          name="duration_to"
+                          variant="outlined"
+                          fullWidth
+                          my={2}
+                          {...params}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
               </Grid>
+              <br />
+              <Button type="submit" variant="contained" color="primary" mt={3}>
+                Save
+              </Button>
             </>
           )}
         </CardContent>
