@@ -16,6 +16,9 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Guid } from "../../../../utils/guid";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
+import { getAdvocates } from "../../../../api/advocacy";
+import { getAMREFStaffList } from "../../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -27,6 +30,28 @@ const TextField = styled(MuiTextField)(spacing);
 const initialValues = {};
 
 const AdvocacyMonitoringForm = () => {
+  const {
+    data: AdvocacyData,
+    isLoading: isLoadingAdvocacy,
+    isError: isErrorAdvocacy,
+    error,
+  } = useQuery(["getAdvocates"], getAdvocates, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    isLoading: isLoadingStaffList,
+    isError: isErrorStaffList,
+    data: staffListData,
+  } = useQuery(["staffList"], getAMREFStaffList, {
+    refetchOnWindowFocus: false,
+    retry: 0,
+  });
+
+  const onAdvocacyNameChange = (event, val) => {
+    // setInnovationId(val.id);
+    // setInnovation(val);
+  };
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -64,7 +89,94 @@ const AdvocacyMonitoringForm = () => {
           ) : (
             <>
               <Grid container item spacing={2}>
-                <Grid item md={6}></Grid>
+                <Grid item md={6}>
+                  <Autocomplete
+                    id="name"
+                    options={
+                      !isLoadingAdvocacy && !isErrorAdvocacy
+                        ? AdvocacyData.data
+                        : []
+                    }
+                    getOptionLabel={(innovation) => {
+                      if (!innovation) {
+                        return ""; // Return an empty string for null or undefined values
+                      }
+                      return `${innovation.title}`;
+                    }}
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option?.title}
+                        </li>
+                      );
+                    }}
+                    onChange={(e, val) => {
+                      formik.setFieldValue("name", val);
+                      onAdvocacyNameChange(e, val);
+                    }}
+                    value={formik.values.name}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={Boolean(
+                          formik.touched.name && formik.errors.name
+                        )}
+                        fullWidth
+                        helperText={formik.touched.name && formik.errors.name}
+                        label="Name"
+                        name="name"
+                        variant="outlined"
+                        my={2}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item md={6}>
+                  <Autocomplete
+                    id="staffNameId"
+                    options={
+                      !isLoadingStaffList && !isErrorStaffList
+                        ? staffListData.data
+                        : []
+                    }
+                    getOptionLabel={(staff) => {
+                      if (!staff) {
+                        return "";
+                      }
+                      return `${staff?.firstName} ${staff?.lastName}`;
+                    }}
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option.firstName} {option.lastName}
+                        </li>
+                      );
+                    }}
+                    onChange={(_, val) =>
+                      formik.setFieldValue("staffNameId", val)
+                    }
+                    value={formik.values.staffNameId}
+                    disabled={true}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={Boolean(
+                          formik.touched.staffNameId &&
+                            formik.errors.staffNameId
+                        )}
+                        fullWidth
+                        helperText={
+                          formik.touched.staffNameId &&
+                          formik.errors.staffNameId
+                        }
+                        label="Lead/Staff Name"
+                        name="staffNameId"
+                        variant="outlined"
+                        my={2}
+                      />
+                    )}
+                  />
+                </Grid>
               </Grid>
             </>
           )}

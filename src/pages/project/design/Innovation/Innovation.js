@@ -53,7 +53,6 @@ const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
   title: "",
-  dateOfEntry: "",
   duration_from: "",
   duration_to: "",
   staffNameId: "",
@@ -64,6 +63,7 @@ const initialValues = {
   difference: "",
   scaling: "",
   sustainability: "",
+  whyInnovative: "",
 };
 const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
@@ -155,7 +155,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
       title: Yup.string().required("Required"),
-      dateOfEntry: Yup.date().required("Required"),
       duration_from: Yup.date().required("Required"),
       duration_to: Yup.date().required("Required"),
       thematicAreaId: Yup.string().required("Required"),
@@ -166,13 +165,14 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       difference: Yup.string().required("Required"),
       scaling: Yup.string().required("Required"),
       sustainability: Yup.string().required("Required"),
+      whyInnovative: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const guid = new Guid();
         const saveInnovation = {
           id: id ? id : guid.toString(),
-          createDate: new Date(values.dateOfEntry),
+          createDate: new Date(),
           title: values.title,
           staffNameId: values.staffNameId.id,
           proposedSolution: values.proposedSolution,
@@ -182,12 +182,13 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           sustainability: values.sustainability,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
+          whyInnovative: values.whyInnovative,
         };
         const innovation = await mutation.mutateAsync(saveInnovation);
         let qualitativeCountries = [];
         for (const country of values.countryId) {
           const qualitativeCountry = {
-            createDate: new Date(values.dateOfEntry),
+            createDate: new Date(),
             organizationUnitId: country.id,
             qualitativeTypeId: innovationQualitativeTypeId,
             qualitativeTypeItemId: innovation.data.id,
@@ -195,14 +196,14 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           qualitativeCountries.push(qualitativeCountry);
         }
         const qualitativePeriod = {
-          createDate: new Date(values.dateOfEntry),
+          createDate: new Date(),
           qualitativeTypeId: innovationQualitativeTypeId,
           qualitativeTypeItemId: innovation.data.id,
           periodTo: values.duration_to,
           periodFrom: values.duration_from,
         };
         const qualitativeThematicArea = {
-          createDate: new Date(values.dateOfEntry),
+          createDate: new Date(),
           thematicAreaId: values.thematicAreaId,
           qualitativeTypeId: innovationQualitativeTypeId,
           qualitativeTypeItemId: innovation.data.id,
@@ -256,7 +257,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           }
         }
         formik.setValues({
-          dateOfEntry: new Date(InnovationData.data.createDate),
           title: InnovationData.data.title,
           staffNameId: staff ? staff : "",
           countryId: countries && countries.length > 0 ? countries : [],
@@ -265,6 +265,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           difference: InnovationData.data.difference,
           scaling: InnovationData.data.scaling,
           sustainability: InnovationData.data.sustainability,
+          whyInnovative: InnovationData.data.whyInnovative,
           thematicAreaId:
             QualitativeThematicAreaData.data.length > 0
               ? QualitativeThematicAreaData.data[0].thematicAreaId
@@ -318,33 +319,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             my={2}
             rows={3}
           />
-        </Grid>
-        <Grid item md={4}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Date Of Entry"
-              value={formik.values.dateOfEntry}
-              onChange={(value) =>
-                formik.setFieldValue("dateOfEntry", value, true)
-              }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.dateOfEntry && formik.errors.dateOfEntry
-                  )}
-                  helperText={
-                    formik.touched.dateOfEntry && formik.errors.dateOfEntry
-                  }
-                  margin="normal"
-                  name="dateOfEntry"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
-              )}
-            />
-          </LocalizationProvider>
         </Grid>
         <Grid item md={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -551,6 +525,26 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             )}
             fullWidth
             helperText={formik.touched.difference && formik.errors.difference}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            multiline
+            variant="outlined"
+            my={2}
+            rows={3}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="whyInnovative"
+            label="Why is this innovative (in your country/context)?"
+            value={formik.values.whyInnovative}
+            error={Boolean(
+              formik.touched.whyInnovative && formik.errors.whyInnovative
+            )}
+            fullWidth
+            helperText={
+              formik.touched.whyInnovative && formik.errors.whyInnovative
+            }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
