@@ -29,7 +29,10 @@ import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useQuery } from "@tanstack/react-query";
 import { getInnovationById, getInnovations } from "../../../../api/innovation";
-import { getAMREFStaffList } from "../../../../api/lookup";
+import {
+  getAMREFStaffList,
+  getLookupMasterItemsByName,
+} from "../../../../api/lookup";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getQualitativeCountryByTypeItemId } from "../../../../api/qualitative-country";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -108,6 +111,24 @@ const InnovationMonitoringForm = () => {
     getQualitativeCountryByTypeItemId,
     { enabled: !!innovationId }
   );
+  const {
+    isLoading: isLoadingInnovationStageData,
+    isError: isErrorInnovationStageData,
+    data: InnovationStageData,
+  } = useQuery(
+    ["innovationStage", "InnovationStage"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const {
+    isLoading: isLoadingBRAGStatusData,
+    isError: isErrorBRAGStatusData,
+    data: BRAGStatusData,
+  } = useQuery(["bragStatus", "BRAGStatus"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
 
   const onInnovationNameChange = (event, val) => {
     setInnovationId(val.id);
@@ -115,7 +136,11 @@ const InnovationMonitoringForm = () => {
   };
 
   const handleClick = (values) => {
-    console.log(values);
+    const guid = new Guid();
+    setChallengesArray((current) => [
+      ...current,
+      { id: guid.toString(), challenge: values.challenge },
+    ]);
   };
 
   function removeChallenge(index) {
@@ -176,27 +201,15 @@ const InnovationMonitoringForm = () => {
           }
         }
         formik.setValues({
-          // dateOfEntry: new Date(InnovationData.data.createDate),
           name: innovation,
           staffNameId: staff ? staff : "",
           countryId: countries && countries.length > 0 ? countries : [],
-          // proposedSolution: InnovationData.data.proposedSolution,
-          // targetBeneficiary: InnovationData.data.targetBeneficiary,
-          // difference: InnovationData.data.difference,
-          // scaling: InnovationData.data.scaling,
-          // sustainability: InnovationData.data.sustainability,
-          // thematicAreaId:
-          //   QualitativeThematicAreaData.data.length > 0
-          //     ? QualitativeThematicAreaData.data[0].thematicAreaId
-          //     : "",
-          // duration_from:
-          //   QualitativePeriodData.data.length > 0
-          //     ? new Date(QualitativePeriodData.data[0].periodFrom)
-          //     : "",
-          // duration_to:
-          //   QualitativePeriodData.data.length > 0
-          //     ? new Date(QualitativePeriodData.data[0].periodTo)
-          //     : "",
+          duration_from: "",
+          duration_to: "",
+          currentStageId: "",
+          updateProgress: "",
+          bragStatusId: "",
+          plaDeviations: "",
         });
       }
     }
@@ -438,6 +451,17 @@ const InnovationMonitoringForm = () => {
                     <MenuItem disabled value="">
                       Select current stage of the innovation
                     </MenuItem>
+                    {!isLoadingInnovationStageData &&
+                    !isErrorInnovationStageData
+                      ? InnovationStageData.data.map((option) => (
+                          <MenuItem
+                            key={option.lookupItemId}
+                            value={option.lookupItemId}
+                          >
+                            {option.lookupItemName}
+                          </MenuItem>
+                        ))
+                      : []}
                   </TextField>
                 </Grid>
                 <Grid item md={12}>
@@ -484,6 +508,16 @@ const InnovationMonitoringForm = () => {
                     <MenuItem disabled value="">
                       Select BRAG Status
                     </MenuItem>
+                    {!isLoadingBRAGStatusData && !isErrorBRAGStatusData
+                      ? BRAGStatusData.data.map((option) => (
+                          <MenuItem
+                            key={option.lookupItemId}
+                            value={option.lookupItemId}
+                          >
+                            {option.lookupItemName}
+                          </MenuItem>
+                        ))
+                      : []}
                   </TextField>
                 </Grid>
                 <Grid item md={12}>

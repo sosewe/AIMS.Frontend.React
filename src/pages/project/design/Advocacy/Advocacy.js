@@ -78,7 +78,6 @@ const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
   title: "",
-  dateOfEntry: "",
   duration_from: "",
   duration_to: "",
   staffNameId: "",
@@ -93,13 +92,31 @@ const initialValues = {
 
 const milestonesInitial = {
   milestone: "",
+  yearId: "",
+  quarterId: "",
 };
 
 const AddMilestoneForm = ({ handleClick }) => {
+  const {
+    isLoading: isLoadingYearsData,
+    isError: isErrorYearsData,
+    data: yearsData,
+  } = useQuery(["years", "Years"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    isLoading: isLoadingQuartersData,
+    isError: isErrorQuartersData,
+    data: quartersData,
+  } = useQuery(["quarters", "Quarters"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
   const formik = useFormik({
     initialValues: milestonesInitial,
     validationSchema: Yup.object().shape({
       milestone: Yup.string().required("Required"),
+      yearId: Yup.object().required("Required"),
+      quarterId: Yup.object().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
@@ -138,6 +155,62 @@ const AddMilestoneForm = ({ handleClick }) => {
                 rows={3}
               />
             </Grid>
+            <Grid item md={6}>
+              <TextField
+                name="yearId"
+                label="Year"
+                select
+                required
+                value={formik.values.yearId}
+                error={Boolean(formik.touched.yearId && formik.errors.yearId)}
+                fullWidth
+                helperText={formik.touched.yearId && formik.errors.yearId}
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Year
+                </MenuItem>
+                {!isLoadingYearsData && !isErrorYearsData
+                  ? yearsData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={6}>
+              <TextField
+                name="quarterId"
+                label="Quarter"
+                select
+                required
+                value={formik.values.quarterId}
+                error={Boolean(
+                  formik.touched.quarterId && formik.errors.quarterId
+                )}
+                fullWidth
+                helperText={formik.touched.quarterId && formik.errors.quarterId}
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Quarter
+                </MenuItem>
+                {!isLoadingQuartersData && !isErrorQuartersData
+                  ? quartersData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
             <Grid item md={3}>
               <Button
                 type="submit"
@@ -160,6 +233,20 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   let innovationQualitativeTypeId;
+  const {
+    isLoading: isLoadingYearsData,
+    isError: isErrorYearsData,
+    data: yearsData,
+  } = useQuery(["years", "Years"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    isLoading: isLoadingQuartersData,
+    isError: isErrorQuartersData,
+    data: quartersData,
+  } = useQuery(["quarters", "Quarters"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
   const {
     data: AdvocacyData,
     isLoading: isLoadingAdvocacyData,
@@ -258,7 +345,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
       title: Yup.string().required("Required"),
-      dateOfEntry: Yup.date().required("Required"),
       duration_from: Yup.date().required("Required"),
       duration_to: Yup.date().required("Required"),
       staffNameId: Yup.string().required("Required"),
@@ -300,7 +386,7 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               "qualitativeCountryId" in country
                 ? country.qualitativeCountryId
                 : guid.toString(),
-            createDate: new Date(values.dateOfEntry),
+            createDate: new Date(),
             organizationUnitId: country.id,
             qualitativeTypeId: innovationQualitativeTypeId,
             qualitativeTypeItemId: advocacy.data.id,
@@ -308,14 +394,14 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           qualitativeCountries.push(qualitativeCountry);
         }
         const qualitativePeriod = {
-          createDate: new Date(values.dateOfEntry),
+          createDate: new Date(),
           qualitativeTypeId: innovationQualitativeTypeId,
           qualitativeTypeItemId: advocacy.data.id,
           periodTo: values.duration_to,
           periodFrom: values.duration_from,
         };
         const qualitativeThematicArea = {
-          createDate: new Date(values.dateOfEntry),
+          createDate: new Date(),
           thematicAreaId: values.thematicAreaId,
           qualitativeTypeId: innovationQualitativeTypeId,
           qualitativeTypeItemId: advocacy.data.id,
@@ -323,10 +409,12 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         const advocates = [];
         for (const milestone of milestonesArray) {
           const advocacyMilestone = {
-            id: milestone.id,
-            createDate: new Date(values.dateOfEntry),
+            id: new Guid().toString(),
+            createDate: new Date(),
             advocacyId: advocacy.data.id,
             milestone: milestone.milestone,
+            yearId: milestone.yearId.lookupItemId,
+            quarterId: milestone.quarterId.lookupItemId,
           };
           advocates.push(advocacyMilestone);
         }
@@ -380,15 +468,28 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           }
         }
         for (const datum of AdvocacyMilestonesData.data) {
+          let yearFetched;
+          let quarterFetched;
+          if (!isLoadingYearsData && !isErrorYearsData) {
+            yearFetched = yearsData.data.find(
+              (obj) => obj.lookupItemId === datum.yearId
+            );
+          }
+          if (!isLoadingQuartersData && !isErrorQuartersData) {
+            quarterFetched = quartersData.data.find(
+              (obj) => obj.lookupItemId === datum.quarterId
+            );
+          }
           milestones.push({
             id: datum.id,
             milestone: datum.milestone,
+            yearId: yearFetched,
+            quarterId: quarterFetched,
           });
         }
         setMilestonesArray(milestones);
         formik.setValues({
           title: AdvocacyData.data.title,
-          dateOfEntry: new Date(AdvocacyData.data.createDate),
           duration_from:
             QualitativePeriodData.data.length > 0
               ? new Date(QualitativePeriodData.data[0].periodFrom)
@@ -437,13 +538,8 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   }
 
   const handleClick = (values) => {
-    const guid = new Guid();
-    setMilestonesArray((current) => [
-      ...current,
-      { id: guid.toString(), milestone: values.milestone },
-    ]);
+    setMilestonesArray((current) => [...current, values]);
   };
-
   return (
     <form onSubmit={formik.handleSubmit}>
       <Grid container item spacing={2}>
@@ -461,31 +557,6 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             variant="outlined"
             my={2}
             rows={3}
-          />
-        </Grid>
-        <Grid item md={4}>
-          <DatePicker
-            label="Date Of Entry"
-            value={formik.values.dateOfEntry}
-            onChange={(value) =>
-              formik.setFieldValue("dateOfEntry", value, true)
-            }
-            renderInput={(params) => (
-              <TextField
-                error={Boolean(
-                  formik.touched.dateOfEntry && formik.errors.dateOfEntry
-                )}
-                helperText={
-                  formik.touched.dateOfEntry && formik.errors.dateOfEntry
-                }
-                margin="normal"
-                name="dateOfEntry"
-                variant="outlined"
-                fullWidth
-                my={2}
-                {...params}
-              />
-            )}
           />
         </Grid>
         <Grid item md={4}>
@@ -753,6 +824,8 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                     <TableHead>
                       <TableRow>
                         <TableCell align="left">MILESTONE</TableCell>
+                        <TableCell align="left">YEAR</TableCell>
+                        <TableCell align="left">QUARTER</TableCell>
                         <TableCell align="left">Action</TableCell>
                       </TableRow>
                     </TableHead>
@@ -761,6 +834,12 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                         <TableRow key={Math.random().toString(36)}>
                           <TableCell component="th" scope="row">
                             {row.milestone}
+                          </TableCell>
+                          <TableCell component="th" scope="row">
+                            {row.yearId.lookupItemName}
+                          </TableCell>
+                          <TableCell component="th" scope="row">
+                            {row.quarterId.lookupItemName}
                           </TableCell>
                           <TableCell align="left">
                             <Button
