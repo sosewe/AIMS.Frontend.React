@@ -56,6 +56,8 @@ export const apiRoutes = {
   advocacyMilestone: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyMilestone`,
   innovationProgress: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/InnovationProgress`,
   innovationChallenge: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/InnovationChallenge`,
+  advocacyProgress: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyProgress`,
+  advocacyMilestoneProgress: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyMilestoneProgress`,
   // external
   ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,

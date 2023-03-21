@@ -7,9 +7,18 @@ import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   MenuItem,
   Paper as MuiPaper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField as MuiTextField,
 } from "@mui/material";
 import { spacing } from "@mui/system";
@@ -17,13 +26,20 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Guid } from "../../../../utils/guid";
 import { toast } from "react-toastify";
-import { useQuery } from "@tanstack/react-query";
-import { getAdvocates } from "../../../../api/advocacy";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAdvocacyById, getAdvocates } from "../../../../api/advocacy";
 import { getAMREFStaffList } from "../../../../api/lookup";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { getQualitativeCountryByTypeItemId } from "../../../../api/qualitative-country";
+import { getQualitativeThematicAreaByTypeItemId } from "../../../../api/qualitative-thematic-area";
+import AdvocacyMonitoringProgress from "./AdvocacyMonitoringProgress";
+import AdvocacyMonitoringMilestoneYear from "./AdvocacyMonitoringMilestoneYear";
+import AdvocacyMonitoringMilestoneQuarter from "./AdvocacyMonitoringMilestoneQuarter";
+import { newAdvocacyMilestoneProgress } from "../../../../api/advocacy-milestone-progress";
+import { newAdvocacyProgress } from "../../../../api/advocacy-progress";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -32,14 +48,53 @@ const Button = styled(MuiButton)(spacing);
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 
-const initialValues = {};
+const initialValues = {
+  name: "",
+  staffNameId: "",
+  thematicAreaId: "",
+  countryId: [],
+  duration_from: "",
+  duration_to: "",
+  currentStageId: "",
+  updateProgress: "",
+  bragStatusId: "",
+};
 
 const AdvocacyMonitoringForm = () => {
+  const [openMilestoneProgressModal, setOpenMilestoneProgressModal] =
+    useState(false);
+  const [advocacyMilestone, setAdvocacyMilestone] = useState();
+  const [advocacyId, setAdvocacyId] = useState();
+  const [advocacy, setAdvocacy] = useState();
   const {
     data: AdvocacyData,
-    isLoading: isLoadingAdvocacy,
-    isError: isErrorAdvocacy,
-    error,
+    isLoading: isLoadingAdvocacyData,
+    isError: isErrorAdvocacyData,
+  } = useQuery(["getAdvocacyById", advocacyId], getAdvocacyById, {
+    enabled: !!advocacyId,
+  });
+  const {
+    data: QualitativeCountryData,
+    isLoading: isLoadingQualitativeCountry,
+    isError: isErrorQualitativeCountry,
+  } = useQuery(
+    ["getQualitativeCountryByTypeItemId", advocacyId],
+    getQualitativeCountryByTypeItemId,
+    { enabled: !!advocacyId }
+  );
+  const {
+    data: QualitativeThematicAreaData,
+    isLoading: isLoadingQualitativeThematicArea,
+    isError: isErrorQualitativeThematicAreaData,
+  } = useQuery(
+    ["getQualitativeThematicAreaByTypeItemId", advocacyId],
+    getQualitativeThematicAreaByTypeItemId,
+    { enabled: !!advocacyId }
+  );
+  const {
+    data: AdvocacyAllData,
+    isLoading: isLoadingAdvocacyAllData,
+    isError: isErrorAdvocacyAllData,
   } = useQuery(["getAdvocates"], getAdvocates, {
     refetchOnWindowFocus: false,
   });
@@ -67,35 +122,145 @@ const AdvocacyMonitoringForm = () => {
   });
 
   const onAdvocacyNameChange = (event, val) => {
-    // setInnovationId(val.id);
-    // setInnovation(val);
+    setAdvocacyId(val.id);
+    setAdvocacy(val);
   };
+
+  const mutationAdvocacyMilestoneProgress = useMutation({
+    mutationFn: newAdvocacyMilestoneProgress,
+  });
+  const mutationAdvocacyProgress = useMutation({
+    mutationFn: newAdvocacyProgress,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
       name: Yup.object().required("Required"),
       staffNameId: Yup.object().required("Required"),
+      thematicAreaId: Yup.string().required("Required"),
       countryId: Yup.array().required("Required"),
       duration_from: Yup.date().required("Required"),
       duration_to: Yup.date().required("Required"),
       currentStageId: Yup.string().required("Required"),
       updateProgress: Yup.string().required("Required"),
       bragStatusId: Yup.string().required("Required"),
-      plaDeviations: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
-        console.log(values);
         values.id = new Guid().toString();
       } catch (error) {
-        console.log(error);
         toast(error.response.data, {
           type: "error",
         });
       }
     },
   });
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingAdvocacyData &&
+        !isErrorAdvocacyData &&
+        !isErrorStaffList &&
+        !isLoadingStaffList &&
+        !isLoadingQualitativeCountry &&
+        !isErrorQualitativeCountry
+      ) {
+        let staff;
+        let countries = [];
+        let thematicArea;
+        if (!isErrorStaffList && !isLoadingStaffList) {
+          staff = staffListData.data.find(
+            (obj) => obj.id === AdvocacyData.data.staffNameId
+          );
+        }
+        for (const qualitativeCountryFind of QualitativeCountryData.data) {
+          const result = amrefEntities.data.find(
+            (obj) => obj.id === qualitativeCountryFind.organizationUnitId
+          );
+          if (result) {
+            countries.push(result);
+          }
+        }
+        if (
+          !isLoadingQualitativeThematicArea &&
+          !isErrorQualitativeThematicAreaData
+        ) {
+          thematicArea = QualitativeThematicAreaData.data[0].thematicAreaId;
+        }
+        formik.setValues({
+          name: advocacy,
+          staffNameId: staff ? staff : "",
+          countryId: countries && countries.length > 0 ? countries : [],
+          thematicAreaId: thematicArea ? thematicArea : "",
+          duration_from: "",
+          duration_to: "",
+          currentStageId: "",
+          updateProgress: "",
+          bragStatusId: "",
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadingAdvocacyData,
+    isErrorAdvocacyData,
+    AdvocacyData,
+    QualitativeCountryData,
+    advocacy,
+    amrefEntities,
+    isErrorStaffList,
+    isLoadingStaffList,
+    staffListData,
+    isLoadingQualitativeThematicArea,
+    isErrorQualitativeThematicAreaData,
+    QualitativeThematicAreaData,
+    isErrorQualitativeCountry,
+    isLoadingQualitativeCountry,
+  ]);
+
+  const updateMilestoneProgress = (event, row) => {
+    setAdvocacyMilestone(row);
+    setOpenMilestoneProgressModal(true);
+  };
+
+  const handleClick = async (values) => {
+    try {
+      const advocacyProgress = {
+        id: new Guid().toString(),
+        createDate: new Date(),
+        advocacyId: advocacyMilestone.advocacyId,
+        yearId: advocacyMilestone.yearId,
+        quarterId: advocacyMilestone.quarterId,
+        updateProgress: values.updateProgress,
+      };
+      const result = await mutationAdvocacyProgress.mutateAsync(
+        advocacyProgress
+      );
+      const advocacyMilestoneProgress = {
+        id: new Guid().toString(),
+        createDate: new Date(),
+        advocacyProgressId: result.data.id,
+        advocacyMilestoneId: advocacyMilestone.id,
+        yearId: advocacyMilestone.yearId,
+        quarterId: advocacyMilestone.quarterId,
+        bragStatusId: values.bragStatusId,
+        planDeviation: values.planDeviation,
+      };
+      await mutationAdvocacyMilestoneProgress.mutateAsync(
+        advocacyMilestoneProgress
+      );
+      setOpenMilestoneProgressModal(false);
+      toast("Successfully Updated Milestone Progress", {
+        type: "success",
+      });
+    } catch (error) {
+      toast(error.response.data, {
+        type: "error",
+      });
+    }
+  };
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -112,8 +277,8 @@ const AdvocacyMonitoringForm = () => {
                   <Autocomplete
                     id="name"
                     options={
-                      !isLoadingAdvocacy && !isErrorAdvocacy
-                        ? AdvocacyData.data
+                      !isLoadingAdvocacyAllData && !isErrorAdvocacyAllData
+                        ? AdvocacyAllData.data
                         : []
                     }
                     getOptionLabel={(innovation) => {
@@ -215,6 +380,7 @@ const AdvocacyMonitoringForm = () => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
+                    disabled={true}
                   >
                     <MenuItem disabled value="">
                       Select Thematic Area(s)
@@ -249,6 +415,7 @@ const AdvocacyMonitoringForm = () => {
                       formik.setFieldValue("countryId", val)
                     }
                     value={formik.values.countryId}
+                    disabled={true}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -325,6 +492,52 @@ const AdvocacyMonitoringForm = () => {
                     />
                   </LocalizationProvider>
                 </Grid>
+                <Grid item md={12}>
+                  <Paper>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align="left">MILESTONE</TableCell>
+                          <TableCell align="left">Year</TableCell>
+                          <TableCell align="left">Quarter</TableCell>
+                          <TableCell align="left">Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {!isLoadingAdvocacyData && !isErrorAdvocacyData
+                          ? AdvocacyData.data.advocacyMilestones.map((row) => (
+                              <TableRow key={Math.random().toString(36)}>
+                                <TableCell component="th" scope="row">
+                                  {row.milestone}
+                                </TableCell>
+                                <TableCell component="th" scope="row">
+                                  <AdvocacyMonitoringMilestoneYear
+                                    yearId={row.yearId}
+                                  />
+                                </TableCell>
+                                <TableCell component="th" scope="row">
+                                  <AdvocacyMonitoringMilestoneQuarter
+                                    quarterId={row.quarterId}
+                                  />
+                                </TableCell>
+                                <TableCell align="left">
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={(e) =>
+                                      updateMilestoneProgress(e, row)
+                                    }
+                                  >
+                                    Update Progress
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          : []}
+                      </TableBody>
+                    </Table>
+                  </Paper>
+                </Grid>
               </Grid>
               <br />
               <Button type="submit" variant="contained" color="primary" mt={3}>
@@ -334,6 +547,19 @@ const AdvocacyMonitoringForm = () => {
           )}
         </CardContent>
       </Card>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openMilestoneProgressModal}
+        onClose={() => setOpenMilestoneProgressModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">UPDATE PROGRESS</DialogTitle>
+        <DialogContent>
+          <DialogContentText>UPDATE PROGRESS</DialogContentText>
+          <AdvocacyMonitoringProgress handleClick={handleClick} />
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };
