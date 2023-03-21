@@ -87,7 +87,7 @@ const ResultIndicatorTargetsParentForm = ({
         const field = {
           id: resultChainIndicator.id,
           name: resultChainIndicator.id + "/" + i.toString(),
-          label: resultChainIndicator.id + "/" + i.toString(),
+          label: MonthsEnum[i],
           initialValue: "",
           type: number().required(),
           disabled: disabledVal,
@@ -104,7 +104,7 @@ const ResultIndicatorTargetsParentForm = ({
           field = {
             id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
-            label: resultChainIndicator.id + "/" + i.toString(),
+            label: MonthsEnum[i],
             initialValue: "",
             type: number(),
             disabled: disabledVal,
@@ -114,7 +114,7 @@ const ResultIndicatorTargetsParentForm = ({
           field = {
             id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
-            label: resultChainIndicator.id + "/" + i.toString(),
+            label: MonthsEnum[i],
             initialValue: "",
             type: number().required(),
             disabled: disabledVal,
@@ -132,7 +132,7 @@ const ResultIndicatorTargetsParentForm = ({
           field = {
             id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
-            label: resultChainIndicator.id + "/" + i.toString(),
+            label: MonthsEnum[i],
             initialValue: "",
             type: number(),
             disabled: disabledVal,
@@ -142,7 +142,7 @@ const ResultIndicatorTargetsParentForm = ({
           field = {
             id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
-            label: resultChainIndicator.id + "/" + i.toString(),
+            label: MonthsEnum[i],
             initialValue: "",
             type: number().required(),
             disabled: disabledVal,
@@ -160,7 +160,7 @@ const ResultIndicatorTargetsParentForm = ({
           field = {
             id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
-            label: resultChainIndicator.id + "/" + i.toString(),
+            label: MonthsEnum[i],
             initialValue: "",
             type: number(),
             disabled: disabledVal,
@@ -170,7 +170,7 @@ const ResultIndicatorTargetsParentForm = ({
           field = {
             id: resultChainIndicator.id,
             name: resultChainIndicator.id + "/" + i.toString(),
-            label: resultChainIndicator.id + "/" + i.toString(),
+            label: MonthsEnum[i],
             initialValue: "",
             type: number().required(),
             disabled: disabledVal,
@@ -441,6 +441,7 @@ const ResultIndicatorTargetsParentForm = ({
                         <Grid item md={1}>
                           <TextField
                             name={name}
+                            label={label}
                             value={formik.values[name] || ""}
                             error={Boolean(
                               formik.touched[name] && formik.errors[name]
