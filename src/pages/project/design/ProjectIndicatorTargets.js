@@ -263,12 +263,6 @@ const ProjectIndicatorTargets = () => {
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        {/*<Link*/}
-        {/*  component={NavLink}*/}
-        {/*  to={`/project/design-project/${processLevelItemId}`}*/}
-        {/*>*/}
-        {/*  Project Design*/}
-        {/*</Link>*/}
         <Typography>
           Project Quantitative Result Framework: Indicator Targets
         </Typography>

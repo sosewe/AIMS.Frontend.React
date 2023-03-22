@@ -78,6 +78,7 @@ const initialValuesOutcome = {
 const initialValues = {
   implementationYear: "",
   location: "",
+  operation: "",
 };
 
 const AddOutputModal = ({
@@ -710,12 +711,19 @@ const EnterTargetByLocationForm = ({
     validationSchema: Yup.object().shape({
       implementationYear: Yup.string().required("Required"),
       location: Yup.string().required("Required"),
+      operation: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
-        navigate(
-          `/project/project-indicator-targets/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
-        );
+        if (values.operation === "edit") {
+          navigate(
+            `/project/project-indicator-targets/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
+          );
+        } else if (values.operation === "view") {
+          navigate(
+            `/project/project-indicator-targets-view/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
+          );
+        }
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -735,7 +743,7 @@ const EnterTargetByLocationForm = ({
           ) : (
             <>
               <Grid container spacing={6}>
-                <Grid item md={6}>
+                <Grid item md={4}>
                   <TextField
                     name="implementationYear"
                     label="Implementation Year"
@@ -771,7 +779,7 @@ const EnterTargetByLocationForm = ({
                       : []}
                   </TextField>
                 </Grid>
-                <Grid item md={6}>
+                <Grid item md={4}>
                   <TextField
                     name="location"
                     label="Location"
@@ -800,6 +808,36 @@ const EnterTargetByLocationForm = ({
                           </MenuItem>
                         ))
                       : []}
+                  </TextField>
+                </Grid>
+                <Grid item md={4}>
+                  <TextField
+                    name="operation"
+                    label="Operation"
+                    select
+                    required
+                    value={formik.values.operation}
+                    error={Boolean(
+                      formik.touched.operation && formik.errors.operation
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.operation && formik.errors.operation
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Location
+                    </MenuItem>
+                    <MenuItem key="edit" value="edit">
+                      Add/Edit
+                    </MenuItem>
+                    <MenuItem key="view" value="view">
+                      View
+                    </MenuItem>
                   </TextField>
                 </Grid>
               </Grid>
