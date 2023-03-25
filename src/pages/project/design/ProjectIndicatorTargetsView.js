@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { Helmet } from "react-helmet-async";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getProjectLocation } from "../../../api/location";
 import {
@@ -78,7 +78,6 @@ const ResultIndicatorTargetsViewForm = ({
   projectLocationId,
   year,
 }) => {
-  const navigate = useNavigate();
   const fields = [];
   const schemaField: Fields[] = [];
   for (const resultChainIndicator of resultChainIndicators) {
