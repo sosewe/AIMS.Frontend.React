@@ -45,6 +45,7 @@ const ResultChainIndicators = ({
     useState(false);
   const [resultChainIndicatorId, setResultChainIndicatorId] = useState();
   const [indicatorAggregates, setIndicatorAggregates] = useState([]);
+  const [indicatorAttributeTypes, setIndicatorAttributeTypes] = useState([]);
   const queryClient = useQueryClient();
   const {
     data: resultChainData,
@@ -101,6 +102,9 @@ const ResultChainIndicators = ({
                 setIndicatorAggregates(
                   resultChain.indicator.indicatorAggregates
                 );
+                setIndicatorAttributeTypes(
+                  resultChain.indicator.indicatorAttributeTypes
+                );
               }}
             >
               Disaggregates
@@ -129,7 +133,7 @@ const ResultChainIndicators = ({
         onClose={() => setOpenDisaggregatesModal(false)}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle>Disaggregates</DialogTitle>
+        <DialogTitle>Disaggregates/Attributes</DialogTitle>
         <Divider />
         <DialogContent>
           <DisaggregatesModal
@@ -138,6 +142,7 @@ const ResultChainIndicators = ({
             processLevelItemId={processLevelItemId}
             processLevelTypeId={processLevelTypeId}
             handleClick={handleClick}
+            indicatorAttributeTypes={indicatorAttributeTypes}
           />
         </DialogContent>
       </Dialog>
