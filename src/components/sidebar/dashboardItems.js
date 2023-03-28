@@ -99,6 +99,10 @@ const configurationSection = [
         href: "/settings/administrative-units",
         title: "Administrative Units",
       },
+      {
+        href: "/settings/project-roles",
+        title: "Project Roles",
+      },
     ],
   },
 ];

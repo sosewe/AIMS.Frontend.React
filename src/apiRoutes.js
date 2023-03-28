@@ -13,6 +13,7 @@ export const apiRoutes = {
   organizationUnit: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/OrganizationUnit`,
   administrativeUnit: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/AdministrativeUnit`,
   processLevel: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/ProcessLevel`,
+  projectRole: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/ProjectRole`,
   //Indicator
   project: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Project`,
   donorProcessLevel: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/DonorProcessLevel`,

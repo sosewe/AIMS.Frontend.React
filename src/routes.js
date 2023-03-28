@@ -118,6 +118,10 @@ const Advocacy = async(() =>
 const InnovationMonitoring = async(() =>
   import("./pages/project/monitoring/Innovation/InnovationMonitoring")
 );
+const ProjectRoles = async(() => import("./pages/project-role/ProjectRoles"));
+const NewProjectRole = async(() =>
+  import("./pages/project-role/NewProjectRole")
+);
 
 const routes = [
   {
@@ -365,6 +369,18 @@ const routes = [
       {
         path: "new-administrative-unit/:id",
         element: <NewAdministrativeUnit />,
+      },
+      {
+        path: "project-roles",
+        element: <ProjectRoles />,
+      },
+      {
+        path: "new-project-role",
+        element: <NewProjectRole />,
+      },
+      {
+        path: "new-project-role/:id",
+        element: <NewProjectRole />,
       },
     ],
   },
