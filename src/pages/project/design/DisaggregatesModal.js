@@ -16,6 +16,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
+import { saveResultChainAttributes } from "../../../api/result-chain-attribute";
 
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const TextField = styled(MuiTextField)(spacing);
@@ -28,6 +29,12 @@ const DisaggregatesModal = ({
   handleClick,
   indicatorAttributeTypes,
 }) => {
+  const attributesCount = indicatorAttributeTypes.length;
+  const aggregatesCount = indicatorAggregates.length;
+  const mutation = useMutation({ mutationFn: saveResultChainAggregate });
+  const mutationResultChainAttribute = useMutation({
+    mutationFn: saveResultChainAttributes,
+  });
   const formik = useFormik({
     initialValues: {
       sex: [],
@@ -36,13 +43,70 @@ const DisaggregatesModal = ({
       attributeValues: [],
     },
     validationSchema: Yup.object().shape({
-      sex: Yup.array().min(1, "Please select gender"),
-      age: Yup.array().min(1, "Please select age groups"),
-      attributeType: Yup.array().min(1, "Please select attribute type"),
-      attributeValues: Yup.array().min(1, "Please select attribute values"),
+      sex: Yup.array().min(aggregatesCount > 0 ? 1 : 0, "Please select gender"),
+      age: Yup.array().min(
+        aggregatesCount > 0 ? 1 : 0,
+        "Please select age groups"
+      ),
+      attributeType: Yup.array().min(
+        attributesCount > 0 ? 1 : 0,
+        "Please select attribute type"
+      ),
+      attributeValues: Yup.array().min(
+        attributesCount > 0 ? 1 : 0,
+        "Please select attribute values"
+      ),
     }),
     onSubmit: async (values) => {
-      console.log(values);
+      try {
+        const resultChainAggregate = {
+          id: new Guid().toString(),
+          createDate: new Date(),
+          resultChainIndicatorId,
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
+          selectedResultChains: [],
+          selectedResultChainAttributes: [],
+        };
+        const resultChainAttributes = {
+          id: new Guid().toString(),
+          createDate: new Date(),
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
+          resultChainIndicatorId: resultChainIndicatorId,
+          selectedResultChains: [],
+          selectedResultChainAttributes: [],
+        };
+        for (let i = 0; i < values.sex.length; i++) {
+          for (let j = 0; j < values.age.length; j++) {
+            resultChainAggregate.selectedResultChains.push({
+              disaggregateId1:
+                values.sex[i].aggregateDisaggregate.disaggregate.id,
+              disaggregateId2:
+                values.age[j].aggregateDisaggregate.disaggregate.id,
+            });
+          }
+        }
+        for (let a = 0; a < values.attributeType.length; a++) {
+          for (let b = 0; b < values.attributeValues.length; b++) {
+            resultChainAttributes.selectedResultChainAttributes.push({
+              attributeId: values.attributeType[a].attributeType.id,
+              attributeOptionsId: values.attributeValues[b].id,
+            });
+          }
+        }
+        await mutation.mutateAsync(resultChainAggregate);
+        await mutationResultChainAttribute.mutateAsync(resultChainAttributes);
+        toast("Successfully Created Disaggregates", {
+          type: "success",
+        });
+        handleClick();
+      } catch (error) {
+        console.log(error);
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
     },
   });
   const primaries = indicatorAggregates.filter((obj) => obj.isPrimary === true);
@@ -55,40 +119,6 @@ const DisaggregatesModal = ({
     attributeTypes.length > 0
       ? attributeTypes[0].attributeType.attributeResponseOptions
       : [];
-  const mutation = useMutation({ mutationFn: saveResultChainAggregate });
-  const handleSubmit = async (e) => {
-    try {
-      // e.preventDefault();
-      // const resultChainAggregate = {
-      //   id: new Guid().toString(),
-      //   createDate: new Date(),
-      //   resultChainIndicatorId,
-      //   processLevelItemId: processLevelItemId,
-      //   processLevelTypeId: processLevelTypeId,
-      //   selectedResultChains: [],
-      // };
-      // for (let i = 0; i < inputFields.length; i++) {
-      //   if (Object.values(inputFields[i])[0]) {
-      //     const arraySelectedAggregateDisaggregate = Object.keys(
-      //       inputFields[i]
-      //     )[0].split("/");
-      //     resultChainAggregate.selectedResultChains.push({
-      //       disaggregateId1: arraySelectedAggregateDisaggregate[0],
-      //       disaggregateId2: arraySelectedAggregateDisaggregate[1],
-      //     });
-      //   }
-      // }
-      // await mutation.mutateAsync(resultChainAggregate);
-      toast("Successfully Created Disaggregates", {
-        type: "success",
-      });
-      handleClick();
-    } catch (error) {
-      toast(error.response.data, {
-        type: "error",
-      });
-    }
-  };
   return (
     <>
       <form onSubmit={formik.handleSubmit}>
@@ -110,6 +140,7 @@ const DisaggregatesModal = ({
               }}
               onChange={(_, val) => formik.setFieldValue("sex", val)}
               value={formik.values.sex}
+              disabled={aggregatesCount > 0 ? false : true}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -141,6 +172,7 @@ const DisaggregatesModal = ({
               }}
               onChange={(_, val) => formik.setFieldValue("age", val)}
               value={formik.values.age}
+              disabled={aggregatesCount > 0 ? false : true}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -170,6 +202,7 @@ const DisaggregatesModal = ({
               }}
               onChange={(_, val) => formik.setFieldValue("attributeType", val)}
               value={formik.values.attributeType}
+              disabled={attributesCount > 0 ? false : true}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -207,6 +240,7 @@ const DisaggregatesModal = ({
                 formik.setFieldValue("attributeValues", val)
               }
               value={formik.values.attributeValues}
+              disabled={attributesCount > 0 ? false : true}
               renderInput={(params) => (
                 <TextField
                   {...params}

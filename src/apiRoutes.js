@@ -45,6 +45,7 @@ export const apiRoutes = {
   processLevelCostCentre: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ProcessLevelCostCentre`,
   resultChainIndicator: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResultChainIndicator`,
   resultChainAggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResultChainAggregate`,
+  resultChainAttribute: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResultChainAttribute`,
   setTarget: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/SetTarget`,
   achievedResult: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AchievedResult`,
   disaggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Disaggregate`,
