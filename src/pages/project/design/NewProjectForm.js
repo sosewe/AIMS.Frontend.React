@@ -74,6 +74,7 @@ import {
   getProcessLevelCostCentreByProcessLevelItemId,
   newProcessLevelCostCentre,
 } from "../../../api/process-level-cost-centre";
+import { getProjectRoles } from "../../../api/project-role";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -212,8 +213,8 @@ const StaffDetailsForm = ({
                 </MenuItem>
                 {!isLoading
                   ? aimsRolesData.data.map((option) => (
-                      <MenuItem key={option.lookupItemId} value={option}>
-                        {option.lookupItemName}
+                      <MenuItem key={option.id} value={option}>
+                        {option.name}
                       </MenuItem>
                     ))
                   : []}
@@ -291,9 +292,9 @@ const NewProjectForm = ({ id }) => {
   const [staffDetailsArray, setStaffDetailsArray] = useState([]);
   const [costCentreArray, setCostCentreArray] = useState([]);
   let processLevelTypeId;
-  const { isLoading: isLoadingAimsRole, data: aimsRolesData } = useQuery(
-    ["aimsRoles", "Project Roles"],
-    getLookupMasterItemsByName,
+  const { data: aimsRolesData, isLoading: isLoadingAimsRole } = useQuery(
+    ["getProjectRoles"],
+    getProjectRoles,
     {
       refetchOnWindowFocus: false,
     }
@@ -711,7 +712,7 @@ const NewProjectForm = ({ id }) => {
             const lookupRole =
               !isLoadingAimsRole &&
               aimsRolesData.data.filter(
-                (obj) => obj.lookupItemId === staffData.aimsRoleId
+                (obj) => obj.id === staffData.aimsRoleId
               );
             const staff = {
               id: staffData.id,
