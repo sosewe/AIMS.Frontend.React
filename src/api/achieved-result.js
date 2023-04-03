@@ -7,3 +7,7 @@ export const getProjectResults = async ({ queryKey }) => {
     `${apiRoutes.achievedResult}/GetProcessItemAchievedResults/${projectId}/${yearId}/${monthId}`
   );
 };
+
+export const newAchievedResult = async (values) => {
+  return await axios.post(apiRoutes.achievedResult, values);
+};

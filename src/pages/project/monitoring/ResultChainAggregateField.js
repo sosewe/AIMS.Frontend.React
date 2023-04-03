@@ -1,83 +1,94 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getResultChainAggregate } from "../../../api/result-chain-aggregate";
-import { getDisaggregate } from "../../../api/disaggregate";
-import { Grid, TextField as MuiTextField } from "@mui/material";
-import styled from "@emotion/styled";
-import { spacing } from "@mui/system";
+import { Grid } from "@mui/material";
+import { getAttributeTypeById } from "../../../api/attribute-type";
+import ResultChainAggregateLabels from "./ResultChainAggregateLabels";
+import ResultChainAggregateAttributeField from "./ResultChainAggregateAttributeField";
+import { getAttributeResponseOptionById } from "../../../api/attribute-response-option";
 
-const TextField = styled(MuiTextField)(spacing);
-
-const ResultChainAggregateField = ({ resultChainAggregate, formik }) => {
-  let disaggregateId1;
-  let disaggregateId2;
+const AttributeOptionLabel = ({ attributeOptionId }) => {
   const {
-    data: resultData,
-    isLoading: isLoadingResultData,
-    isError: isErrorResultData,
+    data: attributeOptionData,
+    isLoading: isLoadingAttributeOption,
+    isError: isErrorAttributeOption,
   } = useQuery(
-    ["getResultChainAggregate", resultChainAggregate.id],
-    getResultChainAggregate,
-    { enabled: !!resultChainAggregate.id }
+    ["getAttributeResponseOptionById", attributeOptionId],
+    getAttributeResponseOptionById,
+    { enabled: !!attributeOptionId }
   );
-  if (!isLoadingResultData && !isErrorResultData) {
-    disaggregateId1 = resultData.data.disaggregateId1;
-    disaggregateId2 = resultData.data.disaggregateId2;
-  }
-  const {
-    data: DisaggregateData,
-    isLoading: isLoadingDisaggregate,
-    isError: isErrorDisaggregate,
-  } = useQuery(["getDisaggregate", disaggregateId1], getDisaggregate, {
-    enabled: !!disaggregateId1,
-  });
-  const {
-    data: DisaggregateData2,
-    isLoading: isLoadingDisaggregate2,
-    isError: isErrorDisaggregate2,
-  } = useQuery(["getDisaggregate", disaggregateId2], getDisaggregate, {
-    enabled: !!disaggregateId2,
-  });
+
   return (
     <React.Fragment>
-      <Grid container spacing={2}>
-        <Grid item md={4}>
-          {!isLoadingDisaggregate && !isErrorDisaggregate
-            ? DisaggregateData.data.name
-            : ""}
-        </Grid>
-        <Grid item md={4}>
-          {!isLoadingDisaggregate2 && !isErrorDisaggregate2
-            ? DisaggregateData2.data.name
-            : ""}
-        </Grid>
-        <Grid item md={4}>
-          <TextField
-            name={resultChainAggregate.id}
-            value={formik.values[resultChainAggregate.id] || ""}
-            error={Boolean(
-              formik.touched[resultChainAggregate.id] &&
-                formik.errors[resultChainAggregate.id]
-            )}
-            fullWidth
-            helperText={
-              formik.touched[resultChainAggregate.id] &&
-              formik.errors[resultChainAggregate.id]
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            variant="outlined"
-            my={2}
-            type="number"
-            sx={{
-              "& .MuiInputBase-input.Mui-disabled": {
-                backgroundColor: "#e9ecef",
-              },
-            }}
-          />
-        </Grid>
-      </Grid>
+      {!isLoadingAttributeOption && !isErrorAttributeOption
+        ? attributeOptionData.data.responseOption
+        : ""}
     </React.Fragment>
+  );
+};
+
+const ResultChainAggregateField = ({
+  resultChainAggregates,
+  resultChainAttributes,
+  register,
+  setValue,
+}) => {
+  const attribute = resultChainAttributes[0];
+  const {
+    data: AttributeData,
+    isLoading: isLoadingAttribute,
+    isError: isErrorAttribute,
+  } = useQuery(
+    ["getAttributeTypeById", attribute.attributeId],
+    getAttributeTypeById,
+    { enabled: !!attribute.attributeId }
+  );
+
+  return (
+    <Grid container spacing={2} justifyContent="center">
+      <Grid item md={4}>
+        {!isLoadingAttribute && !isErrorAttribute
+          ? AttributeData.data.name
+          : ""}
+      </Grid>
+      {resultChainAggregates.map((resultChainAggregate) => {
+        return (
+          <React.Fragment key={Math.random().toString(36)}>
+            <ResultChainAggregateLabels
+              resultChainAggregate={resultChainAggregate}
+            />
+          </React.Fragment>
+        );
+      })}
+      {resultChainAttributes.map((resultChainAttribute) => {
+        return (
+          <React.Fragment key={Math.random().toString(36)}>
+            <Grid item md={4}>
+              <AttributeOptionLabel
+                attributeOptionId={resultChainAttribute.attributeOptionsId}
+              />
+            </Grid>
+            <Grid item md={8}>
+              <Grid container spacing={2} justifyContent="left">
+                {resultChainAggregates.map((resultChainAggregate) => {
+                  return (
+                    <React.Fragment key={Math.random().toString(36)}>
+                      <Grid item md={6}>
+                        <ResultChainAggregateAttributeField
+                          resultChainAttribute={resultChainAttribute}
+                          resultChainAggregate={resultChainAggregate}
+                          register={register}
+                          setValue={setValue}
+                        />
+                      </Grid>
+                    </React.Fragment>
+                  );
+                })}
+              </Grid>
+            </Grid>
+          </React.Fragment>
+        );
+      })}
+    </Grid>
   );
 };
 export default ResultChainAggregateField;

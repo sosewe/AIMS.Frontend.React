@@ -5,25 +5,15 @@ import { spacing } from "@mui/system";
 
 const TextField = styled(MuiTextField)(spacing);
 
-const ResultChainIndicatorField = ({ resultChainIndicator, formik }) => {
+const ResultChainIndicatorField = ({ resultChainIndicator, register }) => {
   return (
     <React.Fragment>
       <Grid container spacing={2}>
         <Grid item md={12}>
           <TextField
             name={resultChainIndicator.id}
-            value={formik.values[resultChainIndicator.id] || ""}
-            error={Boolean(
-              formik.touched[resultChainIndicator.id] &&
-                formik.errors[resultChainIndicator.id]
-            )}
             fullWidth
-            helperText={
-              formik.touched[resultChainIndicator.id] &&
-              formik.errors[resultChainIndicator.id]
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
+            {...register(resultChainIndicator.id)}
             variant="outlined"
             my={2}
             type="number"

@@ -1,99 +1,151 @@
 import React from "react";
-import { Grid } from "@mui/material";
-import { useFormik } from "formik";
+import { Button as MuiButton, Grid } from "@mui/material";
 import { toast } from "react-toastify";
 import EnterQuantitativeResultField from "./EnterQuantitativeResultField";
-import { boolean, number, object } from "yup";
+import styled from "@emotion/styled";
+import { spacing } from "@mui/system";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { newAchievedResult } from "../../../api/achieved-result";
+import { Guid } from "../../../utils/guid";
+
+const Button = styled(MuiButton)(spacing);
 
 const EnterQuantitativeResultsForm = ({
   resultChainIndicators,
-  indicatorAttributesTypes,
-  allAttributeResponseOptions,
+  processLevelItemId,
+  processLevelTypeId,
+  projectLocationId,
+  monthId,
+  year,
 }) => {
-  const fields = [];
-  for (const resultChainIndicator of resultChainIndicators) {
-    if (resultChainIndicator["resultChainAggregates"].length > 0) {
-      for (const resultChainAggregate of resultChainIndicator[
-        "resultChainAggregates"
-      ]) {
-        const field = {
-          id: resultChainAggregate.id,
-          name: resultChainAggregate.id,
-          label: resultChainAggregate.id,
-          initialValue: "",
-          type: number().required(),
-        };
-        fields.push(field);
-      }
-    } else {
-      const field = {
-        id: resultChainIndicator.id,
-        name: resultChainIndicator.id,
-        label: resultChainIndicator.id,
-        initialValue: "",
-        type: number().required(),
-      };
-      fields.push(field);
-    }
-
-    if (resultChainIndicator.indicator.indicatorAttributeTypes.length > 0) {
-      for (const indicatorAttributeType of resultChainIndicator.indicator
-        .indicatorAttributeTypes) {
-        const iAttributeType = indicatorAttributesTypes.find(
-          (obj) => obj.id === indicatorAttributeType.id
-        );
+  const { register, handleSubmit, setValue } = useForm();
+  const navigate = useNavigate();
+  const mutation = useMutation({ mutationFn: newAchievedResult });
+  const onSaveData = async (data) => {
+    try {
+      const InData = [];
+      for (const resultChainIndicator of resultChainIndicators) {
         if (
-          iAttributeType.attributeType.attributeDataType.dataType ===
-          "Multiple choices"
+          resultChainIndicator.resultChainAggregates.length > 0 &&
+          resultChainIndicator.resultChainAttributes.length > 0
         ) {
-          const attrOptions = allAttributeResponseOptions.find(
-            (obj) => obj.attributeTypeId === iAttributeType.attributeTypeId
-          );
-          const field = {
-            id: attrOptions.id + "/" + resultChainIndicator.id,
-            name: attrOptions.id + "/" + resultChainIndicator.id,
-            label: attrOptions.id + "/" + resultChainIndicator.id,
-            initialValue: "",
-            type: number().required(),
+          for (const resultChainIndicatorAggregateElement of resultChainIndicator.resultChainAggregates) {
+            for (const resultChainIndicatorAttributeElement of resultChainIndicator.resultChainAttributes) {
+              const achievedResult = {
+                id: new Guid().toString(),
+                processLevelItemId: processLevelItemId,
+                processLevelTypeId: processLevelTypeId,
+                createDate: new Date(),
+                resultChainIndicatorId: resultChainIndicator.id,
+                achievedValue: Number(
+                  data[
+                    resultChainIndicatorAggregateElement.id +
+                      "/" +
+                      resultChainIndicatorAttributeElement.id
+                  ]
+                ),
+                comments: "",
+                monthsId: monthId,
+                projectGeographicalFocusId: projectLocationId,
+                resultChainAttributeId: resultChainIndicatorAttributeElement.id,
+                resultChainAggregateId: resultChainIndicatorAggregateElement.id,
+                yearId: year,
+              };
+              InData.push(achievedResult);
+            }
+          }
+        } else if (
+          resultChainIndicator.resultChainAggregates.length > 0 &&
+          resultChainIndicator.resultChainAttributes.length === 0
+        ) {
+          for (const resultChainIndicatorAggregateElement of resultChainIndicator.resultChainAggregates) {
+            const achievedResult = {
+              id: new Guid().toString(),
+              processLevelItemId: processLevelItemId,
+              processLevelTypeId: processLevelTypeId,
+              createDate: new Date(),
+              resultChainIndicatorId: resultChainIndicator.id,
+              achievedValue: Number(
+                data[
+                  resultChainIndicatorAggregateElement.disaggregateId1 +
+                    "/" +
+                    resultChainIndicatorAggregateElement.disaggregateId2
+                ]
+              ),
+              comments: "",
+              monthsId: monthId,
+              projectGeographicalFocusId: projectLocationId,
+              resultChainAggregateId: resultChainIndicatorAggregateElement.id,
+              yearId: year,
+            };
+            InData.push(achievedResult);
+          }
+        } else if (
+          resultChainIndicator.resultChainAttributes.length > 0 &&
+          resultChainIndicator.resultChainAggregates.length === 0
+        ) {
+          for (const resultChainIndicatorAttributeElement of resultChainIndicator.resultChainAttributes) {
+            const achievedResult = {
+              id: new Guid().toString(),
+              processLevelItemId: processLevelItemId,
+              processLevelTypeId: processLevelTypeId,
+              createDate: new Date(),
+              resultChainIndicatorId: resultChainIndicator.id,
+              achievedValue: Number(
+                data[resultChainIndicatorAttributeElement.id]
+              ),
+              comments: "",
+              monthsId: monthId,
+              projectGeographicalFocusId: projectLocationId,
+              resultChainAttributeId: resultChainIndicatorAttributeElement.id,
+              yearId: year,
+            };
+            InData.push(achievedResult);
+          }
+        } else if (
+          resultChainIndicator.resultChainAttributes.length === 0 &&
+          resultChainIndicator.resultChainAggregates.length === 0
+        ) {
+          const achievedResult = {
+            id: new Guid().toString(),
+            processLevelItemId: processLevelItemId,
+            processLevelTypeId: processLevelTypeId,
+            createDate: new Date(),
+            resultChainIndicatorId: resultChainIndicator.id,
+            achievedValue: Number(data[resultChainIndicator.id]),
+            comments: "",
+            monthsId: monthId,
+            projectGeographicalFocusId: projectLocationId,
+            yearId: year,
           };
-          const fieldCheck = {
-            id: attrOptions.id + "/" + resultChainIndicator.id + "_check",
-            name: attrOptions.id + "/" + resultChainIndicator.id + "_check",
-            label: attrOptions.id + "/" + resultChainIndicator.id + "_check",
-            initialValue: false,
-            type: boolean(),
-          };
-          fields.push(field);
-          fields.push(fieldCheck);
+          InData.push(achievedResult);
         }
       }
-    }
-  }
-  const initialValues = Object.fromEntries(
-    fields.map((field) => [field.name, field.initialValue])
-  );
-  const SchemaObject = Object.fromEntries(
-    fields.map((field) => [field.name, field.type])
-  );
-  const ValidationSchema = object().shape(SchemaObject);
-  const formik = useFormik({
-    initialValues: initialValues,
-    validationSchema: ValidationSchema,
-    onSubmit: async (values) => {
-      try {
-        console.log(values);
-      } catch (error) {
-        console.log(error);
+      await mutation.mutateAsync(InData);
+      toast("Successfully saved data", {
+        type: "success",
+      });
+      navigate(
+        `/project/monitoring/table-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${year}`
+      );
+    } catch (error) {
+      console.log(error);
+      if (error && error.response && error.response.data) {
         toast(error.response.data, {
           type: "error",
         });
+      } else {
+        toast(error, {
+          type: "error",
+        });
       }
-    },
-  });
-
+    }
+  };
   return (
     <React.Fragment>
-      <form onSubmit={formik.handleSubmit}>
+      <form onSubmit={handleSubmit((data) => onSaveData(data))}>
         <Grid
           container
           direction="row"
@@ -110,13 +162,17 @@ const EnterQuantitativeResultsForm = ({
                 <Grid item md={11}>
                   <EnterQuantitativeResultField
                     resultChainIndicator={resultChainIndicator}
-                    formik={formik}
+                    register={register}
+                    setValue={setValue}
                   />
                 </Grid>
               </React.Fragment>
             );
           })}
         </Grid>
+        <Button type="submit" variant="contained" color="primary" mt={3}>
+          Save changes
+        </Button>
       </form>
     </React.Fragment>
   );

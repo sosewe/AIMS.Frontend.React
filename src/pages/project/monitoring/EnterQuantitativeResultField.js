@@ -4,9 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { lookupItem } from "../../../api/lookup";
 import ResultChainAggregateField from "./ResultChainAggregateField";
 import ResultChainIndicatorField from "./ResultChainIndicatorField";
-import EnterQuantitativeResultsIndicatorAttribute from "./EnterQuantitativeResultsIndicatorAttribute";
+import ResultChainAggregateOnlyField from "./ResultChainAggregateOnlyField";
+import ResultChainAttributeOnlyField from "./ResultChainAttributeOnlyField";
 
-const EnterQuantitativeResultField = ({ resultChainIndicator, formik }) => {
+const EnterQuantitativeResultField = ({
+  resultChainIndicator,
+  register,
+  setValue,
+}) => {
   let measureType;
   const {
     data: measureTypeData,
@@ -32,50 +37,63 @@ const EnterQuantitativeResultField = ({ resultChainIndicator, formik }) => {
       alignItems="left"
       spacing={6}
     >
-      <Grid item md={2}>
+      <Grid item md={12}>
         {measureType}&nbsp;{resultChainIndicator.indicator.name}
       </Grid>
-      <Grid item md={4}>
-        <Grid container spacing={2}>
-          {resultChainIndicator["resultChainAggregates"].length > 0 ? (
-            resultChainIndicator["resultChainAggregates"].map(
-              (resultChainAggregate) => {
-                return (
-                  <React.Fragment key={Math.random().toString(36)}>
-                    <ResultChainAggregateField
-                      resultChainAggregate={resultChainAggregate}
-                      formik={formik}
+      <Grid item md={12}>
+        <Grid container spacing={6}>
+          <Grid item md={12}>
+            {resultChainIndicator["resultChainAggregates"].length > 0 &&
+            resultChainIndicator["resultChainAttributes"].length > 0 ? (
+              <React.Fragment>
+                <ResultChainAggregateField
+                  resultChainAggregates={
+                    resultChainIndicator["resultChainAggregates"]
+                  }
+                  resultChainAttributes={
+                    resultChainIndicator["resultChainAttributes"]
+                  }
+                  register={register}
+                  setValue={setValue}
+                />
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                {resultChainIndicator["resultChainAggregates"].length > 0 ? (
+                  <React.Fragment>
+                    <ResultChainAggregateOnlyField
+                      resultChainAggregates={
+                        resultChainIndicator["resultChainAggregates"]
+                      }
+                      register={register}
                     />
                   </React.Fragment>
-                );
-              }
-            )
-          ) : (
-            <React.Fragment>
-              <ResultChainIndicatorField
-                resultChainIndicator={resultChainIndicator}
-                formik={formik}
-              />
-            </React.Fragment>
-          )}
+                ) : (
+                  <React.Fragment>
+                    {resultChainIndicator["resultChainAttributes"].length >
+                    0 ? (
+                      <React.Fragment>
+                        <ResultChainAttributeOnlyField
+                          resultChainAttributes={
+                            resultChainIndicator["resultChainAttributes"]
+                          }
+                          register={register}
+                        />
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment>
+                        <ResultChainIndicatorField
+                          resultChainIndicator={resultChainIndicator}
+                          register={register}
+                        />
+                      </React.Fragment>
+                    )}
+                  </React.Fragment>
+                )}
+              </React.Fragment>
+            )}
+          </Grid>
         </Grid>
-      </Grid>
-      <Grid item md={5}>
-        {resultChainIndicator.indicator.indicatorAttributeTypes.length > 0
-          ? resultChainIndicator.indicator.indicatorAttributeTypes.map(
-              (indicatorAttributeType) => {
-                return (
-                  <React.Fragment key={Math.random().toString(36)}>
-                    <EnterQuantitativeResultsIndicatorAttribute
-                      indicatorAttributeType={indicatorAttributeType}
-                      formik={formik}
-                      resultChainIndicator={resultChainIndicator}
-                    />
-                  </React.Fragment>
-                );
-              }
-            )
-          : ""}
       </Grid>
     </Grid>
   );

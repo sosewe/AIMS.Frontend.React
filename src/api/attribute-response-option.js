@@ -11,3 +11,8 @@ export const getAttributeResponseOptions = async ({ queryKey }) => {
 export const getAllAttributeResponseOptions = async () => {
   return await axios.get(`${apiRoutes.attributeResponseOption}`);
 };
+
+export const getAttributeResponseOptionById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.attributeResponseOption}/${id}`);
+};
