@@ -45,53 +45,57 @@ const ResultChainAggregateField = ({
     { enabled: !!attribute.attributeId }
   );
   return (
-    <Grid container spacing={2} justifyContent="center">
-      <Grid item md={4}>
-        {!isLoadingAttribute && !isErrorAttribute
-          ? AttributeData.data.name
-          : ""}
-      </Grid>
-      {resultChainAggregates.map((resultChainAggregate) => {
-        return (
-          <React.Fragment key={Math.random().toString(36)}>
-            <ResultChainAggregateLabels
-              resultChainAggregate={resultChainAggregate}
-            />
-          </React.Fragment>
-        );
-      })}
-      {resultChainAttributes.map((resultChainAttribute) => {
-        return (
-          <React.Fragment key={Math.random().toString(36)}>
-            <Grid item md={4}>
-              <AttributeOptionLabel
-                attributeOptionId={resultChainAttribute.attributeOptionsId}
+    <React.Fragment>
+      <Grid container spacing={2} justifyContent="left">
+        <Grid item md={4}>
+          {!isLoadingAttribute && !isErrorAttribute
+            ? AttributeData.data.name
+            : ""}
+        </Grid>
+        {resultChainAggregates.map((resultChainAggregate) => {
+          return (
+            <React.Fragment key={Math.random().toString(36)}>
+              <ResultChainAggregateLabels
+                resultChainAggregate={resultChainAggregate}
               />
-            </Grid>
-            <Grid item md={8}>
-              <Grid container spacing={2} justifyContent="left">
-                {resultChainAggregates.map((resultChainAggregate) => {
-                  return (
-                    <React.Fragment key={Math.random().toString(36)}>
-                      <Grid item md={6}>
-                        <ResultChainAggregateAttributeField
-                          resultChainAttribute={resultChainAttribute}
-                          resultChainAggregate={resultChainAggregate}
-                          register={register}
-                          setValue={setValue}
-                          year={year}
-                          monthId={monthId}
-                        />
-                      </Grid>
-                    </React.Fragment>
-                  );
-                })}
+            </React.Fragment>
+          );
+        })}
+      </Grid>
+      <Grid container spacing={2} justifyContent="center">
+        {resultChainAttributes.map((resultChainAttribute) => {
+          return (
+            <React.Fragment key={Math.random().toString(36)}>
+              <Grid item md={4}>
+                <AttributeOptionLabel
+                  attributeOptionId={resultChainAttribute.attributeOptionsId}
+                />
               </Grid>
-            </Grid>
-          </React.Fragment>
-        );
-      })}
-    </Grid>
+              <Grid item md={8}>
+                <Grid container spacing={2} justifyContent="left">
+                  {resultChainAggregates.map((resultChainAggregate) => {
+                    return (
+                      <React.Fragment key={Math.random().toString(36)}>
+                        <Grid item md={6}>
+                          <ResultChainAggregateAttributeField
+                            resultChainAttribute={resultChainAttribute}
+                            resultChainAggregate={resultChainAggregate}
+                            register={register}
+                            setValue={setValue}
+                            year={year}
+                            monthId={monthId}
+                          />
+                        </Grid>
+                      </React.Fragment>
+                    );
+                  })}
+                </Grid>
+              </Grid>
+            </React.Fragment>
+          );
+        })}
+      </Grid>
+    </React.Fragment>
   );
 };
 export default ResultChainAggregateField;

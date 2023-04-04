@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Autocomplete as MuiAutocomplete,
   Button,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
   Grid,
   TextField as MuiTextField,
 } from "@mui/material";
@@ -185,9 +182,9 @@ const DisaggregatesModal = ({
           attributeValues.push(res);
         }
         formik.setValues({
-          sex: [sexVal],
+          sex: sexVal ? [sexVal] : [],
           age: ageVal,
-          attributeType: [attributeType],
+          attributeType: attributeType ? [attributeType] : [],
           attributeValues: attributeValues,
         });
       }
