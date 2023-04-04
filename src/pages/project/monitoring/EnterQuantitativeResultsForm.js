@@ -6,8 +6,11 @@ import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { newAchievedResult } from "../../../api/achieved-result";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getProjectResults,
+  newAchievedResult,
+} from "../../../api/achieved-result";
 import { Guid } from "../../../utils/guid";
 
 const Button = styled(MuiButton)(spacing);
@@ -20,6 +23,18 @@ const EnterQuantitativeResultsForm = ({
   monthId,
   year,
 }) => {
+  const {
+    data: projectResults,
+    isLoading: isLoadingProjectResults,
+    isError: isErrorProjectResults,
+  } = useQuery(
+    ["getProjectResults", processLevelItemId, year, monthId],
+    getProjectResults,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  console.log(projectResults);
   const { register, handleSubmit, setValue } = useForm();
   const navigate = useNavigate();
   const mutation = useMutation({ mutationFn: newAchievedResult });
@@ -33,8 +48,22 @@ const EnterQuantitativeResultsForm = ({
         ) {
           for (const resultChainIndicatorAggregateElement of resultChainIndicator.resultChainAggregates) {
             for (const resultChainIndicatorAttributeElement of resultChainIndicator.resultChainAttributes) {
+              let projRes;
+              if (!isLoadingProjectResults && !isErrorProjectResults) {
+                projRes = projectResults.data.filter(
+                  (obj) =>
+                    obj.resultChainIndicatorId === resultChainIndicator.id &&
+                    obj.resultChainAttributeId ===
+                      resultChainIndicatorAttributeElement.id &&
+                    obj.resultChainAggregateId ===
+                      resultChainIndicatorAggregateElement.id
+                );
+              }
               const achievedResult = {
-                id: new Guid().toString(),
+                id:
+                  projRes && projRes.length > 0
+                    ? projRes[0].id
+                    : new Guid().toString(),
                 processLevelItemId: processLevelItemId,
                 processLevelTypeId: processLevelTypeId,
                 createDate: new Date(),
@@ -61,8 +90,21 @@ const EnterQuantitativeResultsForm = ({
           resultChainIndicator.resultChainAttributes.length === 0
         ) {
           for (const resultChainIndicatorAggregateElement of resultChainIndicator.resultChainAggregates) {
+            let projRes;
+            if (!isLoadingProjectResults && !isErrorProjectResults) {
+              projRes = projectResults.data.filter(
+                (obj) =>
+                  obj.resultChainIndicatorId === resultChainIndicator.id &&
+                  obj.resultChainAttributeId === null &&
+                  obj.resultChainAggregateId ===
+                    resultChainIndicatorAggregateElement.id
+              );
+            }
             const achievedResult = {
-              id: new Guid().toString(),
+              id:
+                projRes && projRes.length > 0
+                  ? projRes[0].id
+                  : new Guid().toString(),
               processLevelItemId: processLevelItemId,
               processLevelTypeId: processLevelTypeId,
               createDate: new Date(),
@@ -87,8 +129,21 @@ const EnterQuantitativeResultsForm = ({
           resultChainIndicator.resultChainAggregates.length === 0
         ) {
           for (const resultChainIndicatorAttributeElement of resultChainIndicator.resultChainAttributes) {
+            let projRes;
+            if (!isLoadingProjectResults && !isErrorProjectResults) {
+              projRes = projectResults.data.filter(
+                (obj) =>
+                  obj.resultChainIndicatorId === resultChainIndicator.id &&
+                  obj.resultChainAttributeId ===
+                    resultChainIndicatorAttributeElement.id &&
+                  obj.resultChainAggregateId === null
+              );
+            }
             const achievedResult = {
-              id: new Guid().toString(),
+              id:
+                projRes && projRes.length > 0
+                  ? projRes[0].id
+                  : new Guid().toString(),
               processLevelItemId: processLevelItemId,
               processLevelTypeId: processLevelTypeId,
               createDate: new Date(),
@@ -108,8 +163,20 @@ const EnterQuantitativeResultsForm = ({
           resultChainIndicator.resultChainAttributes.length === 0 &&
           resultChainIndicator.resultChainAggregates.length === 0
         ) {
+          let projRes;
+          if (!isLoadingProjectResults && !isErrorProjectResults) {
+            projRes = projectResults.data.filter(
+              (obj) =>
+                obj.resultChainIndicatorId === resultChainIndicator.id &&
+                obj.resultChainAttributeId === null &&
+                obj.resultChainAggregateId === null
+            );
+          }
           const achievedResult = {
-            id: new Guid().toString(),
+            id:
+              projRes && projRes.length > 0
+                ? projRes[0].id
+                : new Guid().toString(),
             processLevelItemId: processLevelItemId,
             processLevelTypeId: processLevelTypeId,
             createDate: new Date(),
@@ -164,15 +231,29 @@ const EnterQuantitativeResultsForm = ({
                     resultChainIndicator={resultChainIndicator}
                     register={register}
                     setValue={setValue}
+                    year={year}
+                    monthId={monthId}
                   />
                 </Grid>
               </React.Fragment>
             );
           })}
         </Grid>
-        <Button type="submit" variant="contained" color="primary" mt={3}>
-          Save changes
-        </Button>
+        <Grid
+          container
+          direction="row"
+          justifyContent="left"
+          alignItems="left"
+          spacing={6}
+        >
+          <Grid item md={1}></Grid>
+          <Grid item md={4}>
+            <Button type="submit" variant="contained" color="primary" mt={3}>
+              Save changes
+            </Button>
+          </Grid>
+        </Grid>
+        <br />
       </form>
     </React.Fragment>
   );

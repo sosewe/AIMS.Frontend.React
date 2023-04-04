@@ -31,6 +31,8 @@ const ResultChainAggregateField = ({
   resultChainAttributes,
   register,
   setValue,
+  year,
+  monthId,
 }) => {
   const attribute = resultChainAttributes[0];
   const {
@@ -42,7 +44,6 @@ const ResultChainAggregateField = ({
     getAttributeTypeById,
     { enabled: !!attribute.attributeId }
   );
-
   return (
     <Grid container spacing={2} justifyContent="center">
       <Grid item md={4}>
@@ -78,6 +79,8 @@ const ResultChainAggregateField = ({
                           resultChainAggregate={resultChainAggregate}
                           register={register}
                           setValue={setValue}
+                          year={year}
+                          monthId={monthId}
                         />
                       </Grid>
                     </React.Fragment>

@@ -285,8 +285,8 @@ const EnterQuantitativeResultsFormContainer = ({
                 processLevelItemId={processLevelItemId}
                 processLevelTypeId={processLevelTypeId}
                 projectLocationId={projectLocationId}
-                monthId={monthId}
-                year={year}
+                monthId={implementingMonth}
+                year={implementingYear}
               />
             ) : (
               ""

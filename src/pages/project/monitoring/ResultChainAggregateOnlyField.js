@@ -1,13 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Grid, TextField as MuiTextField } from "@mui/material";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useQuery } from "@tanstack/react-query";
 import { getDisaggregate } from "../../../api/disaggregate";
+import { getAchievedResultsByResultChainIndicatorIdAndAggregateId } from "../../../api/achieved-result";
 
 const TextField = styled(MuiTextField)(spacing);
 
-const AggregateField = ({ resultChainAggregate, register }) => {
+const AggregateField = ({
+  resultChainAggregate,
+  register,
+  setValue,
+  year,
+  monthId,
+}) => {
   const {
     data: DisaggregateData,
     isLoading: isLoadingDisaggregate,
@@ -30,6 +37,55 @@ const AggregateField = ({ resultChainAggregate, register }) => {
       enabled: !!resultChainAggregate.disaggregateId2,
     }
   );
+  const {
+    data: AchievedResultData,
+    isLoading: isLoadingAchievedResult,
+    isError: isErrorAchievedResult,
+  } = useQuery(
+    [
+      "getAchievedResultsByResultChainIndicatorIdAndAggregateId",
+      resultChainAggregate.resultChainIndicatorId,
+      resultChainAggregate.id,
+      year,
+      monthId,
+    ],
+    getAchievedResultsByResultChainIndicatorIdAndAggregateId,
+    {
+      enabled:
+        !!resultChainAggregate.resultChainIndicatorId &&
+        !!resultChainAggregate.id,
+    }
+  );
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingAchievedResult &&
+        !isErrorAchievedResult &&
+        AchievedResultData.data.length > 0
+      ) {
+        setValue(
+          resultChainAggregate.disaggregateId1 +
+            "/" +
+            resultChainAggregate.disaggregateId2,
+          AchievedResultData.data[0].achievedValue
+        );
+      } else {
+        setValue(
+          resultChainAggregate.disaggregateId1 +
+            "/" +
+            resultChainAggregate.disaggregateId2,
+          ""
+        );
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    AchievedResultData,
+    isLoadingAchievedResult,
+    isErrorAchievedResult,
+    resultChainAggregate.disaggregateId1,
+    resultChainAggregate.disaggregateId2,
+  ]);
   return (
     <Grid container spacing={6} justifyContent="left" direction="row">
       <Grid item md={4}>
@@ -62,13 +118,21 @@ const AggregateField = ({ resultChainAggregate, register }) => {
               "/" +
               resultChainAggregate.disaggregateId2
           )}
+          type="number"
+          sx={{ marginBottom: 5 }}
         />
       </Grid>
     </Grid>
   );
 };
 
-const ResultChainAggregateOnlyField = ({ resultChainAggregates, register }) => {
+const ResultChainAggregateOnlyField = ({
+  resultChainAggregates,
+  register,
+  setValue,
+  year,
+  monthId,
+}) => {
   return (
     <Grid container spacing={6} justifyContent="center">
       <Grid item md={12}>
@@ -78,6 +142,9 @@ const ResultChainAggregateOnlyField = ({ resultChainAggregates, register }) => {
               <AggregateField
                 resultChainAggregate={resultChainAggregate}
                 register={register}
+                setValue={setValue}
+                year={year}
+                monthId={monthId}
               />
             </React.Fragment>
           );

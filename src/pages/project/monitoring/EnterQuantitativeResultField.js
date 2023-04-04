@@ -11,6 +11,8 @@ const EnterQuantitativeResultField = ({
   resultChainIndicator,
   register,
   setValue,
+  year,
+  monthId,
 }) => {
   let measureType;
   const {
@@ -55,6 +57,8 @@ const EnterQuantitativeResultField = ({
                   }
                   register={register}
                   setValue={setValue}
+                  year={year}
+                  monthId={monthId}
                 />
               </React.Fragment>
             ) : (
@@ -66,6 +70,9 @@ const EnterQuantitativeResultField = ({
                         resultChainIndicator["resultChainAggregates"]
                       }
                       register={register}
+                      setValue={setValue}
+                      year={year}
+                      monthId={monthId}
                     />
                   </React.Fragment>
                 ) : (
@@ -78,6 +85,9 @@ const EnterQuantitativeResultField = ({
                             resultChainIndicator["resultChainAttributes"]
                           }
                           register={register}
+                          setValue={setValue}
+                          year={year}
+                          monthId={monthId}
                         />
                       </React.Fragment>
                     ) : (
@@ -85,6 +95,9 @@ const EnterQuantitativeResultField = ({
                         <ResultChainIndicatorField
                           resultChainIndicator={resultChainIndicator}
                           register={register}
+                          setValue={setValue}
+                          year={year}
+                          monthId={monthId}
                         />
                       </React.Fragment>
                     )}
