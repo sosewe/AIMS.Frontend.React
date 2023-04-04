@@ -34,7 +34,6 @@ const EnterQuantitativeResultsForm = ({
       refetchOnWindowFocus: false,
     }
   );
-  console.log(projectResults);
   const { register, handleSubmit, setValue } = useForm();
   const navigate = useNavigate();
   const mutation = useMutation({ mutationFn: newAchievedResult });

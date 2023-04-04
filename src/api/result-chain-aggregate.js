@@ -14,3 +14,12 @@ export const getResultChainAggregate = async ({ queryKey }) => {
     `${apiRoutes.resultChainAggregate}/${resultChainAggregateId}`
   );
 };
+
+export const getResultChainAggregateByResultChainIndicatorId = async ({
+  queryKey,
+}) => {
+  const [, resultChainIndicatorId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.resultChainAggregate}/GetResultChainAggregateByResultChainIndicatorId/${resultChainIndicatorId}`
+  );
+};

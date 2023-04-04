@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Autocomplete as MuiAutocomplete,
   Button,
@@ -9,14 +9,20 @@ import {
   TextField as MuiTextField,
 } from "@mui/material";
 import { Guid } from "../../../utils/guid";
-import { useMutation } from "@tanstack/react-query";
-import { saveResultChainAggregate } from "../../../api/result-chain-aggregate";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getResultChainAggregateByResultChainIndicatorId,
+  saveResultChainAggregate,
+} from "../../../api/result-chain-aggregate";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { saveResultChainAttributes } from "../../../api/result-chain-attribute";
+import {
+  getResultChainAttributeByIndicatorId,
+  saveResultChainAttributes,
+} from "../../../api/result-chain-attribute";
 
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const TextField = styled(MuiTextField)(spacing);
@@ -29,6 +35,24 @@ const DisaggregatesModal = ({
   handleClick,
   indicatorAttributeTypes,
 }) => {
+  const {
+    data: ResultChains,
+    isLoading: isLoadingResultChains,
+    isError: isErrorResultChains,
+  } = useQuery(
+    ["getResultChainAggregateByResultChainIndicatorId", resultChainIndicatorId],
+    getResultChainAggregateByResultChainIndicatorId,
+    { enabled: !!resultChainIndicatorId }
+  );
+  const {
+    data: ResultChainAttribute,
+    isLoading: isLoadingResultChainAttribute,
+    isError: isErrorResultChainAttribute,
+  } = useQuery(
+    ["getResultChainAttributeByIndicatorId", resultChainIndicatorId],
+    getResultChainAttributeByIndicatorId,
+    { enabled: !!resultChainIndicatorId }
+  );
   const attributesCount = indicatorAttributeTypes.length;
   const aggregatesCount = indicatorAggregates.length;
   const mutation = useMutation({ mutationFn: saveResultChainAggregate });
@@ -119,6 +143,64 @@ const DisaggregatesModal = ({
     attributeTypes.length > 0
       ? attributeTypes[0].attributeType.attributeResponseOptions
       : [];
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingResultChains &&
+        !isErrorResultChains &&
+        !isLoadingResultChainAttribute &&
+        !isErrorResultChainAttribute
+      ) {
+        let ageVal = [];
+        let sexVal;
+        let attributeType;
+        let attributeValues = [];
+        if (ResultChains.data.length > 0) {
+          sexVal = primaries.find(
+            (obj) =>
+              obj.aggregateDisaggregate.disaggregate.id ===
+              ResultChains.data[0].disaggregateId1
+          );
+          for (const resultChainElement of ResultChains.data) {
+            const res = secondaries.find(
+              (obj) =>
+                obj.aggregateDisaggregate.disaggregate.id ===
+                resultChainElement.disaggregateId2
+            );
+            if (res) {
+              ageVal.push(res);
+            }
+          }
+        }
+        if (ResultChainAttribute.data.length > 0) {
+          attributeType = attributeTypes.find(
+            (obj) =>
+              obj.attributeTypeId === ResultChainAttribute.data[0].attributeId
+          );
+        }
+        for (const resultChainAttributeValue of ResultChainAttribute.data) {
+          const res = attributeResponseOptions.find(
+            (obj) => obj.id === resultChainAttributeValue.attributeOptionsId
+          );
+          attributeValues.push(res);
+        }
+        formik.setValues({
+          sex: [sexVal],
+          age: ageVal,
+          attributeType: [attributeType],
+          attributeValues: attributeValues,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    ResultChains,
+    isLoadingResultChains,
+    isErrorResultChains,
+    ResultChainAttribute,
+    isLoadingResultChainAttribute,
+    isErrorResultChainAttribute,
+  ]);
   return (
     <>
       <form onSubmit={formik.handleSubmit}>
