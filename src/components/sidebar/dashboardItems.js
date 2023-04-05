@@ -4,7 +4,7 @@ import {
   Clipboard,
   Settings,
   Slack,
-  Grid,
+  Home,
 } from "react-feather";
 
 const projectSection = [
@@ -112,9 +112,9 @@ const navItems = [
     title: "",
     pages: [
       {
-        title: "Implementation Offices",
+        title: "Dashboard",
         href: "/",
-        icon: Grid,
+        icon: Home,
       },
     ],
   },

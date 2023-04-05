@@ -34,7 +34,7 @@ const defaultVariant = {
   },
   header: {
     color: grey[500],
-    background: "#FFF",
+    background: "#dc3545",
     search: {
       color: grey[800],
     },

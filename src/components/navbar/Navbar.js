@@ -4,6 +4,7 @@ import { withTheme } from "@emotion/react";
 import { darken } from "polished";
 import { Search as SearchIcon } from "react-feather";
 import { useTranslation } from "react-i18next";
+import { useMsal } from "@azure/msal-react";
 
 import {
   Grid,
@@ -11,9 +12,10 @@ import {
   AppBar as MuiAppBar,
   IconButton as MuiIconButton,
   Toolbar,
+  Typography,
 } from "@mui/material";
 
-import { Menu as MenuIcon } from "@mui/icons-material";
+import { Menu as MenuIcon, Title } from "@mui/icons-material";
 
 import NavbarNotificationsDropdown from "./NavbarNotificationsDropdown";
 import NavbarMessagesDropdown from "./NavbarMessagesDropdown";
@@ -79,11 +81,17 @@ const Input = styled(InputBase)`
 
 const Navbar = ({ onDrawerToggle }) => {
   const { t } = useTranslation();
+  const { accounts } = useMsal();
+  const user = accounts.length > 0 && accounts[0];
+
   return (
     <React.Fragment>
       <AppBar position="sticky" elevation={0}>
         <Toolbar>
           <Grid container alignItems="center">
+            <Typography variant="h2" color="white" fontWeight="bold">
+              Amref Information Management System
+            </Typography>
             <Grid item sx={{ display: { xs: "block", md: "none" } }}>
               <IconButton
                 color="inherit"
@@ -104,9 +112,16 @@ const Navbar = ({ onDrawerToggle }) => {
             </Grid>
             <Grid item xs />
             <Grid item>
+              {!!user && (
+                <Typography variant="body1" color="white">
+                  Welcome, {user.name}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item>
               {/*<NavbarMessagesDropdown />*/}
               {/*<NavbarNotificationsDropdown />*/}
-              <NavbarLanguagesDropdown />
+              {/*<NavbarLanguagesDropdown />*/}
               <NavbarUserDropdown />
             </Grid>
           </Grid>
