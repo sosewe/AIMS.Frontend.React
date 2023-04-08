@@ -6,9 +6,9 @@ import { green } from "@mui/material/colors";
 
 import { Box, Chip, Drawer as MuiDrawer, ListItemButton } from "@mui/material";
 
-import { ReactComponent as Logo } from "../../vendor/image2vector.svg";
 import Footer from "./SidebarFooter";
 import SidebarNav from "./SidebarNav";
+import logo from "./img/logo-white.png";
 
 const Drawer = styled(MuiDrawer)`
   border-right: 0;
@@ -40,12 +40,12 @@ const Brand = styled(ListItemButton)`
   }
 `;
 
-const BrandIcon = styled(Logo)`
+/*const BrandIcon = styled(Logo)`
   margin-right: ${(props) => props.theme.spacing(2)};
   color: ${(props) => props.theme.sidebar.header.brand.color};
   fill: ${(props) => props.theme.sidebar.header.brand.color};
   height: 57px;
-`;
+`;*/
 
 const BrandChip = styled(Chip)`
   background-color: ${green[700]};
@@ -67,13 +67,17 @@ const Sidebar = ({ items, showFooter = true, ...rest }) => {
   return (
     <Drawer variant="permanent" {...rest}>
       <Brand component={NavLink} to="/">
-        <BrandIcon />
-        {/*<Box ml={1}>*/}
-        {/*  Mira <BrandChip label="PRO" />*/}
-        {/*</Box>*/}
+        <Box display="flex" justifyContent="flex-start" alignItems="flex-start">
+          <img
+            alt="amref-logo"
+            width="70px"
+            height="50px"
+            src={logo}
+            style={{ cursor: "pointer" }}
+          />
+        </Box>
       </Brand>
       <SidebarNav items={items} />
-      {!!showFooter && <Footer />}
     </Drawer>
   );
 };

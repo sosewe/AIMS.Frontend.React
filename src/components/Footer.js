@@ -63,7 +63,9 @@ function Footer() {
         <Grid container item xs={12} md={6} justifyContent="flex-end">
           <List>
             <ListItemButton>
-              <ListItemText primary={`© ${new Date().getFullYear()} - AMREF`} />
+              <ListItemText
+                primary={`Powered by Amref Health Africa © ${new Date().getFullYear()} `}
+              />
             </ListItemButton>
           </List>
         </Grid>
