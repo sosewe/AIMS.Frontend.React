@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Grid } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { getAttributeTypeById } from "../../../api/attribute-type";
 import ResultChainAggregateLabels from "./ResultChainAggregateLabels";
 import ResultChainAggregateAttributeField from "./ResultChainAggregateAttributeField";
@@ -48,9 +48,11 @@ const ResultChainAggregateField = ({
     <React.Fragment>
       <Grid container spacing={2} justifyContent="left">
         <Grid item md={12}>
-          {!isLoadingAttribute && !isErrorAttribute
-            ? AttributeData.data.name
-            : ""}
+          <Typography variant="h5" gutterBottom display="inline">
+            {!isLoadingAttribute && !isErrorAttribute
+              ? AttributeData.data.name
+              : ""}
+          </Typography>
         </Grid>
         {/*{resultChainAggregates.map((resultChainAggregate) => {*/}
         {/*  return (*/}
