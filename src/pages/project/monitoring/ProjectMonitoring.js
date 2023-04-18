@@ -107,18 +107,6 @@ const ProjectMonitoringAccordion = ({
         <Accordion>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
-          >
-            <Typography>Log</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography>&nbsp;</Typography>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
             aria-controls="panel2a-content"
             id="panel2a-header"
           >

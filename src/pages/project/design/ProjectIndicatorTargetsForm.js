@@ -59,57 +59,7 @@ const ProjectIndicatorTargetsForm = ({
           </Grid>
         </Grid>
         <br />
-        <Grid container spacing={2} sx={{ minWidth: "1000px" }}>
-          <Grid item md={12}>
-            <Grid
-              container
-              wrap="nowrap"
-              sx={{ overflow: "auto" }}
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Grid item md={1}>
-                JAN
-              </Grid>
-              <Grid item md={1}>
-                FEB
-              </Grid>
-              <Grid item md={1}>
-                MAR
-              </Grid>
-              <Grid item md={1}>
-                APR
-              </Grid>
-              <Grid item md={1}>
-                MAY
-              </Grid>
-              <Grid item md={1}>
-                JUN
-              </Grid>
-              <Grid item md={1}>
-                JUL
-              </Grid>
-              <Grid item md={1}>
-                AUG
-              </Grid>
-              <Grid item md={1}>
-                SEP
-              </Grid>
-              <Grid item md={1}>
-                OCT
-              </Grid>
-              <Grid item md={1}>
-                NOV
-              </Grid>
-              <Grid item md={1}>
-                DEC
-              </Grid>
-              <Grid item md={1}>
-                &nbsp;
-              </Grid>
-            </Grid>
-          </Grid>
+        <Grid container spacing={2}>
           <Grid item md={12}>
             <ProjectIndicatorTargetsDataEntryForm
               isLoadingResultChainIndicators={isLoadingResultChainIndicators}

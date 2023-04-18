@@ -223,7 +223,7 @@ const EnterQuantitativeResultsForm = ({
             return (
               <React.Fragment key={Math.random().toString(36)}>
                 <Grid item md={1}>
-                  {i}
+                  {i + 1}
                 </Grid>
                 <Grid item md={11}>
                   <EnterQuantitativeResultField

@@ -8,6 +8,7 @@ import {
   Button as MuiButton,
   Grid,
   TextField as MuiTextField,
+  Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import ResultIndicatorHeader from "./ResultIndicatorHeader";
@@ -798,14 +799,8 @@ const ProjectIndicatorTargetsDataEntry = ({
         spacing={2}
       >
         <Grid item md={11}>
-          <Grid
-            container
-            wrap="nowrap"
-            sx={{ overflow: "auto" }}
-            direction="row"
-            spacing={2}
-          >
-            <Grid item md={1}>
+          <Grid container spacing={2}>
+            <Grid item md={2}>
               <TextField
                 name="JAN"
                 label="JAN"
@@ -831,7 +826,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="FEB"
                 label="FEB"
@@ -857,7 +852,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="MAR"
                 label="MAR"
@@ -882,7 +877,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="APR"
                 label="APR"
@@ -908,7 +903,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="MAY"
                 label="MAY"
@@ -934,7 +929,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="JUN"
                 label="JUN"
@@ -958,7 +953,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="JUL"
                 label="JUL"
@@ -984,7 +979,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="AUG"
                 label="AUG"
@@ -1010,7 +1005,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="SEP"
                 label="SEP"
@@ -1035,7 +1030,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="OCT"
                 label="OCT"
@@ -1061,7 +1056,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="NOV"
                 label="NOV"
@@ -1087,7 +1082,7 @@ const ProjectIndicatorTargetsDataEntry = ({
                 }}
               />
             </Grid>
-            <Grid item md={1}>
+            <Grid item md={2}>
               <TextField
                 name="DEC"
                 label="DEC"
@@ -1105,9 +1100,11 @@ const ProjectIndicatorTargetsDataEntry = ({
           </Grid>
         </Grid>
         <Grid item md={1}>
-          <Button type="submit" variant="contained" color="primary" mt={3}>
-            Save
-          </Button>
+          <Typography align="center">
+            <Button type="submit" variant="contained" color="primary" mt={12}>
+              Save
+            </Button>
+          </Typography>
         </Grid>
       </Grid>
     </form>

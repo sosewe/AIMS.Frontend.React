@@ -47,31 +47,31 @@ const ResultChainAggregateField = ({
   return (
     <React.Fragment>
       <Grid container spacing={2} justifyContent="left">
-        <Grid item md={4}>
+        <Grid item md={12}>
           {!isLoadingAttribute && !isErrorAttribute
             ? AttributeData.data.name
             : ""}
         </Grid>
-        {resultChainAggregates.map((resultChainAggregate) => {
-          return (
-            <React.Fragment key={Math.random().toString(36)}>
-              <ResultChainAggregateLabels
-                resultChainAggregate={resultChainAggregate}
-              />
-            </React.Fragment>
-          );
-        })}
+        {/*{resultChainAggregates.map((resultChainAggregate) => {*/}
+        {/*  return (*/}
+        {/*    <React.Fragment key={Math.random().toString(36)}>*/}
+        {/*      <ResultChainAggregateLabels*/}
+        {/*        resultChainAggregate={resultChainAggregate}*/}
+        {/*      />*/}
+        {/*    </React.Fragment>*/}
+        {/*  );*/}
+        {/*})}*/}
       </Grid>
       <Grid container spacing={2} justifyContent="center">
         {resultChainAttributes.map((resultChainAttribute) => {
           return (
             <React.Fragment key={Math.random().toString(36)}>
-              <Grid item md={4}>
+              <Grid item md={12}>
                 <AttributeOptionLabel
                   attributeOptionId={resultChainAttribute.attributeOptionsId}
                 />
               </Grid>
-              <Grid item md={8}>
+              <Grid item md={6}>
                 <Grid container spacing={2} justifyContent="left">
                   {resultChainAggregates.map((resultChainAggregate) => {
                     return (

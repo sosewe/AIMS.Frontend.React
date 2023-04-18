@@ -88,7 +88,7 @@ const ResultChainIndicators = ({
           <Grid item md={8}>
             <Typography variant="h6">
               {resultChain && resultChain.indicator
-                ? "#" + resultChain.indicator.name
+                ? resultChain.indicator.name
                 : ""}
             </Typography>
           </Grid>
@@ -107,7 +107,7 @@ const ResultChainIndicators = ({
                 );
               }}
             >
-              Disaggregates
+              Disaggregates/Attributes
             </Link>
           </Grid>
           <Grid item md={2}>

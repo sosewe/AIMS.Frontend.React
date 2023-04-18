@@ -119,6 +119,28 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
     },
   });
 
+  const onIndicatorChange = (e) => {
+    const indicatorId = e.target.value;
+    const indicatorVal = data.data.find((obj) => obj.id === indicatorId);
+    if (
+      !isLoadingIndicatorMeasures &&
+      !isErrorIndicatorMeasures &&
+      indicatorVal
+    ) {
+      const selectedMeasure = indicatorMeasuresData.data.find(
+        (obj) => obj.lookupItemId === indicatorVal.indicatorMeasure
+      );
+      if (selectedMeasure) {
+        formik.setFieldValue(
+          "indicatorTypeOfMeasure",
+          selectedMeasure.lookupItemId
+        );
+      } else {
+        formik.setFieldValue("indicatorTypeOfMeasure", "");
+      }
+    }
+  };
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card mb={6}>
@@ -157,7 +179,10 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
                       formik.touched.indicatorId && formik.errors.indicatorId
                     }
                     onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      onIndicatorChange(e);
+                    }}
                     variant="outlined"
                     my={2}
                   >
@@ -167,7 +192,7 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
                     {!isLoading && !isError
                       ? data.data.map((option) => (
                           <MenuItem key={option.id} value={option.id}>
-                            {option.code}-{option.name}
+                            {option.name}
                           </MenuItem>
                         ))
                       : []}
