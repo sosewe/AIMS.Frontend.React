@@ -40,16 +40,14 @@ const IndicatorsData = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // fetch All Indicators
-  const { data, isLoading, isError, error, pageInfo } = useQuery(
+  const { data, isLoading, isError, error } = useQuery(
     ["getAllIndicators", page, pageSize],
     getAllIndicators,
     {
       retry: 0,
     }
   );
-  const [rowCountState, setRowCountState] = React.useState(
-    pageInfo?.totalRowCount || 0
-  );
+
   if (isError) {
     toast(error.response.data, {
       type: "error",
@@ -77,6 +75,12 @@ const IndicatorsData = () => {
     await queryClient.invalidateQueries(["getAllIndicators"]);
   };
 
+  if (isLoading) {
+    return `loading....`;
+  }
+
+  const { pageInfo } = data.data;
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -94,7 +98,7 @@ const IndicatorsData = () => {
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
             rowsPerPageOptions={[5, 10, 25]}
-            rows={isLoading || isError ? [] : data ? data.data : []}
+            rows={isLoading || isError ? [] : data ? data.data.data : []}
             columns={[
               {
                 field: "name",
@@ -136,15 +140,17 @@ const IndicatorsData = () => {
                 ),
               },
             ]}
-            pageSize={pageSize}
+            pageSize={pageInfo.pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
             paginationMode="server"
-            rowCount={rowCountState}
+            rowCount={pageInfo.totalItems}
             pagination
-            page={page}
-            onPageChange={(newPage) => setPage(newPage)}
+            onPageChange={async (newPage) => {
+              setPage(newPage + 1);
+              await queryClient.invalidateQueries(["getAllIndicators"]);
+            }}
           />
         </div>
         <Dialog

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import {
   Box,
@@ -33,7 +33,11 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getProjectLocations } from "../../../api/location";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+} from "@mui/icons-material";
 import {
   deleteProjectObjective,
   getObjectiveByProcessLevelItemId,
@@ -87,6 +91,8 @@ const AddOutputModal = ({
   handleClick,
   processLevelItemId,
   processLevelTypeId,
+  output,
+  outputId,
 }) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({ mutationFn: saveResultChain });
@@ -98,7 +104,7 @@ const AddOutputModal = ({
     onSubmit: async (values) => {
       try {
         const resultChain = {
-          id: new Guid().toString(),
+          id: outputId ? outputId : new Guid().toString(),
           // code: values.outputCode,
           name: values.output,
           // order: values.order,
@@ -121,6 +127,17 @@ const AddOutputModal = ({
       }
     },
   });
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (output) {
+        formik.setValues({
+          output: output.name,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [output]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -187,11 +204,14 @@ const GetProjectOutputs = ({
   resultLevelOptionId,
   processLevelItemId,
   processLevelTypeId,
+  outcome,
 }) => {
+  const [openOutputModal, setOpenOutputModal] = useState(false);
   const [openDeleteResultChain, setOpenDeleteResultChain] = useState(false);
   const [openIndicatorModal, setOpenIndicatorModal] = useState(false);
   const [outcomeVal, setOutcomeVal] = useState();
   const [outputId, setOutputId] = useState();
+  const [output, setOutput] = useState();
   const queryClient = useQueryClient();
   const {
     data: projectOutcomesOutputs,
@@ -230,6 +250,9 @@ const GetProjectOutputs = ({
       "getResultChainIndicatorsByResultChainId",
     ]);
   };
+  const handleClick = () => {
+    setOpenOutputModal(false);
+  };
   function handleCloseDeleteResult() {
     setOpenDeleteResultChain(false);
   }
@@ -257,6 +280,17 @@ const GetProjectOutputs = ({
                     <Grid item md={12} sx={{ marginTop: 2, marginBottom: 2 }}>
                       <ThemeProvider theme={theme}>
                         <Stack direction="row" spacing={2}>
+                          <Button
+                            variant="contained"
+                            color="secondaryGray"
+                            onClick={() => {
+                              setOutputId(output.id);
+                              setOutput(output);
+                              setOpenOutputModal(true);
+                            }}
+                          >
+                            <EditIcon />
+                          </Button>
                           <Button
                             variant="contained"
                             color="secondaryGray"
@@ -349,6 +383,34 @@ const GetProjectOutputs = ({
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openOutputModal}
+        onClose={() => setOpenOutputModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <AddOutputModal
+            outcome={outcome}
+            resultLevelOptionId={resultLevelOptionId}
+            handleClick={handleClick}
+            processLevelItemId={processLevelItemId}
+            processLevelTypeId={processLevelTypeId}
+            output={output}
+            outputId={outputId}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenOutputModal(false)}
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };
@@ -358,11 +420,14 @@ const GetProjectOutcomes = ({
   resultLevelOptionId,
   processLevelItemId,
   processLevelTypeId,
+  projectObjective,
+  index,
 }) => {
   const queryClient = useQueryClient();
   const [openOutputModal, setOpenOutputModal] = useState(false);
   const [openIndicatorModal, setOpenIndicatorModal] = useState(false);
   const [openDeleteResultChain, setDeleteResultChain] = useState(false);
+  const [openOutcomeModal, setOpenOutcomeModal] = useState(false);
   const [outcomeId, setOutcomeId] = useState();
   const [outcomeVal, setOutcomeVal] = useState();
   const {
@@ -394,6 +459,7 @@ const GetProjectOutcomes = ({
   }
   const handleClick = () => {
     setOpenOutputModal(false);
+    setOpenOutcomeModal(false);
   };
   const handleClickIndicatorModal = async () => {
     setOpenIndicatorModal(false);
@@ -437,6 +503,17 @@ const GetProjectOutcomes = ({
                             }}
                           >
                             <AddIcon /> Output
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="secondaryGray"
+                            onClick={() => {
+                              setOutcomeId(outcome.id);
+                              setOutcomeVal(outcome);
+                              setOpenOutcomeModal(true);
+                            }}
+                          >
+                            <EditIcon />
                           </Button>
                           <Button
                             variant="contained"
@@ -491,6 +568,7 @@ const GetProjectOutcomes = ({
                       resultLevelOptionId={resultLevelOptionId}
                       processLevelItemId={processLevelItemId}
                       processLevelTypeId={processLevelTypeId}
+                      outcome={outcome}
                     />
                   </CardContent>
                 </Card>
@@ -572,6 +650,35 @@ const GetProjectOutcomes = ({
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openOutcomeModal}
+        onClose={() => setOpenOutcomeModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <AddOutcomeModal
+            lookupItemId={lookupItemId}
+            projectObjective={projectObjective}
+            projectObjectiveIndex={index}
+            processLevelItemId={processLevelItemId}
+            processLevelTypeId={processLevelTypeId}
+            handleClick={handleClick}
+            outcomeId={outcomeId}
+            outcomeVal={outcomeVal}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenOutcomeModal(false)}
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };
@@ -582,6 +689,8 @@ const AddOutcomeModal = ({
   processLevelItemId,
   processLevelTypeId,
   handleClick,
+  outcomeId,
+  outcomeVal,
 }) => {
   const queryClient = useQueryClient();
 
@@ -594,7 +703,7 @@ const AddOutcomeModal = ({
     onSubmit: async (values) => {
       try {
         const resultChain = {
-          id: new Guid().toString(),
+          id: outcomeId ? outcomeId : new Guid().toString(),
           name: values.outcome,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
@@ -615,6 +724,17 @@ const AddOutcomeModal = ({
       }
     },
   });
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (outcomeVal) {
+        formik.setValues({
+          outcome: outcomeVal.name,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [outcomeVal]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -952,7 +1072,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
           {!isLoadingProjectObjectives &&
             !isErrorProjectObjectives &&
             projectObjectives.data.map((projectObjective, index) => (
-              <React.Fragment>
+              <React.Fragment key={Math.random().toString(36)}>
                 <Grid
                   item
                   md={12}
@@ -1015,6 +1135,8 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
                             resultLevelOptionId={resultLevelOptionId}
                             processLevelItemId={processLevelItemId}
                             processLevelTypeId={processLevelTypeId}
+                            projectObjective={projectObjective}
+                            index={index}
                           />
                         </CardContent>
                       </Card>
