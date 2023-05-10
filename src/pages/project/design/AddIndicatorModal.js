@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -45,6 +45,7 @@ const initialValuesIndicator = {
 
 const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
   const queryClient = useQueryClient();
+  const [isMeasureDisabled, setIsMeasureDisabled] = useState(false);
   const { data, isLoading, isError } = useQuery(
     ["getProjectIndicators", processLevelItemId],
     getProjectIndicators
@@ -135,8 +136,10 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
           "indicatorTypeOfMeasure",
           selectedMeasure.lookupItemId
         );
+        setIsMeasureDisabled(true);
       } else {
         formik.setFieldValue("indicatorTypeOfMeasure", "");
+        setIsMeasureDisabled(false);
       }
     }
   };
@@ -240,6 +243,7 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
+                    disabled={isMeasureDisabled}
                   >
                     <MenuItem disabled value="">
                       Select Type Of Measure

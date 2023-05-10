@@ -41,6 +41,7 @@ import InnovationChallengesForm from "./InnovationChallengesForm";
 import { Guid } from "../../../../utils/guid";
 import { newInnovationProgress } from "../../../../api/innovation-progress";
 import { newInnovationChallenge } from "../../../../api/innovation-challenge";
+import { useParams } from "react-router-dom";
 
 const theme = createTheme({
   palette: {
@@ -71,6 +72,7 @@ const initialValues = {
 };
 
 const InnovationMonitoringForm = () => {
+  let { id } = useParams();
   const [openChallengesModal, setOpenChallengesModal] = useState(false);
   const [innovationId, setInnovationId] = useState();
   const [innovation, setInnovation] = useState();
@@ -207,6 +209,7 @@ const InnovationMonitoringForm = () => {
 
   useEffect(() => {
     function setCurrentFormValues() {
+      setInnovationId(id);
       if (
         !isLoadingInnovationData &&
         !isErrorInnovationData &&
@@ -231,7 +234,7 @@ const InnovationMonitoringForm = () => {
           }
         }
         formik.setValues({
-          name: innovation,
+          name: InnovationData.data,
           staffNameId: staff ? staff : "",
           countryId: countries && countries.length > 0 ? countries : [],
           duration_from: "",
@@ -257,6 +260,7 @@ const InnovationMonitoringForm = () => {
     QualitativeCountryData,
     innovation,
     amrefEntities,
+    id,
   ]);
 
   return (

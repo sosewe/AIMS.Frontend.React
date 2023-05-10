@@ -275,11 +275,11 @@ const routes = [
         element: <Advocacy />,
       },
       {
-        path: "monitoring/innovation-monitoring",
+        path: "monitoring/innovation-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <InnovationMonitoring />,
       },
       {
-        path: "monitoring/advocacy-monitoring",
+        path: "monitoring/advocacy-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <AdvocacyMonitoring />,
       },
     ],

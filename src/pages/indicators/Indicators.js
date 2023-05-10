@@ -33,6 +33,9 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const IndicatorsData = () => {
+  const [filterModel, setFilterModel] = useState({
+    items: [],
+  });
   const [open, setOpen] = React.useState(false);
   const [id, setId] = React.useState();
   const [page, setPage] = React.useState(1);
@@ -41,10 +44,11 @@ const IndicatorsData = () => {
   const queryClient = useQueryClient();
   // fetch All Indicators
   const { data, isLoading, isError, error } = useQuery(
-    ["getAllIndicators", page, pageSize],
+    ["getAllIndicators", page, pageSize, filterModel],
     getAllIndicators,
     {
       retry: 0,
+      refetchOnWindowFocus: false,
     }
   );
 
@@ -73,6 +77,16 @@ const IndicatorsData = () => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries(["getAllIndicators"]);
+  };
+
+  const onFilterChange = async (model) => {
+    setFilterModel(model);
+    await queryClient.invalidateQueries([
+      "getAllIndicators",
+      page,
+      pageSize,
+      filterModel,
+    ]);
   };
 
   if (isLoading) {
@@ -145,6 +159,8 @@ const IndicatorsData = () => {
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
             paginationMode="server"
+            filterModel={filterModel}
+            onFilterModelChange={(model) => onFilterChange(model)}
             rowCount={pageInfo.totalItems}
             pagination
             onPageChange={async (newPage) => {

@@ -29,18 +29,32 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const ProjectsData = () => {
+  const [filterModel, setFilterModel] = useState({
+    items: [],
+  });
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // fetch projects
   const { data, isLoading, isError, error } = useQuery(
-    ["projects", page, pageSize],
+    ["projects", page, pageSize, filterModel],
     getProjects,
     {
       retry: 0,
+      refetchOnWindowFocus: false,
     }
   );
+
+  const onFilterChange = async (model) => {
+    setFilterModel(model);
+    await queryClient.invalidateQueries([
+      "projects",
+      page,
+      pageSize,
+      filterModel,
+    ]);
+  };
 
   if (isLoading) {
     return `loading....`;
@@ -130,6 +144,8 @@ const ProjectsData = () => {
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
             paginationMode="server"
+            filterModel={filterModel}
+            onFilterModelChange={(model) => onFilterChange(model)}
             rowCount={pageInfo.totalItems}
             pagination
             onPageChange={async (newPage) => {

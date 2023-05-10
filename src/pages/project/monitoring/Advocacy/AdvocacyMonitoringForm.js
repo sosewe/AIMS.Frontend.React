@@ -40,6 +40,7 @@ import AdvocacyMonitoringMilestoneYear from "./AdvocacyMonitoringMilestoneYear";
 import AdvocacyMonitoringMilestoneQuarter from "./AdvocacyMonitoringMilestoneQuarter";
 import { newAdvocacyMilestoneProgress } from "../../../../api/advocacy-milestone-progress";
 import { newAdvocacyProgress } from "../../../../api/advocacy-progress";
+import { useParams } from "react-router-dom";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -61,6 +62,7 @@ const initialValues = {
 };
 
 const AdvocacyMonitoringForm = () => {
+  let { id } = useParams();
   const [openMilestoneProgressModal, setOpenMilestoneProgressModal] =
     useState(false);
   const [advocacyMilestone, setAdvocacyMilestone] = useState();
@@ -159,6 +161,7 @@ const AdvocacyMonitoringForm = () => {
 
   useEffect(() => {
     function setCurrentFormValues() {
+      setAdvocacyId(id);
       if (
         !isLoadingAdvocacyData &&
         !isErrorAdvocacyData &&
@@ -190,7 +193,7 @@ const AdvocacyMonitoringForm = () => {
           thematicArea = QualitativeThematicAreaData.data[0].thematicAreaId;
         }
         formik.setValues({
-          name: advocacy,
+          name: AdvocacyData.data,
           staffNameId: staff ? staff : "",
           countryId: countries && countries.length > 0 ? countries : [],
           thematicAreaId: thematicArea ? thematicArea : "",
@@ -218,6 +221,7 @@ const AdvocacyMonitoringForm = () => {
     QualitativeThematicAreaData,
     isErrorQualitativeCountry,
     isLoadingQualitativeCountry,
+    id,
   ]);
 
   const updateMilestoneProgress = (event, row) => {

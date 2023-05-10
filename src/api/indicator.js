@@ -2,9 +2,10 @@ import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
 export const getAllIndicators = async ({ queryKey }) => {
-  const [, page, pageSize] = queryKey;
-  return await axios.get(
-    `${apiRoutes.indicator}?PageNumber=${page}&PageSize=${pageSize}`
+  const [, page, pageSize, filterModel] = queryKey;
+  return await axios.post(
+    `${apiRoutes.indicator}/GetIndicators?PageNumber=${page}&PageSize=${pageSize}`,
+    filterModel.items
   );
 };
 

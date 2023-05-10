@@ -8,6 +8,7 @@ import {
   CircularProgress,
   Divider as MuiDivider,
   Grid,
+  TextField as MuiTextField,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
@@ -34,6 +35,7 @@ const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
+const TextField = styled(MuiTextField)(spacing);
 
 interface Fields {
   name: string;
@@ -439,14 +441,14 @@ const ResultIndicatorTargetsViewForm = ({
                   const allFields = field.map(
                     ({ label, name, disabled }, index) => (
                       <React.Fragment key={index}>
-                        <Grid item md={1} sx={{ border: 1 }}>
-                          <Typography
-                            variant="h6"
-                            gutterBottom
-                            display="inline"
-                          >
-                            {label}:&nbsp;{formik.values[name] || "N/A"}
-                          </Typography>
+                        <Grid item md={2}>
+                          <TextField
+                            label={label}
+                            value={formik.values[name] || "N/A"}
+                            variant="filled"
+                            color="success"
+                            focused
+                          />
                         </Grid>
                       </React.Fragment>
                     )
@@ -458,19 +460,8 @@ const ResultIndicatorTargetsViewForm = ({
                           resultChainIndicator={resultChainIndicator}
                         />
                       </Grid>
-                      <Grid item md={1}>
-                        {i}
-                      </Grid>
-                      <Grid item md={11}>
-                        <Grid
-                          container
-                          wrap="nowrap"
-                          sx={{ overflow: "auto" }}
-                          direction="row"
-                          justifyContent="center"
-                          alignItems="center"
-                          spacing={2}
-                        >
+                      <Grid item md={12}>
+                        <Grid container spacing={2}>
                           {allFields}
                         </Grid>
                       </Grid>
@@ -595,67 +586,6 @@ const ProjectIndicatorTargetsViewTable = () => {
         </Grid>
         <br />
         <Grid container spacing={2}>
-          <Grid item md={1}>
-            <Grid
-              container
-              wrap="nowrap"
-              sx={{ overflow: "auto" }}
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Grid item md={1}>
-                #
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item md={11}>
-            <Grid
-              container
-              wrap="nowrap"
-              sx={{ overflow: "auto" }}
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Grid item md={1}>
-                JAN
-              </Grid>
-              <Grid item md={1}>
-                FEB
-              </Grid>
-              <Grid item md={1}>
-                MAR
-              </Grid>
-              <Grid item md={1}>
-                APR
-              </Grid>
-              <Grid item md={1}>
-                MAY
-              </Grid>
-              <Grid item md={1}>
-                JUN
-              </Grid>
-              <Grid item md={1}>
-                JUL
-              </Grid>
-              <Grid item md={1}>
-                AUG
-              </Grid>
-              <Grid item md={1}>
-                SEP
-              </Grid>
-              <Grid item md={1}>
-                OCT
-              </Grid>
-              <Grid item md={1}>
-                NOV
-              </Grid>
-              <Grid item md={1}>
-                DEC
-              </Grid>
-            </Grid>
-          </Grid>
           <Grid item md={12}>
             {!isLoadingReportingFrequency &&
             !isLoadingResultChainIndicators &&
