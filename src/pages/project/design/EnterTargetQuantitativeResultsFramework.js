@@ -551,6 +551,7 @@ const GetProjectOutcomes = ({
                         outcomeId={outcome.id}
                         processLevelItemId={processLevelItemId}
                         processLevelTypeId={processLevelTypeId}
+                        outcome={outcome}
                       />
                     </Grid>
                   </CardContent>

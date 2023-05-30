@@ -13,19 +13,15 @@ const ResultIndicatorReportingFrequency = ({ reportingFrequencyId }) => {
 };
 
 const ResultIndicatorHeader = ({ resultChainIndicator }) => {
-  const { data, isLoading, isError } = useQuery(
-    ["lookupItem", resultChainIndicator.indicatorMeasureId],
-    lookupItem,
-    { enabled: !!resultChainIndicator.indicatorMeasureId }
-  );
+  // const { data, isLoading, isError } = useQuery(
+  //   ["lookupItem", resultChainIndicator.indicatorMeasureId],
+  //   lookupItem,
+  //   { enabled: !!resultChainIndicator.indicatorMeasureId }
+  // );
   return (
     <Grid container direction="row" justifyContent="left" alignItems="center">
       <Grid item md={12}>
         <Typography variant="h6" gutterBottom display="inline">
-          {!isLoading && !isError && data.data.name === "Number(#)"
-            ? "#"
-            : "Percentage(%)"}
-          &nbsp;
           {resultChainIndicator.indicator.name}
           &nbsp;Baseline Value: &nbsp;
           {resultChainIndicator ? resultChainIndicator.baseline : ""}

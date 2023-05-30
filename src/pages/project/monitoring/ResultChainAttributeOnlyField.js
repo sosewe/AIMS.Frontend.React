@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 
-import { Grid, TextField as MuiTextField } from "@mui/material";
+import { Grid, TextField as MuiTextField, Typography } from "@mui/material";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useQuery } from "@tanstack/react-query";
 import { getAttributeTypeById } from "../../../api/attribute-type";
 import { getAchievedResultsByResultChainIndicatorIdAndAttributeId } from "../../../api/achieved-result";
+import { getAttributeResponseOptionById } from "../../../api/attribute-response-option";
 
 const TextField = styled(MuiTextField)(spacing);
 
@@ -24,6 +25,15 @@ const AttributeField = ({
     ["getAttributeTypeById", resultChainAttribute.attributeId],
     getAttributeTypeById,
     { enabled: !!resultChainAttribute.attributeId }
+  );
+  const {
+    data: AttributeResponseOptionData,
+    isLoading: isLoadingAttributeResponseOption,
+    isError: isErrorAttributeResponseOption,
+  } = useQuery(
+    ["getAttributeResponseOptionById", resultChainAttribute.attributeOptionsId],
+    getAttributeResponseOptionById,
+    { enabled: !!resultChainAttribute.attributeOptionsId }
   );
   const {
     data: AchievedResult,
@@ -64,12 +74,17 @@ const AttributeField = ({
     isErrorAchievedResult,
     resultChainAttribute.id,
   ]);
-
   return (
     <Grid container spacing={6} justifyContent="left" direction="row">
       <Grid item md={4}>
-        {!isLoadingAttribute && !isErrorAttribute
-          ? AttributeData.data.name
+        <Typography variant="h5" gutterBottom display="inline">
+          {!isLoadingAttribute && !isErrorAttribute
+            ? AttributeData.data.name
+            : ""}
+        </Typography>
+        &nbsp;
+        {!isLoadingAttributeResponseOption && !isErrorAttributeResponseOption
+          ? AttributeResponseOptionData.data.responseOption
           : ""}
       </Grid>
       <Grid item md={4}>
@@ -77,6 +92,8 @@ const AttributeField = ({
           id={resultChainAttribute.id}
           variant="outlined"
           {...register(resultChainAttribute.id)}
+          type="number"
+          sx={{ marginBottom: 5 }}
         />
       </Grid>
     </Grid>

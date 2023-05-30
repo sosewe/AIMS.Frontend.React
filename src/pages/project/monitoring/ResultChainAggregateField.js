@@ -1,10 +1,28 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Grid, Typography } from "@mui/material";
-import { getAttributeTypeById } from "../../../api/attribute-type";
-import ResultChainAggregateLabels from "./ResultChainAggregateLabels";
 import ResultChainAggregateAttributeField from "./ResultChainAggregateAttributeField";
 import { getAttributeResponseOptionById } from "../../../api/attribute-response-option";
+import { getAttributeTypeById } from "../../../api/attribute-type";
+
+const AttributeName = ({ attributeId }) => {
+  const {
+    data: AttributeData,
+    isLoading: isLoadingAttribute,
+    isError: isErrorAttribute,
+  } = useQuery(["getAttributeTypeById", attributeId], getAttributeTypeById, {
+    enabled: !!attributeId,
+  });
+  return (
+    <React.Fragment>
+      <Typography variant="h5" gutterBottom display="inline">
+        {!isLoadingAttribute && !isErrorAttribute
+          ? AttributeData.data.name
+          : ""}
+      </Typography>
+    </React.Fragment>
+  );
+};
 
 const AttributeOptionLabel = ({ attributeOptionId }) => {
   const {
@@ -34,40 +52,15 @@ const ResultChainAggregateField = ({
   year,
   monthId,
 }) => {
-  const attribute = resultChainAttributes[0];
-  const {
-    data: AttributeData,
-    isLoading: isLoadingAttribute,
-    isError: isErrorAttribute,
-  } = useQuery(
-    ["getAttributeTypeById", attribute.attributeId],
-    getAttributeTypeById,
-    { enabled: !!attribute.attributeId }
-  );
   return (
     <React.Fragment>
-      <Grid container spacing={2} justifyContent="left">
-        <Grid item md={12}>
-          <Typography variant="h5" gutterBottom display="inline">
-            {!isLoadingAttribute && !isErrorAttribute
-              ? AttributeData.data.name
-              : ""}
-          </Typography>
-        </Grid>
-        {/*{resultChainAggregates.map((resultChainAggregate) => {*/}
-        {/*  return (*/}
-        {/*    <React.Fragment key={Math.random().toString(36)}>*/}
-        {/*      <ResultChainAggregateLabels*/}
-        {/*        resultChainAggregate={resultChainAggregate}*/}
-        {/*      />*/}
-        {/*    </React.Fragment>*/}
-        {/*  );*/}
-        {/*})}*/}
-      </Grid>
       <Grid container spacing={2} justifyContent="center">
         {resultChainAttributes.map((resultChainAttribute) => {
           return (
             <React.Fragment key={Math.random().toString(36)}>
+              <Grid item md={12}>
+                <AttributeName attributeId={resultChainAttribute.attributeId} />
+              </Grid>
               <Grid item md={12}>
                 <AttributeOptionLabel
                   attributeOptionId={resultChainAttribute.attributeOptionsId}

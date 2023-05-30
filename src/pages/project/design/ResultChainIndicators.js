@@ -12,15 +12,19 @@ import {
   Divider,
   Grid,
   Link,
+  Stack,
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import React, { useState } from "react";
 import { Delete as DeleteIcon } from "@mui/icons-material";
+import { Edit as EditIcon } from "@mui/icons-material";
 import { purple, grey } from "@mui/material/colors";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import DisaggregatesModal from "./DisaggregatesModal";
+import AddIndicatorModal from "./AddIndicatorModal";
+import AttributesModal from "./AttributesModal";
 
 const theme = createTheme({
   palette: {
@@ -39,13 +43,16 @@ const ResultChainIndicators = ({
   outcomeId,
   processLevelItemId,
   processLevelTypeId,
+  outcome,
 }) => {
   const [openDisaggregatesModal, setOpenDisaggregatesModal] = useState(false);
+  const [openAttributesModal, setOpenAttributesModal] = useState(false);
   const [openDeleteResultChainModal, setDeleteResultChainModal] =
     useState(false);
   const [resultChainIndicatorId, setResultChainIndicatorId] = useState();
   const [indicatorAggregates, setIndicatorAggregates] = useState([]);
   const [indicatorAttributeTypes, setIndicatorAttributeTypes] = useState([]);
+  const [openIndicatorModal, setOpenIndicatorModal] = useState(false);
   const queryClient = useQueryClient();
   const {
     data: resultChainData,
@@ -81,6 +88,8 @@ const ResultChainIndicators = ({
     ]);
   };
 
+  const handleClickIndicatorModal = () => {};
+
   return (
     <>
       {resultChainData.data.map((resultChain) => (
@@ -92,7 +101,7 @@ const ResultChainIndicators = ({
                 : ""}
             </Typography>
           </Grid>
-          <Grid item md={4}>
+          <Grid item md={2}>
             <Link
               component="button"
               variant="h6"
@@ -102,26 +111,50 @@ const ResultChainIndicators = ({
                 setIndicatorAggregates(
                   resultChain.indicator.indicatorAggregates
                 );
+              }}
+            >
+              Disaggregates
+            </Link>
+          </Grid>
+          <Grid item md={2}>
+            <Link
+              component="button"
+              variant="h6"
+              onClick={() => {
+                setOpenAttributesModal(true);
+                setResultChainIndicatorId(resultChain.id);
                 setIndicatorAttributeTypes(
                   resultChain.indicator.indicatorAttributeTypes
                 );
               }}
             >
-              Disaggregates/Attributes
+              Attributes
             </Link>
           </Grid>
           <Grid item md={2}>
             <ThemeProvider theme={theme}>
-              <Button
-                variant="contained"
-                color="secondaryGray"
-                onClick={() => {
-                  setDeleteResultChainModal(true);
-                  setResultChainIndicatorId(resultChain.id);
-                }}
-              >
-                <DeleteIcon />
-              </Button>
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="contained"
+                  color="secondaryGray"
+                  onClick={() => {
+                    setOpenIndicatorModal(true);
+                    setResultChainIndicatorId(resultChain.id);
+                  }}
+                >
+                  <EditIcon />
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondaryGray"
+                  onClick={() => {
+                    setDeleteResultChainModal(true);
+                    setResultChainIndicatorId(resultChain.id);
+                  }}
+                >
+                  <DeleteIcon />
+                </Button>
+              </Stack>
             </ThemeProvider>
           </Grid>
         </Grid>
@@ -133,7 +166,7 @@ const ResultChainIndicators = ({
         onClose={() => setOpenDisaggregatesModal(false)}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle>Disaggregates/Attributes</DialogTitle>
+        <DialogTitle>Disaggregates</DialogTitle>
         <Divider />
         <DialogContent>
           <DisaggregatesModal
@@ -142,6 +175,24 @@ const ResultChainIndicators = ({
             processLevelItemId={processLevelItemId}
             processLevelTypeId={processLevelTypeId}
             handleClick={handleClick}
+            indicatorAttributeTypes={indicatorAttributeTypes}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAttributesModal}
+        onClose={() => setOpenAttributesModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle>Attributes</DialogTitle>
+        <Divider />
+        <DialogContent>
+          <AttributesModal
+            resultChainIndicatorId={resultChainIndicatorId}
+            processLevelItemId={processLevelItemId}
+            processLevelTypeId={processLevelTypeId}
             indicatorAttributeTypes={indicatorAttributeTypes}
           />
         </DialogContent>
@@ -171,6 +222,31 @@ const ResultChainIndicators = ({
             autoFocus
           >
             No
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openIndicatorModal}
+        onClose={() => setOpenIndicatorModal(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <AddIndicatorModal
+            processLevelItemId={processLevelItemId}
+            handleClick={handleClickIndicatorModal}
+            outcome={outcome}
+            resultChainIndicatorId={resultChainIndicatorId}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenIndicatorModal(false)}
+            color="primary"
+          >
+            Close
           </Button>
         </DialogActions>
       </Dialog>

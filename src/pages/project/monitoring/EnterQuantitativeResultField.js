@@ -1,7 +1,5 @@
 import React from "react";
 import { Grid } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
-import { lookupItem } from "../../../api/lookup";
 import ResultChainAggregateField from "./ResultChainAggregateField";
 import ResultChainIndicatorField from "./ResultChainIndicatorField";
 import ResultChainAggregateOnlyField from "./ResultChainAggregateOnlyField";
@@ -14,23 +12,6 @@ const EnterQuantitativeResultField = ({
   year,
   monthId,
 }) => {
-  let measureType;
-  const {
-    data: measureTypeData,
-    isLoading: isLoadingMeasureType,
-    isError: isErrorMeasureType,
-  } = useQuery(
-    ["lookupItem", resultChainIndicator.indicatorMeasureId],
-    lookupItem,
-    { enabled: !!resultChainIndicator.indicatorMeasureId }
-  );
-  if (!isLoadingMeasureType && !isErrorMeasureType) {
-    if (measureTypeData.data.name === "Number(#)") {
-      measureType = "#";
-    } else if (measureTypeData.data.name === "Percentage(%)") {
-      measureType = "%";
-    }
-  }
   return (
     <Grid
       container
@@ -40,7 +21,7 @@ const EnterQuantitativeResultField = ({
       spacing={6}
     >
       <Grid item md={12}>
-        {measureType}&nbsp;{resultChainIndicator.indicator.name}
+        {resultChainIndicator.indicator.name}
       </Grid>
       <Grid item md={12}>
         <Grid container spacing={6}>
