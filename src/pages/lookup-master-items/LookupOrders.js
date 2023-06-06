@@ -103,7 +103,7 @@ const LookupMasterItemsData = () => {
                 flex: 1,
               },*/
               {
-                field: "getMaxOptionOrderById",
+                field: "order",
                 headerName: "Order",
                 editable: false,
                 flex: 1,
@@ -186,7 +186,7 @@ const LookupOrders = () => {
         <Link component={NavLink} to="/lookup/lookupMasterItems">
           Lookup Master Items
         </Link>
-        <Typography>ORDERED Lookup Master Item List</Typography>
+        <Typography>Lookup Master Item List-ordered</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />

@@ -3,9 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { getLookupMasters } from "../../api/lookup-master";
 import { useLookupItems } from "../../api/lookup";
 import {
-  Box,
   Button as MuiButton,
-  Chip,
   FormControl as MuiFormControl,
   Grid,
   InputLabel,
@@ -56,6 +54,7 @@ const ManageLookupOrder = ({ handleClick }) => {
           createDate: new Date(),
           lookupMasterId: values.selectedLookupMaster,
           lookupItemId: lookupItem.id,
+          order: lookupItem.order,
         };
         await mutation.mutateAsync(newLookupMasterItem);
       }
@@ -73,7 +72,7 @@ const ManageLookupOrder = ({ handleClick }) => {
   return (
     <form onSubmit={formik.handleSubmit}>
       <Grid container spacing={6}>
-        <Grid item md={6}>
+        <Grid item md={3}>
           <TextField
             name="selectedLookupMaster"
             label="Select Lookup Master"
@@ -107,15 +106,13 @@ const ManageLookupOrder = ({ handleClick }) => {
               : []}
           </TextField>
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={3}>
           <FormControl fullWidth my={2} variant="outlined">
-            <InputLabel id="selectedLookupItem">
-              Select Lookup Item(Select Multiple)
-            </InputLabel>
+            <InputLabel id="selectedLookupItem">Select Lookup Item</InputLabel>
             <Select
               labelId="selectedLookupItem"
               id="selectedLookupItem"
-              multiple
+              select
               value={formik.values.selectedLookupItem}
               onChange={(e) => {
                 formik.handleChange(e);
@@ -124,16 +121,16 @@ const ManageLookupOrder = ({ handleClick }) => {
               input={
                 <OutlinedInput id="select-multiple-chip" label="Lookup Item" />
               }
-              renderValue={(selected) => (
+              /*renderValue={(selected) => (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((value) => (
                     <Chip key={value.id} label={value.name} />
                   ))}
                 </Box>
-              )}
+              )}*/
             >
               <MenuItem disabled value="">
-                Select Lookup Item(Select Multiple)
+                Select Lookup Item
               </MenuItem>
               {!isLoadingLookupItems && !isErrorLookupItems
                 ? lookupItemsData.data.map((option) => (
@@ -143,20 +140,22 @@ const ManageLookupOrder = ({ handleClick }) => {
                   ))
                 : []}
             </Select>
-            <TextField
-              name="order"
-              label="order"
-              required
-              value={formik.values.name}
-              /* error={Boolean(formik.touched.name && formik.errors.name)}*/
-              fullWidth
-              /*helperText={formik.touched.name && formik.errors.name}*/
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            />
           </FormControl>
+        </Grid>
+        <Grid item md={3}>
+          <TextField
+            name="order"
+            label="Order"
+            required
+            value={formik.values.number}
+            /* error={Boolean(formik.touched.name && formik.errors.name)}*/
+            fullWidth
+            /*helperText={formik.touched.name && formik.errors.name}*/
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          />
         </Grid>
         <Grid item md={6}>
           <Button type="submit" variant="contained" color="primary" mt={3}>
