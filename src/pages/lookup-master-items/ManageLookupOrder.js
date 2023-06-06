@@ -25,7 +25,8 @@ const Button = styled(MuiButton)(spacing);
 
 const initialValues = {
   selectedLookupMaster: "",
-  selectedLookupItem: [],
+  selectedLookupItem: "",
+  order: "",
 };
 
 const ManageLookupOrder = ({ handleClick }) => {
@@ -44,20 +45,18 @@ const ManageLookupOrder = ({ handleClick }) => {
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
       selectedLookupMaster: Yup.string().required("Required"),
-      selectedLookupItem: Yup.array().required("Required"),
+      selectedLookupItem: Yup.string().required("Required"),
+      order: Yup.number(),
     }),
     onSubmit: async (values) => {
-      const lookupItems = values.selectedLookupItem;
-      for (const lookupItem of lookupItems) {
-        const newLookupMasterItem = {
-          id: new Guid().toString(),
-          createDate: new Date(),
-          lookupMasterId: values.selectedLookupMaster,
-          lookupItemId: lookupItem.id,
-          order: lookupItem.order,
-        };
-        await mutation.mutateAsync(newLookupMasterItem);
-      }
+      const newLookupMasterItem = {
+        id: new Guid().toString(),
+        createDate: new Date(),
+        lookupMasterId: values.selectedLookupMaster,
+        lookupItemId: values.selectedLookupItem,
+        order: values.order,
+      };
+      await mutation.mutateAsync(newLookupMasterItem);
       handleClick();
     },
   });
@@ -107,50 +106,49 @@ const ManageLookupOrder = ({ handleClick }) => {
           </TextField>
         </Grid>
         <Grid item md={3}>
-          <FormControl fullWidth my={2} variant="outlined">
-            <InputLabel id="selectedLookupItem">Select Lookup Item</InputLabel>
-            <Select
-              labelId="selectedLookupItem"
-              id="selectedLookupItem"
-              select
-              value={formik.values.selectedLookupItem}
-              onChange={(e) => {
-                formik.handleChange(e);
-                handleAttributeTypeChange(e);
-              }}
-              input={
-                <OutlinedInput id="select-multiple-chip" label="Lookup Item" />
-              }
-              /*renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value.id} label={value.name} />
-                  ))}
-                </Box>
-              )}*/
-            >
-              <MenuItem disabled value="">
-                Select Lookup Item
-              </MenuItem>
-              {!isLoadingLookupItems && !isErrorLookupItems
-                ? lookupItemsData.data.map((option) => (
-                    <MenuItem key={option.id} value={option}>
-                      {option.name}
-                    </MenuItem>
-                  ))
-                : []}
-            </Select>
-          </FormControl>
+          <TextField
+            name="selectedLookupItem"
+            label="selectedLookupItem"
+            select
+            required
+            value={formik.values.selectedLookupItem}
+            error={Boolean(
+              formik.touched.selectedLookupItem &&
+                formik.errors.selectedLookupItem
+            )}
+            fullWidth
+            helperText={
+              formik.touched.selectedLookupItem &&
+              formik.errors.selectedLookupItem
+            }
+            onBlur={formik.handleBlur}
+            onChange={(e) => {
+              formik.handleChange(e);
+            }}
+            variant="outlined"
+            my={2}
+          >
+            <MenuItem disabled value="">
+              Select Lookup Item
+            </MenuItem>
+            {!isLoadingLookupItems && !isErrorLookupItems
+              ? lookupItemsData.data.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
         </Grid>
         <Grid item md={3}>
           <TextField
             name="order"
             label="Order"
             required
-            value={formik.values.number}
-            /* error={Boolean(formik.touched.name && formik.errors.name)}*/
+            value={formik.values.order}
+            error={Boolean(formik.touched.order && formik.errors.order)}
             fullWidth
-            /*helperText={formik.touched.name && formik.errors.name}*/
+            helperText={formik.touched.order && formik.errors.order}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"

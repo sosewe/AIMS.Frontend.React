@@ -22,8 +22,9 @@ import { getLookupMasters } from "../../api/lookup-master";
 import ManageLookupOrder from "./ManageLookupOrder";
 import { Eye } from "react-feather";
 import { getLookupOptionsById } from "../../api/lookup-option";
-import { getMaxOptionOrderById } from "../../api/lookup-master";
 import { toast } from "react-toastify";
+import { getOrganizationUnitById } from "../../api/organization-unit";
+import { getMaxOptionOrderById } from "../../api/lookup-master-item";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -48,13 +49,6 @@ const LookupMasterItemsData = () => {
   } = useQuery(["getLookupOptionsById", lookupMasterId], getLookupOptionsById, {
     enabled: !!lookupMasterId,
   });
-  const {} = useQuery(
-    ["getMaxOptionOrderById", lookupMasterId],
-    getMaxOptionOrderById,
-    {
-      enabled: !!lookupMasterId,
-    }
-  );
   const handleClose = () => {
     setOpen(false);
   };
@@ -71,6 +65,38 @@ const LookupMasterItemsData = () => {
       type: "success",
     });
   };
+  function GetMaxOptionOrder(params) {
+    const maxOptionOrderId = params.row.id;
+    const result = useQuery(
+      ["getMaxOptionOrderById", maxOptionOrderId],
+      getMaxOptionOrderById
+    );
+    const {
+      data: lookupOptions,
+      isLoading: isLoadingLookupOption,
+      isError: isErrorLookupOptions,
+    } = useQuery(
+      ["getLookupOptionsById", maxOptionOrderId],
+      getLookupOptionsById,
+      {
+        enabled: !!maxOptionOrderId,
+      }
+    );
+    if (result && result.data) {
+      if (
+        !isLoadingLookupOption &&
+        !isErrorLookupOptions &&
+        result.data.data > 0
+      ) {
+        const order = result.data.data;
+        const val = lookupOptions.data.find((obj) => obj.order === order);
+        if (val) {
+          return val.lookupItemName;
+        }
+        return "";
+      }
+    }
+  }
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -107,6 +133,7 @@ const LookupMasterItemsData = () => {
                 headerName: "Order",
                 editable: false,
                 flex: 1,
+                valueGetter: GetMaxOptionOrder,
               },
               {
                 field: "action",
