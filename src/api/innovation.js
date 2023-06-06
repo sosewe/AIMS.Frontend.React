@@ -14,6 +14,13 @@ export const getInnovationById = async ({ queryKey }) => {
   return await axios.get(`${apiRoutes.innovation}/${id}`);
 };
 
+export const getInnovationByProcessLevelItemId = async ({ queryKey }) => {
+  const [, processLevelItemId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.innovation}/ProcessLevelItem/${processLevelItemId}`
+  );
+};
+
 export const deleteInnovationById = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.delete(`${apiRoutes.innovation}/${id}`);

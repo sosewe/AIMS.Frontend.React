@@ -14,10 +14,6 @@ import {
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
@@ -29,6 +25,10 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { green, purple } from "@mui/material/colors";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import InnovationDataGrid from "./InnovationDataGrid";
+import AdvocacyDataGrid from "./AdvocacyDataGrid";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -53,10 +53,47 @@ const initialValues = {
   location: "",
 };
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      style={{ width: "100%" }}
+      role="tabpanel"
+      hidden={value !== index}
+      id={`vertical-tabpanel-${index}`}
+      aria-labelledby={`vertical-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography component={"span"} variant={"body2"}>
+            {children}
+          </Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `vertical-tab-${index}`,
+    "aria-controls": `vertical-tabpanel-${index}`,
+  };
+}
+
 const ProjectMonitoringAccordion = ({
   processLevelItemId,
   processLevelTypeId,
 }) => {
+  const [value, setValue] = React.useState(0);
   const navigate = useNavigate();
   const {
     data: projectGeographicalFocus,
@@ -101,188 +138,142 @@ const ProjectMonitoringAccordion = ({
     },
   });
 
-  return (
-    <Card mb={12}>
-      <CardContent pb={1}>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel2a-content"
-            id="panel2a-header"
-          >
-            <Typography>Update Against Results Framework</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <form onSubmit={formik.handleSubmit}>
-              <Card mb={12}>
-                <CardContent>
-                  {formik.isSubmitting ? (
-                    <Box display="flex" justifyContent="center" my={6}>
-                      <CircularProgress />
-                    </Box>
-                  ) : (
-                    <>
-                      <Grid container spacing={6}>
-                        <Grid item md={12}>
-                          <Accordion>
-                            <AccordionSummary
-                              expandIcon={<ExpandMoreIcon />}
-                              aria-controls="panel1a-content"
-                              id="panel1a-header"
-                            >
-                              <Typography>Quantitative Results</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                              <Grid container spacing={6}>
-                                <Grid item md={4}>
-                                  <TextField
-                                    name="implementationYear"
-                                    label="Implementation Year"
-                                    select
-                                    required
-                                    value={formik.values.implementationYear}
-                                    error={Boolean(
-                                      formik.touched.implementationYear &&
-                                        formik.errors.implementationYear
-                                    )}
-                                    fullWidth
-                                    helperText={
-                                      formik.touched.implementationYear &&
-                                      formik.errors.implementationYear
-                                    }
-                                    onBlur={formik.handleBlur}
-                                    onChange={formik.handleChange}
-                                    variant="outlined"
-                                    my={2}
-                                  >
-                                    <MenuItem disabled value="">
-                                      Select Implementation Year
-                                    </MenuItem>
-                                    {!isLoading && !isError
-                                      ? implementationYears.data.map(
-                                          (option) => (
-                                            <MenuItem
-                                              key={option.lookupItemId}
-                                              value={option.lookupItemId}
-                                            >
-                                              {option.lookupItemName}
-                                            </MenuItem>
-                                          )
-                                        )
-                                      : []}
-                                  </TextField>
-                                </Grid>
-                                <Grid item md={4}>
-                                  <TextField
-                                    name="location"
-                                    label="Location"
-                                    select
-                                    required
-                                    value={formik.values.location}
-                                    error={Boolean(
-                                      formik.touched.location &&
-                                        formik.errors.location
-                                    )}
-                                    fullWidth
-                                    helperText={
-                                      formik.touched.location &&
-                                      formik.errors.location
-                                    }
-                                    onBlur={formik.handleBlur}
-                                    onChange={formik.handleChange}
-                                    variant="outlined"
-                                    my={2}
-                                  >
-                                    <MenuItem disabled value="">
-                                      Select Location
-                                    </MenuItem>
-                                    {!isLoadingGeoFocus && !isErrorGeoFocus
-                                      ? projectGeographicalFocus.data.map(
-                                          (option) => (
-                                            <MenuItem
-                                              key={option.id}
-                                              value={option.id}
-                                            >
-                                              {option.administrativeUnitName}
-                                            </MenuItem>
-                                          )
-                                        )
-                                      : []}
-                                  </TextField>
-                                </Grid>
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
-                                <Grid item md={4}>
-                                  <ThemeProvider theme={theme}>
-                                    <Button
-                                      type="submit"
-                                      variant="contained"
-                                      color="secondaryGray"
-                                      mt={2}
-                                    >
-                                      Continue
-                                    </Button>
-                                  </ThemeProvider>
-                                </Grid>
-                              </Grid>
-                            </AccordionDetails>
-                          </Accordion>
-                          <Accordion>
-                            <AccordionSummary
-                              expandIcon={<ExpandMoreIcon />}
-                              aria-controls="panel1a-content"
-                              id="panel1a-header"
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        bgcolor: "background.paper",
+        display: "flex",
+      }}
+    >
+      <Tabs
+        orientation="vertical"
+        variant="scrollable"
+        value={value}
+        onChange={handleChange}
+        aria-label="Vertical tabs example"
+        sx={{ borderRight: 1, borderColor: "divider" }}
+      >
+        <Tab label="Quantitative Monitoring" {...a11yProps(0)} />
+        <Tab label="Innovation" {...a11yProps(1)} />
+        <Tab label="Advocacy" {...a11yProps(2)} />
+      </Tabs>
+      <TabPanel value={value} index={0}>
+        <Typography variant="h3" gutterBottom display="inline">
+          Quantitative Monitoring
+        </Typography>
+        <form onSubmit={formik.handleSubmit}>
+          <Card mb={12}>
+            <CardContent>
+              {formik.isSubmitting ? (
+                <Box display="flex" justifyContent="center" my={6}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <Grid container spacing={6}>
+                  <Grid item md={4}>
+                    <TextField
+                      name="implementationYear"
+                      label="Implementation Year"
+                      select
+                      required
+                      value={formik.values.implementationYear}
+                      error={Boolean(
+                        formik.touched.implementationYear &&
+                          formik.errors.implementationYear
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.implementationYear &&
+                        formik.errors.implementationYear
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={formik.handleChange}
+                      variant="outlined"
+                      my={2}
+                    >
+                      <MenuItem disabled value="">
+                        Select Implementation Year
+                      </MenuItem>
+                      {!isLoading && !isError
+                        ? implementationYears.data.map((option) => (
+                            <MenuItem
+                              key={option.lookupItemId}
+                              value={option.lookupItemId}
                             >
-                              <Typography>Qualitative Results</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                              <Grid
-                                container
-                                spacing={6}
-                                direction="column"
-                                alignItems="center"
-                                justifyContent="center"
-                              >
-                                <Grid item md={12}>
-                                  <NavLink
-                                    to={`/project/monitoring/innovation-monitoring`}
-                                  >
-                                    <Typography
-                                      variant="h3"
-                                      gutterBottom
-                                      display="inline"
-                                    >
-                                      Innovation
-                                    </Typography>
-                                  </NavLink>
-                                </Grid>
-                                <Divider />
-                                <Grid item md={12}>
-                                  <NavLink
-                                    to={`/project/monitoring/advocacy-monitoring`}
-                                  >
-                                    <Typography
-                                      variant="h3"
-                                      gutterBottom
-                                      display="inline"
-                                    >
-                                      Advocacy
-                                    </Typography>
-                                  </NavLink>
-                                </Grid>
-                              </Grid>
-                            </AccordionDetails>
-                          </Accordion>
-                        </Grid>
-                      </Grid>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </form>
-          </AccordionDetails>
-        </Accordion>
-      </CardContent>
-    </Card>
+                              {option.lookupItemName}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+                  <Grid item md={4}>
+                    <TextField
+                      name="location"
+                      label="Location"
+                      select
+                      required
+                      value={formik.values.location}
+                      error={Boolean(
+                        formik.touched.location && formik.errors.location
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.location && formik.errors.location
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={formik.handleChange}
+                      variant="outlined"
+                      my={2}
+                    >
+                      <MenuItem disabled value="">
+                        Select Location
+                      </MenuItem>
+                      {!isLoadingGeoFocus && !isErrorGeoFocus
+                        ? projectGeographicalFocus.data.map((option) => (
+                            <MenuItem key={option.id} value={option.id}>
+                              {option.administrativeUnitName}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+
+                  <Grid item md={4}>
+                    <ThemeProvider theme={theme}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="secondaryGray"
+                        mt={2}
+                      >
+                        Continue
+                      </Button>
+                    </ThemeProvider>
+                  </Grid>
+                </Grid>
+              )}
+            </CardContent>
+          </Card>
+        </form>
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <InnovationDataGrid
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+        />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        <AdvocacyDataGrid
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+        />
+      </TabPanel>
+    </Box>
   );
 };
 

@@ -16,10 +16,10 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import {
-  getResultChainAttributeByIndicatorId,
-  saveResultChainAttributes,
-} from "../../../api/result-chain-attribute";
+// import {
+//   getResultChainAttributeByIndicatorId,
+//   saveResultChainAttributes,
+// } from "../../../api/result-chain-attribute";
 
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const TextField = styled(MuiTextField)(spacing);
@@ -30,7 +30,6 @@ const DisaggregatesModal = ({
   processLevelItemId,
   processLevelTypeId,
   handleClick,
-  indicatorAttributeTypes,
 }) => {
   const {
     data: ResultChains,
@@ -41,41 +40,19 @@ const DisaggregatesModal = ({
     getResultChainAggregateByResultChainIndicatorId,
     { enabled: !!resultChainIndicatorId }
   );
-  const {
-    data: ResultChainAttribute,
-    isLoading: isLoadingResultChainAttribute,
-    isError: isErrorResultChainAttribute,
-  } = useQuery(
-    ["getResultChainAttributeByIndicatorId", resultChainIndicatorId],
-    getResultChainAttributeByIndicatorId,
-    { enabled: !!resultChainIndicatorId }
-  );
-  const attributesCount = indicatorAttributeTypes.length;
+
   const aggregatesCount = indicatorAggregates.length;
   const mutation = useMutation({ mutationFn: saveResultChainAggregate });
-  const mutationResultChainAttribute = useMutation({
-    mutationFn: saveResultChainAttributes,
-  });
   const formik = useFormik({
     initialValues: {
       sex: [],
       age: [],
-      attributeType: [],
-      attributeValues: [],
     },
     validationSchema: Yup.object().shape({
       sex: Yup.array().min(aggregatesCount > 0 ? 1 : 0, "Please select gender"),
       age: Yup.array().min(
         aggregatesCount > 0 ? 1 : 0,
         "Please select age groups"
-      ),
-      attributeType: Yup.array().min(
-        attributesCount > 0 ? 1 : 0,
-        "Please select attribute type"
-      ),
-      attributeValues: Yup.array().min(
-        attributesCount > 0 ? 1 : 0,
-        "Please select attribute values"
       ),
     }),
     onSubmit: async (values) => {
@@ -89,15 +66,6 @@ const DisaggregatesModal = ({
           selectedResultChains: [],
           selectedResultChainAttributes: [],
         };
-        const resultChainAttributes = {
-          id: new Guid().toString(),
-          createDate: new Date(),
-          processLevelItemId: processLevelItemId,
-          processLevelTypeId: processLevelTypeId,
-          resultChainIndicatorId: resultChainIndicatorId,
-          selectedResultChains: [],
-          selectedResultChainAttributes: [],
-        };
         for (let i = 0; i < values.sex.length; i++) {
           for (let j = 0; j < values.age.length; j++) {
             resultChainAggregate.selectedResultChains.push({
@@ -108,16 +76,7 @@ const DisaggregatesModal = ({
             });
           }
         }
-        for (let a = 0; a < values.attributeType.length; a++) {
-          for (let b = 0; b < values.attributeValues.length; b++) {
-            resultChainAttributes.selectedResultChainAttributes.push({
-              attributeId: values.attributeType[a].attributeType.id,
-              attributeOptionsId: values.attributeValues[b].id,
-            });
-          }
-        }
         await mutation.mutateAsync(resultChainAggregate);
-        await mutationResultChainAttribute.mutateAsync(resultChainAttributes);
         toast("Successfully Created Disaggregates", {
           type: "success",
         });
@@ -134,24 +93,19 @@ const DisaggregatesModal = ({
   const secondaries = indicatorAggregates.filter(
     (obj) => obj.isPrimary === false
   );
-  const attributeTypes =
-    indicatorAttributeTypes.length > 0 ? [indicatorAttributeTypes[0]] : [];
-  const attributeResponseOptions =
-    attributeTypes.length > 0
-      ? attributeTypes[0].attributeType.attributeResponseOptions
-      : [];
   useEffect(() => {
     function setCurrentFormValues() {
       if (
         !isLoadingResultChains &&
-        !isErrorResultChains &&
-        !isLoadingResultChainAttribute &&
-        !isErrorResultChainAttribute
+        !isErrorResultChains
+        // &&
+        // !isLoadingResultChainAttribute &&
+        // !isErrorResultChainAttribute
       ) {
         let ageVal = [];
         let sexVal;
-        let attributeType;
-        let attributeValues = [];
+        // let attributeType;
+        // let attributeValues = [];
         if (ResultChains.data.length > 0) {
           sexVal = primaries.find(
             (obj) =>
@@ -169,23 +123,23 @@ const DisaggregatesModal = ({
             }
           }
         }
-        if (ResultChainAttribute.data.length > 0) {
-          attributeType = attributeTypes.find(
-            (obj) =>
-              obj.attributeTypeId === ResultChainAttribute.data[0].attributeId
-          );
-        }
-        for (const resultChainAttributeValue of ResultChainAttribute.data) {
-          const res = attributeResponseOptions.find(
-            (obj) => obj.id === resultChainAttributeValue.attributeOptionsId
-          );
-          attributeValues.push(res);
-        }
+        // if (ResultChainAttribute.data.length > 0) {
+        //   attributeType = attributeTypes.find(
+        //     (obj) =>
+        //       obj.attributeTypeId === ResultChainAttribute.data[0].attributeId
+        //   );
+        // }
+        // for (const resultChainAttributeValue of ResultChainAttribute.data) {
+        //   const res = attributeResponseOptions.find(
+        //     (obj) => obj.id === resultChainAttributeValue.attributeOptionsId
+        //   );
+        //   attributeValues.push(res);
+        // }
         formik.setValues({
           sex: sexVal ? [sexVal] : [],
           age: ageVal,
-          attributeType: attributeType ? [attributeType] : [],
-          attributeValues: attributeValues,
+          // attributeType: attributeType ? [attributeType] : [],
+          // attributeValues: attributeValues,
         });
       }
     }
@@ -194,9 +148,9 @@ const DisaggregatesModal = ({
     ResultChains,
     isLoadingResultChains,
     isErrorResultChains,
-    ResultChainAttribute,
-    isLoadingResultChainAttribute,
-    isErrorResultChainAttribute,
+    // ResultChainAttribute,
+    // isLoadingResultChainAttribute,
+    // isErrorResultChainAttribute,
   ]);
   return (
     <>
@@ -260,80 +214,6 @@ const DisaggregatesModal = ({
                   helperText={formik.touched.age && formik.errors.age}
                   label="Age"
                   name="age"
-                  variant="outlined"
-                  my={2}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item md={6}>
-            <Autocomplete
-              id="attributeType"
-              multiple
-              options={attributeTypes}
-              getOptionLabel={(attrType) => `${attrType?.attributeType?.name}`}
-              renderOption={(props, option) => {
-                return (
-                  <li {...props} key={option.id}>
-                    {option?.attributeType?.name}
-                  </li>
-                );
-              }}
-              onChange={(_, val) => formik.setFieldValue("attributeType", val)}
-              value={formik.values.attributeType}
-              disabled={attributesCount > 0 ? false : true}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={Boolean(
-                    formik.touched.attributeType && formik.errors.attributeType
-                  )}
-                  fullWidth
-                  helperText={
-                    formik.touched.attributeType && formik.errors.attributeType
-                  }
-                  label="AttributeType"
-                  name="attributeType"
-                  variant="outlined"
-                  my={2}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item md={6}>
-            <Autocomplete
-              id="attributeValues"
-              multiple
-              options={attributeResponseOptions}
-              getOptionLabel={(indicatorAttributeType) =>
-                `${indicatorAttributeType?.responseOption}`
-              }
-              renderOption={(props, option) => {
-                return (
-                  <li {...props} key={option.id}>
-                    {option?.responseOption}
-                  </li>
-                );
-              }}
-              onChange={(_, val) =>
-                formik.setFieldValue("attributeValues", val)
-              }
-              value={formik.values.attributeValues}
-              disabled={attributesCount > 0 ? false : true}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={Boolean(
-                    formik.touched.attributeValues &&
-                      formik.errors.attributeValues
-                  )}
-                  fullWidth
-                  helperText={
-                    formik.touched.attributeValues &&
-                    formik.errors.attributeValues
-                  }
-                  label="Attribute Values"
-                  name="attributeValues"
                   variant="outlined"
                   my={2}
                 />

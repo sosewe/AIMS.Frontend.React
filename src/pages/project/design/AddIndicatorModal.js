@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -23,7 +23,10 @@ import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { getProjectIndicators } from "../../../api/project";
 import { getLookupMasterItemsByName } from "../../../api/lookup";
-import { saveResultChainIndicator } from "../../../api/result-chain-indicator";
+import {
+  getResultChainIndicatorById,
+  saveResultChainIndicator,
+} from "../../../api/result-chain-indicator";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -43,8 +46,14 @@ const initialValuesIndicator = {
   indicatorCumulative: false,
 };
 
-const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
+const AddIndicatorModal = ({
+  processLevelItemId,
+  outcome,
+  handleClick,
+  resultChainIndicatorId,
+}) => {
   const queryClient = useQueryClient();
+  const [isMeasureDisabled, setIsMeasureDisabled] = useState(false);
   const { data, isLoading, isError } = useQuery(
     ["getProjectIndicators", processLevelItemId],
     getProjectIndicators
@@ -71,7 +80,17 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
       refetchOnWindowFocus: false,
     }
   );
-
+  const {
+    data: resultChainIndicatorData,
+    isLoading: isLoadingResultChainIndicator,
+    isError: isErrorResultChainIndicator,
+  } = useQuery(
+    ["getResultChainIndicatorById", resultChainIndicatorId],
+    getResultChainIndicatorById,
+    {
+      enabled: !!resultChainIndicatorId,
+    }
+  );
   const mutation = useMutation({ mutationFn: saveResultChainIndicator });
   const formik = useFormik({
     initialValues: initialValuesIndicator,
@@ -90,7 +109,9 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
     onSubmit: async (values) => {
       try {
         const resultChainIndicator = {
-          id: new Guid().toString(),
+          id: resultChainIndicatorId
+            ? resultChainIndicatorId
+            : new Guid().toString(),
           indicatorId: values.indicatorId,
           createDate: new Date(),
           resultChainId: outcome.id,
@@ -118,7 +139,6 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
       }
     },
   });
-
   const onIndicatorChange = (e) => {
     const indicatorId = e.target.value;
     const indicatorVal = data.data.find((obj) => obj.id === indicatorId);
@@ -135,12 +155,40 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
           "indicatorTypeOfMeasure",
           selectedMeasure.lookupItemId
         );
+        setIsMeasureDisabled(true);
       } else {
         formik.setFieldValue("indicatorTypeOfMeasure", "");
+        setIsMeasureDisabled(false);
       }
     }
   };
-
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (!isLoadingResultChainIndicator && !isErrorResultChainIndicator) {
+        formik.setValues({
+          indicatorId: resultChainIndicatorData.data.indicatorId,
+          indicatorOrderOfAppearance: resultChainIndicatorData.data.order,
+          indicatorTypeOfMeasure:
+            resultChainIndicatorData.data.indicatorMeasureId,
+          indicatorTargetGroup: resultChainIndicatorData.data.targetGroup,
+          indicatorSourceOfInformation: resultChainIndicatorData.data.source,
+          indicatorReportingFrequency:
+            resultChainIndicatorData.data.reportingFrequencyId,
+          indicatorBaselineValue: resultChainIndicatorData.data.baseline,
+          indicatorOverallTarget: resultChainIndicatorData.data.overallTarget,
+          indicatorDisaggregated: resultChainIndicatorData.data.disaggregated,
+          indicatorCumulative:
+            resultChainIndicatorData.data.indicatorCumulativeId,
+        });
+        setIsMeasureDisabled(true);
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    resultChainIndicatorData,
+    isLoadingResultChainIndicator,
+    isErrorResultChainIndicator,
+  ]);
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card mb={6}>
@@ -240,6 +288,7 @@ const AddIndicatorModal = ({ processLevelItemId, outcome, handleClick }) => {
                     onChange={formik.handleChange}
                     variant="outlined"
                     my={2}
+                    disabled={isMeasureDisabled}
                   >
                     <MenuItem disabled value="">
                       Select Type Of Measure

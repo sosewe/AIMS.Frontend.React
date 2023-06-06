@@ -14,6 +14,13 @@ export const getAdvocacyById = async ({ queryKey }) => {
   return await axios.get(`${apiRoutes.advocacy}/${id}`);
 };
 
+export const getAdvocatesByProcessLevelItemId = async ({ queryKey }) => {
+  const [, processLevelItemId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.advocacy}/ProcessLevelItem/${processLevelItemId}`
+  );
+};
+
 export const deleteAdvocacyById = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.delete(`${apiRoutes.advocacy}/${id}`);

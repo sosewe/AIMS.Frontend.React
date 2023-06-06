@@ -23,3 +23,8 @@ export const getResultChainIndicatorByProjectId = async ({ queryKey }) => {
     `${apiRoutes.resultChainIndicator}/GetResultChainIndicatorByProjectId/${projectId}`
   );
 };
+
+export const getResultChainIndicatorById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.resultChainIndicator}/${id}`);
+};

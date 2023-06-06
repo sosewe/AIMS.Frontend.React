@@ -2,9 +2,10 @@ import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
 export const getProjects = async ({ queryKey }) => {
-  const [, page, pageSize] = queryKey;
-  return await axios.get(
-    `${apiRoutes.project}?PageNumber=${page}&PageSize=${pageSize}`
+  const [, page, pageSize, filterModel] = queryKey;
+  return await axios.post(
+    `${apiRoutes.project}/GetProjects?PageNumber=${page}&PageSize=${pageSize}`,
+    filterModel.items
   );
 };
 

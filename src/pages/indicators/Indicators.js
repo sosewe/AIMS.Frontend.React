@@ -33,6 +33,9 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const IndicatorsData = () => {
+  const [filterModel, setFilterModel] = useState({
+    items: [],
+  });
   const [open, setOpen] = React.useState(false);
   const [id, setId] = React.useState();
   const [page, setPage] = React.useState(1);
@@ -40,16 +43,15 @@ const IndicatorsData = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // fetch All Indicators
-  const { data, isLoading, isError, error, pageInfo } = useQuery(
-    ["getAllIndicators", page, pageSize],
+  const { data, isLoading, isError, error } = useQuery(
+    ["getAllIndicators", page, pageSize, filterModel],
     getAllIndicators,
     {
       retry: 0,
+      refetchOnWindowFocus: false,
     }
   );
-  const [rowCountState, setRowCountState] = React.useState(
-    pageInfo?.totalRowCount || 0
-  );
+
   if (isError) {
     toast(error.response.data, {
       type: "error",
@@ -77,6 +79,22 @@ const IndicatorsData = () => {
     await queryClient.invalidateQueries(["getAllIndicators"]);
   };
 
+  const onFilterChange = async (model) => {
+    setFilterModel(model);
+    await queryClient.invalidateQueries([
+      "getAllIndicators",
+      page,
+      pageSize,
+      filterModel,
+    ]);
+  };
+
+  if (isLoading) {
+    return `loading....`;
+  }
+
+  const { pageInfo } = data.data;
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -94,7 +112,7 @@ const IndicatorsData = () => {
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
             rowsPerPageOptions={[5, 10, 25]}
-            rows={isLoading || isError ? [] : data ? data.data : []}
+            rows={isLoading || isError ? [] : data ? data.data.data : []}
             columns={[
               {
                 field: "name",
@@ -136,15 +154,19 @@ const IndicatorsData = () => {
                 ),
               },
             ]}
-            pageSize={pageSize}
+            pageSize={pageInfo.pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
             paginationMode="server"
-            rowCount={rowCountState}
+            filterModel={filterModel}
+            onFilterModelChange={(model) => onFilterChange(model)}
+            rowCount={pageInfo.totalItems}
             pagination
-            page={page}
-            onPageChange={(newPage) => setPage(newPage)}
+            onPageChange={async (newPage) => {
+              setPage(newPage + 1);
+              await queryClient.invalidateQueries(["getAllIndicators"]);
+            }}
           />
         </div>
         <Dialog
