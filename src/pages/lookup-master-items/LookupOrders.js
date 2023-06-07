@@ -13,17 +13,18 @@ import {
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { getLookupMasters } from "../../api/lookup-master";
-import ManageLookup from "./ManageLookup";
+import ManageLookupOrder from "./ManageLookupOrder";
 import { Eye } from "react-feather";
 import { getLookupOptionsById } from "../../api/lookup-option";
 import { toast } from "react-toastify";
-import { Add as AddIcon } from "@mui/icons-material";
+import { getOrganizationUnitById } from "../../api/organization-unit";
+import { getMaxOptionOrderById } from "../../api/lookup-master-item";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -64,6 +65,38 @@ const LookupMasterItemsData = () => {
       type: "success",
     });
   };
+  function GetMaxOptionOrder(params) {
+    const maxOptionOrderId = params.row.id;
+    const result = useQuery(
+      ["getMaxOptionOrderById", maxOptionOrderId],
+      getMaxOptionOrderById
+    );
+    const {
+      data: lookupOptions,
+      isLoading: isLoadingLookupOption,
+      isError: isErrorLookupOptions,
+    } = useQuery(
+      ["getLookupOptionsById", maxOptionOrderId],
+      getLookupOptionsById,
+      {
+        enabled: !!maxOptionOrderId,
+      }
+    );
+    if (result && result.data) {
+      if (
+        !isLoadingLookupOption &&
+        !isErrorLookupOptions &&
+        result.data.data > 0
+      ) {
+        const order = result.data.data;
+        const val = lookupOptions.data.find((obj) => obj.order === order);
+        if (val) {
+          return val.lookupItemName;
+        }
+        return "";
+      }
+    }
+  }
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -89,11 +122,18 @@ const LookupMasterItemsData = () => {
                 editable: false,
                 flex: 1,
               },
-              {
+              /* {
                 field: "alias",
                 headerName: "Alias",
                 editable: false,
                 flex: 1,
+              },*/
+              {
+                field: "order",
+                headerName: "Order",
+                editable: false,
+                flex: 1,
+                valueGetter: GetMaxOptionOrder,
               },
               {
                 field: "action",
@@ -129,7 +169,7 @@ const LookupMasterItemsData = () => {
           <DialogTitle id="alert-dialog-title">Manage Lookups</DialogTitle>
           <Divider />
           <DialogContent>
-            <ManageLookup handleClick={handleClick} />
+            <ManageLookupOrder handleClick={handleClick} />
           </DialogContent>
         </Dialog>
         <Dialog
@@ -161,7 +201,7 @@ const LookupMasterItemsData = () => {
     </Card>
   );
 };
-const LookupMasterItems = () => {
+const LookupOrders = () => {
   return (
     <React.Fragment>
       <Helmet title="Lookup Master Items" />
@@ -173,7 +213,7 @@ const LookupMasterItems = () => {
         <Link component={NavLink} to="/lookup/lookupMasterItems">
           Lookup Master Items
         </Link>
-        <Typography>Lookup Master Item List</Typography>
+        <Typography>Lookup Master Item List-ordered</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -181,4 +221,4 @@ const LookupMasterItems = () => {
     </React.Fragment>
   );
 };
-export default LookupMasterItems;
+export default LookupOrders;

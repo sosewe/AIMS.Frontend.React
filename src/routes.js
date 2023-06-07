@@ -37,6 +37,9 @@ const NewLookupMaster = async(() =>
 const LookupMasterItems = async(() =>
   import("./pages/lookup-master-items/LookupMasterItems")
 );
+const LookupOrders = async(() =>
+  import("./pages/lookup-master-items/LookupOrders")
+);
 
 // Project
 const Projects = async(() => import("./pages/project/design/Projects"));
@@ -303,6 +306,10 @@ const routes = [
       {
         path: "lookupMasters",
         element: <LookupMasters />,
+      },
+      {
+        path: "lookupOrders",
+        element: <LookupOrders />,
       },
       {
         path: "new-lookup-master",

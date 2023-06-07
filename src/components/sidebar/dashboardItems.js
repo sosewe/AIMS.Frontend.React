@@ -69,6 +69,10 @@ const configurationSection = [
         title: "Lookup Master Items",
       },
       {
+        href: "/lookup/lookupOrders",
+        title: "Lookup Master Items-Ordered",
+      },
+      {
         href: "/lookup/lookupMasters",
         title: "Lookup Master",
       },
