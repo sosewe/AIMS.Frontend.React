@@ -50,5 +50,26 @@ export const getAMREFPersonnelById = async ({ queryKey }) => {
 };
 
 export const getAdministrativeRoles = async () => {
-  return await axios.get(apiRoutes.administrativeRoles);
+  const tok = await getDQABearerToken();
+
+  return await axios.get(apiRoutes.administrativeRoles, {
+    headers: { Authorization: `Bearer ${tok}` },
+  });
+};
+export const getDQABearerToken = async () => {
+  const credential = {
+    UserName: "aims@amref.org",
+
+    password: "@1M5@2021", //DqaUserConfig.UserName ,
+
+    //UserName: DqaUserConfig.UserName.values,
+
+    //password: DqaUserConfig.password.values,
+  };
+
+  const response = await axios.post(apiRoutes.GenerateBearerToken, credential);
+
+  const { Token } = response.data; // Replace 'specificKey' with the desired key from the JSON response
+
+  return Token;
 };
