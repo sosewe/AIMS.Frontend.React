@@ -63,6 +63,7 @@ export const apiRoutes = {
   primaryResultChainAttribute: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/PrimaryResultChainAttribute`,
   secondaryResultChainAttribute: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/SecondaryResultChainAttribute`,
   // external
-  ERPStaffList: `https://stagingapi.amref.org/api/erpStaffList?unit=HQ`,
-  administrativeRoles: `https://stagingapi.amref.org/api/workflowStepApproverRoles_View`,
+  ERPStaffList: `https://monitoringapi.amref.org/api/erpStaffList?unit=HQ`,
+  administrativeRoles: `https://monitoringapi.amref.org/api/workflowStepApproverRoles_View`,
+  GenerateBearerToken: `https://monitoringapi.amref.org/api/userCheckAccess`,
 };
