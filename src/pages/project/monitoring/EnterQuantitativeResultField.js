@@ -34,7 +34,7 @@ const EnterQuantitativeResultField = ({
                     resultChainIndicator["resultChainAggregates"]
                   }
                   resultChainAttributes={
-                    resultChainIndicator["resultChainAttributes"]
+                    resultChainIndicator["resultChainAttributes"][0]
                   }
                   register={register}
                   setValue={setValue}

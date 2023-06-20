@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getAttributeResponseOptionById } from "../../../api/attribute-response-option";
+import { getDisaggregate } from "../../../api/disaggregate";
+import { getProjectResultsByAggregateIdAndAttributeId } from "../../../api/achieved-result";
 import styled from "@emotion/styled";
 import { TextField as MuiTextField } from "@mui/material";
 import { spacing } from "@mui/system";
-import { useQuery } from "@tanstack/react-query";
-import { getProjectResultsByAggregateIdAndAttributeId } from "../../../api/achieved-result";
-import { getAttributeResponseOptionById } from "../../../api/attribute-response-option";
-import { getDisaggregate } from "../../../api/disaggregate";
 
 const TextField = styled(MuiTextField)(spacing);
 
-const ResultChainAggregateAttributeField = ({
+const ResultChainAggregatePrimaryAttributeOnlyField = ({
   resultChainAttribute,
   resultChainAggregate,
   register,
@@ -17,7 +17,6 @@ const ResultChainAggregateAttributeField = ({
   year,
   monthId,
   primaryResultChainAttribute,
-  secondaryResultChainAttribute,
 }) => {
   const {
     data: attributeOptionData,
@@ -30,18 +29,6 @@ const ResultChainAggregateAttributeField = ({
     ],
     getAttributeResponseOptionById,
     { enabled: !!primaryResultChainAttribute.attributeOptionsId }
-  );
-  const {
-    data: secondaryAttributeOptionData,
-    isLoading: isLoadingSecondaryAttributeOption,
-    isError: isErrorSecondaryAttributeOption,
-  } = useQuery(
-    [
-      "getAttributeResponseOptionById",
-      secondaryResultChainAttribute.attributeOptionsId,
-    ],
-    getAttributeResponseOptionById,
-    { enabled: !!secondaryResultChainAttribute.attributeOptionsId }
   );
   const {
     data: DisaggregateData,
@@ -91,8 +78,7 @@ const ResultChainAggregateAttributeField = ({
           (obj) =>
             obj.primaryResultChainAttributeId ===
               primaryResultChainAttribute.id &&
-            obj.secondaryResultChainAttributeId ===
-              secondaryResultChainAttribute.id
+            obj.secondaryResultChainAttributeId === null
         );
         if (val) {
           setValue(
@@ -100,9 +86,7 @@ const ResultChainAggregateAttributeField = ({
               "/" +
               resultChainAttribute.id +
               "/" +
-              primaryResultChainAttribute.id +
-              "/" +
-              secondaryResultChainAttribute.id,
+              primaryResultChainAttribute.id,
             val.achievedValue
           );
         }
@@ -112,9 +96,7 @@ const ResultChainAggregateAttributeField = ({
             "/" +
             resultChainAttribute.id +
             "/" +
-            primaryResultChainAttribute.id +
-            "/" +
-            secondaryResultChainAttribute.id,
+            primaryResultChainAttribute.id,
           ""
         );
       }
@@ -135,15 +117,11 @@ const ResultChainAggregateAttributeField = ({
           "/" +
           resultChainAttribute.id +
           "/" +
-          primaryResultChainAttribute.id +
-          "/" +
-          secondaryResultChainAttribute.id
+          primaryResultChainAttribute.id
         }
         label={
           !isLoadingAttributeOption &&
-          !isLoadingSecondaryAttributeOption &&
           !isErrorAttributeOption &&
-          !isErrorSecondaryAttributeOption &&
           !isLoadingDisaggregate &&
           !isErrorDisaggregate &&
           !isLoadingDisaggregate2 &&
@@ -152,9 +130,7 @@ const ResultChainAggregateAttributeField = ({
               " " +
               DisaggregateData2.data.name +
               " " +
-              attributeOptionData.data.responseOption +
-              " " +
-              secondaryAttributeOptionData.data.responseOption
+              attributeOptionData.data.responseOption
             : ""
         }
         variant="outlined"
@@ -165,12 +141,10 @@ const ResultChainAggregateAttributeField = ({
             "/" +
             resultChainAttribute.id +
             "/" +
-            primaryResultChainAttribute.id +
-            "/" +
-            secondaryResultChainAttribute.id
+            primaryResultChainAttribute.id
         )}
       />
     </React.Fragment>
   );
 };
-export default ResultChainAggregateAttributeField;
+export default ResultChainAggregatePrimaryAttributeOnlyField;

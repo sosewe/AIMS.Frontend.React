@@ -14,6 +14,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Guid } from "../../../utils/guid";
 import { toast } from "react-toastify";
+import { Plus } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getResultChainAttributeByIndicatorId,
@@ -22,6 +23,11 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { getAttributeTypeById } from "../../../api/attribute-type";
 import { getAttributeResponseOptionById } from "../../../api/attribute-response-option";
+import {
+  newPrimaryResultChainAttribute,
+  newSinglePrimaryResultChainAttribute,
+} from "../../../api/primary-result-chain-attribute";
+import { newSecondaryResultChainAttribute } from "../../../api/secondary-result-chain-attribute";
 
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const TextField = styled(MuiTextField)(spacing);
@@ -38,7 +44,12 @@ const AttributesModal = ({
 }) => {
   const queryClient = useQueryClient();
   const [attributeResponseOptions, setAttributeResponseOptions] = useState([]);
+  const [
+    secondaryAttributeResponseOptions,
+    setSecondaryAttributeResponseOptions,
+  ] = useState([]);
   const [pageSize, setPageSize] = useState(5);
+  const [hasSecondary, setHasSecondary] = useState(false);
   const {
     data: ResultChainAttribute,
     isLoading: isLoadingResultChainAttribute,
@@ -51,17 +62,36 @@ const AttributesModal = ({
   const mutationResultChainAttribute = useMutation({
     mutationFn: saveResultChainAttributes,
   });
+  const mutationPrimaryResultChainAttribute = useMutation({
+    mutationFn: newPrimaryResultChainAttribute,
+  });
+  const mutationSecondaryResultChainAttribute = useMutation({
+    mutationFn: newSecondaryResultChainAttribute,
+  });
+  const mutationSingleResultChainAttribute = useMutation({
+    mutationFn: newSinglePrimaryResultChainAttribute,
+  });
   const attributeTypes = indicatorAttributeTypes;
   const formik = useFormik({
     initialValues: {
       attributeType: "",
       attributeValues: [],
+      secondaryAttributeType: "",
+      secondaryAttributeValues: [],
     },
     validationSchema: Yup.object().shape({
       attributeType: Yup.object().required("Required"),
       attributeValues: Yup.array().min(
         attributeResponseOptions > 0 ? 1 : 0,
         "Please select attribute values"
+      ),
+      secondaryAttributeType: Yup.object().when("attributeType", {
+        is: () => hasSecondary,
+        then: Yup.object().required("Secondary Attribute Type Is Required"),
+      }),
+      secondaryAttributeValues: Yup.array().min(
+        secondaryAttributeResponseOptions > 0 ? 1 : 0,
+        "Please select secondary attribute values"
       ),
     }),
     onSubmit: async (values, { resetForm }) => {
@@ -73,15 +103,55 @@ const AttributesModal = ({
           processLevelTypeId: processLevelTypeId,
           resultChainIndicatorId: resultChainIndicatorId,
           selectedResultChains: [],
-          selectedResultChainAttributes: [],
         };
-        for (let b = 0; b < values.attributeValues.length; b++) {
-          resultChainAttributes.selectedResultChainAttributes.push({
-            attributeId: values.attributeValues[b].attributeTypeId,
-            attributeOptionsId: values.attributeValues[b].id,
-          });
+        const primaryResultChainAttributes = [];
+        const secondaryResultChainAttributes = [];
+        const res = await mutationResultChainAttribute.mutateAsync(
+          resultChainAttributes
+        );
+        const resultChainAttributeId = res.data.id;
+        if (hasSecondary) {
+          for (const attributeValue of values.attributeValues) {
+            const primaryResultChainAttribute = {
+              createDate: new Date(),
+              resultChainAttributeId: resultChainAttributeId,
+              attributeTypeId: attributeValue.attributeTypeId,
+              attributeOptionsId: attributeValue.id,
+            };
+            const primaryResultChainAttributeResult =
+              await mutationSingleResultChainAttribute.mutateAsync(
+                primaryResultChainAttribute
+              );
+            for (const secondaryAttributeValue of values.secondaryAttributeValues) {
+              const secondaryResultChainAttribute = {
+                createDate: new Date(),
+                primaryResultChainAttributeId:
+                  primaryResultChainAttributeResult.data.id,
+                attributeTypeId: secondaryAttributeValue.attributeTypeId,
+                attributeOptionsId: secondaryAttributeValue.id,
+              };
+              secondaryResultChainAttributes.push(
+                secondaryResultChainAttribute
+              );
+            }
+          }
+        } else {
+          for (const attributeValue of values.attributeValues) {
+            const primaryResultChainAttribute = {
+              createDate: new Date(),
+              resultChainAttributeId: resultChainAttributeId,
+              attributeTypeId: attributeValue.attributeTypeId,
+              attributeOptionsId: attributeValue.id,
+            };
+            primaryResultChainAttributes.push(primaryResultChainAttribute);
+          }
+          await mutationPrimaryResultChainAttribute.mutateAsync(
+            primaryResultChainAttributes
+          );
         }
-        await mutationResultChainAttribute.mutateAsync(resultChainAttributes);
+        await mutationSecondaryResultChainAttribute.mutateAsync(
+          secondaryResultChainAttributes
+        );
         toast("Successfully Created Attributes", {
           type: "success",
         });
@@ -98,11 +168,18 @@ const AttributesModal = ({
     },
   });
 
-  function GetAttributeName(params) {
+  const handleAddSecondary = () => {
+    setHasSecondary(true);
+  };
+
+  function GetPrimaryAttribute(params) {
     const attributeId = params.value;
     const result = useQuery(
       ["getAttributeTypeById", attributeId],
-      getAttributeTypeById
+      getAttributeTypeById,
+      {
+        enabled: !!attributeId,
+      }
     );
     if (result && result.data) {
       return result.data.data.name;
@@ -120,6 +197,27 @@ const AttributesModal = ({
     }
   }
 
+  function SecondaryAttributeOption({ attributeOptionsId }) {
+    const { data } = useQuery(
+      ["getAttributeResponseOptionById", attributeOptionsId],
+      getAttributeResponseOptionById
+    );
+    return data ? data.data.responseOption : "";
+  }
+
+  function GetSecondaryAttributeOptionsNames(params) {
+    const secondaries = params.value;
+    let stringVal = "";
+
+    for (const secondary of secondaries) {
+      const responseOption = SecondaryAttributeOption({
+        attributeOptionsId: secondary.attributeOptionsId,
+      });
+      stringVal += responseOption;
+    }
+
+    return stringVal;
+  }
   return (
     <React.Fragment>
       <form onSubmit={formik.handleSubmit}>
@@ -167,7 +265,7 @@ const AttributesModal = ({
               )}
             />
           </Grid>
-          <Grid item md={6}>
+          <Grid item md={5}>
             <Autocomplete
               id="attributeValues"
               multiple
@@ -207,6 +305,105 @@ const AttributesModal = ({
               )}
             />
           </Grid>
+          <Grid item md={1}>
+            <Button
+              startIcon={<Plus />}
+              size="small"
+              mt={3}
+              onClick={() => handleAddSecondary()}
+            ></Button>
+          </Grid>
+          {hasSecondary && (
+            <React.Fragment>
+              <Grid item md={6}>
+                <Autocomplete
+                  id="secondaryAttributeType"
+                  autoHighlight
+                  options={attributeTypes}
+                  getOptionLabel={(attrType) => {
+                    return attrType ? `${attrType?.attributeType?.name}` : "";
+                  }}
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option.id}>
+                        {option?.attributeType?.name}
+                      </li>
+                    );
+                  }}
+                  onChange={(_, val) => {
+                    if (val) {
+                      formik.setFieldValue("secondaryAttributeType", val);
+                      formik.setFieldValue("secondaryAttributeValues", []);
+                      setSecondaryAttributeResponseOptions(
+                        val.attributeType.attributeResponseOptions
+                      );
+                    }
+                  }}
+                  value={formik.values.secondaryAttributeType}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      error={Boolean(
+                        formik.touched.secondaryAttributeType &&
+                          formik.errors.secondaryAttributeType
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.secondaryAttributeType &&
+                        formik.errors.secondaryAttributeType
+                      }
+                      label="Secondary Attribute Type"
+                      name="secondaryAttributeType"
+                      variant="outlined"
+                      my={2}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item md={5}>
+                <Autocomplete
+                  id="secondaryAttributeValues"
+                  multiple
+                  options={secondaryAttributeResponseOptions}
+                  getOptionLabel={(indicatorAttributeType) =>
+                    `${indicatorAttributeType?.responseOption}`
+                  }
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option.id}>
+                        {option?.responseOption}
+                      </li>
+                    );
+                  }}
+                  onChange={(_, val) =>
+                    formik.setFieldValue("secondaryAttributeValues", val)
+                  }
+                  value={formik.values.secondaryAttributeValues}
+                  disabled={
+                    secondaryAttributeResponseOptions.length > 0 ? false : true
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      error={Boolean(
+                        formik.touched.secondaryAttributeValues &&
+                          formik.errors.secondaryAttributeValues
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.secondaryAttributeValues &&
+                        formik.errors.secondaryAttributeValues
+                      }
+                      label="Secondary Attribute Values"
+                      name="secondaryAttributeValues"
+                      variant="outlined"
+                      my={2}
+                    />
+                  )}
+                />
+              </Grid>
+            </React.Fragment>
+          )}
         </Grid>
         <Button type="submit" variant="contained" color="primary" mt={3}>
           Save changes
@@ -223,23 +420,33 @@ const AttributesModal = ({
                   isLoadingResultChainAttribute || isErrorResultChainAttribute
                     ? []
                     : ResultChainAttribute
-                    ? ResultChainAttribute.data
+                    ? ResultChainAttribute.data.length > 0
+                      ? ResultChainAttribute.data[0]
+                          .primaryResultChainAttributes
+                      : []
                     : []
                 }
                 columns={[
                   {
-                    field: "attributeId",
-                    headerName: "Attribute Type",
+                    field: "attributeTypeId",
+                    headerName: "Primary Attribute",
                     editable: false,
                     flex: 1,
-                    valueGetter: GetAttributeName,
+                    valueGetter: GetPrimaryAttribute,
                   },
                   {
                     field: "attributeOptionsId",
-                    headerName: "Attribute Response Option",
+                    headerName: "Primary Attribute Response Option",
                     editable: false,
                     flex: 1,
                     valueGetter: GetAttributeResponseOptionName,
+                  },
+                  {
+                    field: "secondaryResultChainAttributes",
+                    headerName: "Secondary Attribute",
+                    editable: false,
+                    flex: 1,
+                    valueGetter: GetSecondaryAttributeOptionsNames,
                   },
                 ]}
                 pageSize={pageSize}

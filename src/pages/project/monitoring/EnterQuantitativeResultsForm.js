@@ -45,43 +45,114 @@ const EnterQuantitativeResultsForm = ({
           resultChainIndicator.resultChainAggregates.length > 0 &&
           resultChainIndicator.resultChainAttributes.length > 0
         ) {
-          for (const resultChainIndicatorAggregateElement of resultChainIndicator.resultChainAggregates) {
-            for (const resultChainIndicatorAttributeElement of resultChainIndicator.resultChainAttributes) {
-              let projRes;
-              if (!isLoadingProjectResults && !isErrorProjectResults) {
-                projRes = projectResults.data.filter(
-                  (obj) =>
-                    obj.resultChainIndicatorId === resultChainIndicator.id &&
-                    obj.resultChainAttributeId ===
-                      resultChainIndicatorAttributeElement.id &&
-                    obj.resultChainAggregateId ===
-                      resultChainIndicatorAggregateElement.id
-                );
+          const resultChainAttribute =
+            resultChainIndicator.resultChainAttributes[0];
+          if (resultChainAttribute.primaryResultChainAttributes.length > 0) {
+            for (const primaryResultChainAttribute of resultChainAttribute.primaryResultChainAttributes) {
+              if (
+                primaryResultChainAttribute.secondaryResultChainAttributes
+                  .length > 0
+              ) {
+                for (const secondaryResultChainAttribute of primaryResultChainAttribute.secondaryResultChainAttributes) {
+                  for (const resultChainIndicatorAggregateElement of resultChainIndicator.resultChainAggregates) {
+                    let projRes;
+                    if (!isLoadingProjectResults && !isErrorProjectResults) {
+                      projRes = projectResults.data.filter(
+                        (obj) =>
+                          obj.resultChainIndicatorId ===
+                            resultChainIndicator.id &&
+                          obj.resultChainAttributeId ===
+                            resultChainAttribute.id &&
+                          obj.resultChainAggregateId ===
+                            resultChainIndicatorAggregateElement.id &&
+                          obj.primaryResultChainAttributeId ===
+                            primaryResultChainAttribute.id &&
+                          obj.secondaryResultChainAttributeId ===
+                            secondaryResultChainAttribute.id
+                      );
+                    }
+                    const achievedResult = {
+                      id:
+                        projRes && projRes.length > 0
+                          ? projRes[0].id
+                          : new Guid().toString(),
+                      processLevelItemId: processLevelItemId,
+                      processLevelTypeId: processLevelTypeId,
+                      createDate: new Date(),
+                      resultChainIndicatorId: resultChainIndicator.id,
+                      achievedValue: Number(
+                        data[
+                          resultChainIndicatorAggregateElement.id +
+                            "/" +
+                            resultChainAttribute.id +
+                            "/" +
+                            primaryResultChainAttribute.id +
+                            "/" +
+                            secondaryResultChainAttribute.id
+                        ]
+                      ),
+                      comments: "",
+                      monthsId: monthId,
+                      projectGeographicalFocusId: projectLocationId,
+                      resultChainAttributeId: resultChainAttribute.id,
+                      resultChainAggregateId:
+                        resultChainIndicatorAggregateElement.id,
+                      yearId: year,
+                      primaryResultChainAttributeId:
+                        primaryResultChainAttribute.id,
+                      secondaryResultChainAttributeId:
+                        secondaryResultChainAttribute.id,
+                    };
+                    InData.push(achievedResult);
+                  }
+                }
+              } else {
+                for (const resultChainIndicatorAggregateElement of resultChainIndicator.resultChainAggregates) {
+                  let projRes;
+                  if (!isLoadingProjectResults && !isErrorProjectResults) {
+                    projRes = projectResults.data.filter(
+                      (obj) =>
+                        obj.resultChainIndicatorId ===
+                          resultChainIndicator.id &&
+                        obj.resultChainAttributeId ===
+                          resultChainAttribute.id &&
+                        obj.resultChainAggregateId ===
+                          resultChainIndicatorAggregateElement.id &&
+                        obj.primaryResultChainAttributeId ===
+                          primaryResultChainAttribute.id
+                    );
+                  }
+                  const achievedResult = {
+                    id:
+                      projRes && projRes.length > 0
+                        ? projRes[0].id
+                        : new Guid().toString(),
+                    processLevelItemId: processLevelItemId,
+                    processLevelTypeId: processLevelTypeId,
+                    createDate: new Date(),
+                    resultChainIndicatorId: resultChainIndicator.id,
+                    achievedValue: Number(
+                      data[
+                        resultChainIndicatorAggregateElement.id +
+                          "/" +
+                          resultChainAttribute.id +
+                          "/" +
+                          primaryResultChainAttribute.id
+                      ]
+                    ),
+                    comments: "",
+                    monthsId: monthId,
+                    projectGeographicalFocusId: projectLocationId,
+                    resultChainAttributeId: resultChainAttribute.id,
+                    resultChainAggregateId:
+                      resultChainIndicatorAggregateElement.id,
+                    yearId: year,
+                    primaryResultChainAttributeId:
+                      primaryResultChainAttribute.id,
+                  };
+                  InData.push(achievedResult);
+                }
               }
-              const achievedResult = {
-                id:
-                  projRes && projRes.length > 0
-                    ? projRes[0].id
-                    : new Guid().toString(),
-                processLevelItemId: processLevelItemId,
-                processLevelTypeId: processLevelTypeId,
-                createDate: new Date(),
-                resultChainIndicatorId: resultChainIndicator.id,
-                achievedValue: Number(
-                  data[
-                    resultChainIndicatorAggregateElement.id +
-                      "/" +
-                      resultChainIndicatorAttributeElement.id
-                  ]
-                ),
-                comments: "",
-                monthsId: monthId,
-                projectGeographicalFocusId: projectLocationId,
-                resultChainAttributeId: resultChainIndicatorAttributeElement.id,
-                resultChainAggregateId: resultChainIndicatorAggregateElement.id,
-                yearId: year,
-              };
-              InData.push(achievedResult);
             }
           }
         } else if (
@@ -128,35 +199,105 @@ const EnterQuantitativeResultsForm = ({
           resultChainIndicator.resultChainAggregates.length === 0
         ) {
           for (const resultChainIndicatorAttributeElement of resultChainIndicator.resultChainAttributes) {
-            let projRes;
-            if (!isLoadingProjectResults && !isErrorProjectResults) {
-              projRes = projectResults.data.filter(
-                (obj) =>
-                  obj.resultChainIndicatorId === resultChainIndicator.id &&
-                  obj.resultChainAttributeId ===
-                    resultChainIndicatorAttributeElement.id &&
-                  obj.resultChainAggregateId === null
-              );
+            if (
+              resultChainIndicatorAttributeElement.primaryResultChainAttributes
+                .length > 0
+            ) {
+              for (const primaryResultChainAttribute of resultChainIndicatorAttributeElement.primaryResultChainAttributes) {
+                if (
+                  primaryResultChainAttribute.secondaryResultChainAttributes
+                    .length > 0
+                ) {
+                  for (const secondaryResultChainAttribute of primaryResultChainAttribute.secondaryResultChainAttributes) {
+                    let projRes;
+                    if (!isLoadingProjectResults && !isErrorProjectResults) {
+                      projRes = projectResults.data.filter(
+                        (obj) =>
+                          obj.resultChainIndicatorId ===
+                            resultChainIndicator.id &&
+                          obj.resultChainAttributeId ===
+                            resultChainIndicatorAttributeElement.id &&
+                          obj.resultChainAggregateId === null &&
+                          obj.primaryResultChainAttributeId ===
+                            primaryResultChainAttribute.id &&
+                          obj.secondaryResultChainAttributeId ===
+                            secondaryResultChainAttribute.id
+                      );
+                    }
+                    const achievedResult = {
+                      id:
+                        projRes && projRes.length > 0
+                          ? projRes[0].id
+                          : new Guid().toString(),
+                      processLevelItemId: processLevelItemId,
+                      processLevelTypeId: processLevelTypeId,
+                      createDate: new Date(),
+                      resultChainIndicatorId: resultChainIndicator.id,
+                      achievedValue: Number(
+                        data[
+                          resultChainIndicatorAttributeElement.id +
+                            "/" +
+                            primaryResultChainAttribute.id +
+                            "/" +
+                            secondaryResultChainAttribute.id
+                        ]
+                      ),
+                      comments: "",
+                      monthsId: monthId,
+                      projectGeographicalFocusId: projectLocationId,
+                      resultChainAttributeId:
+                        resultChainIndicatorAttributeElement.id,
+                      yearId: year,
+                      primaryResultChainAttributeId:
+                        primaryResultChainAttribute.id,
+                      secondaryResultChainAttributeId:
+                        secondaryResultChainAttribute.id,
+                    };
+                    InData.push(achievedResult);
+                  }
+                } else {
+                  let projRes;
+                  if (!isLoadingProjectResults && !isErrorProjectResults) {
+                    projRes = projectResults.data.filter(
+                      (obj) =>
+                        obj.resultChainIndicatorId ===
+                          resultChainIndicator.id &&
+                        obj.resultChainAttributeId ===
+                          resultChainIndicatorAttributeElement.id &&
+                        obj.resultChainAggregateId === null &&
+                        obj.primaryResultChainAttributeId ===
+                          primaryResultChainAttribute.id
+                    );
+                  }
+                  const achievedResult = {
+                    id:
+                      projRes && projRes.length > 0
+                        ? projRes[0].id
+                        : new Guid().toString(),
+                    processLevelItemId: processLevelItemId,
+                    processLevelTypeId: processLevelTypeId,
+                    createDate: new Date(),
+                    resultChainIndicatorId: resultChainIndicator.id,
+                    achievedValue: Number(
+                      data[
+                        resultChainIndicatorAttributeElement.id +
+                          "/" +
+                          primaryResultChainAttribute.id
+                      ]
+                    ),
+                    comments: "",
+                    monthsId: monthId,
+                    projectGeographicalFocusId: projectLocationId,
+                    resultChainAttributeId:
+                      resultChainIndicatorAttributeElement.id,
+                    yearId: year,
+                    primaryResultChainAttributeId:
+                      primaryResultChainAttribute.id,
+                  };
+                  InData.push(achievedResult);
+                }
+              }
             }
-            const achievedResult = {
-              id:
-                projRes && projRes.length > 0
-                  ? projRes[0].id
-                  : new Guid().toString(),
-              processLevelItemId: processLevelItemId,
-              processLevelTypeId: processLevelTypeId,
-              createDate: new Date(),
-              resultChainIndicatorId: resultChainIndicator.id,
-              achievedValue: Number(
-                data[resultChainIndicatorAttributeElement.id]
-              ),
-              comments: "",
-              monthsId: monthId,
-              projectGeographicalFocusId: projectLocationId,
-              resultChainAttributeId: resultChainIndicatorAttributeElement.id,
-              yearId: year,
-            };
-            InData.push(achievedResult);
           }
         } else if (
           resultChainIndicator.resultChainAttributes.length === 0 &&
