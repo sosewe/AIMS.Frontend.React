@@ -1,5 +1,8 @@
 import React from "react";
 import { Grid } from "@mui/material";
+import Table from "@mui/material/Table";
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
 import ResultChainAggregateField from "./ResultChainAggregateField";
 import ResultChainIndicatorField from "./ResultChainIndicatorField";
 import ResultChainAggregateOnlyField from "./ResultChainAggregateOnlyField";
@@ -29,18 +32,22 @@ const EnterQuantitativeResultField = ({
             {resultChainIndicator["resultChainAggregates"].length > 0 &&
             resultChainIndicator["resultChainAttributes"].length > 0 ? (
               <React.Fragment>
-                <ResultChainAggregateField
-                  resultChainAggregates={
-                    resultChainIndicator["resultChainAggregates"]
-                  }
-                  resultChainAttributes={
-                    resultChainIndicator["resultChainAttributes"][0]
-                  }
-                  register={register}
-                  setValue={setValue}
-                  year={year}
-                  monthId={monthId}
-                />
+                <TableContainer component={Paper}>
+                  <Table aria-label="simple table">
+                    <ResultChainAggregateField
+                      resultChainAggregates={
+                        resultChainIndicator["resultChainAggregates"]
+                      }
+                      resultChainAttributes={
+                        resultChainIndicator["resultChainAttributes"][0]
+                      }
+                      register={register}
+                      setValue={setValue}
+                      year={year}
+                      monthId={monthId}
+                    />
+                  </Table>
+                </TableContainer>
               </React.Fragment>
             ) : (
               <React.Fragment>
@@ -61,15 +68,19 @@ const EnterQuantitativeResultField = ({
                     {resultChainIndicator["resultChainAttributes"].length >
                     0 ? (
                       <React.Fragment>
-                        <ResultChainAttributeOnlyField
-                          resultChainAttributes={
-                            resultChainIndicator["resultChainAttributes"]
-                          }
-                          register={register}
-                          setValue={setValue}
-                          year={year}
-                          monthId={monthId}
-                        />
+                        <TableContainer component={Paper}>
+                          <Table aria-label="simple table">
+                            <ResultChainAttributeOnlyField
+                              resultChainAttributes={
+                                resultChainIndicator["resultChainAttributes"]
+                              }
+                              register={register}
+                              setValue={setValue}
+                              year={year}
+                              monthId={monthId}
+                            />
+                          </Table>
+                        </TableContainer>
                       </React.Fragment>
                     ) : (
                       <React.Fragment>

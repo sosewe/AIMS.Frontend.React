@@ -158,6 +158,7 @@ const ResultChainAggregateAttributeField = ({
             : ""
         }
         variant="outlined"
+        type="number"
         fullWidth
         my={2}
         {...register(
