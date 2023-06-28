@@ -11,3 +11,8 @@ export const getResultChainAttributeByIndicatorId = async ({ queryKey }) => {
     `${apiRoutes.resultChainAttribute}/GetResultChainAttributeByIndicatorId/${resultChainIndicatorId}`
   );
 };
+
+export const deleteResultChainById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.resultChainAttribute}/${id}`);
+};

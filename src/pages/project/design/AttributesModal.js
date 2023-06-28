@@ -5,6 +5,11 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   Paper as MuiPaper,
   TextField as MuiTextField,
@@ -14,9 +19,10 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Guid } from "../../../utils/guid";
 import { toast } from "react-toastify";
-import { Plus } from "react-feather";
+import { Edit2, Plus, Trash as TrashIcon } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  deleteResultChainById,
   getResultChainAttributeByIndicatorId,
   saveResultChainAttributes,
 } from "../../../api/result-chain-attribute";
@@ -42,6 +48,8 @@ const AttributesModal = ({
   processLevelTypeId,
   indicatorAttributeTypes,
 }) => {
+  const [open, setOpen] = React.useState(false);
+  const [id, setId] = React.useState();
   const queryClient = useQueryClient();
   const [attributeResponseOptions, setAttributeResponseOptions] = useState([]);
   const [
@@ -168,9 +176,36 @@ const AttributesModal = ({
     },
   });
 
+  const { refetch, isError, error, isLoading } = useQuery(
+    ["deleteResultChainById", id],
+    deleteResultChainById,
+    { enabled: false }
+  );
+
   const handleAddSecondary = () => {
     setHasSecondary(true);
   };
+  const handleClickOpen = (params) => {
+    setOpen(true);
+    setId(params.row.resultChainAttributeId);
+  };
+  const handleDeleteAttribute = async () => {
+    try {
+      await refetch();
+      setOpen(false);
+      await queryClient.invalidateQueries([
+        "getResultChainAttributeByIndicatorId",
+      ]);
+    } catch (error) {
+      toast(error.response.data, {
+        type: "error",
+      });
+    }
+  };
+
+  function handleClose() {
+    setOpen(false);
+  }
 
   function GetPrimaryAttribute(params) {
     const attributeId = params.value;
@@ -218,6 +253,13 @@ const AttributesModal = ({
 
     return stringVal;
   }
+
+  if (isError && !isLoading) {
+    toast(error.response.data, {
+      type: "error",
+    });
+  }
+
   return (
     <React.Fragment>
       <form onSubmit={formik.handleSubmit}>
@@ -448,6 +490,21 @@ const AttributesModal = ({
                     flex: 1,
                     valueGetter: GetSecondaryAttributeOptionsNames,
                   },
+                  {
+                    field: "action",
+                    headerName: "Action",
+                    editable: false,
+                    flex: 1,
+                    renderCell: (params) => (
+                      <>
+                        <Button
+                          startIcon={<TrashIcon />}
+                          size="small"
+                          onClick={() => handleClickOpen(params)}
+                        ></Button>
+                      </>
+                    ),
+                  },
                 ]}
                 pageSize={pageSize}
                 onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
@@ -458,6 +515,27 @@ const AttributesModal = ({
           </Paper>
         </CardContent>
       </Card>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Delete Attribute</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete Attribute?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteAttribute} color="primary">
+            Yes
+          </Button>
+          <Button onClick={handleClose} color="error" autoFocus>
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
     </React.Fragment>
   );
 };
