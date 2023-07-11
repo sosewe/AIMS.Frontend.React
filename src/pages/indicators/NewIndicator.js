@@ -886,7 +886,6 @@ const NewIndicatorForm = () => {
       }),
     }),
     onSubmit: async (values) => {
-      console.log(values);
       values.createDate = new Date();
       values.indicatorMeasure = values.indicatorMeasure
         ? values.indicatorMeasure.lookupItemId

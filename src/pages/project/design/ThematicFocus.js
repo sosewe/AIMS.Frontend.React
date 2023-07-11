@@ -37,6 +37,7 @@ import {
 } from "../../../api/thematic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../api/sub-theme";
+import { getUniqueProgrammesByThematicAreaId } from "../../../api/programme-thematic-area-sub-theme";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -53,6 +54,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
   const [thematicAreaId, setThematicAreaId] = useState();
   const [open, setOpen] = React.useState(false);
   const [thematicFocusId, setThematicFocusId] = React.useState();
+  const [pageSize, setPageSize] = useState(5);
   const { data, isLoading } = useQuery(
     ["getAllThematicAreas"],
     getAllThematicAreas,
@@ -132,8 +134,23 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
       ["getThematicArea", thematicAreaId],
       getThematicArea
     );
-    if (result && result.data && resultThematic && resultThematic.data) {
-      return `${result.data.data.name}(${resultThematic.data.data.name})`;
+    const resultProgrammeThematicAreaSubTheme = useQuery(
+      ["getUniqueProgrammesByThematicAreaId", thematicAreaId],
+      getUniqueProgrammesByThematicAreaId
+    );
+    if (
+      result &&
+      result.data &&
+      resultThematic &&
+      resultThematic.data &&
+      resultProgrammeThematicAreaSubTheme &&
+      resultProgrammeThematicAreaSubTheme.data
+    ) {
+      let returnVal = `${result.data.data.name}(${resultThematic.data.data.name})`;
+      if (resultProgrammeThematicAreaSubTheme.data.data.length > 0) {
+        returnVal += `(${resultProgrammeThematicAreaSubTheme.data.data[0].name})`;
+      }
+      return returnVal;
     }
   }
 
@@ -302,6 +319,10 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                             ),
                           },
                         ]}
+                        pageSize={pageSize}
+                        onPageSizeChange={(newPageSize) =>
+                          setPageSize(newPageSize)
+                        }
                         loading={isLoadingProjectThematicFocus}
                         getRowHeight={() => "auto"}
                       />

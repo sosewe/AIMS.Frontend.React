@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { Guid } from "../../../utils/guid";
 import { toast } from "react-toastify";
 import {
+  Autocomplete as MuiAutocomplete,
   Box,
   Button as MuiButton,
   Card as MuiCard,
@@ -32,6 +33,7 @@ const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 const TextField = styled(MuiTextField)(spacing);
+const Autocomplete = styled(MuiAutocomplete)(spacing);
 
 const initialValuesIndicator = {
   indicatorId: "",
@@ -54,6 +56,7 @@ const AddIndicatorModal = ({
 }) => {
   const queryClient = useQueryClient();
   const [isMeasureDisabled, setIsMeasureDisabled] = useState(false);
+  const [isDisAggregationDisabled, setDisAggregationDisabled] = useState(false);
   const { data, isLoading, isError } = useQuery(
     ["getProjectIndicators", processLevelItemId],
     getProjectIndicators
@@ -81,6 +84,17 @@ const AddIndicatorModal = ({
     }
   );
   const {
+    data: indicatorMeasureTypeData,
+    isLoading: isLoadingIndicatorMeasureType,
+    isError: isErrorIndicatorMeasureType,
+  } = useQuery(
+    ["IndicatorMeasureType", "IndicatorMeasureType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const {
     data: resultChainIndicatorData,
     isLoading: isLoadingResultChainIndicator,
     isError: isErrorResultChainIndicator,
@@ -95,7 +109,7 @@ const AddIndicatorModal = ({
   const formik = useFormik({
     initialValues: initialValuesIndicator,
     validationSchema: Yup.object().shape({
-      indicatorId: Yup.string().required("Required"),
+      indicatorId: Yup.object().required("Required"),
       indicatorOrderOfAppearance: Yup.number().required("Required"),
       indicatorTypeOfMeasure: Yup.string().required("Required"),
       indicatorTargetGroup: Yup.string().required("Required"),
@@ -112,7 +126,7 @@ const AddIndicatorModal = ({
           id: resultChainIndicatorId
             ? resultChainIndicatorId
             : new Guid().toString(),
-          indicatorId: values.indicatorId,
+          indicatorId: values.indicatorId.id,
           createDate: new Date(),
           resultChainId: outcome.id,
           indicatorMeasureId: values.indicatorTypeOfMeasure,
@@ -139,9 +153,10 @@ const AddIndicatorModal = ({
       }
     },
   });
-  const onIndicatorChange = (e) => {
-    const indicatorId = e.target.value;
-    const indicatorVal = data.data.find((obj) => obj.id === indicatorId);
+  const onIndicatorChange = (e, val) => {
+    const indId = val.id;
+    const indicatorVal = data.data.find((obj) => obj.id === indId);
+    const indicatorMeasureType = indicatorVal.indicatorMeasureType;
     if (
       !isLoadingIndicatorMeasures &&
       !isErrorIndicatorMeasures &&
@@ -159,6 +174,19 @@ const AddIndicatorModal = ({
       } else {
         formik.setFieldValue("indicatorTypeOfMeasure", "");
         setIsMeasureDisabled(false);
+      }
+    }
+    if (!isLoadingIndicatorMeasureType && !isErrorIndicatorMeasureType) {
+      const selectedIndicatorMeasureType = indicatorMeasureTypeData.data.find(
+        (obj) => obj.lookupItemId === indicatorMeasureType
+      );
+      if (
+        selectedIndicatorMeasureType &&
+        selectedIndicatorMeasureType.lookupItemName === "Non-People"
+      ) {
+        setDisAggregationDisabled(true);
+      } else {
+        setDisAggregationDisabled(false);
       }
     }
   };
@@ -213,38 +241,78 @@ const AddIndicatorModal = ({
             <>
               <Grid container spacing={6}>
                 <Grid item md={12}>
-                  <TextField
-                    name="indicatorId"
-                    label="Indicator"
-                    select
-                    required
-                    value={formik.values.indicatorId}
-                    error={Boolean(
-                      formik.touched.indicatorId && formik.errors.indicatorId
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorId && formik.errors.indicatorId
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      onIndicatorChange(e);
+                  <Autocomplete
+                    id="indicatorId"
+                    options={!isLoading && !isError ? data.data : []}
+                    getOptionLabel={(indicator) => {
+                      if (!indicator) {
+                        return ""; // Return an empty string for null or undefined values
+                      }
+                      return `${indicator.name}`;
                     }}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator
-                    </MenuItem>
-                    {!isLoading && !isError
-                      ? data.data.map((option) => (
-                          <MenuItem key={option.id} value={option.id}>
-                            {option.name}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option?.name}
+                        </li>
+                      );
+                    }}
+                    onChange={(e, val) => {
+                      formik.setFieldValue("indicatorId", val);
+                      onIndicatorChange(e, val);
+                    }}
+                    value={formik.values.indicatorId}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={Boolean(
+                          formik.touched.indicatorId &&
+                            formik.errors.indicatorId
+                        )}
+                        fullWidth
+                        helperText={
+                          formik.touched.indicatorId &&
+                          formik.errors.indicatorId
+                        }
+                        label="Indicator"
+                        name="indicatorId"
+                        variant="outlined"
+                        my={2}
+                      />
+                    )}
+                  />
+                  {/*<TextField*/}
+                  {/*  name="indicatorId"*/}
+                  {/*  label="Indicator"*/}
+                  {/*  select*/}
+                  {/*  required*/}
+                  {/*  value={formik.values.indicatorId}*/}
+                  {/*  error={Boolean(*/}
+                  {/*    formik.touched.indicatorId && formik.errors.indicatorId*/}
+                  {/*  )}*/}
+                  {/*  fullWidth*/}
+                  {/*  helperText={*/}
+                  {/*    formik.touched.indicatorId && formik.errors.indicatorId*/}
+                  {/*  }*/}
+                  {/*  onBlur={formik.handleBlur}*/}
+                  {/*  onChange={(e) => {*/}
+                  {/*    formik.handleChange(e);*/}
+                  {/*    onIndicatorChange(e);*/}
+                  {/*  }}*/}
+                  {/*  variant="outlined"*/}
+                  {/*  my={2}*/}
+                  {/*>*/}
+                  {/*  <MenuItem disabled value="">*/}
+                  {/*    Select Indicator*/}
+                  {/*  </MenuItem>*/}
+                  {/*  {!isLoading && !isError*/}
+                  {/*    ? data.data.map((option) => (*/}
+                  {/*        <MenuItem key={option.id} value={option.id}>*/}
+                  {/*          {option.name}*/}
+                  {/*        </MenuItem>*/}
+                  {/*      ))*/}
+                  {/*    : []}*/}
+                  {/*</TextField>*/}
                 </Grid>
                 <Grid item md={6}>
                   <TextField
@@ -439,6 +507,7 @@ const AddIndicatorModal = ({
                         />
                       }
                       label="Is this indicator Disaggregated?"
+                      disabled={isDisAggregationDisabled}
                     />
                   </FormGroup>
                 </Grid>
