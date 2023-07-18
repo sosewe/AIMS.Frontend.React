@@ -13,6 +13,7 @@ import {
   Grid,
   MenuItem,
   Paper as MuiPaper,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -28,6 +29,7 @@ import { toast } from "react-toastify";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import "./colors.css";
 import { getInnovationById, getInnovations } from "../../../../api/innovation";
 import {
   getAMREFStaffList,
@@ -73,6 +75,7 @@ const initialValues = {
 
 const InnovationMonitoringForm = () => {
   let { id } = useParams();
+  const colorclass = ["theblue", "thered", "theamber", "thegreen"];
   const [openChallengesModal, setOpenChallengesModal] = useState(false);
   const [innovationId, setInnovationId] = useState();
   const [innovation, setInnovation] = useState();
@@ -543,8 +546,9 @@ const InnovationMonitoringForm = () => {
                       Select BRAG Status
                     </MenuItem>
                     {!isLoadingBRAGStatusData && !isErrorBRAGStatusData
-                      ? BRAGStatusData.data.map((option) => (
+                      ? BRAGStatusData.data.map((option, index) => (
                           <MenuItem
+                            className={colorclass[index]}
                             key={option.lookupItemId}
                             value={option.lookupItemId}
                           >
