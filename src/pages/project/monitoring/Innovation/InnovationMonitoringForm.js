@@ -13,7 +13,6 @@ import {
   Grid,
   MenuItem,
   Paper as MuiPaper,
-  Select,
   Table,
   TableBody,
   TableCell,
