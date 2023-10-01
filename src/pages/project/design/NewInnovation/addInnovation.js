@@ -52,19 +52,25 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  title: "",
-  duration_from: "",
-  duration_to: "",
-  staffNameId: "",
-  thematicAreaId: "",
-  countryId: [],
-  proposedSolution: "",
-  targetBeneficiary: "",
-  difference: "",
-  scaling: "",
-  sustainability: "",
-  whyInnovative: "",
+  innovationName: "",
+  innovationShortTitle: "",
+  startDate: null,
+  endDate: null,
+  extensionDate: null,
+  status: "",
+  leadStaffName: null,
+  emailAddress: "", // auto-populate from staff name
+  role: "",
+  dqaRole: "",
+  implementingOffice: "",
+  regionalOffice: "",
+  enaSupportOffice: "",
+  totalBudget: "",
+  currencyType: "",
+  costCentre: "",
+  donorName: [], // multiple select
 };
+
 const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -109,6 +115,13 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     refetchOnWindowFocus: false,
     retry: 0,
   });
+  const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
+    ["status", "status"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
   const {
     data: ThematicAreas,
     isLoading: isLoadingThematicAreas,
@@ -154,18 +167,26 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      title: Yup.string().required("Required"),
-      duration_from: Yup.date().required("Required"),
-      duration_to: Yup.date().required("Required"),
-      thematicAreaId: Yup.string().required("Required"),
-      countryId: Yup.array().required("Required"),
-      staffNameId: Yup.object().required("Required"),
-      proposedSolution: Yup.string().required("Required"),
-      targetBeneficiary: Yup.string().required("Required"),
-      difference: Yup.string().required("Required"),
-      scaling: Yup.string().required("Required"),
-      sustainability: Yup.string().required("Required"),
-      whyInnovative: Yup.string().required("Required"),
+      innovationName: Yup.string().required("Required"),
+      innovationShortTitle: Yup.string().required("Required"),
+      startDate: Yup.date().required("Required"),
+      endDate: Yup.date().required("Required"),
+      extensionDate: Yup.date().when("endDate", (endDate, schema) => {
+        return endDate ? schema.min(endDate, "Must be after End Date") : schema;
+      }),
+      status: Yup.string().required("Required"),
+      leadStaffName: Yup.object().required("Required"),
+      role: Yup.string().required("Required"),
+      dqaRole: Yup.string().required("Required"),
+      implementingOffice: Yup.string().required("Required"),
+      regionalOffice: Yup.string().required("Required"),
+      enaSupportOffice: Yup.string().required("Required"),
+      totalBudget: Yup.number()
+        .required("Required")
+        .positive("Must be positive"),
+      currencyType: Yup.string().required("Required"),
+      costCentre: Yup.string().required("Required"),
+      donorName: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -173,16 +194,23 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         const saveInnovation = {
           id: id ? id : guid.toString(),
           createDate: new Date(),
-          title: values.title,
-          staffNameId: values.staffNameId.id,
-          proposedSolution: values.proposedSolution,
-          targetBeneficiary: values.targetBeneficiary,
-          difference: values.difference,
-          scaling: values.scaling,
-          sustainability: values.sustainability,
-          processLevelItemId: processLevelItemId,
-          processLevelTypeId: processLevelTypeId,
-          whyInnovative: values.whyInnovative,
+          innovationName: values.innovationName,
+          innovationShortTitle: values.innovationShortTitle,
+          startDate: values.startDate,
+          endDate: values.endDate,
+          extensionDate: values.extensionDate,
+          status: values.status,
+          leadStaffName: values.leadStaffName.id,
+          emailAddress: values.emailAddress, // Add auto-populate logic
+          role: values.role,
+          dqaRole: values.dqaRole,
+          implementingOffice: values.implementingOffice,
+          regionalOffice: values.regionalOffice,
+          enaSupportOffice: values.enaSupportOffice,
+          totalBudget: values.totalBudget,
+          currencyType: values.currencyType,
+          costCentre: values.costCentre,
+          donorName: values.donorName.map((donor) => donor.id), // Assuming donorName is an array of objects with id property
         };
         const innovation = await mutation.mutateAsync(saveInnovation);
         let qualitativeCountries = [];
@@ -306,12 +334,16 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       <Grid container item spacing={2}>
         <Grid item md={12}>
           <TextField
-            name="title"
-            label="Innovation Title"
-            value={formik.values.title}
-            error={Boolean(formik.touched.title && formik.errors.title)}
+            name="innovationName"
+            label="Innovation Name"
+            value={formik.values.innovationName}
+            error={Boolean(
+              formik.touched.innovationName && formik.errors.innovationName
+            )}
             fullWidth
-            helperText={formik.touched.title && formik.errors.title}
+            helperText={
+              formik.touched.innovationName && formik.errors.innovationName
+            }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
@@ -322,71 +354,51 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         </Grid>
         <Grid item md={12}>
           <TextField
-            name="title"
-            label="Innovation short title"
-            value={formik.values.title}
-            error={Boolean(formik.touched.title && formik.errors.title)}
+            name="innovationShortTitle"
+            label="Innovation Short Title"
+            value={formik.values.innovationShortTitle}
+            error={Boolean(
+              formik.touched.innovationShortTitle &&
+                formik.errors.innovationShortTitle
+            )}
             fullWidth
-            helperText={formik.touched.title && formik.errors.title}
+            helperText={
+              formik.touched.innovationShortTitle &&
+              formik.errors.innovationShortTitle
+            }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
             variant="outlined"
             my={2}
-            rows={2}
+            rows={3}
           />
         </Grid>
         <Grid item md={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
-              label="From"
-              value={formik.values.duration_from}
+              label="Start Date"
+              value={formik.values.startDate}
               onChange={(value) =>
-                formik.setFieldValue("duration_from", value, true)
+                formik.setFieldValue("startDate", value, true)
               }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.duration_from && formik.errors.duration_from
-                  )}
-                  helperText={
-                    formik.touched.duration_from && formik.errors.duration_from
-                  }
-                  margin="normal"
-                  name="duration_from"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
+              renderInput={(params) => <TextField {...params} />}
+              error={Boolean(
+                formik.touched.startDate && formik.errors.startDate
               )}
+              helperText={formik.touched.startDate && formik.errors.startDate}
             />
           </LocalizationProvider>
         </Grid>
         <Grid item md={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
-              label="To"
-              value={formik.values.duration_to}
-              onChange={(value) =>
-                formik.setFieldValue("duration_to", value, true)
-              }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.duration_to && formik.errors.duration_to
-                  )}
-                  helperText={
-                    formik.touched.duration_to && formik.errors.duration_to
-                  }
-                  margin="normal"
-                  name="duration_to"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
-              )}
+              label="End Date"
+              value={formik.values.endDate}
+              onChange={(value) => formik.setFieldValue("endDate", value, true)}
+              renderInput={(params) => <TextField {...params} />}
+              error={Boolean(formik.touched.endDate && formik.errors.endDate)}
+              helperText={formik.touched.endDate && formik.errors.endDate}
             />
           </LocalizationProvider>
         </Grid>
@@ -394,42 +406,34 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Extension Date"
-              value={formik.values.duration_to}
+              value={formik.values.extensionDate}
               onChange={(value) =>
-                formik.setFieldValue("duration_to", value, true)
+                formik.setFieldValue("extensionDate", value, true)
               }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.duration_to && formik.errors.duration_to
-                  )}
-                  helperText={
-                    formik.touched.duration_to && formik.errors.duration_to
-                  }
-                  margin="normal"
-                  name="duration_to"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
+              renderInput={(params) => <TextField {...params} />}
+              error={Boolean(
+                formik.touched.extensionDate && formik.errors.extensionDate
               )}
+              helperText={
+                formik.touched.extensionDate && formik.errors.extensionDate
+              }
             />
           </LocalizationProvider>
         </Grid>
         <Grid item md={12}>
           <Grid item md={4}>
             <TextField
-              name="thematicAreaId"
-              label="Status)"
+              name="status"
+              label="Status"
+              required
               select
-              value={formik.values.thematicAreaId}
+              value={formik.values.currentStatus}
               error={Boolean(
-                formik.touched.thematicAreaId && formik.errors.thematicAreaId
+                formik.touched.currentStatus && formik.errors.currentStatus
               )}
               fullWidth
               helperText={
-                formik.touched.thematicAreaId && formik.errors.thematicAreaId
+                formik.touched.currentStatus && formik.errors.currentStatus
               }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -437,12 +441,15 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               my={2}
             >
               <MenuItem disabled value="">
-                Select Status
+                Status
               </MenuItem>
-              {!isLoadingThematicAreas && !isErrorThematicAreas
-                ? ThematicAreas.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}({option.initial})
+              {!isLoadingStatuses
+                ? statusesData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
                     </MenuItem>
                   ))
                 : []}
@@ -450,44 +457,47 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           </Grid>
         </Grid>
         <Grid item md={4}>
-          <Autocomplete
-            id="staffNameId"
-            options={
-              !isLoadingStaffList && !isErrorStaffList ? staffListData.data : []
-            }
-            getOptionLabel={(staff) => `${staff?.firstName} ${staff?.lastName}`}
-            renderOption={(props, option) => {
-              return (
-                <li {...props} key={option.id}>
-                  {option.firstName} {option.lastName}
-                </li>
+          <TextField
+            name="personnelId"
+            label="Lead Staff name"
+            select
+            value={formik.values.personnelId}
+            error={Boolean(
+              formik.touched.personnelId && formik.errors.personnelId
+            )}
+            fullWidth
+            helperText={formik.touched.personnelId && formik.errors.personnelId}
+            onBlur={formik.handleBlur}
+            onChange={(e) => {
+              formik.handleChange(e);
+              formik.setFieldValue(
+                "leadStaffEmail",
+                e.target.value.emailAddress
               );
             }}
-            onChange={(_, val) => formik.setFieldValue("staffNameId", val)}
-            value={formik.values.staffNameId}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={Boolean(
-                  formik.touched.staffNameId && formik.errors.staffNameId
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.staffNameId && formik.errors.staffNameId
-                }
-                label="Lead/Staff Name"
-                name="staffNameId"
-                variant="outlined"
-                my={2}
-              />
-            )}
-          />
+            variant="outlined"
+            my={2}
+          >
+            <MenuItem disabled value="">
+              Select staff's Name
+            </MenuItem>
+            {!isLoadingStaffList &&
+            !isErrorStaffList &&
+            staffListData.data &&
+            staffListData.data.length > 0
+              ? staffListData.data.map((option) => (
+                  <MenuItem key={option.id} value={option}>
+                    {option.firstName} {option.lastName}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
         </Grid>
         <Grid item md={4}>
           <TextField
-            name="projectManagerEmail"
-            label="Lead Staff's Email"
-            value={formik.values.projectManagerEmail}
+            name="leadStaffEmail"
+            label="Lead staff email address"
+            value={formik.values.leadStaffEmail}
             error={Boolean(
               formik.touched.projectManagerEmail &&
                 formik.errors.projectManagerEmail
@@ -503,230 +513,159 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             my={2}
           />
         </Grid>
-        <Grid item md={4}>
+        <Grid item md={12}>
           <TextField
-            name="thematicAreaId"
-            label="Role"
-            select
-            value={formik.values.thematicAreaId}
+            name="dqaRole"
+            label="DQA Role"
+            value={formik.values.dqaRole}
+            error={Boolean(formik.touched.dqaRole && formik.errors.dqaRole)}
+            fullWidth
+            helperText={formik.touched.dqaRole && formik.errors.dqaRole}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="implementingOffice"
+            label="Implementing Office"
+            value={formik.values.implementingOffice}
             error={Boolean(
-              formik.touched.thematicAreaId && formik.errors.thematicAreaId
+              formik.touched.implementingOffice &&
+                formik.errors.implementingOffice
             )}
             fullWidth
             helperText={
-              formik.touched.thematicAreaId && formik.errors.thematicAreaId
+              formik.touched.implementingOffice &&
+              formik.errors.implementingOffice
             }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"
             my={2}
-          >
-            <MenuItem disabled value="">
-              Select Thematic Area(s)
-            </MenuItem>
-            {!isLoadingThematicAreas && !isErrorThematicAreas
-              ? ThematicAreas.data.map((option) => (
-                  <MenuItem key={option.id} value={option.id}>
-                    {option.name}({option.initial})
-                  </MenuItem>
-                ))
-              : []}
-          </TextField>
+          />
         </Grid>
-        <Grid item md={4}>
-          <Autocomplete
-            id="countryId"
-            multiple
-            options={
-              !isLoadingAmrefEntities && !isErrorAmrefEntities
-                ? amrefEntities.data
-                : []
+        <Grid item md={12}>
+          <TextField
+            name="regionalOffice"
+            label="Regional Office"
+            value={formik.values.regionalOffice}
+            error={Boolean(
+              formik.touched.regionalOffice && formik.errors.regionalOffice
+            )}
+            fullWidth
+            helperText={
+              formik.touched.regionalOffice && formik.errors.regionalOffice
             }
-            getOptionLabel={(entity) => `${entity?.name}`}
-            renderOption={(props, option) => {
-              return (
-                <li {...props} key={option.id}>
-                  {option.name}
-                </li>
-              );
-            }}
-            onChange={(_, val) => formik.setFieldValue("countryId", val)}
-            value={formik.values.countryId}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="enaSupportOffice"
+            label="ENA Support Office"
+            value={formik.values.enaSupportOffice}
+            error={Boolean(
+              formik.touched.enaSupportOffice && formik.errors.enaSupportOffice
+            )}
+            fullWidth
+            helperText={
+              formik.touched.enaSupportOffice && formik.errors.enaSupportOffice
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="totalBudget"
+            label="Total Budget"
+            value={formik.values.totalBudget}
+            error={Boolean(
+              formik.touched.totalBudget && formik.errors.totalBudget
+            )}
+            fullWidth
+            helperText={formik.touched.totalBudget && formik.errors.totalBudget}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="currencyType"
+            label="Currency Type"
+            value={formik.values.currencyType}
+            error={Boolean(
+              formik.touched.currencyType && formik.errors.currencyType
+            )}
+            fullWidth
+            helperText={
+              formik.touched.currencyType && formik.errors.currencyType
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <TextField
+            name="costCentre"
+            label="Cost Centre"
+            value={formik.values.costCentre}
+            error={Boolean(
+              formik.touched.costCentre && formik.errors.costCentre
+            )}
+            fullWidth
+            helperText={formik.touched.costCentre && formik.errors.costCentre}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          />
+        </Grid>
+        {/* <Grid item md={12}>
+          <Autocomplete
+            name="donorName"
+            label="Donor Name"
+            options={donorList}
+            getOptionLabel={(option) => option.name}
+            multiple
+            value={formik.values.donorName}
+            onChange={(event, newValue) =>
+              formik.setFieldValue("donorName", newValue, true)
+            }
             renderInput={(params) => (
               <TextField
                 {...params}
-                error={Boolean(
-                  formik.touched.countryId && formik.errors.countryId
-                )}
-                fullWidth
-                helperText={formik.touched.countryId && formik.errors.countryId}
-                label="Select Countries/entities of implementation"
-                name="countryId"
+                label="Donor Name"
                 variant="outlined"
-                my={2}
+                error={Boolean(
+                  formik.touched.donorName && formik.errors.donorName
+                )}
+                helperText={formik.touched.donorName && formik.errors.donorName}
               />
             )}
           />
-        </Grid>
+        </Grid> */}
+        {/* Add other fields as needed */}
         <Grid item md={12}>
-          <TextField
-            name="proposedSolution"
-            label="What is the proposed solution?"
-            value={formik.values.proposedSolution}
-            error={Boolean(
-              formik.touched.proposedSolution && formik.errors.proposedSolution
-            )}
-            fullWidth
-            helperText={
-              formik.touched.proposedSolution && formik.errors.proposedSolution
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            my={2}
-            rows={3}
-          />
-        </Grid>
-        <Grid item md={12}>
-          <TextField
-            name="targetBeneficiary"
-            label="Who are the target beneficiaries?"
-            value={formik.values.targetBeneficiary}
-            error={Boolean(
-              formik.touched.targetBeneficiary &&
-                formik.errors.targetBeneficiary
-            )}
-            fullWidth
-            helperText={
-              formik.touched.targetBeneficiary &&
-              formik.errors.targetBeneficiary
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            my={2}
-            rows={3}
-          />
-        </Grid>
-        <Grid item md={12}>
-          <TextField
-            name="difference"
-            label="What difference will the innovation make as a result?"
-            value={formik.values.difference}
-            error={Boolean(
-              formik.touched.difference && formik.errors.difference
-            )}
-            fullWidth
-            helperText={formik.touched.difference && formik.errors.difference}
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            my={2}
-            rows={3}
-          />
-        </Grid>
-        <Grid item md={12}>
-          <TextField
-            name="whyInnovative"
-            label="Why is this innovative (in your country/context)?"
-            value={formik.values.whyInnovative}
-            error={Boolean(
-              formik.touched.whyInnovative && formik.errors.whyInnovative
-            )}
-            fullWidth
-            helperText={
-              formik.touched.whyInnovative && formik.errors.whyInnovative
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            my={2}
-            rows={3}
-          />
-        </Grid>
-        <Grid item md={12}>
-          <TextField
-            name="scaling"
-            label="How will this be scaled up?(if it's not scaled up why)"
-            value={formik.values.scaling}
-            error={Boolean(formik.touched.scaling && formik.errors.scaling)}
-            fullWidth
-            helperText={formik.touched.scaling && formik.errors.scaling}
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            my={2}
-            rows={3}
-          />
-        </Grid>
-        <Grid item md={12}>
-          <TextField
-            name="sustainability"
-            label="How will this innovation be sustained in the next three years?"
-            value={formik.values.sustainability}
-            error={Boolean(
-              formik.touched.sustainability && formik.errors.sustainability
-            )}
-            fullWidth
-            helperText={
-              formik.touched.sustainability && formik.errors.sustainability
-            }
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            multiline
-            variant="outlined"
-            my={2}
-            rows={3}
-          />
+          <Button variant="contained" color="primary" type="submit">
+            Save
+          </Button>
         </Grid>
       </Grid>
-      <Button type="submit" variant="contained" color="primary" mt={3}>
-        Save
-      </Button>
     </form>
   );
 };
 
-const AddInnovation = () => {
-  const { processLevelItemId, processLevelTypeId, id } = useParams(); // Move useParams inside the component
-  return (
-    <React.Fragment>
-      <Helmet title="New Innovation" />
-      <Typography variant="h3" gutterBottom display="inline">
-        New Innovation
-      </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Innovation</Typography>
-      </Breadcrumbs>
-
-      <Divider my={6} />
-      <Card mb={12}>
-        <CardContent>
-          <Grid container spacing={12}>
-            <Grid item md={12}>
-              <InnovationForm
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                id={id}
-              />
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-    </React.Fragment>
-  );
-};
-
-export default AddInnovation;
+export default InnovationForm;

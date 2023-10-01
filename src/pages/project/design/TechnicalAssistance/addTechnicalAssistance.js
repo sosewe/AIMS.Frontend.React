@@ -78,8 +78,11 @@ const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
   title: "",
-  duration_from: "",
-  duration_to: "",
+  shortTitle: "",
+  extensionDate: "",
+  endDate: "",
+  startDate: "",
+  status: "",
   staffNameId: "",
   thematicAreaId: "",
   countryId: [],
