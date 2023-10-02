@@ -31,6 +31,7 @@ import {
   getProjectLocations,
   newProjectLocation,
 } from "../../../../api/location";
+import { newinnovationGeographicalFocus } from "../../../../api/innovatonGeographicalFocus";
 import { DataGrid } from "@mui/x-data-grid";
 
 const Card = styled(MuiCard)(spacing);
@@ -86,7 +87,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     }
   };
 
-  const mutation = useMutation({ mutationFn: newProjectLocation });
+  const mutation = useMutation({ mutationFn: newinnovationGeographicalFocus });
   const formik = useFormik({
     initialValues: getFocusInitial,
     validationSchema: Yup.object().shape({
@@ -147,13 +148,15 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           administrativeUnitId = values.fourthLevel.id;
           administrativeUnitName = values.fourthLevel.adminUnit;
         }
+
         const projectLocation = {
           administrativeUnitId,
           administrativeUnitName,
-          processLevelItemId: id,
+          processLevelItemId: id, // Use the innovation ID here
           processLevelTypeId: processLevelTypeId,
           createDate: new Date(),
         };
+
         await mutation.mutateAsync(projectLocation);
         await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
       } catch (error) {

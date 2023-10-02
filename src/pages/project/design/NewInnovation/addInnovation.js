@@ -57,8 +57,8 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  innovationName: "",
-  innovationShortTitle: "",
+  title: "",
+  shortTitle: "",
   startDate: null,
   endDate: null,
   extensionDate: null,
@@ -219,8 +219,8 @@ const InnovationForm = ({
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      innovationName: Yup.string().required("Required"),
-      innovationShortTitle: Yup.string().required("Required"),
+      title: Yup.string().required("Required"),
+      shortTitle: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
@@ -246,20 +246,21 @@ const InnovationForm = ({
         const saveInnovation = {
           id: id ? id : guid.toString(),
           createDate: new Date(),
-          innovationName: values.innovationName,
-          innovationShortTitle: values.innovationShortTitle,
+          title: values.innovationName,
+          shortTitle: values.shortTitle,
           startDate: values.startDate,
           endDate: values.endDate,
           extensionDate: values.extensionDate,
           status: values.status,
-          leadStaffName: values.leadStaffName.id,
-          emailAddress: values.emailAddress, // Add auto-populate logic
-          role: values.role,
-          dqaRole: values.dqaRole,
-          implementingOffice: values.implementingOffice,
-          regionalOffice: values.regionalOffice,
-          enaSupportOffice: values.enaSupportOffice,
+          staffNameId: values.staffNameId,
           totalBudget: values.totalBudget,
+          // leadStaffName: values.leadStaffName.id,
+          //leadStaffEmail: values.leadStaffEmail, // Add auto-populate logic
+          staffDetailsAIMSRole: values.staffDetailsAIMSRole,
+          staffDetailsWorkFlowTask: values.staffDetailsWorkFlowTask,
+          office: values.office,
+          regionalProgrammeId: values.regionalProgrammeId,
+          enaSupportOffice: values.enaSupportOffice,
           currencyType: values.currencyType,
           costCentre: values.costCentre,
           donorName: values.donorName.map((donor) => donor.id), // Assuming donorName is an array of objects with id property
@@ -386,16 +387,12 @@ const InnovationForm = ({
       <Grid container item spacing={2}>
         <Grid item md={12}>
           <TextField
-            name="innovationName"
+            name="title"
             label="Innovation Name"
-            value={formik.values.innovationName}
-            error={Boolean(
-              formik.touched.innovationName && formik.errors.innovationName
-            )}
+            value={formik.values.title}
+            error={Boolean(formik.touched.title && formik.errors.title)}
             fullWidth
-            helperText={
-              formik.touched.innovationName && formik.errors.innovationName
-            }
+            helperText={formik.touched.title && formik.errors.title}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
@@ -406,18 +403,14 @@ const InnovationForm = ({
         </Grid>
         <Grid item md={12}>
           <TextField
-            name="innovationShortTitle"
+            name="shortTitle"
             label="Innovation Short Title"
-            value={formik.values.innovationShortTitle}
+            value={formik.values.shortTitle}
             error={Boolean(
-              formik.touched.innovationShortTitle &&
-                formik.errors.innovationShortTitle
+              formik.touched.shortTitle && formik.errors.shortTitle
             )}
             fullWidth
-            helperText={
-              formik.touched.innovationShortTitle &&
-              formik.errors.innovationShortTitle
-            }
+            helperText={formik.touched.shortTitle && formik.errors.shortTitle}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             multiline
@@ -429,6 +422,7 @@ const InnovationForm = ({
         <Grid item md={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
+              name="startDate"
               label="Start Date"
               value={formik.values.startDate}
               onChange={(value) =>
@@ -445,6 +439,7 @@ const InnovationForm = ({
         <Grid item md={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
+              name="endDate"
               label="End Date"
               value={formik.values.endDate}
               onChange={(value) => formik.setFieldValue("endDate", value, true)}
@@ -457,6 +452,7 @@ const InnovationForm = ({
         <Grid item md={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
+              name="extensionDate"
               label="Extension Date"
               value={formik.values.extensionDate}
               onChange={(value) =>
@@ -479,14 +475,10 @@ const InnovationForm = ({
               label="Status"
               required
               select
-              value={formik.values.currentStatus}
-              error={Boolean(
-                formik.touched.currentStatus && formik.errors.currentStatus
-              )}
+              value={formik.values.status}
+              error={Boolean(formik.touched.status && formik.errors.status)}
               fullWidth
-              helperText={
-                formik.touched.currentStatus && formik.errors.currentStatus
-              }
+              helperText={formik.touched.status && formik.errors.status}
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               variant="outlined"
@@ -510,15 +502,15 @@ const InnovationForm = ({
         </Grid>
         <Grid item md={4}>
           <TextField
-            name="personnelId"
+            name="staffNameId"
             label="Lead Staff name"
             select
-            value={formik.values.personnelId}
+            value={formik.values.staffNameId}
             error={Boolean(
-              formik.touched.personnelId && formik.errors.personnelId
+              formik.touched.staffNameId && formik.errors.staffNameId
             )}
             fullWidth
-            helperText={formik.touched.personnelId && formik.errors.personnelId}
+            helperText={formik.touched.staffNameId && formik.errors.staffNameId}
             onBlur={formik.handleBlur}
             onChange={(e) => {
               formik.handleChange(e);
@@ -565,10 +557,10 @@ const InnovationForm = ({
             my={2}
           />
         </Grid>
-        {/* <Grid item md={3}>
+        <Grid item md={3}>
           <TextField
             name="staffDetailsAIMSRole"
-            label="Project Role"
+            label="Role"
             required
             select
             value={formik.values.staffDetailsAIMSRole}
@@ -587,7 +579,7 @@ const InnovationForm = ({
             my={2}
           >
             <MenuItem disabled value="">
-              Select Role
+              Role
             </MenuItem>
             {!isLoading
               ? aimsRolesData.data.map((option) => (
@@ -597,7 +589,7 @@ const InnovationForm = ({
                 ))
               : []}
           </TextField>
-        </Grid> */}
+        </Grid>
         <Grid item md={4}>
           <TextField
             name="staffDetailsWorkFlowTask"
@@ -633,20 +625,14 @@ const InnovationForm = ({
         </Grid>
         <Grid item md={4}>
           <TextField
-            name="projectOrganisationUnitId"
+            name="office"
             label="Implementing Office"
             required
             select
-            value={formik.values.projectOrganisationUnitId}
-            error={Boolean(
-              formik.touched.projectOrganisationUnitId &&
-                formik.errors.projectOrganisationUnitId
-            )}
+            value={formik.values.office}
+            error={Boolean(formik.touched.office && formik.errors.office)}
             fullWidth
-            helperText={
-              formik.touched.projectOrganisationUnitId &&
-              formik.errors.projectOrganisationUnitId
-            }
+            helperText={formik.touched.office && formik.errors.office}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"

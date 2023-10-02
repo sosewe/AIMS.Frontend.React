@@ -1,4 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextareaAutosize,
+} from "@mui/material";
+
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -34,15 +42,36 @@ const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 
-const initialValues = {
-  objective: "",
-};
-
 const ProjectObjectives = ({ id, processLevelTypeId }) => {
   const queryClient = useQueryClient();
-  const [open, setOpen] = React.useState(false);
-  const [openEdit, setOpenEdit] = React.useState(false);
-  const [objectiveId, setObjectiveId] = React.useState();
+  const [open, setOpen] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [objectiveId, setObjectiveId] = useState("");
+
+  const [innovationType, setInnovationType] = useState("");
+  const [innovationClass, setInnovationClass] = useState("");
+  const [innovationTechnology, setInnovationTechnology] = useState("");
+  const [whatMakesInnovation, setWhatMakesInnovation] = useState("");
+  const [phcProblemSolved, setPhcProblemSolved] = useState("");
+  const [estimatedImpact, setEstimatedImpact] = useState("");
+  const [targetGroup, setTargetGroup] = useState("");
+  const [innovationObjectives, setInnovationObjectives] = useState([]);
+  const [innovationMetrics, setInnovationMetrics] = useState("");
+  const [reportingFrequency, setReportingFrequency] = useState("");
+
+  const initialValues = {
+    objective: "",
+    innovationType: "",
+    innovationClass: "",
+    innovationTechnology: "",
+    whatMakesInnovation: "",
+    phcProblemSolved: "",
+    estimatedImpact: "",
+    targetGroup: "",
+    innovationObjectives: [],
+    innovationMetrics: "",
+    reportingFrequency: "",
+  };
 
   const { data, isLoading } = useQuery(
     ["getObjectiveByProcessLevelItemId", id],
@@ -127,24 +156,110 @@ const ProjectObjectives = ({ id, processLevelTypeId }) => {
                 <Grid container item spacing={2}>
                   <Grid item md={10}>
                     <TextField
-                      name="objective"
-                      label="New Objective"
-                      value={formik.values.objective}
-                      error={Boolean(
-                        formik.touched.objective && formik.errors.objective
-                      )}
+                      name="innovationType"
+                      label="Innovation Type"
+                      value={innovationType}
+                      onChange={(e) => setInnovationType(e.target.value)}
                       fullWidth
-                      helperText={
-                        formik.touched.objective && formik.errors.objective
-                      }
-                      onBlur={formik.handleBlur}
-                      onChange={formik.handleChange}
-                      multiline
-                      required
+                      select
                       variant="outlined"
+                      required
+                      my={2}
+                    >
+                      {/* Add select options for innovation type */}
+                    </TextField>
+                    <TextField
+                      name="innovationClass"
+                      label="Innovation Class"
+                      value={innovationClass}
+                      onChange={(e) => setInnovationClass(e.target.value)}
+                      fullWidth
+                      select
+                      variant="outlined"
+                      required
+                      my={2}
+                    >
+                      {/* Add select options for innovation class */}
+                    </TextField>
+                    <TextField
+                      name="innovationTechnology"
+                      label="Innovation Technology"
+                      value={innovationTechnology}
+                      onChange={(e) => setInnovationTechnology(e.target.value)}
+                      fullWidth
+                      select
+                      variant="outlined"
+                      required
+                      my={2}
+                    >
+                      {/* Add select options for innovation technology */}
+                    </TextField>
+                    <TextField
+                      name="whatMakesInnovation"
+                      label="What Makes This an Innovation"
+                      value={whatMakesInnovation}
+                      onChange={(e) => setWhatMakesInnovation(e.target.value)}
+                      multiline
                       rows={3}
+                      fullWidth
+                      variant="outlined"
                       my={2}
                     />
+                    <TextField
+                      name="phcProblemSolved"
+                      label="What PHC Problem Does It Solve and How"
+                      value={phcProblemSolved}
+                      onChange={(e) => setPhcProblemSolved(e.target.value)}
+                      multiline
+                      rows={3}
+                      fullWidth
+                      variant="outlined"
+                      my={2}
+                    />
+                    <TextField
+                      name="estimatedImpact"
+                      label="Estimated Impact and Target Group"
+                      value={estimatedImpact}
+                      onChange={(e) => setEstimatedImpact(e.target.value)}
+                      multiline
+                      rows={3}
+                      fullWidth
+                      variant="outlined"
+                      my={2}
+                    />
+                    <TextField
+                      name="targetGroup"
+                      label="Target Group"
+                      value={targetGroup}
+                      onChange={(e) => setTargetGroup(e.target.value)}
+                      fullWidth
+                      variant="outlined"
+                      my={2}
+                    />
+                    <TextField
+                      name="innovationMetrics"
+                      label="Innovation Metrics"
+                      value={innovationMetrics}
+                      onChange={(e) => setInnovationMetrics(e.target.value)}
+                      multiline
+                      rows={3}
+                      fullWidth
+                      variant="outlined"
+                      my={2}
+                    />
+                    <TextField
+                      name="reportingFrequency"
+                      label="Reporting Frequency"
+                      value={reportingFrequency}
+                      onChange={(e) => setReportingFrequency(e.target.value)}
+                      fullWidth
+                      select
+                      variant="outlined"
+                      required
+                      my={2}
+                    >
+                      {/* Add select options for reporting frequency */}
+                    </TextField>
                   </Grid>
                   <Grid item md={2}>
                     <Button
@@ -249,4 +364,5 @@ const ProjectObjectives = ({ id, processLevelTypeId }) => {
     </Card>
   );
 };
+
 export default ProjectObjectives;
