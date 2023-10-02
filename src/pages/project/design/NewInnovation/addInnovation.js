@@ -71,9 +71,9 @@ const initialValues = {
   regionalOffice: "",
   enaSupportOffice: "",
   totalBudget: "",
-  currencyType: "",
+  currencyTypeId: "",
   costCentre: "",
-  donorName: [], // multiple select
+  donors: [], // multiple select
 };
 
 const InnovationForm = ({
@@ -289,6 +289,7 @@ const InnovationForm = ({
           qualitativeTypeId: innovationQualitativeTypeId,
           qualitativeTypeItemId: innovation.data.id,
         };
+        await processLevelRoleMutation.mutateAsync(projectRoles);
         await qualitativeCountryMutation.mutateAsync(qualitativeCountries);
         await qualitativePeriodMutation.mutateAsync(qualitativePeriod);
         await qualitativeThematicAreaMutation.mutateAsync(
@@ -581,7 +582,7 @@ const InnovationForm = ({
             <MenuItem disabled value="">
               Role
             </MenuItem>
-            {!isLoading
+            {!isLoadingAimsRole
               ? aimsRolesData.data.map((option) => (
                   <MenuItem key={option.id} value={option}>
                     {option.name}
