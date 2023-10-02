@@ -21,13 +21,18 @@ import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  getAdministrativeRoles,
   getAMREFStaffList,
   getLookupMasterItemsByName,
 } from "../../../../api/lookup";
+import { getDonors } from "../../../../api/donor";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
+import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getInnovationById, newInnovation } from "../../../../api/innovation";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { getProjectRoles } from "../../../../api/project-role";
+
 import { Helmet } from "react-helmet-async";
 import {
   getQualitativeCountryByTypeItemId,
@@ -71,7 +76,12 @@ const initialValues = {
   donorName: [], // multiple select
 };
 
-const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+const InnovationForm = ({
+  processLevelItemId,
+  isLoading,
+  processLevelTypeId,
+  id,
+}) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   let innovationQualitativeTypeId;
@@ -89,6 +99,27 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     getQualitativeCountryByTypeItemId,
     { enabled: !!id }
   );
+  const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
+    ["currencyType", "CurrencyType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { data: aimsRolesData, isLoading: isLoadingAimsRole } = useQuery(
+    ["getProjectRoles"],
+    getProjectRoles,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const {
+    isLoading: isLoadingAdministrativeRoles,
+    isError: isErrorAdministrativeRoles,
+    data: administrativeRoles,
+  } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
+    refetchOnWindowFocus: false,
+  });
   const {
     data: QualitativePeriodData,
     isLoading: isLoadingQualitativePeriod,
@@ -122,13 +153,34 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const {
-    data: ThematicAreas,
-    isLoading: isLoadingThematicAreas,
-    isError: isErrorThematicAreas,
-  } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading: isLoadingOrgUnits, data: orgUnitsData } = useQuery(
+    ["organizationUnits"],
+    getOrganizationUnits,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingRegProg, data: regProgData } = useQuery(
+    ["regionalProgramme", "RegionalProgramme"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingDonor, data: donorData } = useQuery(
+    ["donors"],
+    getDonors,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  // const {
+  //   data: ThematicAreas,
+  //   isLoading: isLoadingThematicAreas,
+  //   isError: isErrorThematicAreas,
+  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
+  //   refetchOnWindowFocus: false,
+  // });
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,
@@ -496,7 +548,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         <Grid item md={4}>
           <TextField
             name="leadStaffEmail"
-            label="Lead staff email address"
+            // label="Lead staff email address"
             value={formik.values.leadStaffEmail}
             error={Boolean(
               formik.touched.projectManagerEmail &&
@@ -513,80 +565,180 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             my={2}
           />
         </Grid>
-        <Grid item md={12}>
+        {/* <Grid item md={3}>
           <TextField
-            name="dqaRole"
+            name="staffDetailsAIMSRole"
+            label="Project Role"
+            required
+            select
+            value={formik.values.staffDetailsAIMSRole}
+            error={Boolean(
+              formik.touched.staffDetailsAIMSRole &&
+                formik.errors.staffDetailsAIMSRole
+            )}
+            fullWidth
+            helperText={
+              formik.touched.staffDetailsAIMSRole &&
+              formik.errors.staffDetailsAIMSRole
+            }
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          >
+            <MenuItem disabled value="">
+              Select Role
+            </MenuItem>
+            {!isLoading
+              ? aimsRolesData.data.map((option) => (
+                  <MenuItem key={option.id} value={option}>
+                    {option.name}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
+        </Grid> */}
+        <Grid item md={4}>
+          <TextField
+            name="staffDetailsWorkFlowTask"
             label="DQA Role"
-            value={formik.values.dqaRole}
-            error={Boolean(formik.touched.dqaRole && formik.errors.dqaRole)}
+            required
+            select
+            value={formik.values.staffDetailsWorkFlowTask}
+            error={Boolean(
+              formik.touched.staffDetailsWorkFlowTask &&
+                formik.errors.staffDetailsWorkFlowTask
+            )}
             fullWidth
-            helperText={formik.touched.dqaRole && formik.errors.dqaRole}
+            helperText={
+              formik.touched.staffDetailsWorkFlowTask &&
+              formik.errors.staffDetailsWorkFlowTask
+            }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"
             my={2}
-          />
+          >
+            <MenuItem disabled value="">
+              Select DQA Work Flow Role
+            </MenuItem>
+            {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
+              ? administrativeRoles.data.map((option) => (
+                  <MenuItem key={option.roleId} value={option}>
+                    {option.roleName}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
         </Grid>
-        <Grid item md={12}>
+        <Grid item md={4}>
           <TextField
-            name="implementingOffice"
+            name="projectOrganisationUnitId"
             label="Implementing Office"
-            value={formik.values.implementingOffice}
+            required
+            select
+            value={formik.values.projectOrganisationUnitId}
             error={Boolean(
-              formik.touched.implementingOffice &&
-                formik.errors.implementingOffice
+              formik.touched.projectOrganisationUnitId &&
+                formik.errors.projectOrganisationUnitId
             )}
             fullWidth
             helperText={
-              formik.touched.implementingOffice &&
-              formik.errors.implementingOffice
+              formik.touched.projectOrganisationUnitId &&
+              formik.errors.projectOrganisationUnitId
             }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"
             my={2}
-          />
+          >
+            <MenuItem disabled value="">
+              Select Implementing Office
+            </MenuItem>
+            {!isLoadingOrgUnits
+              ? orgUnitsData.data.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
         </Grid>
-        <Grid item md={12}>
+        <Grid item md={4}>
           <TextField
-            name="regionalOffice"
-            label="Regional Office"
-            value={formik.values.regionalOffice}
+            name="regionalProgrammeId"
+            label="Regional Programme"
+            required
+            select
+            value={formik.values.regionalProgrammeId}
             error={Boolean(
-              formik.touched.regionalOffice && formik.errors.regionalOffice
+              formik.touched.regionalProgrammeId &&
+                formik.errors.regionalProgrammeId
             )}
             fullWidth
             helperText={
-              formik.touched.regionalOffice && formik.errors.regionalOffice
+              formik.touched.regionalProgrammeId &&
+              formik.errors.regionalProgrammeId
             }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"
             my={2}
-          />
+          >
+            <MenuItem disabled value="">
+              Select Regional Programme
+            </MenuItem>
+            {!isLoadingRegProg
+              ? regProgData.data.map((option) => (
+                  <MenuItem
+                    key={option.lookupItemId}
+                    value={option.lookupItemId}
+                  >
+                    {option.lookupItemName}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
         </Grid>
-        <Grid item md={12}>
+        <Grid item md={4}>
           <TextField
-            name="enaSupportOffice"
-            label="ENA Support Office"
-            value={formik.values.enaSupportOffice}
+            name="eNASupportingOffice"
+            label="E/NA Supporting Office"
+            required
+            select
+            value={formik.values.eNASupportingOffice}
             error={Boolean(
-              formik.touched.enaSupportOffice && formik.errors.enaSupportOffice
+              formik.touched.eNASupportingOffice &&
+                formik.errors.eNASupportingOffice
             )}
             fullWidth
             helperText={
-              formik.touched.enaSupportOffice && formik.errors.enaSupportOffice
+              formik.touched.eNASupportingOffice &&
+              formik.errors.eNASupportingOffice
             }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"
             my={2}
-          />
+          >
+            <MenuItem disabled value="">
+              Select E/NA Supporting Office
+            </MenuItem>
+            {!isLoadingAmrefEntities
+              ? amrefEntities.data.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
         </Grid>
-        <Grid item md={12}>
+        <Grid item md={3}>
           <TextField
             name="totalBudget"
-            label="Total Budget"
+            label="Overall Budget"
+            type="number"
+            required
             value={formik.values.totalBudget}
             error={Boolean(
               formik.touched.totalBudget && formik.errors.totalBudget
@@ -599,28 +751,44 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             my={2}
           />
         </Grid>
-        <Grid item md={12}>
+        <Grid item md={3}>
           <TextField
-            name="currencyType"
-            label="Currency Type"
-            value={formik.values.currencyType}
+            name="currencyTypeId"
+            label="Currency"
+            required
+            select
+            value={formik.values.currencyTypeId}
             error={Boolean(
-              formik.touched.currencyType && formik.errors.currencyType
+              formik.touched.currencyTypeId && formik.errors.currencyTypeId
             )}
             fullWidth
             helperText={
-              formik.touched.currencyType && formik.errors.currencyType
+              formik.touched.currencyTypeId && formik.errors.currencyTypeId
             }
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
             variant="outlined"
             my={2}
-          />
+          >
+            <MenuItem disabled value="">
+              Select Currency
+            </MenuItem>
+            {!isLoadingCurrency
+              ? currencyData.data.map((option) => (
+                  <MenuItem
+                    key={option.lookupItemId}
+                    value={option.lookupItemId}
+                  >
+                    {option.lookupItemName}
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
         </Grid>
-        <Grid item md={12}>
+        <Grid item md={4}>
           <TextField
             name="costCentre"
-            label="Cost Centre"
+            label="Cost Centre Name"
             value={formik.values.costCentre}
             error={Boolean(
               formik.touched.costCentre && formik.errors.costCentre
@@ -629,35 +797,38 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             helperText={formik.touched.costCentre && formik.errors.costCentre}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
+            multiline
             variant="outlined"
             my={2}
           />
         </Grid>
-        {/* <Grid item md={12}>
-          <Autocomplete
-            name="donorName"
-            label="Donor Name"
-            options={donorList}
-            getOptionLabel={(option) => option.name}
-            multiple
-            value={formik.values.donorName}
-            onChange={(event, newValue) =>
-              formik.setFieldValue("donorName", newValue, true)
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Donor Name"
-                variant="outlined"
-                error={Boolean(
-                  formik.touched.donorName && formik.errors.donorName
-                )}
-                helperText={formik.touched.donorName && formik.errors.donorName}
-              />
-            )}
-          />
-        </Grid> */}
-        {/* Add other fields as needed */}
+        <Grid item md={3}>
+          <TextField
+            name="donors"
+            label="Donors"
+            select
+            required
+            value={formik.values.donors}
+            error={Boolean(formik.touched.donors && formik.errors.donors)}
+            fullWidth
+            helperText={formik.touched.donors && formik.errors.donors}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            variant="outlined"
+            my={2}
+          >
+            <MenuItem disabled value="">
+              Select Donors
+            </MenuItem>
+            {!isLoadingDonor
+              ? donorData.data.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.donorName}({option.donorInitial})
+                  </MenuItem>
+                ))
+              : []}
+          </TextField>
+        </Grid>
         <Grid item md={12}>
           <Button variant="contained" color="primary" type="submit">
             Save

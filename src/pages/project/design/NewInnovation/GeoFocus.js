@@ -323,7 +323,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
         <Grid container spacing={12}>
           <Grid item md={12}>
             <Typography variant="h3" gutterBottom display="inline">
-              Project Locations
+              Innovation Locations
             </Typography>
           </Grid>
           <Grid item md={12}>
