@@ -254,16 +254,14 @@ const InnovationForm = ({
           status: values.status,
           staffNameId: values.staffNameId,
           totalBudget: values.totalBudget,
-          // leadStaffName: values.leadStaffName.id,
-          //leadStaffEmail: values.leadStaffEmail, // Add auto-populate logic
           staffDetailsAIMSRole: values.staffDetailsAIMSRole,
           staffDetailsWorkFlowTask: values.staffDetailsWorkFlowTask,
           office: values.office,
           regionalProgrammeId: values.regionalProgrammeId,
-          enaSupportOffice: values.enaSupportOffice,
-          currencyType: values.currencyType,
+          eNASupportingOffice: values.eNASupportingOffice,
+          currencyTypeId: values.currencyTypeId,
           costCentre: values.costCentre,
-          donorName: values.donorName.map((donor) => donor.id), // Assuming donorName is an array of objects with id property
+          donors: values.donors.map((donor) => donor.id), // Assuming donorName is an array of objects with id property
         };
         const innovation = await mutation.mutateAsync(saveInnovation);
         let qualitativeCountries = [];
