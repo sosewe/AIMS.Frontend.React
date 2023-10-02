@@ -283,18 +283,18 @@ const InnovationForm = ({
           periodTo: values.duration_to,
           periodFrom: values.duration_from,
         };
-        const qualitativeThematicArea = {
-          createDate: new Date(),
-          thematicAreaId: values.thematicAreaId,
-          qualitativeTypeId: innovationQualitativeTypeId,
-          qualitativeTypeItemId: innovation.data.id,
-        };
+        // const qualitativeThematicArea = {
+        //   createDate: new Date(),
+        //   thematicAreaId: values.thematicAreaId,
+        //   qualitativeTypeId: innovationQualitativeTypeId,
+        //   qualitativeTypeItemId: innovation.data.id,
+        // };
         //await processLevelRoleMutation.mutateAsync(projectRoles);
         await qualitativeCountryMutation.mutateAsync(qualitativeCountries);
         await qualitativePeriodMutation.mutateAsync(qualitativePeriod);
-        await qualitativeThematicAreaMutation.mutateAsync(
-          qualitativeThematicArea
-        );
+        // await qualitativeThematicAreaMutation.mutateAsync(
+        //   qualitativeThematicArea
+        // );
         toast("Successfully Created an Innovation", {
           type: "success",
         });

@@ -149,7 +149,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           administrativeUnitName = values.fourthLevel.adminUnit;
         }
 
-        const projectLocation = {
+        const innovationtLocation = {
           administrativeUnitId,
           administrativeUnitName,
           processLevelItemId: id, // Use the innovation ID here
@@ -157,7 +157,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           createDate: new Date(),
         };
 
-        await mutation.mutateAsync(projectLocation);
+        await mutation.mutateAsync(innovationtLocation);
         await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
       } catch (error) {
         toast(error.response.data, {
