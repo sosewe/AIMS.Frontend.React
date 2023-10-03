@@ -76,26 +76,26 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
             }
             columns={[
               {
-                field: "title",
-                headerName: "Title",
+                field: "id",
+                headerName: "ID",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "proposedSolution",
-                headerName: "Proposed Solution",
+                field: "shortTitle",
+                headerName: "Short title",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "targetBeneficiary",
-                headerName: "Target Beneficiary",
+                field: "costCenter",
+                headerName: "Cost Center",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "difference",
-                headerName: "Difference",
+                field: "office",
+                headerName: "Office",
                 editable: false,
                 flex: 1,
               },
