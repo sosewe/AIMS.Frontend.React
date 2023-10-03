@@ -30,6 +30,7 @@ import {
   deleteProjectLocation,
   getProjectLocations,
   newProjectLocation,
+  getAlllocations,
 } from "../../../../api/location";
 import { newinnovationGeographicalFocus } from "../../../../api/innovatonGeographicalFocus";
 import { DataGrid } from "@mui/x-data-grid";
@@ -67,7 +68,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     data: ProjectLocationsData,
     isLoading: isLoadingProjectLocations,
     // refetch,
-  } = useQuery(["getProjectLocationsQuery", id], getProjectLocations, {
+  } = useQuery(["getAlllocationsQuery", id], getAlllocations, {
     refetchOnWindowFocus: false,
     enabled: !!id,
   });

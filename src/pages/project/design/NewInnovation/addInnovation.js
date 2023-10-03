@@ -85,12 +85,7 @@ const initialValues = {
   donors: [], // multiple select
 };
 
-const InnovationForm = ({
-  processLevelItemId,
-  isLoading,
-  processLevelTypeId,
-  id,
-}) => {
+const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   let innovationQualitativeTypeId;
@@ -256,23 +251,25 @@ const InnovationForm = ({
         const saveInnovation = {
           id: id ? id : guid.toString(),
           createDate: new Date(),
-          title: values.innovationName,
+          title: values.title,
           shortTitle: values.shortTitle,
           startDate: values.startDate,
           endDate: values.endDate,
           extensionDate: values.extensionDate,
-          //status: values.status,
-          //staffNameId: values.staffNameId,
+          status: true,
+          staffNameId: values.staffNameId.id,
           totalBudget: values.totalBudget,
           // leadStaffName: values.leadStaffName.id,
           //leadStaffEmail: values.leadStaffEmail, // Add auto-populate logic
           // staffDetailsAIMSRole: values.staffDetailsAIMSRole,
           // staffDetailsWorkFlowTask: values.staffDetailsWorkFlowTask,
-          office: values.implementingOffice,
+          office: values.enaSupportOffice,
           regionalProgrammeId: values.regionalProgrammeId,
           // enaSupportOffice: values.enaSupportOffice,
           currencyTypeId: values.currencyTypeId,
           costCentre: values.costCentre,
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
           //donorName: values.donors.map((donor) => donor.id), // Assuming donorName is an array of objects with id property
         };
         const innovation = await mutation.mutateAsync(saveInnovation);
@@ -808,13 +805,18 @@ const InnovationForm = ({
               my={2}
             />
           </Grid>
-          <Grid item md={3}>
+          {/* <Grid item md={3}>
             <FormControl sx={{ m: 1, width: 500 }}>
               <InputLabel>Donors</InputLabel>
               <Select
                 multiple
                 value={formik.values.donors}
-                onChange={(e) => formik.setFieldValue("donors", e.target.value)}
+                onChange={(e) => {
+                  const selectedDonors = Array.isArray(e.target.value)
+                    ? e.target.value
+                    : [e.target.value]; // Ensure it's always an array
+                  formik.setFieldValue("donors", selectedDonors);
+                }}
                 input={<OutlinedInput label="Multiple Select" />}
                 renderValue={(selected) => (
                   <Stack gap={1} direction="row" flexWrap="wrap">
@@ -849,32 +851,7 @@ const InnovationForm = ({
                   : []}
               </Select>
             </FormControl>
-            {/*<TextField*/}
-            {/*  name="donors"*/}
-            {/*  label="Donors"*/}
-            {/*  select*/}
-            {/*  multiple*/}
-            {/*  value={formik.values.donors}*/}
-            {/*  error={Boolean(formik.touched.donors && formik.errors.donors)}*/}
-            {/*  fullWidth*/}
-            {/*  helperText={formik.touched.donors && formik.errors.donors}*/}
-            {/*  onBlur={formik.handleBlur}*/}
-            {/*  onChange={formik.handleChange}*/}
-            {/*  variant="outlined"*/}
-            {/*  my={2}*/}
-            {/*>*/}
-            {/*  <MenuItem disabled value="">*/}
-            {/*    Select Donors*/}
-            {/*  </MenuItem>*/}
-            {/*  {!isLoadingDonor*/}
-            {/*    ? donorData.data.map((option) => (*/}
-            {/*        <MenuItem key={option.id} value={option.id}>*/}
-            {/*          {option.donorName}({option.donorInitial})*/}
-            {/*        </MenuItem>*/}
-            {/*      ))*/}
-            {/*    : []}*/}
-            {/*</TextField>*/}
-          </Grid>
+          </Grid> */}
           <Grid item md={12}>
             <Button variant="contained" color="primary" type="submit">
               Save
@@ -885,5 +862,40 @@ const InnovationForm = ({
     </form>
   );
 };
+const Innovation = () => {
+  let { processLevelItemId, processLevelTypeId, id } = useParams();
+  return (
+    <React.Fragment>
+      <Helmet title="New Innovation" />
+      <Typography variant="h3" gutterBottom display="inline">
+        New Innovation
+      </Typography>
 
-export default InnovationForm;
+      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+        <Link
+          component={NavLink}
+          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
+        >
+          Project Design
+        </Link>
+        <Typography>New Innovation</Typography>
+      </Breadcrumbs>
+
+      <Divider my={6} />
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <InnovationForm
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                id={id}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </React.Fragment>
+  );
+};
+export default Innovation;
