@@ -32,6 +32,7 @@ import {
   newProjectLocation,
   getAlllocations,
 } from "../../../../api/location";
+import { getInnovationById } from "../../../../api/innovation";
 import { newinnovationGeographicalFocus } from "../../../../api/innovatonGeographicalFocus";
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -63,6 +64,15 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
 
   const [open, setOpen] = React.useState(false);
   const [locationId, setLocationId] = React.useState();
+
+  const {
+    data: InnovationData,
+    isLoading: isLoadingInnovationData,
+    isError: isErrorInnovationData,
+  } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
+
+  // Get the innovationId from InnovationData
+  const innovationId = InnovationData?.data?.id;
 
   const {
     data: ProjectLocationsData,
@@ -118,6 +128,8 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
       try {
         let administrativeUnitId = "";
         let administrativeUnitName = "";
+
+        // const innovationId = innovationId.id;
         if (
           values.selectedCountry &&
           !values.firstLevel &&
@@ -151,6 +163,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
         }
 
         const innovationtLocation = {
+          innovationId,
           administrativeUnitId,
           administrativeUnitName,
           processLevelItemId: id, // Use the innovation ID here
