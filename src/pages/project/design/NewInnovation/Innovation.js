@@ -7,7 +7,7 @@ import Box from "@mui/material/Box";
 import Addinnovation from "./addInnovation";
 import { useParams } from "react-router-dom";
 import GeoFocus from "./GeoFocus";
-import ProjectObjectives from "./ProjectObjectives";
+import InnovationObjectives from "./InnovationObjectives";
 import ThematicFocus from "./ThematicFocus";
 //import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
 // import InnovationData from "./Innovation/InnovationData";
@@ -76,9 +76,6 @@ const Innovation = () => {
         <Tab label="Thematic Focus" {...a11yProps(1)} />
         <Tab label="Geographic Focus" {...a11yProps(2)} />
         <Tab label="Objective & classification" {...a11yProps(3)} />
-        {/* <Tab label="Results Framework" {...a11yProps(4)} /> */}
-        {/* <Tab label="Innovation" {...a11yProps(5)} />
-        <Tab label="Advocacy" {...a11yProps(6)} /> */}
       </Tabs>
       <TabPanel value={value} index={0}>
         <Addinnovation id={id} />
@@ -90,7 +87,7 @@ const Innovation = () => {
         <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
+        <InnovationObjectives id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       {/* <TabPanel value={value} index={4}>
         <EnterTargetQuantitativeResultsFramework
