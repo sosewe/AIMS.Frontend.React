@@ -1,17 +1,18 @@
 import React, { useState } from "react";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextareaAutosize,
-} from "@mui/material";
+import { MenuItem } from "@mui/material";
 
 import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  CircularProgress,
   Dialog,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   DialogActions,
   DialogContent,
   DialogContentText,
@@ -22,20 +23,18 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { DataGrid } from "@mui/x-data-grid";
-import { Plus, Edit2, Trash as TrashIcon } from "react-feather";
+import { Check } from "react-feather";
 import styled from "@emotion/styled";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  deleteProjectObjective,
   getObjectiveByProcessLevelItemId,
   newProjectObjectives,
 } from "../../../../api/project-objectives";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import EditProjectObjective from "./EditProjectObjective";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -178,7 +177,7 @@ const StaffDetailsForm = ({
                 <MenuItem disabled value="">
                   Reporting Frequency
                 </MenuItem>
-                {!isLoadingInovationMetric
+                {!isLoadingreportingFrequency
                   ? reportingFrequencyData.data.map((option) => (
                       <MenuItem
                         key={option.lookupItemId}
@@ -211,11 +210,7 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [objectiveId, setObjectiveId] = useState("");
-
-  const [innovationType, setInnovationType] = useState("");
-  const [innovationClass, setInnovationClass] = useState("");
-  const [innovationTechnology, setInnovationTechnology] = useState("");
+  const [InnovationMetricsArray, setInnovationMetricsArray] = useState([]);
   const [whatMakesInnovation, setWhatMakesInnovation] = useState("");
   const [phcProblemSolved, setPhcProblemSolved] = useState("");
   const [estimatedImpact, setEstimatedImpact] = useState("");
@@ -299,21 +294,6 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
     getObjectiveByProcessLevelItemId
   );
 
-  const handleClickOpen = (objectiveId) => {
-    setOpen(true);
-    setObjectiveId(objectiveId);
-  };
-
-  const handleClickEditOpen = (objectiveId) => {
-    setOpenEdit(true);
-    setObjectiveId(objectiveId);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
-  const handleCloseEdit = () => {
-    setOpenEdit(false);
-  };
   const mutation = useMutation({ mutationFn: newProjectObjectives });
 
   const formik = useFormik({
@@ -323,14 +303,14 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
-        const projectObjective = {
+        const innovationObjective = {
           code: !isLoading && data.data.length > 0 ? data.data.length + 1 : 1,
           objective: values.objective,
           processLevelItemId: id,
           processLevelTypeId: processLevelTypeId,
           createDate: new Date(),
         };
-        await mutation.mutateAsync(projectObjective);
+        await mutation.mutateAsync(innovationObjective);
         await queryClient.invalidateQueries([
           "getObjectiveByProcessLevelItemId",
         ]);
@@ -345,279 +325,267 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
     },
   });
 
-  const { refetch } = useQuery(
-    ["deleteProjectObjective", objectiveId],
-    deleteProjectObjective,
-    { enabled: false }
-  );
-
-  const handleDeleteProjectObjective = async () => {
-    await refetch();
-    setOpen(false);
-    await queryClient.invalidateQueries(["getObjectiveByProcessLevelItemId"]);
+  const handleClick = (values) => {
+    setInnovationMetricsArray((current) => [...current, values]);
   };
 
-  const handleClick = async () => {
-    await queryClient.invalidateQueries(["getObjectiveByProcessLevelItemId"]);
-    setOpenEdit(false);
-  };
+  function removeMetric(row) {
+    setInnovationMetricsArray((current) =>
+      current.filter(
+        (metric) => metric.innovationMetric !== row.innovationMetric
+      )
+    );
+  }
 
   return (
-    <Card mb={12}>
-      <CardContent>
-        <Grid container spacing={12}>
-          <Grid item md={12}>
-            <Typography variant="h3" gutterBottom display="inline">
-              Innovation Objectives
-            </Typography>
-          </Grid>
-          <Grid item md={12}>
-            <CardContent pb={1}>
-              <form onSubmit={formik.handleSubmit}>
-                <Grid container item spacing={2}>
-                  <Grid item md={10}>
-                    <Grid item md={12}>
-                      <Grid item md={4}>
-                        <TextField
-                          name="innovationType"
-                          label="Innovation Type"
-                          select
-                          value={formik.values.innovationType}
-                          error={Boolean(
-                            formik.touched.innovationType &&
-                              formik.errors.innovationType
-                          )}
-                          fullWidth
-                          helperText={
-                            formik.touched.innovationType &&
-                            formik.errors.innovationType
-                          }
-                          onBlur={formik.handleBlur}
-                          onChange={formik.handleChange}
-                          variant="outlined"
-                          my={2}
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          {/* {formik.isSubmitting ? (
+            <Box display="flex" justifyContent="center" my={6}>
+              <CircularProgress />
+            </Box>
+          ) : ( */}
+          <>
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                <Typography variant="h3" gutterBottom display="inline">
+                  Innovation Objectives
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid container spacing={6}>
+              <Grid item md={6}>
+                <TextField
+                  name="innovationType"
+                  label="Innovation Type"
+                  select
+                  value={formik.values.innovationType}
+                  error={Boolean(
+                    formik.touched.innovationType &&
+                      formik.errors.innovationType
+                  )}
+                  fullWidth
+                  helperText={
+                    formik.touched.innovationType &&
+                    formik.errors.innovationType
+                  }
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  variant="outlined"
+                  my={2}
+                >
+                  <MenuItem disabled value="">
+                    Innovation Type
+                  </MenuItem>
+                  {!isLoadingInovationType
+                    ? innovationTypeData.data.map((option) => (
+                        <MenuItem
+                          key={option.lookupItemId}
+                          value={option.lookupItemId}
                         >
-                          <MenuItem disabled value="">
-                            Innovation Type
-                          </MenuItem>
-                          {!isLoadingInovationType
-                            ? innovationTypeData.data.map((option) => (
-                                <MenuItem
-                                  key={option.lookupItemId}
-                                  value={option.lookupItemId}
-                                >
-                                  {option.lookupItemName}
-                                </MenuItem>
-                              ))
-                            : []}
-                        </TextField>
-                      </Grid>
-                    </Grid>
-                    <Grid item md={4}>
-                      <TextField
-                        name="innovationClass"
-                        label="Innovation Class"
-                        select
-                        value={formik.values.innovationClass}
-                        error={Boolean(
-                          formik.touched.innovationClass &&
-                            formik.errors.innovationClass
-                        )}
-                        fullWidth
-                        helperText={
-                          formik.touched.innovationClass &&
-                          formik.errors.innovationClass
-                        }
-                        onBlur={formik.handleBlur}
-                        onChange={formik.handleChange}
-                        variant="outlined"
-                        my={2}
-                      >
-                        <MenuItem disabled value="">
-                          Innovation Class
+                          {option.lookupItemName}
                         </MenuItem>
-                        {!isLoadingInovationClass
-                          ? innovationClassData.data.map((option) => (
-                              <MenuItem
-                                key={option.lookupItemId}
-                                value={option.lookupItemId}
-                              >
-                                {option.lookupItemName}
-                              </MenuItem>
-                            ))
-                          : []}
-                      </TextField>
-                    </Grid>
-                    <Grid item md={4}>
-                      <TextField
-                        name="innovationTechnology"
-                        label="Innovation Technology"
-                        select
-                        value={formik.values.innovationTechnology}
-                        error={Boolean(
-                          formik.touched.innovationTechnology &&
-                            formik.errors.innovationTechnology
-                        )}
-                        fullWidth
-                        helperText={
-                          formik.touched.innovationTechnology &&
-                          formik.errors.innovationTechnology
-                        }
-                        onBlur={formik.handleBlur}
-                        onChange={formik.handleChange}
-                        variant="outlined"
-                        my={2}
+                      ))
+                    : []}
+                </TextField>
+              </Grid>
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="innovationClass"
+                label="Innovation Class"
+                select
+                value={formik.values.innovationClass}
+                error={Boolean(
+                  formik.touched.innovationClass &&
+                    formik.errors.innovationClass
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.innovationClass &&
+                  formik.errors.innovationClass
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Innovation Class
+                </MenuItem>
+                {!isLoadingInovationClass
+                  ? innovationClassData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
                       >
-                        <MenuItem disabled value="">
-                          Innovation Technology
-                        </MenuItem>
-                        {!isLoadingInovationTechnology
-                          ? innovationTechnologyData.data.map((option) => (
-                              <MenuItem
-                                key={option.lookupItemId}
-                                value={option.lookupItemId}
-                              >
-                                {option.lookupItemName}
-                              </MenuItem>
-                            ))
-                          : []}
-                      </TextField>
-                    </Grid>
-                    <TextField
-                      name="whatMakesInnovation"
-                      label="What Makes This an Innovation"
-                      value={whatMakesInnovation}
-                      onChange={(e) => setWhatMakesInnovation(e.target.value)}
-                      multiline
-                      rows={3}
-                      fullWidth
-                      variant="outlined"
-                      my={2}
-                    />
-                    <TextField
-                      name="phcProblemSolved"
-                      label="What PHC Problem Does It Solve and How"
-                      value={phcProblemSolved}
-                      onChange={(e) => setPhcProblemSolved(e.target.value)}
-                      multiline
-                      rows={3}
-                      fullWidth
-                      variant="outlined"
-                      my={2}
-                    />
-                    <TextField
-                      name="estimatedImpact"
-                      label="Estimated Impact and Target Group"
-                      value={estimatedImpact}
-                      onChange={(e) => setEstimatedImpact(e.target.value)}
-                      multiline
-                      rows={3}
-                      fullWidth
-                      variant="outlined"
-                      my={2}
-                    />
-                  </Grid>
-                  <Grid item md={2}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      mt={3}
-                    >
-                      <Plus /> Add Objective
-                    </Button>
-                  </Grid>
-                </Grid>
-              </form>
-            </CardContent>
-            <br />
-            <Paper style={{ height: 400, width: "100%" }}>
-              <DataGrid
-                rowsPerPageOptions={[5, 10, 25]}
-                rows={isLoading ? [] : data ? data.data : []}
-                columns={[
-                  {
-                    field: "code",
-                    headerName: "#",
-                    editable: false,
-                    flex: 1,
-                  },
-                  {
-                    field: "objective",
-                    headerName: "Project Objectives",
-                    editable: false,
-                    flex: 1,
-                  },
-                  {
-                    field: "action",
-                    headerName: "Action",
-                    sortable: false,
-                    flex: 1,
-                    renderCell: (params) => (
-                      <>
-                        <Button
-                          startIcon={<Edit2 />}
-                          size="small"
-                          onClick={() => handleClickEditOpen(params.id)}
-                        ></Button>
-                        <Button
-                          startIcon={<TrashIcon />}
-                          size="small"
-                          onClick={() => handleClickOpen(params.id)}
-                        ></Button>
-                      </>
-                    ),
-                  },
-                ]}
-                loading={isLoading}
-                getRowHeight={() => "auto"}
-              />
-            </Paper>
-          </Grid>
-        </Grid>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            Delete Project Objective
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Project Objective?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleDeleteProjectObjective} color="primary">
-              Yes
-            </Button>
-            <Button onClick={handleClose} color="error" autoFocus>
-              No
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          fullWidth={true}
-          maxWidth="md"
-          open={openEdit}
-          onClose={handleCloseEdit}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            Edit Project Objective
-          </DialogTitle>
-          <DialogContent>
-            <EditProjectObjective
-              objectiveId={objectiveId}
-              handleClick={handleClick}
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="innovationTechnology"
+                label="Innovation Technology"
+                select
+                value={formik.values.innovationTechnology}
+                error={Boolean(
+                  formik.touched.innovationTechnology &&
+                    formik.errors.innovationTechnology
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.innovationTechnology &&
+                  formik.errors.innovationTechnology
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Innovation Technology
+                </MenuItem>
+                {!isLoadingInovationTechnology
+                  ? innovationTechnologyData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <TextField
+              name="whatMakesInnovation"
+              label="What Makes This an Innovation"
+              value={whatMakesInnovation}
+              onChange={(e) => setWhatMakesInnovation(e.target.value)}
+              multiline
+              rows={3}
+              fullWidth
+              variant="outlined"
+              my={2}
             />
-          </DialogContent>
-        </Dialog>
-      </CardContent>
-    </Card>
+            <TextField
+              name="phcProblemSolved"
+              label="What PHC Problem Does It Solve and How"
+              value={phcProblemSolved}
+              onChange={(e) => setPhcProblemSolved(e.target.value)}
+              multiline
+              rows={3}
+              fullWidth
+              variant="outlined"
+              my={2}
+            />
+            <TextField
+              name="estimatedImpact"
+              label="Estimated Impact and Target Group"
+              value={estimatedImpact}
+              onChange={(e) => setEstimatedImpact(e.target.value)}
+              multiline
+              rows={3}
+              fullWidth
+              variant="outlined"
+              my={2}
+            />
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                <Typography variant="h3" gutterBottom display="inline">
+                  Innovation Metric
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setOpen(true)}
+                >
+                  <AddIcon /> Add Innovation Metric
+                </Button>
+              </Grid>
+            </Grid>
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                <Paper>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Innovation Metric</TableCell>
+                        <TableCell align="right">Target Group</TableCell>
+                        <TableCell align="right">Reporting Frequency</TableCell>
+                        <TableCell align="right">Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {InnovationMetricsArray.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell component="th" scope="row">
+                            {row.innovationMetric.lookupItemName}
+                          </TableCell>
+                          <TableCell align="right">
+                            {row.innovationClass.lookupItemName}
+                          </TableCell>
+                          <TableCell align="right">
+                            {row.reportingFrequency.lookupItemName}
+                          </TableCell>
+                          <TableCell align="right">
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => removeMetric(row)}
+                            >
+                              <DeleteIcon />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Grid>
+            </Grid>
+            <br />
+            <Button type="submit" variant="contained" color="primary" mt={3}>
+              <Check /> Save changes
+            </Button>
+          </>
+        </CardContent>
+      </Card>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={open}
+        onClose={() => setOpen(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Innovation Metric</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Add Innovation Metrics</DialogContentText>
+          <StaffDetailsForm
+            innovationMetricData={innovationMetricData}
+            isLoadingInovationMetric={isLoadingInovationMetric}
+            isLoadinginnovationTargetGroup={isLoadinginnovationTargetGroup}
+            innovationtargetGroupData={innovationtargetGroupData}
+            reportingFrequencyData={reportingFrequencyData}
+            isLoadingreportingFrequency={isLoadingreportingFrequency}
+            handleClick={handleClick}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </form>
   );
 };
 
