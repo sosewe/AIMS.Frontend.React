@@ -805,7 +805,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               my={2}
             />
           </Grid>
-          {/* <Grid item md={3}>
+          <Grid item md={3}>
             <FormControl sx={{ m: 1, width: 500 }}>
               <InputLabel>Donors</InputLabel>
               <Select
@@ -851,7 +851,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                   : []}
               </Select>
             </FormControl>
-          </Grid> */}
+          </Grid>
           <Grid item md={12}>
             <Button variant="contained" color="primary" type="submit">
               Save
