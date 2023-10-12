@@ -6,6 +6,7 @@ import {
   Slack,
   Home,
 } from "react-feather";
+import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 
 const projectSection = [
   {
@@ -111,6 +112,28 @@ const configurationSection = [
   },
 ];
 
+const administrationSection = [
+  {
+    href: "/admin",
+    title: "Roles",
+    icon: AdminPanelSettingsOutlinedIcon,
+    children: [
+      {
+        href: "/admin/role-permissions",
+        title: "Role Permissions",
+      },
+      {
+        href: "/admin/modules",
+        title: "Modules",
+      },
+      {
+        href: "/admin/pages",
+        title: "Pages",
+      },
+    ],
+  },
+];
+
 const navItems = [
   {
     title: "",
@@ -133,6 +156,10 @@ const navItems = [
   {
     title: "Configuration",
     pages: configurationSection,
+  },
+  {
+    title: "Administration",
+    pages: administrationSection,
   },
 ];
 

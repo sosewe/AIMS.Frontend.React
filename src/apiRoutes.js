@@ -14,6 +14,10 @@ export const apiRoutes = {
   administrativeUnit: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/AdministrativeUnit`,
   processLevel: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/ProcessLevel`,
   projectRole: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/ProjectRole`,
+  modules: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/Module`,
+  page: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/Page`,
+  action: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/Action`,
+  permission: `${path}${process.env.REACT_APP_SETTINGS_PORT}/api/Permission`,
   //Indicator
   project: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Project`,
   donorProcessLevel: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/DonorProcessLevel`,

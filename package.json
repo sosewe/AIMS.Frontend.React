@@ -41,6 +41,7 @@
     "@fullcalendar/daygrid": "5.11.3",
     "@fullcalendar/interaction": "5.11.3",
     "@fullcalendar/react": "5.11.2",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "@mui/icons-material": "5.10.3",
     "@mui/lab": "5.0.0-alpha.98",
     "@mui/material": "5.10.4",

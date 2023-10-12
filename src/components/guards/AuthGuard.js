@@ -5,6 +5,7 @@ import React from "react";
 
 // For routes that can only be accessed by authenticated users
 function AuthGuard({ children }) {
+  // console.log(children);
   // const { isAuthenticated, isInitialized } = useAuth();
   //
   // if (isInitialized && !isAuthenticated) {

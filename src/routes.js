@@ -126,6 +126,14 @@ const NewProjectRole = async(() =>
   import("./pages/project-role/NewProjectRole")
 );
 
+//Roles
+const Roles = async(() => import("./pages/admin/Roles"));
+const Modules = async(() => import("./pages/admin/Modules"));
+const Pages = async(() => import("./pages/admin/Pages"));
+const NewModule = async(() => import("./pages/admin/NewModule"));
+const NewPage = async(() => import("./pages/admin/NewPage"));
+const NewAction = async(() => import("./pages/admin/NewAction"));
+
 const routes = [
   {
     path: "/",
@@ -412,6 +420,48 @@ const routes = [
       {
         path: "500",
         element: <Page500 />,
+      },
+    ],
+  },
+  {
+    path: "admin",
+    element: (
+      <AuthGuard>
+        <DashboardLayout />
+      </AuthGuard>
+    ),
+    children: [
+      {
+        path: "role-permissions",
+        element: <Roles />,
+      },
+      {
+        path: "modules",
+        element: <Modules />,
+      },
+      {
+        path: "pages",
+        element: <Pages />,
+      },
+      {
+        path: "new-module",
+        element: <NewModule />,
+      },
+      {
+        path: "new-page/:moduleId",
+        element: <NewPage />,
+      },
+      {
+        path: "new-page/:moduleId/:pageId",
+        element: <NewPage />,
+      },
+      {
+        path: "new-action/:pageId",
+        element: <NewAction />,
+      },
+      {
+        path: "new-action/:pageId/:actionId",
+        element: <NewAction />,
       },
     ],
   },

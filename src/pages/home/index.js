@@ -20,7 +20,7 @@ const Home = () => {
             height="100%"
             src="https://qlik.amref.org:8443/single/?appid=dcc2ed8b-67c4-472a-acac-7f6a0128559c&sheet=6931ed03-c2d1-4ea6-aa74-1b801a0aa2f8&theme=breeze&opt=ctxmenu&select=clearall"
             frameBorder="0"
-            allowFullScreen="true"
+            allowFullScreen={true}
           ></iframe>
         </Grid>
       </Grid>

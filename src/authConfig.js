@@ -1,7 +1,25 @@
 import { LogLevel } from "@azure/msal-browser";
 
-const loggerCallback = (logLevel, message) => {
-  // console.log(message);
+const loggerCallback = (logLevel, message, containsPii) => {
+  if (containsPii) {
+    return;
+  }
+  switch (logLevel) {
+    case LogLevel.Error:
+      console.error(message);
+      return;
+    case LogLevel.Info:
+      console.info(message);
+      return;
+    case LogLevel.Verbose:
+      console.debug(message);
+      return;
+    case LogLevel.Warning:
+      console.warn(message);
+      return;
+    default:
+      return;
+  }
 };
 
 export const msalConfig = {
@@ -31,5 +49,5 @@ export const loginRequest = {
 
 // Add the endpoints here for Microsoft Graph API services you'd like to use.
 export const graphConfig = {
-  graphMeEndpoint: "Enter_the_Graph_Endpoint_Here/v1.0/me",
+  graphMeEndpoint: "https://graph.microsoft.com/v1.0/me",
 };
