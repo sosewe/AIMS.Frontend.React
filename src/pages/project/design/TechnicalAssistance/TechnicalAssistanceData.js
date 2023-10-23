@@ -15,8 +15,8 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { getInnovations } from "../../../../api/innovation";
-import InnovationDataActions from "./InnovationDataActions";
+import { getAdvocates } from "../../../../api/advocacy";
+import AdvocacyDataActions from "./TechnicalAssistanceDataActions";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -24,27 +24,27 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
 
   const {
-    data: InnovationsData,
-    isLoading: isLoadingInnovations,
-    isError: isErrorInnovations,
+    data: AdvocacyData,
+    isLoading: isLoadingAdvocacy,
+    isError: isErrorAdvocacy,
     error,
-  } = useQuery(["getInnovations"], getInnovations, {
+  } = useQuery(["getAdvocates"], getAdvocates, {
     refetchOnWindowFocus: false,
   });
 
-  if (isErrorInnovations) {
+  if (isErrorAdvocacy) {
     toast(error.response.data, {
       type: "error",
     });
   }
 
   const actionLink = (params) => {
-    return <InnovationDataActions params={params} />;
+    return <AdvocacyDataActions params={params} />;
   };
   return (
     <Card mb={6}>
@@ -55,11 +55,11 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
           color="error"
           onClick={() =>
             navigate(
-              `/project/design/new-innovation/${processLevelItemId}/${processLevelTypeId}`
+              `/project/design/new-technicalassistance/${processLevelItemId}/${processLevelTypeId}`
             )
           }
         >
-          <AddIcon /> New Innovation
+          <AddIcon /> New Technical Assistance
         </Button>
       </CardContent>
       <br />
@@ -68,34 +68,34 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
           <DataGrid
             rowsPerPageOptions={[5, 10, 25]}
             rows={
-              isLoadingInnovations || isErrorInnovations
+              isLoadingAdvocacy || isErrorAdvocacy
                 ? []
-                : InnovationsData
-                ? InnovationsData.data
+                : AdvocacyData
+                ? AdvocacyData.data
                 : []
             }
             columns={[
               {
-                field: "id",
-                headerName: "ID",
+                field: "title",
+                headerName: "Title",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "shortTitle",
-                headerName: "Short title",
+                field: "beneficiary",
+                headerName: "Beneficiary",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "costCenter",
-                headerName: "Cost Center",
+                field: "advocacyNeed",
+                headerName: "Advocacy Need",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "office",
-                headerName: "Office",
+                field: "expectedResult",
+                headerName: "Expected Result",
                 editable: false,
                 flex: 1,
               },
@@ -111,7 +111,7 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
             ]}
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-            loading={isLoadingInnovations}
+            loading={isLoadingAdvocacy}
             components={{ Toolbar: GridToolbar }}
             getRowHeight={() => "auto"}
           />
@@ -121,20 +121,20 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <React.Fragment>
-      <Helmet title="Innovation" />
+      <Helmet title="Technical Assistance" />
       <Typography variant="h3" gutterBottom display="inline">
-        Innovation
+        Technical Assistance
       </Typography>
 
       <Divider my={6} />
-      <InnovationGridData
+      <AdvocacyGridData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
       />
     </React.Fragment>
   );
 };
-export default InnovationData;
+export default AdvocacyData;

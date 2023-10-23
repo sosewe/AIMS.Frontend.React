@@ -55,6 +55,8 @@ export const apiRoutes = {
   disaggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Disaggregate`,
   attributeResponseOption: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AttributeResponseOption`,
   innovation: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Innovation`,
+  innovationGeographicalFocus: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/InnovationGeographicalFocus`,
+  innovationThematicFocus: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/InnovationThematicFocus`,
   advocacy: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Advocacy`,
   qualitativeCountry: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativeCountry`,
   qualitativePeriod: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativePeriod`,
@@ -69,6 +71,6 @@ export const apiRoutes = {
   programmeThematicArea: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ProgrammeThematicArea`,
   // external
   ERPStaffList: `https://monitoringapi.amref.org/api/erpStaffList?unit=HQ`,
-  administrativeRoles: `https://monitoringapi.amref.org/api/workflowStepApproverRoles_View`,
+  administrativeRoles: `https://monitoringapi.amref.org/api/activeRoles`,
   GenerateBearerToken: `https://monitoringapi.amref.org/api/userCheckAccess`,
 };

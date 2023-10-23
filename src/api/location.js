@@ -30,3 +30,7 @@ export const getGeographicalFocusByAdminUnitIdAndProcessLevelItemId = async ({
     `${apiRoutes.location}/GetGeographicalFocusByAdminUnitIdAndProcessLevelItemId/${administrativeUnitId}/${processLevelItemId}`
   );
 };
+
+export const getAlllocations = async () => {
+  return await axios.get(`${apiRoutes.location}`);
+};

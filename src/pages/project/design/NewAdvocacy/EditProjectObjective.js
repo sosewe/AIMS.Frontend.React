@@ -15,7 +15,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   getProjectObjectiveById,
   newProjectObjectives,
-} from "../../../api/project-objectives";
+} from "../../../../api/project-objectives";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);

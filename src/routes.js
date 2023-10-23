@@ -112,11 +112,20 @@ const TableQuantitativeResults = async(() =>
 const EnterQuantitativeResults = async(() =>
   import("./pages/project/monitoring/EnterQuantitativeResults")
 );
+// const Innovation = async(() =>
+//   import("./pages/project/design/Innovation/Innovation")
+// );
 const Innovation = async(() =>
-  import("./pages/project/design/Innovation/Innovation")
+  import("./pages/project/design/NewInnovation/Innovation")
 );
+// const Advocacy = async(() =>
+//   import("./pages/project/design/Advocacy/Advocacy")
+// );
 const Advocacy = async(() =>
-  import("./pages/project/design/Advocacy/Advocacy")
+  import("./pages/project/design/NewAdvocacy/Advocacy")
+);
+const TechnicalAssistance = async(() =>
+  import("./pages/project/design/TechnicalAssistance/TechnicalAssistance")
 );
 const InnovationMonitoring = async(() =>
   import("./pages/project/monitoring/Innovation/InnovationMonitoring")
@@ -284,6 +293,14 @@ const routes = [
       {
         path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId/:id",
         element: <Advocacy />,
+      },
+      {
+        path: "design/new-technicalassistance/:processLevelItemId/:processLevelTypeId",
+        element: <TechnicalAssistance />,
+      },
+      {
+        path: "design/new-technicalassistance/:processLevelItemId/:processLevelTypeId/:id",
+        element: <TechnicalAssistance />,
       },
       {
         path: "monitoring/innovation-monitoring/:processLevelItemId/:processLevelTypeId/:id",

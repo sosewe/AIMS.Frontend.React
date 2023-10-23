@@ -12,6 +12,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { spacing } from "@mui/system";
+import "./colors.css";
 import { useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 
@@ -25,6 +26,7 @@ const initialValues = {
   planDeviation: "",
   updateProgress: "",
 };
+const colorclass = ["theblue", "thered", "theamber", "thegreen"];
 
 const AdvocacyMonitoringProgress = ({ handleClick }) => {
   const {
@@ -123,8 +125,9 @@ const AdvocacyMonitoringProgress = ({ handleClick }) => {
                   Select BRAG Status
                 </MenuItem>
                 {!isLoadingBRAGStatusData && !isErrorBRAGStatusData
-                  ? BRAGStatusData.data.map((option) => (
+                  ? BRAGStatusData.data.map((option, index) => (
                       <MenuItem
+                        className={colorclass[index]}
                         key={option.lookupItemId}
                         value={option.lookupItemId}
                       >
