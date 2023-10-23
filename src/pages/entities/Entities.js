@@ -25,6 +25,7 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Trash as TrashIcon } from "react-feather";
 import { deleteEntity, getAmrefEntities } from "../../api/amref-entity";
 import { lookupItem } from "../../api/lookup";
+import usePermissions from "../../hooks/usePermissions";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -39,6 +40,7 @@ const EntitiesData = () => {
   const [id, setId] = React.useState();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
   // fetch Entities
   const { data, isLoading, isError, error } = useQuery(
     ["entities"],
@@ -84,14 +86,16 @@ const EntitiesData = () => {
   return (
     <Card mb={6}>
       <CardContent pb={1}>
-        <Button
-          mr={2}
-          variant="contained"
-          color="error"
-          onClick={() => navigate("/settings/new-entity")}
-        >
-          <AddIcon /> New Entity
-        </Button>
+        {hasPermission("new-entity") && (
+          <Button
+            mr={2}
+            variant="contained"
+            color="error"
+            onClick={() => navigate("/settings/new-entity")}
+          >
+            <AddIcon /> New Entity
+          </Button>
+        )}
       </CardContent>
       <br />
       <Paper>

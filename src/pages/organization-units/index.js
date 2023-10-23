@@ -28,6 +28,7 @@ import {
   deleteOrganizationUnit,
   getOrganizationUnits,
 } from "../../api/organization-unit";
+import usePermissions from "../../hooks/usePermissions";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -42,6 +43,7 @@ const OrganizationUnitsData = () => {
   const [id, setId] = React.useState();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
   // fetch Administrative Programmes
   const { data, isLoading, isError, error } = useQuery(
     ["organizationUnits"],
@@ -99,14 +101,16 @@ const OrganizationUnitsData = () => {
   return (
     <Card mb={6}>
       <CardContent pb={1}>
-        <Button
-          mr={2}
-          variant="contained"
-          color="error"
-          onClick={() => navigate("/settings/new-organization-unit")}
-        >
-          <AddIcon /> New Organization Unit
-        </Button>
+        {hasPermission("new-organization-unit") && (
+          <Button
+            mr={2}
+            variant="contained"
+            color="error"
+            onClick={() => navigate("/settings/new-organization-unit")}
+          >
+            <AddIcon /> New Organization Unit
+          </Button>
+        )}
       </CardContent>
       <br />
       <Paper>

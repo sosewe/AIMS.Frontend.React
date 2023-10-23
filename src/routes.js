@@ -434,6 +434,7 @@ const routes = [
       {
         path: "role-permissions",
         element: <Roles />,
+        permission: "role-permission",
       },
       {
         path: "modules",

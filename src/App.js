@@ -24,6 +24,7 @@ import createEmotionCache from "./utils/createEmotionCache";
 // import { AuthProvider } from "./contexts/FirebaseAuthContext";
 // import { AuthProvider } from "./contexts/Auth0Context";
 // import { AuthProvider } from "./contexts/CognitoContext";
+import { ApiProvider } from "./contexts/ApiContext";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -38,22 +39,24 @@ function App({ emotionCache = clientSideEmotionCache }) {
   const { theme } = useTheme();
 
   return (
-    <CacheProvider value={emotionCache}>
-      <HelmetProvider>
-        <Helmet
-          titleTemplate="%s | AIMS"
-          defaultTitle="AIMS - AMREF Information Management System"
-        />
-        <Provider store={store}>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <MuiThemeProvider theme={createTheme(theme)}>
-              <AuthenticatedTemplate>{content}</AuthenticatedTemplate>
-            </MuiThemeProvider>
-          </LocalizationProvider>
-        </Provider>
-        <ToastContainer position="top-right" newestOnTop />
-      </HelmetProvider>
-    </CacheProvider>
+    <ApiProvider>
+      <CacheProvider value={emotionCache}>
+        <HelmetProvider>
+          <Helmet
+            titleTemplate="%s | AIMS"
+            defaultTitle="AIMS - AMREF Information Management System"
+          />
+          <Provider store={store}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <MuiThemeProvider theme={createTheme(theme)}>
+                <AuthenticatedTemplate>{content}</AuthenticatedTemplate>
+              </MuiThemeProvider>
+            </LocalizationProvider>
+          </Provider>
+          <ToastContainer position="top-right" newestOnTop />
+        </HelmetProvider>
+      </CacheProvider>
+    </ApiProvider>
   );
 }
 
