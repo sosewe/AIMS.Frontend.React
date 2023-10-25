@@ -5,14 +5,17 @@ const usePermissions = () => {
   const { data: permissionData } = useApi();
   const { accounts } = useMsal();
   const account = useAccount(accounts[0]);
-  const roles = account.idTokenClaims.roles;
+  const roles = account?.idTokenClaims?.roles;
   const hasPermission = (permissionName) => {
     if (roles.includes("Super.Admin")) {
       return true;
     }
-    const returnVal = permissionData.some(
-      (item) => item.name === permissionName
-    );
+    const returnVal =
+      permissionData &&
+      permissionData.length > 0 &&
+      permissionData.some(
+        (item) => item.name.toLowerCase() === permissionName.toLowerCase()
+      );
     return returnVal ? true : false;
   };
   return { hasPermission };

@@ -34,7 +34,7 @@ export function ApiProvider({ children }) {
   const [state, dispatch] = useReducer(apiReducer, initialState);
   const { accounts } = useMsal();
   const account = useAccount(accounts[0]);
-  const roles = account?.idTokenClaims?.roles;
+  const roles = account?.idTokenClaims?.roles ?? [];
 
   useEffect(() => {
     // Make your API request here and dispatch the result
@@ -54,7 +54,7 @@ export function ApiProvider({ children }) {
       .catch((error) => {
         dispatch({ type: "FETCH_ERROR", payload: error });
       });
-  }, []);
+  }, [roles]);
 
   return <ApiContext.Provider value={state}>{children}</ApiContext.Provider>;
 }

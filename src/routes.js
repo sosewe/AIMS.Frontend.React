@@ -135,6 +135,9 @@ const NewProjectRole = async(() =>
   import("./pages/project-role/NewProjectRole")
 );
 
+// Attributes
+const AttributesList = async(() => import("./pages/attributes/AttributesList"));
+
 //Roles
 const Roles = async(() => import("./pages/admin/Roles"));
 const Modules = async(() => import("./pages/admin/Modules"));
@@ -227,6 +230,10 @@ const routes = [
       {
         path: "new-indicator/:id",
         element: <NewIndicator />,
+      },
+      {
+        path: "attributes-list",
+        element: <AttributesList />,
       },
     ],
   },

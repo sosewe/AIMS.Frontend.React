@@ -55,6 +55,10 @@ const programmeSection = [
         href: "/indicator/indicators",
         title: "Indicators",
       },
+      {
+        href: "/indicator/attributes-list",
+        title: "Attributes",
+      },
     ],
   },
 ];
