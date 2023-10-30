@@ -6,7 +6,8 @@
   "private": true,
   "license": "",
   "scripts": {
-    "start": "HTTPS=true SSL_CRT_FILE=./.cert/cert.pem SSL_KEY_FILE=./.cert/key.pem craco start",
+    "start": "set HTTPS=true&&set SSL_CRT_FILE=./.cert/cert.pem&&set SSL_KEY_FILE=./.cert/key.pem&& craco start",
+    "startDev": "craco start",
     "build": "craco build",
     "eject": "craco eject",
     "lint": "eslint src --ext .js,.jsx --fix"

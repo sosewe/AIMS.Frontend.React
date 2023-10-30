@@ -10,13 +10,14 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { Link2 } from "react-feather";
 import { getInnovations } from "../../../../api/innovation";
-import InnovationDataActions from "./InnovationDataActions";
+//import InnovationDataActions from "./InnovationDataActions";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -43,9 +44,6 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
     });
   }
 
-  const actionLink = (params) => {
-    return <InnovationDataActions params={params} />;
-  };
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -55,7 +53,7 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
           color="error"
           onClick={() =>
             navigate(
-              `/project/design/new-innovation/${processLevelItemId}/${processLevelTypeId}`
+              `/project/design/innovation/new-innovation/${processLevelItemId}/${processLevelTypeId}`
             )
           }
         >
@@ -104,9 +102,15 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 headerName: "Action",
                 sortable: false,
                 flex: 1,
-                renderCell: (params) => {
-                  return actionLink(params);
-                },
+                renderCell: (params) => (
+                  <>
+                    <NavLink
+                      to={`/project/design/innovation/innovation-detail/${params.id}`}
+                    >
+                      <Button startIcon={<Link2 />} size="small"></Button>
+                    </NavLink>
+                  </>
+                ),
               },
             ]}
             pageSize={pageSize}

@@ -39,6 +39,7 @@ import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getInnovationById, newInnovation } from "../../../../api/innovation";
+import { newInnovationDonor } from "../../../../api/innovation-donor";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
 
@@ -82,13 +83,12 @@ const initialValues = {
   totalBudget: "",
   currencyTypeId: "",
   costCentre: "",
-  donors: [], // multiple select
+  donors: [],
 };
 
-const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  let innovationQualitativeTypeId;
   const {
     data: InnovationData,
     isLoading: isLoadingInnovationData,
@@ -178,13 +178,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  // const {
-  //   data: ThematicAreas,
-  //   isLoading: isLoadingThematicAreas,
-  //   isError: isErrorThematicAreas,
-  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-  //   refetchOnWindowFocus: false,
-  // });
+
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,
@@ -203,19 +197,13 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
-    const filterInnovation = QualitativeResultTypesData.data.find(
-      (obj) => obj.lookupItemName === "Innovation"
-    );
-    innovationQualitativeTypeId = filterInnovation.lookupItemId;
-  }
   const mutation = useMutation({ mutationFn: newInnovation });
-  const qualitativeCountryMutation = useMutation({
-    mutationFn: newQualitativeCountry,
+
+  const innovationDonorsMutation = useMutation({
+    mutationFn: newInnovationDonor,
   });
-  const qualitativePeriodMutation = useMutation({
-    mutationFn: newQualitativePeriod,
-  });
+
+  // eslint-disable-next-line no-unused-vars
   const qualitativeThematicAreaMutation = useMutation({
     mutationFn: newQualitativeThematicArea,
   });
@@ -241,11 +229,10 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         .required("Required")
         .positive("Must be positive"),
       currencyTypeId: Yup.string().required("Required"),
-      costCentre: Yup.string().required("Required"),
+      costCenter: Yup.string().required("Required"),
       donors: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
-      console.log(values);
       try {
         const guid = new Guid();
         const saveInnovation = {
@@ -256,52 +243,32 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           startDate: values.startDate,
           endDate: values.endDate,
           extensionDate: values.extensionDate,
-          status: true,
+          status: values.status,
           staffNameId: values.staffNameId.id,
           totalBudget: values.totalBudget,
-          // leadStaffName: values.leadStaffName.id,,,
-          //leadStaffEmail: values.leadStaffEmail, // Add auto-populate logic
-          // staffDetailsAIMSRole: values.staffDetailsAIMSRole,
-          // staffDetailsWorkFlowTask: values.staffDetailsWorkFlowTask,
           office: values.enaSupportOffice,
           regionalProgrammeId: values.regionalProgrammeId,
-          // enaSupportOffice: values.enaSupportOffice,
           currencyTypeId: values.currencyTypeId,
-          costCentre: values.costCentre,
+          costCenter: values.costCenter,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
-          //donorName: values.donors.map((donor) => donor.id), // Assuming donorName is an array of objects with id property
         };
+
+        /*STEP 1 : Save Basic Information */
         const innovation = await mutation.mutateAsync(saveInnovation);
-        let qualitativeCountries = [];
-        for (const country of values.countryId) {
-          const qualitativeCountry = {
+
+        let innovationDonors = [];
+        for (const donor of values.donors) {
+          console.log("donor ...." + donor.id);
+          const innovationDonor = {
+            donorId: donor.id,
+            innovationId: innovation.data.id,
             createDate: new Date(),
-            organizationUnitId: country.id,
-            qualitativeTypeId: innovationQualitativeTypeId,
-            qualitativeTypeItemId: innovation.data.id,
           };
-          qualitativeCountries.push(qualitativeCountry);
+          innovationDonors.push(innovationDonor);
         }
-        const qualitativePeriod = {
-          createDate: new Date(),
-          qualitativeTypeId: innovationQualitativeTypeId,
-          qualitativeTypeItemId: innovation.data.id,
-          periodTo: values.duration_to,
-          periodFrom: values.duration_from,
-        };
-        // const qualitativeThematicArea = {
-        //   createDate: new Date(),
-        //   thematicAreaId: values.thematicAreaId,
-        //   qualitativeTypeId: innovationQualitativeTypeId,
-        //   qualitativeTypeItemId: innovation.data.id,
-        // };
-        //await processLevelRoleMutation.mutateAsync(projectRoles);
-        await qualitativeCountryMutation.mutateAsync(qualitativeCountries);
-        await qualitativePeriodMutation.mutateAsync(qualitativePeriod);
-        // await qualitativeThematicAreaMutation.mutateAsync(
-        //   qualitativeThematicArea
-        // );
+        await innovationDonorsMutation.mutateAsync(innovationDonors);
+
         toast("Successfully Created an Innovation", {
           type: "success",
         });
@@ -348,7 +315,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         formik.setValues({
           title: InnovationData.data.title,
           staffNameId: staff ? staff : "",
-          countryId: countries && countries.length > 0 ? countries : [],
           proposedSolution: InnovationData.data.proposedSolution,
           targetBeneficiary: InnovationData.data.targetBeneficiary,
           difference: InnovationData.data.difference,
@@ -388,6 +354,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     isLoadingQualitativeCountry,
     isErrorQualitativeCountry,
     amrefEntities,
+    formik,
   ]);
 
   return (
@@ -790,14 +757,14 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           </Grid>
           <Grid item md={4}>
             <TextField
-              name="costCentre"
-              label="Cost Centre Name"
-              value={formik.values.costCentre}
+              name="costCenter"
+              label="Cost Center Name"
+              value={formik.values.costCenter}
               error={Boolean(
-                formik.touched.costCentre && formik.errors.costCentre
+                formik.touched.costCenter && formik.errors.costCenter
               )}
               fullWidth
-              helperText={formik.touched.costCentre && formik.errors.costCentre}
+              helperText={formik.touched.costCenter && formik.errors.costCenter}
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               multiline
@@ -862,13 +829,13 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     </form>
   );
 };
-const Innovation = () => {
+const NewInnovation = () => {
   let { processLevelItemId, processLevelTypeId, id } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Innovation" />
       <Typography variant="h3" gutterBottom display="inline">
-        New Innovation
+        Innovation
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
@@ -886,7 +853,7 @@ const Innovation = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <InnovationForm
+              <NewInnovationForm
                 processLevelItemId={processLevelItemId}
                 processLevelTypeId={processLevelTypeId}
                 id={id}
@@ -898,4 +865,4 @@ const Innovation = () => {
     </React.Fragment>
   );
 };
-export default Innovation;
+export default NewInnovation;

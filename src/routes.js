@@ -112,12 +112,26 @@ const TableQuantitativeResults = async(() =>
 const EnterQuantitativeResults = async(() =>
   import("./pages/project/monitoring/EnterQuantitativeResults")
 );
+
+const Innovation = async(() =>
+  import("./pages/project/design/Innovation/Innovation")
+);
+const NewInnovation = async(() =>
+  import("./pages/project/design/Innovation/NewInnovation")
+);
+const InnovationDetail = async(() =>
+  import("./pages/project/design/Innovation/InnovationDetail")
+);
+
 // const Innovation = async(() =>
 //   import("./pages/project/design/Innovation/Innovation")
 // );
+
+/*
 const Innovation = async(() =>
-  import("./pages/project/design/NewInnovation/Innovation")
-);
+  import("./pages/project/design/Innovation/Innovation")
+);*/
+
 // const Advocacy = async(() =>
 //   import("./pages/project/design/Advocacy/Advocacy")
 // );
@@ -127,9 +141,13 @@ const Advocacy = async(() =>
 const TechnicalAssistance = async(() =>
   import("./pages/project/design/TechnicalAssistance/TechnicalAssistance")
 );
+
+/*
 const InnovationMonitoring = async(() =>
   import("./pages/project/monitoring/Innovation/InnovationMonitoring")
 );
+*/
+
 const ProjectRoles = async(() => import("./pages/project-role/ProjectRoles"));
 const NewProjectRole = async(() =>
   import("./pages/project-role/NewProjectRole")
@@ -286,13 +304,21 @@ const routes = [
         element: <EnterQuantitativeResults />,
       },
       {
+        path: "design/innovation/new-innovation/:processLevelItemId/:processLevelTypeId",
+        element: <NewInnovation />,
+      },
+      {
+        path: "design/innovation/innovation-detail/:id",
+        element: <InnovationDetail />,
+      },
+      /*{
         path: "design/new-innovation/:processLevelItemId/:processLevelTypeId",
         element: <Innovation />,
       },
       {
         path: "design/new-innovation/:processLevelItemId/:processLevelTypeId/:id",
         element: <Innovation />,
-      },
+      },*/
       {
         path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId",
         element: <Advocacy />,
@@ -309,11 +335,10 @@ const routes = [
         path: "design/new-technicalassistance/:processLevelItemId/:processLevelTypeId/:id",
         element: <TechnicalAssistance />,
       },
-      {
+      /*{
         path: "monitoring/innovation-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <InnovationMonitoring />,
-      },
-      {
+      }*/ {
         path: "monitoring/advocacy-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <AdvocacyMonitoring />,
       },
