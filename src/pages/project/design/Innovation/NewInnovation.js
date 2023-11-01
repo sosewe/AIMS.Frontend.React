@@ -1,9 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormControlLabel,
+  FormGroup,
   Grid,
   MenuItem,
   TextField as MuiTextField,
@@ -20,7 +28,14 @@ import {
   OutlinedInput,
   Stack,
   Chip,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from "@mui/material";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -28,6 +43,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
+import { Check } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -75,20 +91,29 @@ const initialValues = {
   status: "",
   staffNameId: "",
   emailAddress: "",
-  role: "",
-  staffDetailsWorkFlowTask: "",
   implementingOffice: "",
   regionalProgrammeId: "",
   enaSupportOffice: "",
   totalBudget: "",
   currencyTypeId: "",
   costCentre: "",
-  donors: [],
+  donors: [], // multiple select
 };
 
-const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+const staffDetailsInitial = {
+  staffDetailsName: "",
+  staffDetailsAIMSRole: "",
+  staffDetailsWorkFlowTask: "",
+  primaryRole: false,
+};
+
+const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+  const [open, setOpen] = useState(false);
+  const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
+  const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  let innovationQualitativeTypeId;
   const {
     data: InnovationData,
     isLoading: isLoadingInnovationData,
@@ -178,7 +203,13 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-
+  // const {
+  //   data: ThematicAreas,
+  //   isLoading: isLoadingThematicAreas,
+  //   isError: isErrorThematicAreas,
+  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
+  //   refetchOnWindowFocus: false,
+  // });
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,
@@ -197,6 +228,12 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
+  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
+    const filterInnovation = QualitativeResultTypesData.data.find(
+      (obj) => obj.lookupItemName === "Innovation"
+    );
+    innovationQualitativeTypeId = filterInnovation.lookupItemId;
+  }
   const mutation = useMutation({ mutationFn: newInnovation });
 
   const innovationDonorsMutation = useMutation({
@@ -259,7 +296,6 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
 
         let innovationDonors = [];
         for (const donor of values.donors) {
-          console.log("donor ...." + donor.id);
           const innovationDonor = {
             donorId: donor.id,
             innovationId: innovation.data.id,
@@ -285,6 +321,20 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     },
   });
 
+  const handleStaffDetailsClick = (values) => {
+    setStaffDetailsList((current) => [...current, values]);
+  };
+
+  const handleStaffDetailsAdd = (values) => {
+    setStaffDetailsList((current) => [...current, values]);
+  };
+
+  function handleStaffDetailsRemove(row) {
+    setStaffDetailsList((current) =>
+      current.filter((staff) => staff.staffDetailsName !== row.staffDetailsName)
+    );
+  }
+
   useEffect(() => {
     function setCurrentFormValues() {
       if (
@@ -297,42 +347,48 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         !isLoadingQualitativeCountry &&
         !isErrorQualitativeCountry
       ) {
-        let staff;
-        let countries = [];
-        if (!isErrorStaffList && !isLoadingStaffList) {
-          staff = staffListData.data.find(
+        let staffId;
+        let staffEmail;
+        if (!isLoadingStaffList) {
+          staffId = staffListData.data.find(
             (obj) => obj.id === InnovationData.data.staffNameId
           );
-        }
-        for (const qualitativeCountryFind of QualitativeCountryData.data) {
-          const result = amrefEntities.data.find(
-            (obj) => obj.id === qualitativeCountryFind.organizationUnitId
-          );
-          if (result) {
-            countries.push(result);
+
+          if (staffId != null) {
+            staffEmail = InnovationData.data.staffName.emailAddress;
           }
         }
+
+        let orgUnit;
+        if (!!isLoadingOrgUnits) {
+          orgUnit = orgUnitsData.data.find(
+            (obj) => obj.id === InnovationData.data.staffNameId
+          );
+
+          if (staffId != null) {
+            staffEmail = InnovationData.data.staffName.emailAddress;
+          }
+        }
+
+        let donorsList = [];
+        for (const donor of InnovationData.data.donors) {
+          const result = donorData.data.find((obj) => obj.id === donor.donorId);
+          if (result) {
+            donorsList.push(result);
+          }
+        }
+
         formik.setValues({
           title: InnovationData.data.title,
-          staffNameId: staff ? staff : "",
-          proposedSolution: InnovationData.data.proposedSolution,
-          targetBeneficiary: InnovationData.data.targetBeneficiary,
-          difference: InnovationData.data.difference,
-          scaling: InnovationData.data.scaling,
-          sustainability: InnovationData.data.sustainability,
-          whyInnovative: InnovationData.data.whyInnovative,
-          thematicAreaId:
-            QualitativeThematicAreaData.data.length > 0
-              ? QualitativeThematicAreaData.data[0].thematicAreaId
-              : "",
-          duration_from:
-            QualitativePeriodData.data.length > 0
-              ? new Date(QualitativePeriodData.data[0].periodFrom)
-              : "",
-          duration_to:
-            QualitativePeriodData.data.length > 0
-              ? new Date(QualitativePeriodData.data[0].periodTo)
-              : "",
+          shortTitle: InnovationData.data.shortTitle,
+          startDate: InnovationData.data.startDate,
+          endDate: InnovationData.data.endDate,
+          extensionDate: InnovationData.data.extensionDate,
+          status: InnovationData.data.status,
+          staffNameId: staffId ? staffId : "",
+          leadStaffEmail: staffEmail ? staffEmail : "",
+          costCenter: InnovationData.data.costCenter,
+          donors: donorsList,
         });
       }
     }
@@ -354,7 +410,6 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     isLoadingQualitativeCountry,
     isErrorQualitativeCountry,
     amrefEntities,
-    formik,
   ]);
 
   return (
@@ -400,86 +455,75 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             />
           </Grid>
           <Grid item md={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                name="startDate"
-                label="Start Date"
-                value={formik.values.startDate}
-                onChange={(value) =>
-                  formik.setFieldValue("startDate", value, true)
-                }
-                renderInput={(params) => <TextField {...params} />}
-                error={Boolean(
-                  formik.touched.startDate && formik.errors.startDate
-                )}
-                helperText={formik.touched.startDate && formik.errors.startDate}
-              />
-            </LocalizationProvider>
+            <DatePicker
+              label="Start Date"
+              value={formik.values.startDate}
+              onChange={(value) =>
+                formik.setFieldValue("startDate", value, true)
+              }
+              renderInput={(params) => (
+                <TextField
+                  error={Boolean(
+                    formik.touched.startDate && formik.errors.startDate
+                  )}
+                  helperText={
+                    formik.touched.startDate && formik.errors.startDate
+                  }
+                  margin="normal"
+                  name="startDate"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                  {...params}
+                />
+              )}
+            />
           </Grid>
           <Grid item md={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                name="endDate"
-                label="End Date"
-                value={formik.values.endDate}
-                onChange={(value) =>
-                  formik.setFieldValue("endDate", value, true)
-                }
-                renderInput={(params) => <TextField {...params} />}
-                error={Boolean(formik.touched.endDate && formik.errors.endDate)}
-                helperText={formik.touched.endDate && formik.errors.endDate}
-              />
-            </LocalizationProvider>
+            <DatePicker
+              label="End Date"
+              value={formik.values.endDate}
+              onChange={(value) => formik.setFieldValue("endDate", value, true)}
+              renderInput={(params) => (
+                <TextField
+                  error={Boolean(
+                    formik.touched.startDate && formik.errors.endDate
+                  )}
+                  helperText={formik.touched.startDate && formik.errors.endDate}
+                  margin="normal"
+                  name="endDate"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                  {...params}
+                />
+              )}
+            />
           </Grid>
           <Grid item md={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                name="extensionDate"
-                label="Extension Date"
-                value={formik.values.extensionDate}
-                onChange={(value) =>
-                  formik.setFieldValue("extensionDate", value, true)
-                }
-                renderInput={(params) => <TextField {...params} />}
-                error={Boolean(
-                  formik.touched.extensionDate && formik.errors.extensionDate
-                )}
-                helperText={
-                  formik.touched.extensionDate && formik.errors.extensionDate
-                }
-              />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item md={12}>
-            <Grid item md={4}>
-              <TextField
-                name="status"
-                label="Status"
-                select
-                value={formik.values.status}
-                error={Boolean(formik.touched.status && formik.errors.status)}
-                fullWidth
-                helperText={formik.touched.status && formik.errors.status}
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-              >
-                <MenuItem disabled value="">
-                  Status
-                </MenuItem>
-                {!isLoadingStatuses
-                  ? statusesData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
-                        {option.lookupItemName}
-                      </MenuItem>
-                    ))
-                  : []}
-              </TextField>
-            </Grid>
+            <DatePicker
+              label="Extension Date"
+              value={formik.values.extensionDate}
+              onChange={(value) =>
+                formik.setFieldValue("extensionDate", value, true)
+              }
+              renderInput={(params) => (
+                <TextField
+                  error={Boolean(
+                    formik.touched.startDate && formik.errors.extensionDate
+                  )}
+                  helperText={
+                    formik.touched.startDate && formik.errors.extensionDate
+                  }
+                  margin="normal"
+                  name="endDate"
+                  variant="outlined"
+                  fullWidth
+                  my={2}
+                  {...params}
+                />
+              )}
+            />
           </Grid>
           <Grid item md={4}>
             <TextField
@@ -494,6 +538,7 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               helperText={
                 formik.touched.staffNameId && formik.errors.staffNameId
               }
+              onTe
               onBlur={formik.handleBlur}
               onChange={(e) => {
                 formik.handleChange(e);
@@ -539,70 +584,6 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               variant="outlined"
               my={2}
             />
-          </Grid>
-          <Grid item md={3}>
-            <TextField
-              name="staffDetailsAIMSRole"
-              label="Role"
-              select
-              value={formik.values.staffDetailsAIMSRole}
-              error={Boolean(
-                formik.touched.staffDetailsAIMSRole &&
-                  formik.errors.staffDetailsAIMSRole
-              )}
-              fullWidth
-              helperText={
-                formik.touched.staffDetailsAIMSRole &&
-                formik.errors.staffDetailsAIMSRole
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Role
-              </MenuItem>
-              {!isLoadingAimsRole
-                ? aimsRolesData.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="staffDetailsWorkFlowTask"
-              label="DQA Role"
-              select
-              value={formik.values.staffDetailsWorkFlowTask}
-              error={Boolean(
-                formik.touched.staffDetailsWorkFlowTask &&
-                  formik.errors.staffDetailsWorkFlowTask
-              )}
-              fullWidth
-              helperText={
-                formik.touched.staffDetailsWorkFlowTask &&
-                formik.errors.staffDetailsWorkFlowTask
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select DQA Work Flow Role
-              </MenuItem>
-              {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
-                ? administrativeRoles.data.map((option) => (
-                    <MenuItem key={option.roleId} value={option.roleId}>
-                      {option.roleName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
           </Grid>
           <Grid item md={4}>
             <TextField
@@ -703,7 +684,7 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={3}>
+          <Grid item md={4}>
             <TextField
               name="totalBudget"
               label="Overall Budget"
@@ -722,7 +703,7 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               my={2}
             />
           </Grid>
-          <Grid item md={3}>
+          <Grid item md={4}>
             <TextField
               name="currencyTypeId"
               label="Currency"
@@ -772,10 +753,40 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               my={2}
             />
           </Grid>
-          <Grid item md={3}>
-            <FormControl sx={{ m: 1, width: 500 }}>
+          <Grid item md={4}>
+            <TextField
+              name="status"
+              label="Status"
+              select
+              value={formik.values.status}
+              error={Boolean(formik.touched.status && formik.errors.status)}
+              fullWidth
+              helperText={formik.touched.status && formik.errors.status}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Status
+              </MenuItem>
+              {!isLoadingStatuses
+                ? statusesData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={12}>
+            <FormControl sx={{ m: 1, width: 450 }}>
               <InputLabel>Donors</InputLabel>
               <Select
+                fullWidth
                 multiple
                 value={formik.values.donors}
                 onChange={(e) => {
@@ -819,17 +830,108 @@ const NewInnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               </Select>
             </FormControl>
           </Grid>
+          <Grid container spacing={12} pt={10}>
+            <Grid item md={12}>
+              <Typography variant="h3" gutterBottom display="inline">
+                Staff Details
+              </Typography>
+            </Grid>
+          </Grid>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpenAddStaffDetails(true)}
+              >
+                <AddIcon /> Staff Details
+              </Button>
+            </Grid>
+          </Grid>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Paper>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Staff Name</TableCell>
+                      <TableCell align="right">Project Role</TableCell>
+                      <TableCell align="right">DQA Workflow Role</TableCell>
+                      <TableCell align="right">Primary Role</TableCell>
+                      <TableCell align="right">Action</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {staffDetailsList.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell component="th" scope="row">
+                          {row.staffDetailsName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.staffDetailsAIMSRole.lookupItemName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.staffDetailsWorkFlowTask.roleName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.primaryRole ? "Yes" : "No"}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleStaffDetailsRemove(row)}
+                          >
+                            <DeleteIcon />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </Grid>
+          </Grid>
           <Grid item md={12}>
-            <Button variant="contained" color="primary" type="submit">
-              Save
+            <Button type="submit" variant="contained" color="primary" mt={3}>
+              <Check /> Save changes
             </Button>
           </Grid>
         </Grid>
       )}
+
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAddStaffDetails}
+        onClose={() => setOpenAddStaffDetails(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Staff Details</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Add Staff Details</DialogContentText>
+          <StaffDetailsForm
+            aimsRolesData={aimsRolesData}
+            administrativeRoles={administrativeRoles}
+            isLoading={isLoadingAimsRole}
+            isLoadingAdministrativeRoles={isLoadingAdministrativeRoles}
+            isErrorAdministrativeRoles={isErrorAdministrativeRoles}
+            staffListData={staffListData}
+            isLoadingStaffList={isLoadingStaffList}
+            isErrorStaffList={isErrorStaffList}
+            handleClick={handleStaffDetailsClick}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAddStaffDetails(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </form>
   );
 };
-const NewInnovation = () => {
+const Innovation = () => {
   let { processLevelItemId, processLevelTypeId, id } = useParams();
   return (
     <React.Fragment>
@@ -845,7 +947,7 @@ const NewInnovation = () => {
         >
           Project Design
         </Link>
-        <Typography>New Innovation</Typography>
+        <Typography>Innovation</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -853,7 +955,7 @@ const NewInnovation = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <NewInnovationForm
+              <InnovationForm
                 processLevelItemId={processLevelItemId}
                 processLevelTypeId={processLevelTypeId}
                 id={id}
@@ -865,4 +967,177 @@ const NewInnovation = () => {
     </React.Fragment>
   );
 };
-export default NewInnovation;
+
+const StaffDetailsForm = ({
+  aimsRolesData,
+  administrativeRoles,
+  isLoading,
+  isLoadingAdministrativeRoles,
+  isErrorAdministrativeRoles,
+  staffListData,
+  isLoadingStaffList,
+  isErrorStaffList,
+  handleClick,
+}) => {
+  const formik = useFormik({
+    initialValues: staffDetailsInitial,
+    validationSchema: Yup.object().shape({
+      staffDetailsName: Yup.string().required("Required"),
+      staffDetailsAIMSRole: Yup.object().required("Required"),
+      staffDetailsWorkFlowTask: Yup.object().required("Required"),
+      primaryRole: Yup.boolean().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        handleClick(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsName"
+                label="Name"
+                select
+                value={formik.values.staffDetailsName}
+                error={Boolean(
+                  formik.touched.staffDetailsName &&
+                    formik.errors.staffDetailsName
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsName &&
+                  formik.errors.staffDetailsName
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Name
+                </MenuItem>
+                {!isLoadingStaffList &&
+                !isErrorStaffList &&
+                staffListData.data &&
+                staffListData.data.length > 0
+                  ? staffListData.data.map((option) => (
+                      <MenuItem
+                        key={option.id}
+                        value={option.firstName + " " + option.lastName}
+                      >
+                        {option.firstName} {option.lastName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsAIMSRole"
+                label="Project Role"
+                required
+                select
+                value={formik.values.staffDetailsAIMSRole}
+                error={Boolean(
+                  formik.touched.staffDetailsAIMSRole &&
+                    formik.errors.staffDetailsAIMSRole
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsAIMSRole &&
+                  formik.errors.staffDetailsAIMSRole
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Project Role
+                </MenuItem>
+                {!isLoading
+                  ? aimsRolesData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsWorkFlowTask"
+                label="DQA Work Flow Role"
+                required
+                select
+                value={formik.values.staffDetailsWorkFlowTask}
+                error={Boolean(
+                  formik.touched.staffDetailsWorkFlowTask &&
+                    formik.errors.staffDetailsWorkFlowTask
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsWorkFlowTask &&
+                  formik.errors.staffDetailsWorkFlowTask
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select DQA Work Flow Role
+                </MenuItem>
+                {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
+                  ? administrativeRoles.data.map((option) => (
+                      <MenuItem key={option.roleId} value={option}>
+                        {option.roleName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={2}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formik.values.primaryRole}
+                      onChange={formik.handleChange}
+                      name="primaryRole"
+                    />
+                  }
+                  label="Primary Role?"
+                />
+              </FormGroup>
+            </Grid>
+            <Grid item md={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+export default Innovation;
