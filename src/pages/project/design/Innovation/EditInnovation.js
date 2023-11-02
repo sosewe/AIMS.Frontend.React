@@ -280,7 +280,8 @@ const StaffDetailsForm = ({
   );
 };
 
-const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+const EditInnovationForm = ({ id }) => {
+  const [emailAddress, setSmailAddress] = useState();
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
@@ -458,8 +459,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
           status: values.status,
-          processLevelItemId: processLevelItemId,
-          processLevelTypeId: processLevelTypeId,
         };
 
         const innovation = await mutation.mutateAsync(saveInnovation);
@@ -487,7 +486,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             isPrimary:
               staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
             processLevelId: innovation.data.id,
-            processLevelTypeId: processLevelTypeId,
             staffNames: staffDetail.staffDetailsName,
             void: false,
           };
@@ -497,13 +495,11 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           projectRoles.push(projectRole);
         }
 
-        toast("Successfully Created an Innovation", {
+        toast("Successfully Updated an Innovation", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(
-          `/project/design-project/${processLevelItemId}/${processLevelTypeId}`
-        );
+        navigate(`/project/design/innovation/innovation-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -542,31 +538,9 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             (obj) => obj.id === InnovationData.data.staffNameId
           );
 
-          if (staffId != null) {
-            staffEmail = InnovationData.data.staffName.emailAddress;
-          }
+          staffEmail = staffId.emailAddress;
         }
-
-        let enaSupportOffice;
-        if (!!isLoadingAmrefEntities) {
-          enaSupportOffice = amrefEntities.data.find(
-            (obj) => obj.id === InnovationData.data.office
-          );
-        }
-
-        let implementingOfficeId;
-        if (!!isLoadingOrgUnits) {
-          implementingOfficeId = orgUnitsData.data.find(
-            (obj) => obj.id === InnovationData.data.implementingOfficeId
-          );
-        }
-
-        let currencyType;
-        if (!!isLoadingCurrency) {
-          currencyType = currencyData.data.find(
-            (obj) => obj.id === InnovationData.data.currencyTypeId
-          );
-        }
+        console.log("staffId .." + JSON.stringify(staffId));
 
         let donorsList = [];
         for (const donor of InnovationData.data.donors) {
@@ -582,16 +556,15 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           startDate: InnovationData.data.startDate,
           endDate: InnovationData.data.endDate,
           extensionDate: InnovationData.data.extensionDate,
-          status: InnovationData.data.status,
           staffNameId: staffId ? staffId : "",
-          leadStaffEmail: staffEmail ? staffEmail : "",
-          implementingOfficeId: implementingOfficeId
-            ? implementingOfficeId
-            : "",
-          /*
-          enaSupportOffice: enaSupportOffice ? enaSupportOffice : "",
+          implementingOfficeId: InnovationData.data.implementingOfficeId,
+          regionalProgrammeId: InnovationData.data.regionalProgrammeId,
+          enaSupportOffice: InnovationData.data.office,
+          totalBudget: InnovationData.data.totalBudget,
           costCenter: InnovationData.data.costCenter,
-          currencyTypeId: currencyType ? currencyType : "",*/
+          currencyTypeId: InnovationData.data.currencyTypeId,
+          status: InnovationData.data.status,
+          leadStaffEmail: staffEmail ? staffEmail : "",
           donors: donorsList,
         });
       }
@@ -742,6 +715,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               helperText={
                 formik.touched.staffNameId && formik.errors.staffNameId
               }
+              onTe
               onBlur={formik.handleBlur}
               onChange={(e) => {
                 formik.handleChange(e);
@@ -1033,35 +1007,121 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               </Select>
             </FormControl>
           </Grid>
+          <Grid container spacing={12} pt={10}>
+            <Grid item md={12}>
+              <Typography variant="h3" gutterBottom display="inline">
+                Staff Details
+              </Typography>
+            </Grid>
+          </Grid>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpenAddStaffDetails(true)}
+              >
+                <AddIcon /> Staff Details
+              </Button>
+            </Grid>
+          </Grid>
 
-          <Grid item md={12}>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Paper>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Staff Name</TableCell>
+                      <TableCell align="right">Project Role</TableCell>
+                      <TableCell align="right">DQA Workflow Role</TableCell>
+                      <TableCell align="right">Primary Role</TableCell>
+                      <TableCell align="right">Action</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {staffDetailsList.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell component="th" scope="row">
+                          {row.staffDetailsName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.staffDetailsAIMSRole.lookupItemName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.staffDetailsWorkFlowTask.roleName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.primaryRole ? "Yes" : "No"}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => removeStaff(row)}
+                          >
+                            <DeleteIcon />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Grid item mt={5} md={12}>
             <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save changes
             </Button>
           </Grid>
         </Grid>
       )}
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAddStaffDetails}
+        onClose={() => setOpenAddStaffDetails(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Staff Details</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Add Staff Details</DialogContentText>
+          <StaffDetailsForm
+            aimsRolesData={aimsRolesData}
+            administrativeRoles={administrativeRoles}
+            isLoading={isLoadingAimsRole}
+            isLoadingAdministrativeRoles={isLoadingAdministrativeRoles}
+            isErrorAdministrativeRoles={isErrorAdministrativeRoles}
+            staffListData={staffListData}
+            isLoadingStaffList={isLoadingStaffList}
+            isErrorStaffList={isErrorStaffList}
+            handleClick={handleStaffDetailsAdd}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAddStaffDetails(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </form>
   );
 };
 
 const Innovation = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+  let { id } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Innovation" />
       <Typography variant="h3" gutterBottom display="inline">
-        New Innovation
+        Innovation
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Innovation</Typography>
+        <Link>Project Design</Link>
+        <Typography>Innovation</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -1069,11 +1129,7 @@ const Innovation = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <InnovationForm
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                id={id}
-              />
+              <EditInnovationForm id={id} />
             </Grid>
           </Grid>
         </CardContent>
