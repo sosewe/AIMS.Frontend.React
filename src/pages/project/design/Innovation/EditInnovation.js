@@ -56,6 +56,10 @@ import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getInnovationById, newInnovation } from "../../../../api/innovation";
 import { newInnovationDonor } from "../../../../api/innovation-donor";
+import {
+  newInnovationStaff,
+  getInnovationStaff,
+} from "../../../../api/innovation-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
 
@@ -413,6 +417,10 @@ const EditInnovationForm = ({ id }) => {
     mutationFn: newInnovationDonor,
   });
 
+  const innovationStaffMutation = useMutation({
+    mutationFn: newInnovationStaff,
+  });
+
   // eslint-disable-next-line no-unused-vars
   const qualitativeThematicAreaMutation = useMutation({
     mutationFn: newQualitativeThematicArea,
@@ -478,22 +486,18 @@ const EditInnovationForm = ({ id }) => {
         for (const staffDetail of staffDetailsList) {
           const projectRole = {
             innovationId: innovation.data.id,
-            personelId: staffDetail.AimsRoleId,
-            aimsRoleId: staffDetail.staffDetailsAIMSRole.lookupItemId,
+            aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
             createDate: new Date(),
             dqaRoleId: staffDetail.staffDetailsWorkFlowTask.roleId,
             dqaRoleName: staffDetail.staffDetailsWorkFlowTask.roleName,
             isPrimary:
               staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
-            processLevelId: innovation.data.id,
             staffNames: staffDetail.staffDetailsName,
             void: false,
           };
-          if (staffDetail.id) {
-            projectRole.id = staffDetail.id;
-          }
           projectRoles.push(projectRole);
         }
+        await innovationStaffMutation.mutateAsync(projectRoles);
 
         toast("Successfully Updated an Innovation", {
           type: "success",
@@ -540,7 +544,6 @@ const EditInnovationForm = ({ id }) => {
 
           staffEmail = staffId.emailAddress;
         }
-        console.log("staffId .." + JSON.stringify(staffId));
 
         let donorsList = [];
         for (const donor of InnovationData.data.donors) {
@@ -567,6 +570,32 @@ const EditInnovationForm = ({ id }) => {
           leadStaffEmail: staffEmail ? staffEmail : "",
           donors: donorsList,
         });
+
+        if (InnovationData.data.staff && InnovationData.data.staff > 0) {
+          const allStaff = [];
+          for (const staffData of InnovationData.data.staff) {
+            const lookupRole =
+              !isLoadingAimsRole &&
+              aimsRolesData.data.filter(
+                (obj) => obj.id === staffData.aimsRoleId
+              );
+            const staff = {
+              id: staffData.id,
+              staffDetailsName: staffData.staffNames,
+              staffDetailsAIMSRole:
+                lookupRole && lookupRole.length > 0 ? lookupRole[0] : "",
+              staffDetailsWorkFlowTask: {
+                roleId: staffData.dqaRoleId,
+                roleName: staffData.dqaRoleName,
+              },
+              primaryRole: staffData.isPrimary,
+            };
+
+            console.log("InnovationData.data.staff  " + JSON.stringify(staff));
+            allStaff.push(staff);
+          }
+          setStaffDetailsList(allStaff);
+        }
       }
     }
     setCurrentFormValues();
@@ -1046,7 +1075,7 @@ const EditInnovationForm = ({ id }) => {
                           {row.staffDetailsName}
                         </TableCell>
                         <TableCell align="right">
-                          {row.staffDetailsAIMSRole.lookupItemName}
+                          {row.staffDetailsAIMSRole.name}
                         </TableCell>
                         <TableCell align="right">
                           {row.staffDetailsWorkFlowTask.roleName}
