@@ -487,6 +487,7 @@ const EditInnovationForm = ({ id }) => {
           const projectRole = {
             innovationId: innovation.data.id,
             aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
+            aimsRoleName: staffDetail.staffDetailsAIMSRole.name,
             createDate: new Date(),
             dqaRoleId: staffDetail.staffDetailsWorkFlowTask.roleId,
             dqaRoleName: staffDetail.staffDetailsWorkFlowTask.roleName,
@@ -497,6 +498,7 @@ const EditInnovationForm = ({ id }) => {
           };
           projectRoles.push(projectRole);
         }
+        console.log("projectRoles " + JSON.stringify(projectRoles));
         await innovationStaffMutation.mutateAsync(projectRoles);
 
         toast("Successfully Updated an Innovation", {
@@ -571,7 +573,7 @@ const EditInnovationForm = ({ id }) => {
           donors: donorsList,
         });
 
-        if (InnovationData.data.staff && InnovationData.data.staff > 0) {
+        if (InnovationData.data.staff && InnovationData.data.staff.length > 0) {
           const allStaff = [];
           for (const staffData of InnovationData.data.staff) {
             const lookupRole =
@@ -590,8 +592,6 @@ const EditInnovationForm = ({ id }) => {
               },
               primaryRole: staffData.isPrimary,
             };
-
-            console.log("InnovationData.data.staff  " + JSON.stringify(staff));
             allStaff.push(staff);
           }
           setStaffDetailsList(allStaff);
@@ -744,7 +744,6 @@ const EditInnovationForm = ({ id }) => {
               helperText={
                 formik.touched.staffNameId && formik.errors.staffNameId
               }
-              onTe
               onBlur={formik.handleBlur}
               onChange={(e) => {
                 formik.handleChange(e);
@@ -1086,7 +1085,7 @@ const EditInnovationForm = ({ id }) => {
                         <TableCell align="right">
                           <Button
                             variant="contained"
-                            color="primary"
+                            color="error"
                             onClick={() => removeStaff(row)}
                           >
                             <DeleteIcon />

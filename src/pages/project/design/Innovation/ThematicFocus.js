@@ -31,10 +31,10 @@ import { getSubThemesByThematicAreaId } from "../../../../api/thematic-area-sub-
 import { Check, Trash as TrashIcon } from "react-feather";
 import { Guid } from "../../../../utils/guid";
 import {
-  deleteProjectThematicFocus,
-  getProjectThematicFocusByProcessLevelItemId,
-  saveProjectThematicFocus,
-} from "../../../../api/thematic-focus";
+  deleteInnovationThematicFocus,
+  getInnovationThematicFocusByInnovationId,
+  saveInnovationThematicFocus,
+} from "../../../../api/innovation-thematic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../../api/sub-theme";
 import { getUniqueProgrammesByThematicAreaId } from "../../../../api/programme-thematic-area-sub-theme";
@@ -49,7 +49,7 @@ const initialValues = {
   thematicArea: "",
 };
 
-const ThematicFocus = ({ id, processLevelTypeId }) => {
+const ThematicFocus = ({ id }) => {
   const queryClient = useQueryClient();
   const [thematicAreaId, setThematicAreaId] = useState();
   const [open, setOpen] = React.useState(false);
@@ -71,11 +71,11 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     data: projectThematicFocusData,
     isLoading: isLoadingProjectThematicFocus,
   } = useQuery(
-    ["getProjectThematicFocusByProcessLevelItemId", id],
-    getProjectThematicFocusByProcessLevelItemId,
+    ["getInnovationThematicFocusByInnovationId", id],
+    getInnovationThematicFocusByInnovationId,
     { enabled: !!id }
   );
-  const mutation = useMutation({ mutationFn: saveProjectThematicFocus });
+  const mutation = useMutation({ mutationFn: saveInnovationThematicFocus });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -90,21 +90,24 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
             values.hasOwnProperty(subThemesDatum.subThemeId) &&
             values[subThemesDatum.subThemeId].length > 0
           ) {
-            const projectThematicFocus = {
-              processLevelItemId: id,
-              processLevelTypeId: processLevelTypeId,
+            const innovationThematicFocus = {
+              innovationId: id,
               createDate: new Date(),
               subThemeId: subThemesDatum.subThemeId,
               thematicAreaId: subThemesDatum.thematicAreaId,
               id: new Guid().toString(),
             };
-            await mutation.mutateAsync(projectThematicFocus);
+
+            console.log(
+              "projectThematicFocus " + JSON.stringify(innovationThematicFocus)
+            );
+            await mutation.mutateAsync(innovationThematicFocus);
           }
         }
         await queryClient.invalidateQueries([
-          "getProjectThematicFocusByProcessLevelItemId",
+          "getInnovationThematicFocusByInnovationId",
         ]);
-        toast("Successfully added Project Thematic Focus", {
+        toast("Successfully added Innovation Thematic Focus", {
           type: "success",
         });
       } catch (error) {
@@ -164,16 +167,16 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
   }
 
   const { refetch } = useQuery(
-    ["deleteProjectThematicFocus", thematicFocusId],
-    deleteProjectThematicFocus,
+    ["deleteInnovationThematicFocus", thematicFocusId],
+    deleteInnovationThematicFocus,
     { enabled: false }
   );
 
-  const handleDeleteProjectThematicFocus = async () => {
+  const handleDeleteInnovationThematicFocus = async () => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
-      "getProjectThematicFocusByProcessLevelItemId",
+      "getInnovationThematicFocusByInnovationId",
     ]);
   };
 
@@ -284,7 +287,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                 <br />
                 <Grid container item spacing={2}>
                   <Grid item md={12}>
-                    <Paper style={{ height: 250, width: "100%" }}>
+                    <Paper style={{ height: 400, width: "100%" }}>
                       <DataGrid
                         rowsPerPageOptions={[5, 10, 25]}
                         rows={
@@ -338,13 +341,13 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                       </DialogTitle>
                       <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                          Are you sure you want to delete Project Thematic
+                          Are you sure you want to delete Innovation Thematic
                           Focus?
                         </DialogContentText>
                       </DialogContent>
                       <DialogActions>
                         <Button
-                          onClick={handleDeleteProjectThematicFocus}
+                          onClick={handleDeleteInnovationThematicFocus}
                           color="primary"
                         >
                           Yes

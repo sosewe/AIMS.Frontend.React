@@ -70,9 +70,13 @@ const InnovationDetail = () => {
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
         <Tab label="Basic Information" {...a11yProps(0)} />
+        <Tab label="Thematic Focus" {...a11yProps(1)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <EditInnovation id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <ThematicFocus id={id} />
       </TabPanel>
     </Box>
   );

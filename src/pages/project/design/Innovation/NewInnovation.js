@@ -473,36 +473,15 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           };
           innovationDonors.push(innovationDonor);
         }
+        console.log("innovationDonors " + JSON.stringify(innovationDonors));
         await innovationDonorsMutation.mutateAsync(innovationDonors);
-
-        const projectRoles = [];
-        for (const staffDetail of staffDetailsList) {
-          const projectRole = {
-            innovationId: innovation.data.id,
-            personelId: staffDetail.AimsRoleId,
-            aimsRoleId: staffDetail.staffDetailsAIMSRole.lookupItemId,
-            createDate: new Date(),
-            dqaRoleId: staffDetail.staffDetailsWorkFlowTask.roleId,
-            dqaRoleName: staffDetail.staffDetailsWorkFlowTask.roleName,
-            isPrimary:
-              staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
-            processLevelId: innovation.data.id,
-            processLevelTypeId: processLevelTypeId,
-            staffNames: staffDetail.staffDetailsName,
-            void: false,
-          };
-          if (staffDetail.id) {
-            projectRole.id = staffDetail.id;
-          }
-          projectRoles.push(projectRole);
-        }
 
         toast("Successfully Created an Innovation", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
         navigate(
-          `/project/design-project/${processLevelItemId}/${processLevelTypeId}`
+          `/project/design/innovation/innovation-detail/${innovation.data.id}`
         );
       } catch (error) {
         console.log(error);
@@ -512,16 +491,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       }
     },
   });
-
-  function removeStaff(row) {
-    setStaffDetailsList((current) =>
-      current.filter((staff) => staff.staffDetailsName !== row.staffDetailsName)
-    );
-  }
-
-  const handleStaffDetailsAdd = (values) => {
-    setStaffDetailsList((current) => [...current, values]);
-  };
 
   useEffect(() => {
     function setCurrentFormValues() {
