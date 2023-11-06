@@ -285,7 +285,6 @@ const StaffDetailsForm = ({
 };
 
 const EditInnovationForm = ({ id }) => {
-  const [emailAddress, setSmailAddress] = useState();
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
@@ -498,7 +497,6 @@ const EditInnovationForm = ({ id }) => {
           };
           projectRoles.push(projectRole);
         }
-        console.log("projectRoles " + JSON.stringify(projectRoles));
         await innovationStaffMutation.mutateAsync(projectRoles);
 
         toast("Successfully Updated an Innovation", {

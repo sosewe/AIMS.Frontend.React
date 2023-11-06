@@ -27,13 +27,10 @@ import {
 } from "../../../../api/administrative-unit";
 import { Check, Trash as TrashIcon } from "react-feather";
 import {
-  deleteProjectLocation,
-  getProjectLocations,
-  newProjectLocation,
-  getAlllocations,
-} from "../../../../api/location";
-import { getInnovationById } from "../../../../api/innovation";
-import { newinnovationGeographicalFocus } from "../../../../api/innovatonGeographicalFocus";
+  newInnovationGeographicalFocus,
+  deleteInnovationGeographicalFocus,
+  getInnovationGeographicalFocus,
+} from "../../../../api/innovatonGeographicalFocus";
 import { DataGrid } from "@mui/x-data-grid";
 
 const Card = styled(MuiCard)(spacing);
@@ -50,7 +47,7 @@ const getFocusInitial = {
   fourthLevel: "",
 };
 
-const GeoFocus = ({ id, processLevelTypeId }) => {
+const GeoFocus = ({ id }) => {
   const queryClient = useQueryClient();
   const [parentTopLevel, setParentTopLevel] = useState();
   const [firstLevel, setFirstLevel] = useState();
@@ -66,22 +63,17 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
   const [locationId, setLocationId] = React.useState();
 
   const {
-    data: InnovationData,
-    isLoading: isLoadingInnovationData,
-    isError: isErrorInnovationData,
-  } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
-
-  // Get the innovationId from InnovationData
-  const innovationId = InnovationData?.data?.id;
-
-  const {
     data: ProjectLocationsData,
     isLoading: isLoadingProjectLocations,
     // refetch,
-  } = useQuery(["getAlllocationsQuery", id], getAlllocations, {
-    refetchOnWindowFocus: false,
-    enabled: !!id,
-  });
+  } = useQuery(
+    ["getInnovationGeographicalFocus", id],
+    getInnovationGeographicalFocus,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
 
   const GetAdministrativeUnit = (params) => {
     const administrativeUnitId = params.value;
@@ -98,7 +90,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     }
   };
 
-  const mutation = useMutation({ mutationFn: newinnovationGeographicalFocus });
+  const mutation = useMutation({ mutationFn: newInnovationGeographicalFocus });
   const formik = useFormik({
     initialValues: getFocusInitial,
     validationSchema: Yup.object().shape({
@@ -163,16 +155,14 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
         }
 
         const innovationtLocation = {
-          innovationId,
+          innovationId: id,
+          createDate: new Date(),
           administrativeUnitId,
           administrativeUnitName,
-          processLevelItemId: id, // Use the innovation ID here
-          processLevelTypeId: processLevelTypeId,
-          createDate: new Date(),
         };
 
         await mutation.mutateAsync(innovationtLocation);
-        await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
+        await queryClient.invalidateQueries(["getInnovationGeographicalFocus"]);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -314,8 +304,8 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
   };
 
   const { refetch } = useQuery(
-    ["deleteProjectLocation", locationId],
-    deleteProjectLocation,
+    ["deleteInnovationGeographicalFocus", locationId],
+    deleteInnovationGeographicalFocus,
     { enabled: false }
   );
 
@@ -328,10 +318,10 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     setOpen(false);
   };
 
-  const handleDeleteProjectLocation = async () => {
+  const handleDeleteInnovationLocation = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
+    await queryClient.invalidateQueries(["getInnovationGeographicalFocus"]);
   };
 
   return (
@@ -592,15 +582,15 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Delete Project Location
+            Delete Innovation Location
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Project Location?
+              Are you sure you want to delete Innovation Location?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleDeleteProjectLocation} color="primary">
+            <Button onClick={handleDeleteInnovationLocation} color="primary">
               Yes
             </Button>
             <Button onClick={handleClose} color="error" autoFocus>

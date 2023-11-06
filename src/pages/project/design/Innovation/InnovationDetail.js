@@ -71,12 +71,20 @@ const InnovationDetail = () => {
       >
         <Tab label="Basic Information" {...a11yProps(0)} />
         <Tab label="Thematic Focus" {...a11yProps(1)} />
+        <Tab label="Geographic Focus" {...a11yProps(2)} />
+        <Tab label="Objective & Classification" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <EditInnovation id={id} />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <ThematicFocus id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        <GeoFocus id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <InnovationObjectives id={id} />
       </TabPanel>
     </Box>
   );
