@@ -23,7 +23,7 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon } from "react-feather";
 import styled from "@emotion/styled";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
@@ -146,10 +146,7 @@ const MetricDetailsForm = ({ handleClick }) => {
                 </MenuItem>
                 {!isLoadingInnovationMetric
                   ? innovationMetricData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
+                      <MenuItem key={option.lookupItemId} value={option}>
                         {option.lookupItemName}
                       </MenuItem>
                     ))
@@ -182,10 +179,7 @@ const MetricDetailsForm = ({ handleClick }) => {
                 </MenuItem>
                 {!isLoadinginnovationTargetGroup
                   ? innovationTargetGroupData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
+                      <MenuItem key={option.lookupItemId} value={option}>
                         {option.lookupItemName}
                       </MenuItem>
                     ))
@@ -320,6 +314,13 @@ const InnvationObjectives = ({ id }) => {
     { enabled: !!id }
   );
 
+  const { data: innovationMetricsData, isLoading: isLoadingMetricsData } =
+    useQuery(
+      ["getInnovationMetricByInnovationId", id],
+      getInnovationMetricByInnovationId,
+      { enabled: !!id }
+    );
+
   const { isLoading: isLoadingInovationType, data: innovationTypeData } =
     useQuery(["innovationType", "InnovationType"], getLookupMasterItemsByName, {
       refetchOnWindowFocus: false,
@@ -345,26 +346,6 @@ const InnvationObjectives = ({ id }) => {
     }
   );
 
-  const { isLoading: isLoadingInnovationMetric, data: innovationMetricData } =
-    useQuery(
-      ["innovationMetric", "InnovationMetric"],
-      getLookupMasterItemsByName,
-      {
-        refetchOnWindowFocus: false,
-      }
-    );
-
-  const {
-    isLoading: isLoadingInnovationTargetGroup,
-    data: innovationTargetGroupData,
-  } = useQuery(
-    ["innovationTargetGroup", "InnovationTargetGroup"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
   const {
     isLoading: isLoadingReportingFrequency,
     data: reportingFrequencyData,
@@ -384,6 +365,10 @@ const InnvationObjectives = ({ id }) => {
     mutationFn: newInnovationObjective,
   });
 
+  const innovationMetricsMutation = useMutation({
+    mutationFn: newInnovationMetric,
+  });
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -398,12 +383,8 @@ const InnvationObjectives = ({ id }) => {
     onSubmit: async (values) => {
       if (innovationObjectivesClassificationData) {
         values.id = innovationObjectivesClassificationData.data.id;
-        console.log("innovationObjectivesClassificationData Id" + values.id);
       } else {
         values.id = new Guid().toString();
-        console.log(
-          "innovationObjectivesClassificationData Id new Guid()" + values.id
-        );
       }
 
       try {
@@ -432,10 +413,25 @@ const InnvationObjectives = ({ id }) => {
           };
           innovationObjectives.push(innovationObjective);
         }
-        console.log(
-          "innovationObjectives " + JSON.stringify(innovationObjectives)
-        );
         await innovationObjectivesMutation.mutateAsync(innovationObjectives);
+
+        let innovationMetrics = [];
+        for (const metric of metricsList) {
+          const innovationMetric = {
+            id: new Guid().toString(),
+            innovationMetricId: metric.innovationMetricId.lookupItemId,
+            innovationMetricName: metric.innovationMetricId.lookupItemName,
+            innovationTargetGroupId:
+              metric.innovationTargetGroupId.lookupItemId,
+            innovationTargetGroupName:
+              metric.innovationTargetGroupId.lookupItemName,
+            innovationTarget: metric.innovationTarget,
+            innovationId: innovation.data.innovationId,
+            createDate: new Date(),
+          };
+          innovationMetrics.push(innovationMetric);
+        }
+        await innovationMetricsMutation.mutateAsync(innovationMetrics);
 
         toast("Successfully Created an Innovation Objective", {
           type: "success",
@@ -476,7 +472,6 @@ const InnvationObjectives = ({ id }) => {
   }
 
   const handleMetricsAdd = (values) => {
-    console.log("handleMetricsAdd " + JSON.stringify(values));
     setMetricsList((current) => [...current, values]);
   };
 
@@ -491,11 +486,6 @@ const InnvationObjectives = ({ id }) => {
           !isLoadingReportingFrequency &&
           !isLoadingInnovationObjectivesData
         ) {
-          console.log(
-            "innovationObjectivesClassificationData " +
-              JSON.stringify(innovationObjectivesClassificationData)
-          );
-
           formik.setValues({
             innovationType:
               innovationObjectivesClassificationData.data.innovationTypeId,
@@ -519,22 +509,45 @@ const InnvationObjectives = ({ id }) => {
             innovationObjectivesData.data &&
             innovationObjectivesData.data.length > 0
           ) {
-            if (
-              innovationObjectivesData.data &&
-              innovationObjectivesData.data.length > 0
-            ) {
-              const allObjectives = [];
-              for (const objectiveData of innovationObjectivesData.data) {
-                const objective = {
-                  id: objectiveData.id,
-                  innovationId: objectiveData.innovationId,
-                  innovationObjectiveDescription:
-                    objectiveData.innovationObjectiveDescription,
-                };
-                allObjectives.push(objective);
-              }
-              setObjectivesList(allObjectives);
+            const allObjectives = [];
+            for (const objectiveData of innovationObjectivesData.data) {
+              const objective = {
+                id: objectiveData.id,
+                innovationId: objectiveData.innovationId,
+                innovationObjectiveDescription:
+                  objectiveData.innovationObjectiveDescription,
+              };
+              allObjectives.push(objective);
             }
+            setObjectivesList(allObjectives);
+          }
+
+          console.log(
+            "innovationMetricsData " + JSON.stringify(innovationMetricsData)
+          );
+
+          if (
+            innovationMetricsData.data &&
+            innovationMetricsData.data.length > 0
+          ) {
+            const allMetrics = [];
+            for (const metricData of innovationMetricsData.data) {
+              const metric = {
+                id: metricData.id,
+                innovationId: metricData.innovationId,
+                innovationMetricId: {
+                  lookupItemId: metricData.innovationMetricId,
+                  lookupItemName: metricData.innovationMetricName,
+                },
+                innovationTargetGroupId: {
+                  lookupItemId: metricData.innovationTargetGroupId,
+                  lookupItemName: metricData.innovationTargetGroupName,
+                },
+                innovationTarget: metricData.innovationTarget,
+              };
+              allMetrics.push(metric);
+            }
+            setMetricsList(allMetrics);
           }
         }
       }
@@ -808,12 +821,10 @@ const InnvationObjectives = ({ id }) => {
                         </TableCell>
                         <TableCell align="right">
                           <Button
-                            variant="contained"
-                            color="error"
+                            startIcon={<TrashIcon />}
+                            size="small"
                             onClick={() => removeObjective(row)}
-                          >
-                            <DeleteIcon />
-                          </Button>
+                          ></Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -847,32 +858,30 @@ const InnvationObjectives = ({ id }) => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell align="right">Innovation Metric</TableCell>
-                      <TableCell align="right">Target Group</TableCell>
-                      <TableCell align="right">Target Number</TableCell>
-                      <TableCell align="right">Action</TableCell>
+                      <TableCell align="left">Innovation Metric</TableCell>
+                      <TableCell align="left">Target Group</TableCell>
+                      <TableCell align="left">Target Number</TableCell>
+                      <TableCell align="left">Action</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {metricsList.map((row) => (
                       <TableRow key={row.id}>
                         <TableCell component="th" scope="row">
-                          {row.innovationMetricName}
+                          {row.innovationMetricId.lookupItemName}
                         </TableCell>
                         <TableCell component="th" scope="row">
-                          {row.innovationTargetGroupName}
+                          {row.innovationTargetGroupId.lookupItemName}
                         </TableCell>
                         <TableCell component="th" scope="row">
                           {row.innovationTarget}
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell align="left">
                           <Button
-                            variant="contained"
-                            color="error"
+                            startIcon={<TrashIcon />}
+                            size="small"
                             onClick={() => removeMetrics(row)}
-                          >
-                            <DeleteIcon />
-                          </Button>
+                          ></Button>
                         </TableCell>
                       </TableRow>
                     ))}

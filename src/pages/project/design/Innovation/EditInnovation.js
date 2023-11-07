@@ -43,7 +43,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -1082,12 +1082,10 @@ const EditInnovationForm = ({ id }) => {
                         </TableCell>
                         <TableCell align="right">
                           <Button
-                            variant="contained"
-                            color="error"
+                            startIcon={<TrashIcon />}
+                            size="small"
                             onClick={() => removeStaff(row)}
-                          >
-                            <DeleteIcon />
-                          </Button>
+                          ></Button>
                         </TableCell>
                       </TableRow>
                     ))}
