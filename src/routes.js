@@ -113,6 +113,7 @@ const EnterQuantitativeResults = async(() =>
   import("./pages/project/monitoring/EnterQuantitativeResults")
 );
 
+// Innovation Design
 const Innovation = async(() =>
   import("./pages/project/design/Innovation/Innovation")
 );
@@ -123,9 +124,15 @@ const InnovationDetail = async(() =>
   import("./pages/project/design/Innovation/InnovationDetail")
 );
 
-// const Innovation = async(() =>
-//   import("./pages/project/design/Innovation/Innovation")
-// );
+// Innovation Monitoring
+
+const InnovationMonitoring = async(() =>
+  import("./pages/project/monitoring/Innovation/InnovationMonitoring")
+);
+
+const InnovationMonitoringDetail = async(() =>
+  import("./pages/project/monitoring/InnovationV2/InnovationDetail")
+);
 
 /*
 const Innovation = async(() =>
@@ -141,13 +148,6 @@ const Advocacy = async(() =>
 const TechnicalAssistance = async(() =>
   import("./pages/project/design/TechnicalAssistance/TechnicalAssistance")
 );
-
-/*
-const InnovationMonitoring = async(() =>
-  import("./pages/project/monitoring/Innovation/InnovationMonitoring")
-);
-*/
-
 const ProjectRoles = async(() => import("./pages/project-role/ProjectRoles"));
 const NewProjectRole = async(() =>
   import("./pages/project-role/NewProjectRole")
@@ -335,10 +335,15 @@ const routes = [
         path: "design/new-technicalassistance/:processLevelItemId/:processLevelTypeId/:id",
         element: <TechnicalAssistance />,
       },
-      /*{
+      {
         path: "monitoring/innovation-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <InnovationMonitoring />,
-      }*/ {
+      },
+      {
+        path: "monitoring/innovation-monitoring-detail/:id",
+        element: <InnovationMonitoringDetail />,
+      },
+      {
         path: "monitoring/advocacy-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <AdvocacyMonitoring />,
       },
