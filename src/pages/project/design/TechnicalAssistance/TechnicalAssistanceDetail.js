@@ -4,15 +4,11 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-import NewProjectForm from "./NewProjectForm";
 import { useParams } from "react-router-dom";
-import GeoFocus from "./GeoFocus";
-import ProjectObjectives from "./ProjectObjectives";
+import EditTechnicalAssistance from "./EditTechnicalAssistance";
 import ThematicFocus from "./ThematicFocus";
-import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
-import InnovationData from "./Innovation/InnovationData";
-import AdvocacyData from "./Advocacy/AdvocacyData";
-import TechnicalAssistanceData from "./TechnicalAssistance/TechnicalAssistanceData";
+import GeoFocus from "./GeoFocus";
+import TechnicalAssistanceObjectives from "./TechnicalAssistanceObjectives";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -50,9 +46,9 @@ function a11yProps(index: number) {
   };
 }
 
-const DesignProject = () => {
+const TechnicalAssistanceDetail = () => {
   const [value, setValue] = React.useState(0);
-  let { id, processLevelTypeId } = useParams();
+  let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -77,56 +73,21 @@ const DesignProject = () => {
         <Tab label="Thematic Focus" {...a11yProps(1)} />
         <Tab label="Geographic Focus" {...a11yProps(2)} />
         <Tab label="Objectives" {...a11yProps(3)} />
-        <Tab label="Results Framework" {...a11yProps(4)} />
-        <Tab label="Innovation" {...a11yProps(5)} />
-        <Tab label="Advocacy" {...a11yProps(6)} />
-        <Tab label="Technical Assistance" {...a11yProps(7)} />
-        <Tab label="Research (Learning)" {...a11yProps(8)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <NewProjectForm id={id} />
+        <EditTechnicalAssistance id={id} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <ThematicFocus id={id} processLevelTypeId={processLevelTypeId} />
+        <ThematicFocus id={id} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
+        <GeoFocus id={id} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
-      </TabPanel>
-      <TabPanel value={value} index={4}>
-        <EnterTargetQuantitativeResultsFramework
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
-      </TabPanel>
-      <TabPanel index={5} value={value}>
-        <InnovationData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
-      </TabPanel>
-      <TabPanel index={6} value={value}>
-        <AdvocacyData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
-      </TabPanel>
-      <TabPanel index={7} value={value}>
-        <TechnicalAssistanceData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
-      </TabPanel>
-      <TabPanel index={8} value={value}>
-        <AdvocacyData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
+        <TechnicalAssistanceObjectives id={id} />
       </TabPanel>
     </Box>
   );
 };
 
-export default DesignProject;
+export default TechnicalAssistanceDetail;

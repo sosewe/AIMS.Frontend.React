@@ -11,11 +11,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Grid,
   MenuItem,
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import styled from "@emotion/styled";
@@ -188,12 +191,17 @@ const ThematicFocus = ({ id }) => {
             <Typography variant="h3" gutterBottom display="inline">
               Thematic Focus
             </Typography>
+            <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+              <Link>Project Design</Link>
+              <Typography>Innovation</Typography>
+            </Breadcrumbs>
+            <Divider my={6} />
           </Grid>
           <Grid item md={12}>
             <CardContent pb={1}>
               <form onSubmit={formik.handleSubmit}>
                 <Grid container item spacing={2}>
-                  <Grid item md={4}>
+                  <Grid item md={12}>
                     <TextField
                       name="thematicArea"
                       label="Thematic Area"

@@ -3,15 +3,11 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-
-import addTechnicalAssistance from "./addTechnicalAssistance";
 import { useParams } from "react-router-dom";
+import EditTechnicalAssistance from "./EditTechnicalAssistance";
 import GeoFocus from "./GeoFocus";
-import ProjectObjectives from "./ProjectObjectives";
+import TechnicalAssistanceObjectives from "./TechnicalAssistanceObjectives";
 import ThematicFocus from "./ThematicFocus";
-//import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
-// import InnovationData from "./Innovation/InnovationData";
-// import AdvocacyData from "./Advocacy/AdvocacyData";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -76,12 +72,9 @@ const Advocacy = () => {
         <Tab label="Thematic Focus" {...a11yProps(1)} />
         <Tab label="Geographic Focus" {...a11yProps(2)} />
         <Tab label="Objective & classification" {...a11yProps(3)} />
-        {/* <Tab label="Results Framework" {...a11yProps(4)} /> */}
-        {/* <Tab label="Innovation" {...a11yProps(5)} />
-        <Tab label="Advocacy" {...a11yProps(6)} /> */}
       </Tabs>
       <TabPanel value={value} index={0}>
-        <addTechnicalAssistance id={id} />
+        <EditTechnicalAssistance id={id} />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <ThematicFocus id={id} processLevelTypeId={processLevelTypeId} />
@@ -90,26 +83,14 @@ const Advocacy = () => {
         <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
-      </TabPanel>
-      {/* <TabPanel value={value} index={4}>
-        <EnterTargetQuantitativeResultsFramework
-          processLevelItemId={id}
+        <TechnicalAssistanceObjectives
+          id={id}
           processLevelTypeId={processLevelTypeId}
         />
-      </TabPanel> */}
-      <TabPanel index={5} value={value}>
-        {/* <InnovationData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        /> */}
       </TabPanel>
-      <TabPanel index={6} value={value}>
-        {/* <AdvocacyData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        /> */}
-      </TabPanel>
+
+      <TabPanel index={5} value={value}></TabPanel>
+      <TabPanel index={6} value={value}></TabPanel>
     </Box>
   );
 };

@@ -90,6 +90,7 @@ const initialValues = {
   title: "",
   shortTitle: "",
   startDate: "",
+  goal: "",
   endDate: "",
   extensionDate: "",
   status: "",
@@ -102,6 +103,8 @@ const initialValues = {
   currencyTypeId: "",
   costCentre: "",
   donors: [], // multiple select
+  partners: [], // multiple select
+  administrativeProgrammeId: "",
 };
 
 const staffDetailsInitial = {
@@ -284,7 +287,7 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditInnovationForm = ({ id }) => {
+const EditTechnicalAssistanceForm = ({ id }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
@@ -335,15 +338,6 @@ const EditInnovationForm = ({ id }) => {
     { enabled: !!id }
   );
   const {
-    data: QualitativeThematicAreaData,
-    isLoading: isLoadingQualitativeThematicArea,
-    isError: isErrorQualitativeThematicArea,
-  } = useQuery(
-    ["getQualitativeThematicAreaByTypeItemId", id],
-    getQualitativeThematicAreaByTypeItemId,
-    { enabled: !!id }
-  );
-  const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
     data: staffListData,
@@ -374,6 +368,13 @@ const EditInnovationForm = ({ id }) => {
   );
   const { isLoading: isLoadingDonor, data: donorData } = useQuery(
     ["donors"],
+    getDonors,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const { isLoading: isLoadingPartner, data: partnerData } = useQuery(
+    ["partners"],
     getDonors,
     {
       refetchOnWindowFocus: false,
@@ -428,7 +429,7 @@ const EditInnovationForm = ({ id }) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      title: Yup.string().required("Required"),
+      /*title: Yup.string().required("Required"),
       shortTitle: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
@@ -446,9 +447,11 @@ const EditInnovationForm = ({ id }) => {
       costCenter: Yup.string().required("Required"),
       status: Yup.string().required("Required"),
       donors: Yup.array().required("Required"),
+      partners: Yup.array().required("Required"),
+      administrativeProgrammeId: Yup.string().required("Required"),*/
     }),
     onSubmit: async (values) => {
-      try {
+      /*try {
         const guid = new Guid();
         const saveInnovation = {
           id: id ? id : guid.toString(),
@@ -466,6 +469,9 @@ const EditInnovationForm = ({ id }) => {
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
           status: values.status,
+          administrativeProgrammeId: values.administrativeProgrammeId,
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
         };
 
         const innovation = await mutation.mutateAsync(saveInnovation);
@@ -479,37 +485,29 @@ const EditInnovationForm = ({ id }) => {
           };
           innovationDonors.push(innovationDonor);
         }
-        await innovationDonorsMutation.mutateAsync(innovationDonors);
 
-        const projectRoles = [];
-        for (const staffDetail of staffDetailsList) {
-          const projectRole = {
-            innovationId: innovation.data.id,
-            aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
-            aimsRoleName: staffDetail.staffDetailsAIMSRole.name,
-            createDate: new Date(),
-            dqaRoleId: staffDetail.staffDetailsWorkFlowTask.roleId,
-            dqaRoleName: staffDetail.staffDetailsWorkFlowTask.roleName,
-            isPrimary:
-              staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
-            staffNames: staffDetail.staffDetailsName,
-            void: false,
-          };
-          projectRoles.push(projectRole);
-        }
-        await innovationStaffMutation.mutateAsync(projectRoles);
+        await technicalAssistanceDonorsMutation.mutateAsync(innovationDonors);
 
-        toast("Successfully Updated an Innovation", {
+        toast("Successfully Created a Technical Assistance", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
+        navigate(
+          `/project/design/technical-assistance/technical-assistance-detail/${innovation.data.id}`
+        );
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
           type: "error",
         });
-      }
+      }*/
+
+      toast("Successfully Created a Technical Assistance", {
+        type: "success",
+      });
+      navigate(
+        `/project/design/technical-assistance/technical-assistance-detail/bc7fd0b3-3406-490d-a3fa-abf8ffd9f13e`
+      );
     },
   });
 
@@ -523,98 +521,7 @@ const EditInnovationForm = ({ id }) => {
     setStaffDetailsList((current) => [...current, values]);
   };
 
-  useEffect(() => {
-    function setCurrentFormValues() {
-      if (
-        !isLoadingInnovationData &&
-        !isErrorInnovationData &&
-        !isLoadingQualitativeThematicArea &&
-        !isErrorQualitativeThematicArea &&
-        !isErrorQualitativePeriod &&
-        !isLoadingQualitativePeriod &&
-        !isLoadingQualitativeCountry &&
-        !isErrorQualitativeCountry
-      ) {
-        let staffId;
-        let staffEmail;
-        if (!isLoadingStaffList) {
-          staffId = staffListData.data.find(
-            (obj) => obj.id === InnovationData.data.staffNameId
-          );
-
-          staffEmail = staffId.emailAddress;
-        }
-
-        let donorsList = [];
-        for (const donor of InnovationData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
-          }
-        }
-
-        formik.setValues({
-          title: InnovationData.data.title,
-          shortTitle: InnovationData.data.shortTitle,
-          startDate: InnovationData.data.startDate,
-          endDate: InnovationData.data.endDate,
-          extensionDate: InnovationData.data.extensionDate,
-          staffNameId: staffId ? staffId : "",
-          implementingOfficeId: InnovationData.data.implementingOfficeId,
-          regionalProgrammeId: InnovationData.data.regionalProgrammeId,
-          enaSupportOffice: InnovationData.data.office,
-          totalBudget: InnovationData.data.totalBudget,
-          costCenter: InnovationData.data.costCenter,
-          currencyTypeId: InnovationData.data.currencyTypeId,
-          status: InnovationData.data.status,
-          leadStaffEmail: staffEmail ? staffEmail : "",
-          donors: donorsList,
-        });
-
-        if (InnovationData.data.staff && InnovationData.data.staff.length > 0) {
-          const allStaff = [];
-          for (const staffData of InnovationData.data.staff) {
-            const lookupRole =
-              !isLoadingAimsRole &&
-              aimsRolesData.data.filter(
-                (obj) => obj.id === staffData.aimsRoleId
-              );
-            const staff = {
-              id: staffData.id,
-              staffDetailsName: staffData.staffNames,
-              staffDetailsAIMSRole:
-                lookupRole && lookupRole.length > 0 ? lookupRole[0] : "",
-              staffDetailsWorkFlowTask: {
-                roleId: staffData.dqaRoleId,
-                roleName: staffData.dqaRoleName,
-              },
-              primaryRole: staffData.isPrimary,
-            };
-            allStaff.push(staff);
-          }
-          setStaffDetailsList(allStaff);
-        }
-      }
-    }
-    setCurrentFormValues();
-  }, [
-    InnovationData,
-    isLoadingInnovationData,
-    isErrorInnovationData,
-    isLoadingStaffList,
-    isErrorStaffList,
-    staffListData,
-    isErrorQualitativePeriod,
-    isLoadingQualitativePeriod,
-    isErrorQualitativeThematicArea,
-    isLoadingQualitativeThematicArea,
-    QualitativePeriodData,
-    QualitativeThematicAreaData,
-    QualitativeCountryData,
-    isLoadingQualitativeCountry,
-    isErrorQualitativeCountry,
-    amrefEntities,
-  ]);
+  useEffect(() => {});
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -627,7 +534,7 @@ const EditInnovationForm = ({ id }) => {
           <Grid item md={12}>
             <TextField
               name="title"
-              label="Innovation Name"
+              label="Technical Assistance Name"
               value={formik.values.title}
               error={Boolean(formik.touched.title && formik.errors.title)}
               fullWidth
@@ -643,7 +550,7 @@ const EditInnovationForm = ({ id }) => {
           <Grid item md={12}>
             <TextField
               name="shortTitle"
-              label="Innovation Short Title"
+              label="Technical Assistance Short Title"
               value={formik.values.shortTitle}
               error={Boolean(
                 formik.touched.shortTitle && formik.errors.shortTitle
@@ -732,7 +639,7 @@ const EditInnovationForm = ({ id }) => {
           <Grid item md={4}>
             <TextField
               name="staffNameId"
-              label="Lead Staff name"
+              label="Manager Name"
               select
               value={formik.values.staffNameId}
               error={Boolean(
@@ -887,6 +794,39 @@ const EditInnovationForm = ({ id }) => {
                 : []}
             </TextField>
           </Grid>
+
+          <Grid item md={4}>
+            <TextField
+              name="administrativeProgrammeId"
+              label="Administrative Programme"
+              select
+              value={formik.values.implementingOfficeId}
+              error={Boolean(
+                formik.touched.implementingOfficeId &&
+                  formik.errors.implementingOfficeId
+              )}
+              fullWidth
+              helperText={
+                formik.touched.implementingOfficeId &&
+                formik.errors.implementingOfficeId
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select Administrative Programme
+              </MenuItem>
+              {!isLoadingOrgUnits
+                ? orgUnitsData.data.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>
+                      {option.name}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
           <Grid item md={4}>
             <TextField
               name="totalBudget"
@@ -968,7 +908,6 @@ const EditInnovationForm = ({ id }) => {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               variant="outlined"
-              my={2}
             >
               <MenuItem disabled value="">
                 Status
@@ -985,13 +924,14 @@ const EditInnovationForm = ({ id }) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={12}>
-            <FormControl sx={{ m: 1, width: 450 }}>
+          <Grid item md={4}>
+            <FormControl sx={{ width: "100%" }}>
               <InputLabel>Donors</InputLabel>
               <Select
                 fullWidth
                 multiple
                 value={formik.values.donors}
+                error={Boolean(formik.touched.donors && formik.errors.donors)}
                 onChange={(e) => {
                   const selectedDonors = Array.isArray(e.target.value)
                     ? e.target.value
@@ -1025,6 +965,55 @@ const EditInnovationForm = ({ id }) => {
               >
                 {!isLoadingDonor
                   ? donorData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.donorName}({option.donorInitial})
+                      </MenuItem>
+                    ))
+                  : []}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item md={4}>
+            <FormControl sx={{ width: "100%" }}>
+              <InputLabel>Partners</InputLabel>
+              <Select
+                fullWidth
+                multiple
+                value={formik.values.partners}
+                onChange={(e) => {
+                  const selectedPartners = Array.isArray(e.target.value)
+                    ? e.target.value
+                    : [e.target.value]; // Ensure it's always an array
+                  formik.setFieldValue("partners", selectedPartners);
+                }}
+                input={<OutlinedInput label="Multiple Select" />}
+                renderValue={(selected) => (
+                  <Stack gap={1} direction="row" flexWrap="wrap">
+                    {selected.map((value) => (
+                      <Chip
+                        key={value.id}
+                        label={value.donorName}
+                        onDelete={() =>
+                          formik.setFieldValue(
+                            "partners",
+                            formik.values.partners.filter(
+                              (item) => item !== value
+                            )
+                          )
+                        }
+                        deleteIcon={
+                          <CancelIcon
+                            onMouseDown={(event) => event.stopPropagation()}
+                          />
+                        }
+                      />
+                    ))}
+                  </Stack>
+                )}
+              >
+                {!isLoadingPartner
+                  ? partnerData.data.map((option) => (
                       <MenuItem key={option.id} value={option}>
                         {option.donorName}({option.donorInitial})
                       </MenuItem>
@@ -1134,18 +1123,18 @@ const EditInnovationForm = ({ id }) => {
   );
 };
 
-const Innovation = () => {
+const TechnicalAssistance = () => {
   let { id } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="Edit Technical Assistance" />
+      <Helmet title="Edit TechnicalAssistance" />
       <Typography variant="h3" gutterBottom display="inline">
         Basic Information
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link>Project Design</Link>
-        <Typography>Innovation</Typography>
+        <Typography>Technical Assistance</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -1153,7 +1142,7 @@ const Innovation = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditInnovationForm id={id} />
+              <EditTechnicalAssistanceForm id={id} />
             </Grid>
           </Grid>
         </CardContent>
@@ -1162,4 +1151,4 @@ const Innovation = () => {
   );
 };
 
-export default Innovation;
+export default TechnicalAssistance;

@@ -269,12 +269,12 @@ const ScaleUp = () => {
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
       <Typography variant="h3" gutterBottom display="inline">
-        Technical Review
+        Scale Up
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link>Project Monitoring</Link>
-        <Typography>Technical Review</Typography>
+        <Typography>Scale Up</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />

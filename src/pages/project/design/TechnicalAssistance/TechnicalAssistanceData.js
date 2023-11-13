@@ -10,13 +10,13 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { getAdvocates } from "../../../../api/advocacy";
-import AdvocacyDataActions from "./TechnicalAssistanceDataActions";
+import { Link2 } from "react-feather";
+import { getTechnicalAssistanceByProcessLevelItemId } from "../../../../api/technical-assistance";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -24,28 +24,32 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
+const TechnicalAssistanceGridData = ({
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
 
   const {
-    data: AdvocacyData,
-    isLoading: isLoadingAdvocacy,
-    isError: isErrorAdvocacy,
+    data: TechnicalAssistanceData,
+    isLoading: isLoadingTechnicalAssistance,
+    isError: isErrorTechnicalAssistance,
     error,
-  } = useQuery(["getAdvocates"], getAdvocates, {
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    ["getTechnicalAssistanceByProcessLevelItemId"],
+    getTechnicalAssistanceByProcessLevelItemId,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
 
-  if (isErrorAdvocacy) {
+  if (isErrorTechnicalAssistance) {
     toast(error.response.data, {
       type: "error",
     });
   }
 
-  const actionLink = (params) => {
-    return <AdvocacyDataActions params={params} />;
-  };
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -55,7 +59,7 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
           color="error"
           onClick={() =>
             navigate(
-              `/project/design/new-technicalassistance/${processLevelItemId}/${processLevelTypeId}`
+              `/project/design/technical-assistance/new-technical-assistance/${processLevelItemId}/${processLevelTypeId}`
             )
           }
         >
@@ -68,10 +72,10 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
           <DataGrid
             rowsPerPageOptions={[5, 10, 25]}
             rows={
-              isLoadingAdvocacy || isErrorAdvocacy
+              isLoadingTechnicalAssistance || isErrorTechnicalAssistance
                 ? []
-                : AdvocacyData
-                ? AdvocacyData.data
+                : TechnicalAssistanceData
+                ? TechnicalAssistanceData.data
                 : []
             }
             columns={[
@@ -82,20 +86,14 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 flex: 1,
               },
               {
-                field: "beneficiary",
-                headerName: "Beneficiary",
+                field: "startDate",
+                headerName: "Start Date",
                 editable: false,
                 flex: 1,
               },
               {
-                field: "advocacyNeed",
-                headerName: "Advocacy Need",
-                editable: false,
-                flex: 1,
-              },
-              {
-                field: "expectedResult",
-                headerName: "Expected Result",
+                field: "endDate",
+                headerName: "End Date",
                 editable: false,
                 flex: 1,
               },
@@ -104,14 +102,20 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 headerName: "Action",
                 sortable: false,
                 flex: 1,
-                renderCell: (params) => {
-                  return actionLink(params);
-                },
+                renderCell: (params) => (
+                  <>
+                    <NavLink
+                      to={`/project/design/technical-assistance/technical-assistance-detail/${params.id}`}
+                    >
+                      <Button startIcon={<Link2 />} size="small"></Button>
+                    </NavLink>
+                  </>
+                ),
               },
             ]}
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-            loading={isLoadingAdvocacy}
+            loading={isLoadingTechnicalAssistance}
             components={{ Toolbar: GridToolbar }}
             getRowHeight={() => "auto"}
           />
@@ -121,7 +125,10 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
+const TechnicalAssistanceData = ({
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
@@ -130,11 +137,11 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
       </Typography>
 
       <Divider my={6} />
-      <AdvocacyGridData
+      <TechnicalAssistanceGridData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
       />
     </React.Fragment>
   );
 };
-export default AdvocacyData;
+export default TechnicalAssistanceData;

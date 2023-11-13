@@ -11,6 +11,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link,
+  Breadcrumbs,
+  Divider,
   Grid,
   MenuItem,
   Paper as MuiPaper,
@@ -31,10 +34,10 @@ import { getSubThemesByThematicAreaId } from "../../../../api/thematic-area-sub-
 import { Check, Trash as TrashIcon } from "react-feather";
 import { Guid } from "../../../../utils/guid";
 import {
-  deleteProjectThematicFocus,
-  getProjectThematicFocusByProcessLevelItemId,
-  saveProjectThematicFocus,
-} from "../../../../api/thematic-focus";
+  deleteTechnicalAssistanceThematicFocus,
+  getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
+  saveTechnicalAssistanceThematicFocus,
+} from "../../../../api/technical-assistance-thematic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../../api/sub-theme";
 import { getUniqueProgrammesByThematicAreaId } from "../../../../api/programme-thematic-area-sub-theme";
@@ -71,11 +74,13 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     data: projectThematicFocusData,
     isLoading: isLoadingProjectThematicFocus,
   } = useQuery(
-    ["getProjectThematicFocusByProcessLevelItemId", id],
-    getProjectThematicFocusByProcessLevelItemId,
+    ["getTechnicalAssistanceThematicFocusByTechnicalAssistanceId", id],
+    getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
     { enabled: !!id }
   );
-  const mutation = useMutation({ mutationFn: saveProjectThematicFocus });
+  const mutation = useMutation({
+    mutationFn: saveTechnicalAssistanceThematicFocus,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -102,7 +107,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
           }
         }
         await queryClient.invalidateQueries([
-          "getProjectThematicFocusByProcessLevelItemId",
+          "getTechnicalAssistanceThematicFocusByTechnicalAssistanceId",
         ]);
         toast("Successfully added Project Thematic Focus", {
           type: "success",
@@ -164,8 +169,8 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
   }
 
   const { refetch } = useQuery(
-    ["deleteProjectThematicFocus", thematicFocusId],
-    deleteProjectThematicFocus,
+    ["deleteTechnicalAssistanceThematicFocus", thematicFocusId],
+    deleteTechnicalAssistanceThematicFocus,
     { enabled: false }
   );
 
@@ -173,7 +178,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
-      "getProjectThematicFocusByProcessLevelItemId",
+      "getTechnicalAssistanceThematicFocusByTechnicalAssistanceId",
     ]);
   };
 
@@ -185,179 +190,181 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
             <Typography variant="h3" gutterBottom display="inline">
               Thematic Focus
             </Typography>
+
+            <Breadcrumbs aria-label="Breadcrumb" mt={6}>
+              <Link>Project Design</Link>
+              <Typography>Technical Assistance</Typography>
+            </Breadcrumbs>
+
+            <Divider my={0} />
           </Grid>
           <Grid item md={12}>
-            <CardContent pb={1}>
-              <form onSubmit={formik.handleSubmit}>
-                <Grid container item spacing={2}>
-                  <Grid item md={4}>
-                    <TextField
-                      name="thematicArea"
-                      label="Thematic Area"
-                      required
-                      select
-                      value={formik.values.thematicArea}
-                      error={Boolean(
-                        formik.touched.thematicArea &&
-                          formik.errors.thematicArea
-                      )}
-                      fullWidth
-                      helperText={
-                        formik.touched.thematicArea &&
-                        formik.errors.thematicArea
-                      }
-                      onBlur={formik.handleBlur}
-                      onChange={(e) => {
-                        formik.handleChange(e);
-                        HandleThematicAreaChange(e);
-                      }}
-                      variant="outlined"
-                      my={2}
-                    >
-                      <MenuItem disabled value="">
-                        Select Thematic Area
-                      </MenuItem>
-                      {!isLoading
-                        ? data.data.map((option) => (
-                            <MenuItem key={option.id} value={option}>
-                              {option.name}
-                            </MenuItem>
-                          ))
-                        : []}
-                    </TextField>
-                  </Grid>
-                  <Grid item md={4}>
-                    &nbsp;
-                  </Grid>
-                  <Grid item md={4}>
-                    &nbsp;
-                  </Grid>
-                  <Grid item md={12}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <h3>
-                          THEMATIC AREA:&nbsp;
-                          <strong>
-                            {formik.values.thematicArea
-                              ? formik.values.thematicArea.name
-                              : ""}
-                          </strong>
-                        </h3>
-                        <Grid item md={12}>
-                          {!isLoadingSubThemes &&
-                            subThemesData.data.map((value, index) => {
-                              return (
-                                <Grid container item spacing={2} key={index}>
-                                  <Grid item md={12}>
-                                    <FormGroup>
-                                      <FormControlLabel
-                                        control={
-                                          <Checkbox
-                                            onChange={formik.handleChange}
-                                            name={value.subTheme.id}
-                                          />
-                                        }
-                                        label={value.subTheme.name}
-                                      />
-                                    </FormGroup>
-                                  </Grid>
+            <form onSubmit={formik.handleSubmit}>
+              <Grid container>
+                <Grid item md={12}>
+                  <TextField
+                    name="thematicArea"
+                    label="Thematic Area"
+                    required
+                    select
+                    value={formik.values.thematicArea}
+                    error={Boolean(
+                      formik.touched.thematicArea && formik.errors.thematicArea
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.thematicArea && formik.errors.thematicArea
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      HandleThematicAreaChange(e);
+                    }}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select Thematic Area
+                    </MenuItem>
+                    {!isLoading
+                      ? data.data.map((option) => (
+                          <MenuItem key={option.id} value={option}>
+                            {option.name}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
+                </Grid>
+                <Grid item md={4}>
+                  &nbsp;
+                </Grid>
+                <Grid item md={4}>
+                  &nbsp;
+                </Grid>
+                <Grid item md={12}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <h3>
+                        THEMATIC AREA:&nbsp;
+                        <strong>
+                          {formik.values.thematicArea
+                            ? formik.values.thematicArea.name
+                            : ""}
+                        </strong>
+                      </h3>
+                      <Grid item md={12}>
+                        {!isLoadingSubThemes &&
+                          subThemesData.data.map((value, index) => {
+                            return (
+                              <Grid container item spacing={2} key={index}>
+                                <Grid item md={12}>
+                                  <FormGroup>
+                                    <FormControlLabel
+                                      control={
+                                        <Checkbox
+                                          onChange={formik.handleChange}
+                                          name={value.subTheme.id}
+                                        />
+                                      }
+                                      label={value.subTheme.name}
+                                    />
+                                  </FormGroup>
                                 </Grid>
-                              );
-                            })}
-                        </Grid>
-                        <Grid item md={12}>
-                          <Button
-                            type="submit"
-                            variant="contained"
-                            color="primary"
-                            mt={3}
-                          >
-                            <Check /> Save Sub-Theme
-                          </Button>
-                        </Grid>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
-                <br />
-                <br />
-                <br />
-                <Grid container item spacing={2}>
-                  <Grid item md={12}>
-                    <Paper style={{ height: 250, width: "100%" }}>
-                      <DataGrid
-                        rowsPerPageOptions={[5, 10, 25]}
-                        rows={
-                          isLoadingProjectThematicFocus
-                            ? []
-                            : projectThematicFocusData
-                            ? projectThematicFocusData.data
-                            : []
-                        }
-                        columns={[
-                          {
-                            field: "subThemeId",
-                            colId: "subThemeId&thematicAreaId",
-                            headerName: "SUB-THEME(THEMATIC AREA)",
-                            editable: false,
-                            flex: 1,
-                            valueGetter: GetSubTheme,
-                          },
-                          {
-                            field: "action",
-                            headerName: "Action",
-                            sortable: false,
-                            flex: 1,
-                            renderCell: (params) => (
-                              <>
-                                <Button
-                                  startIcon={<TrashIcon />}
-                                  size="small"
-                                  onClick={(e) => handleClickOpen(params.id)}
-                                ></Button>
-                              </>
-                            ),
-                          },
-                        ]}
-                        pageSize={pageSize}
-                        onPageSizeChange={(newPageSize) =>
-                          setPageSize(newPageSize)
-                        }
-                        loading={isLoadingProjectThematicFocus}
-                        getRowHeight={() => "auto"}
-                      />
-                    </Paper>
-                    <Dialog
-                      open={open}
-                      onClose={handleClose}
-                      aria-labelledby="alert-dialog-title"
-                      aria-describedby="alert-dialog-description"
-                    >
-                      <DialogTitle id="alert-dialog-title">
-                        Delete Project Thematic Focus
-                      </DialogTitle>
-                      <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                          Are you sure you want to delete Project Thematic
-                          Focus?
-                        </DialogContentText>
-                      </DialogContent>
-                      <DialogActions>
+                              </Grid>
+                            );
+                          })}
+                      </Grid>
+                      <Grid item md={12}>
                         <Button
-                          onClick={handleDeleteProjectThematicFocus}
+                          type="submit"
+                          variant="contained"
                           color="primary"
+                          mt={3}
                         >
-                          Yes
+                          <Check /> Save Sub-Theme
                         </Button>
-                        <Button onClick={handleClose} color="error" autoFocus>
-                          No
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-                  </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
                 </Grid>
-              </form>
-            </CardContent>
+              </Grid>
+              <br />
+              <br />
+              <br />
+              <Grid container item spacing={2}>
+                <Grid item md={12}>
+                  <Paper style={{ height: 250, width: "100%" }}>
+                    <DataGrid
+                      rowsPerPageOptions={[5, 10, 25]}
+                      rows={
+                        isLoadingProjectThematicFocus
+                          ? []
+                          : projectThematicFocusData
+                          ? projectThematicFocusData.data
+                          : []
+                      }
+                      columns={[
+                        {
+                          field: "subThemeId",
+                          colId: "subThemeId&thematicAreaId",
+                          headerName: "SUB-THEME(THEMATIC AREA)",
+                          editable: false,
+                          flex: 1,
+                          valueGetter: GetSubTheme,
+                        },
+                        {
+                          field: "action",
+                          headerName: "Action",
+                          sortable: false,
+                          flex: 1,
+                          renderCell: (params) => (
+                            <>
+                              <Button
+                                startIcon={<TrashIcon />}
+                                size="small"
+                                onClick={(e) => handleClickOpen(params.id)}
+                              ></Button>
+                            </>
+                          ),
+                        },
+                      ]}
+                      pageSize={pageSize}
+                      onPageSizeChange={(newPageSize) =>
+                        setPageSize(newPageSize)
+                      }
+                      loading={isLoadingProjectThematicFocus}
+                      getRowHeight={() => "auto"}
+                    />
+                  </Paper>
+                  <Dialog
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                  >
+                    <DialogTitle id="alert-dialog-title">
+                      Delete Project Thematic Focus
+                    </DialogTitle>
+                    <DialogContent>
+                      <DialogContentText id="alert-dialog-description">
+                        Are you sure you want to delete Project Thematic Focus?
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        onClick={handleDeleteProjectThematicFocus}
+                        color="primary"
+                      >
+                        Yes
+                      </Button>
+                      <Button onClick={handleClose} color="error" autoFocus>
+                        No
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </Grid>
+              </Grid>
+            </form>
           </Grid>
         </Grid>
       </CardContent>

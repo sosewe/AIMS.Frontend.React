@@ -954,8 +954,8 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={12}>
-            <FormControl sx={{ m: 1, width: 450 }}>
+          <Grid item md={4}>
+            <FormControl sx={{ width: 500 }}>
               <InputLabel>Donors</InputLabel>
               <Select
                 fullWidth

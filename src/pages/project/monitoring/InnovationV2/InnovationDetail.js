@@ -8,6 +8,7 @@ import InnovationUpdate from "./InnovationUpdate";
 import TechnicalReview from "./TechnicalReview";
 import ScaleUp from "./ScaleUp";
 import UserSatisfaction from "./UserSatisfaction";
+import KMDocumentsUpload from "./KMDocumentsUpload";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -72,6 +73,7 @@ const InnovationDetail = () => {
         <Tab label="Technical Review" {...a11yProps(1)} />
         <Tab label="Scale Up" {...a11yProps(2)} />
         <Tab label="User Satisfaction" {...a11yProps(3)} />
+        <Tab label="KM Documents Upload" {...a11yProps(4)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <InnovationUpdate id={id} />
@@ -84,6 +86,9 @@ const InnovationDetail = () => {
       </TabPanel>
       <TabPanel value={value} index={3}>
         <UserSatisfaction id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={4}>
+        <KMDocumentsUpload id={id} />
       </TabPanel>
     </Box>
   );

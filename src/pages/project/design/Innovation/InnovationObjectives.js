@@ -17,10 +17,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Grid,
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { Check, Trash as TrashIcon } from "react-feather";
@@ -573,11 +576,14 @@ const InnvationObjectives = ({ id }) => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <Typography variant="h3" gutterBottom display="inline">
-                Innovation Objectives & Classification
+                Objectives & Classification
               </Typography>
+              <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+                <Link>Project Design</Link>
+                <Typography>Innovation</Typography>
+              </Breadcrumbs>
             </Grid>
           </Grid>
-          <br />
           <Grid container spacing={12}>
             <Grid item md={4}>
               <TextField

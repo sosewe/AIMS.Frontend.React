@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "@emotion/styled";
 import {
+  Breadcrumbs,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
@@ -9,8 +10,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Grid,
   MenuItem,
+  Link,
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
@@ -330,9 +333,14 @@ const GeoFocus = ({ id }) => {
         <Grid container spacing={12}>
           <Grid item md={12}>
             <Typography variant="h3" gutterBottom display="inline">
-              Innovation Locations
+              Geographic Focus
             </Typography>
+            <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+              <Link>Project Design</Link>
+              <Typography>Innovation</Typography>
+            </Breadcrumbs>
           </Grid>
+          <Divider my={6} />
           <Grid item md={12}>
             <Paper style={{ height: 250, width: "100%" }}>
               <DataGrid

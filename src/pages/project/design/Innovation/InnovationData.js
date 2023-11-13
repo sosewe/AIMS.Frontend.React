@@ -17,7 +17,6 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { Link2 } from "react-feather";
 import { getInnovations } from "../../../../api/innovation";
-//import InnovationDataActions from "./InnovationDataActions";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -73,13 +72,6 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 : []
             }
             columns={[
-              {
-                field: "id",
-                headerName: "ID",
-                editable: false,
-                flex: 1,
-                display: false,
-              },
               {
                 field: "title",
                 headerName: "Title",

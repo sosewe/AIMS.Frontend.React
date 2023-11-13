@@ -59,9 +59,7 @@ const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {};
 
-const StaffDetailsForm = ({ handleClick }) => {};
-
-const UserSatisfactionForm = ({ id }) => {
+const KMDocumentsUploadForm = ({ id }) => {
   const [openDialog, setOpenDialog] = useState();
   const [innovationUpdatesList, setInnovationUpdatesList] = useState([]);
   const queryClient = useQueryClient();
@@ -107,76 +105,38 @@ const UserSatisfactionForm = ({ id }) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
-          <Grid container spacing={12}>
-            <Grid item md={12}>
-              <Button variant="contained" color="primary" onClick={() => {}}>
-                <AddIcon /> Add Details
-              </Button>
-            </Grid>
-            <Grid item md={12}>
-              <Paper>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Metric</TableCell>
-                      <TableCell align="right">Target Group</TableCell>
-                      <TableCell align="right">Target Value</TableCell>
-                      <TableCell align="right">
-                        Actual By Reporting Period
-                      </TableCell>
-                      <TableCell align="right">% Change</TableCell>
-                      <TableCell align="right">Description</TableCell>
-                      <TableCell align="right">Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody></TableBody>
-                </Table>
-              </Paper>
-            </Grid>
+          <Grid item md={12}>
+            <Button variant="outlined" component="label">
+              Attach Documents
+              <input hidden accept="image/*" multiple type="file" />
+            </Button>
           </Grid>
+
           <Grid item mt={5} md={12}>
             <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save changes
             </Button>
           </Grid>
-          <Dialog
-            fullWidth={true}
-            maxWidth="md"
-            open={openDialog}
-            onClose={() => setOpenDialog(false)}
-            aria-labelledby="form-dialog-title"
-          >
-            <DialogTitle id="form-dialog-title">
-              Innovation Update Details
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>Add Staff Details</DialogContentText>
-              <UserSatisfactionForm handleClick={handleAddInnovationUpdate} />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenDialog(false)} color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Grid>
       )}
     </form>
   );
 };
 
-const UserSatisfaction = () => {
+const KMDocumentsUpload = () => {
   let { id } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
       <Typography variant="h3" gutterBottom display="inline">
-        User Satisfaction
+        <Grid item md={12}>
+          KM Documents Upload
+        </Grid>
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link>Project Monitoring</Link>
-        <Typography>User Satisfaction</Typography>
+        <Typography>KM Documents Upload</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -184,7 +144,7 @@ const UserSatisfaction = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <UserSatisfactionForm id={id} />
+              <KMDocumentsUploadForm id={id} />
             </Grid>
           </Grid>
         </CardContent>
@@ -193,4 +153,4 @@ const UserSatisfaction = () => {
   );
 };
 
-export default UserSatisfaction;
+export default KMDocumentsUpload;
