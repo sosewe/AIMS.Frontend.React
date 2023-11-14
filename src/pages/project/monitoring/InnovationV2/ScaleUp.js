@@ -48,6 +48,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import {
+  newInnovationMonitoringScaleUp,
+  getInnovationMonitoringScaleUpByInnovationId,
+  deleteInnovationMonitoringScaleUp,
+} from "../../../../api/innovation-monitoring-scaleup";
+import { getLookupMasterItemsByName } from "../../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -57,23 +63,74 @@ const Button = styled(MuiButton)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
-const initialValues = {};
+const initialValues = {
+  newCountriesScaledUp: "",
+  newRegionsWithinCountries: "",
+  newTargetGroups: "",
+  newProportionScaledUp: "",
+  innovationClosingStatus: "",
+  innovationClosingReasons: "",
+};
 
 const ScaleUpForm = ({ id }) => {
-  const [openDialog, setOpenDialog] = useState();
-  const [innovationUpdatesList, setInnovationUpdatesList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  /*
+  const {
+    data: TechnicalReviewData,
+    isLoading: isLoadingTechnicalReviewData,
+    isError: isErrorTechnicalReviewData,
+  } = useQuery(
+    ["getInnovationMonitoringTechnicalReviewByInnovationId", id],
+    getInnovationMonitoringTechnicalReviewByInnovationId,
+    { enabled: !!id }
+  );*/
+
+  const {
+    isLoading: isLoadingInnovationClosingStatus,
+    data: InnovationClosingStatusData,
+  } = useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
+
+  const {
+    isLoading: isLoadingInnovationClosingReasons,
+    data: innovationClosingReasonsData,
+  } = useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
+
+  const mutation = useMutation({
+    mutationFn: newInnovationMonitoringScaleUp,
+  });
+
   const formik = useFormik({
     initialValues: initialValues,
-    validationSchema: Yup.object().shape({}),
+    validationSchema: Yup.object().shape({
+      newCountriesScaledUp: Yup.number().required("Required"),
+      newRegionsWithinCountries: Yup.number().required("Required"),
+      newTargetGroups: Yup.number().required("Required"),
+      newProportionScaledUp: Yup.number().required("Required"),
+      innovationClosingStatus: Yup.string().required("Required"),
+      innovationClosingReasons: Yup.string().required("Required"),
+    }),
     onSubmit: async (values) => {
       try {
-        const guid = new Guid();
-        const saveInnovationUpdate = {};
+        const saveScaleUp = {
+          id: id ? id : new Guid().toString(),
+          createDate: new Date(),
+          newCountriesScaledUp: values.newCountriesScaledUp,
+          newRegionsWithinCountries: values.newRegionsWithinCountries,
+          newTargetGroups: values.newTargetGroups,
+          newProportionScaledUp: values.newProportionScaledUp,
+          innovationClosingStatus: values.innovationClosingStatus,
+          innovationClosingReasons: values.innovationClosingReasons,
+        };
 
-        toast("Successfully Updated an Innovation", {
+        await mutation.mutateAsync(saveScaleUp);
+
+        toast("Successfully Updated Scale Up", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
@@ -86,14 +143,6 @@ const ScaleUpForm = ({ id }) => {
       }
     },
   });
-
-  function removeInnovationUpdate(row) {
-    setInnovationUpdatesList((current) => {});
-  }
-
-  const handleAddInnovationUpdate = (values) => {
-    setInnovationUpdatesList((current) => [...current, values]);
-  };
 
   useEffect(() => {}, []);
 
@@ -215,6 +264,16 @@ const ScaleUpForm = ({ id }) => {
                 <MenuItem disabled value="">
                   Select
                 </MenuItem>
+                {!isLoadingInnovationClosingStatus
+                  ? InnovationClosingStatusData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
               </TextField>
             </Grid>
 
@@ -241,6 +300,16 @@ const ScaleUpForm = ({ id }) => {
                 <MenuItem disabled value="">
                   Select
                 </MenuItem>
+                {!isLoadingInnovationClosingReasons
+                  ? innovationClosingReasonsData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
               </TextField>
             </Grid>
 

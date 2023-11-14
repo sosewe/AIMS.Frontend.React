@@ -24,7 +24,11 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const TechnicalAssistanceGridData = ({ id }) => {
+const TechnicalAssistanceGridData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  id,
+}) => {
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
 
@@ -47,7 +51,7 @@ const TechnicalAssistanceGridData = ({ id }) => {
           color="error"
           onClick={() =>
             navigate(
-              `/project/design/technical-assistance/new-technical-assistance/${id}/`
+              `/project/design/technical-assistance/new-technical-assistance/${processLevelItemId}/${processLevelTypeId}`
             )
           }
         >

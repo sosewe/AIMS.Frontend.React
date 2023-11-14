@@ -48,6 +48,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import {
+  newInnovationMonitoringTechnicalReview,
+  getInnovationMonitoringTechnicalReviewByInnovationId,
+  deleteInnovationMonitoringTechnicalReview,
+} from "../../../../api/innovation-monitoring-technical-review";
+import { getLookupMasterItemsByName } from "../../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -57,25 +63,60 @@ const Button = styled(MuiButton)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
-const initialValues = {};
-
-const StaffDetailsForm = ({ handleClick }) => {};
+const initialValues = {
+  innovationMetrics: "",
+  innovationIsScalable: "",
+};
 
 const TechnicalReviewForm = ({ id }) => {
-  const [openDialog, setOpenDialog] = useState();
-  const [innovationUpdatesList, setInnovationUpdatesList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  /*
+  const {
+    data: TechnicalReviewData,
+    isLoading: isLoadingTechnicalReviewData,
+    isError: isErrorTechnicalReviewData,
+  } = useQuery(
+    ["getInnovationMonitoringTechnicalReviewByInnovationId", id],
+    getInnovationMonitoringTechnicalReviewByInnovationId,
+    { enabled: !!id }
+  );*/
+
+  const { isLoading: isLoadingInnovationMetrics, data: innovationMetricsData } =
+    useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
+    });
+
+  const {
+    isLoading: isLoadingInnovationScalabiity,
+    data: innovationScalabiityData,
+  } = useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
+
+  const mutation = useMutation({
+    mutationFn: newInnovationMonitoringTechnicalReview,
+  });
+
   const formik = useFormik({
     initialValues: initialValues,
-    validationSchema: Yup.object().shape({}),
+    validationSchema: Yup.object().shape({
+      innovationMetrics: Yup.string().required("Required"),
+      innovationIsScalable: Yup.string().required("Required"),
+    }),
     onSubmit: async (values) => {
       try {
-        const guid = new Guid();
-        const saveInnovationUpdate = {};
+        const saveTechnicalReview = {
+          id: id ? id : new Guid().toString(),
+          createDate: new Date(),
+          innovationMetMetrics: values.innovationMetMetrics,
+          innovationIsScalable: values.innovationIsScalable,
+        };
 
-        toast("Successfully Updated an Innovation", {
+        await mutation.mutateAsync(saveTechnicalReview);
+
+        toast("Successfully Updated Technical Review", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
@@ -89,15 +130,12 @@ const TechnicalReviewForm = ({ id }) => {
     },
   });
 
-  function removeInnovationUpdate(row) {
-    setInnovationUpdatesList((current) => {});
-  }
-
-  const handleAddInnovationUpdate = (values) => {
-    setInnovationUpdatesList((current) => [...current, values]);
-  };
-
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      formik.setValues({});
+    }
+    setCurrentFormValues();
+  }, []);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -131,6 +169,16 @@ const TechnicalReviewForm = ({ id }) => {
                 <MenuItem disabled value="">
                   Select
                 </MenuItem>
+                {!isLoadingInnovationMetrics
+                  ? innovationMetricsData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
               </TextField>
             </Grid>
 
@@ -157,6 +205,16 @@ const TechnicalReviewForm = ({ id }) => {
                 <MenuItem disabled value="">
                   Select
                 </MenuItem>
+                {!isLoadingInnovationScalabiity
+                  ? innovationScalabiityData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
               </TextField>
             </Grid>
           </Grid>

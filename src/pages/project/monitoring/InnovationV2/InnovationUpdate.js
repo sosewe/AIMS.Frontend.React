@@ -397,7 +397,10 @@ const InnovationUpdateForm = ({ id }) => {
     setInnovationRisksList((current) => [...current, values]);
   };
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {}
+    setCurrentFormValues();
+  }, []);
 
   return (
     <form onSubmit={formik.handleSubmit}>

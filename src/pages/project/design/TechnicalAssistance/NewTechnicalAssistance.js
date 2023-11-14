@@ -271,7 +271,84 @@ const TechnicalAssistanceForm = ({
     },
   });
 
-  useEffect(() => {});
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingTechnicalAssistanceData &&
+        !isErrorTechnicalAssistanceData
+      ) {
+        let staffId;
+        let staffEmail;
+        if (!isLoadingStaffList) {
+          staffId = staffListData.data.find(
+            (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
+          );
+
+          if (staffId != null) {
+            staffEmail = TechnicalAssistanceData.data.staffName.emailAddress;
+          }
+        }
+
+        let enaSupportOffice;
+        if (!!isLoadingAmrefEntities) {
+          enaSupportOffice = amrefEntities.data.find(
+            (obj) => obj.id === TechnicalAssistanceData.data.office
+          );
+        }
+
+        let implementingOfficeId;
+        if (!!isLoadingOrgUnits) {
+          implementingOfficeId = orgUnitsData.data.find(
+            (obj) =>
+              obj.id === TechnicalAssistanceData.data.implementingOfficeId
+          );
+        }
+
+        let currencyType;
+        if (!!isLoadingCurrency) {
+          currencyType = currencyData.data.find(
+            (obj) => obj.id === TechnicalAssistanceData.data.currencyTypeId
+          );
+        }
+
+        let donorsList = [];
+        for (const donor of TechnicalAssistanceData.data.donors) {
+          const result = donorData.data.find((obj) => obj.id === donor.donorId);
+          if (result) {
+            donorsList.push(result);
+          }
+        }
+
+        formik.setValues({
+          title: TechnicalAssistanceData.data.title,
+          shortTitle: TechnicalAssistanceData.data.shortTitle,
+          startDate: TechnicalAssistanceData.data.startDate,
+          endDate: TechnicalAssistanceData.data.endDate,
+          extensionDate: TechnicalAssistanceData.data.extensionDate,
+          status: TechnicalAssistanceData.data.status,
+          staffNameId: staffId ? staffId : "",
+          leadStaffEmail: staffEmail ? staffEmail : "",
+          implementingOfficeId: implementingOfficeId
+            ? implementingOfficeId
+            : "",
+          /*
+          enaSupportOffice: enaSupportOffice ? enaSupportOffice : "",
+          costCenter: TechnicalAssistanceData.data.costCenter,
+          currencyTypeId: currencyType ? currencyType : "",*/
+          donors: donorsList,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    TechnicalAssistanceData,
+    isLoadingTechnicalAssistanceData,
+    isErrorTechnicalAssistanceData,
+    isLoadingStaffList,
+    isErrorStaffList,
+    staffListData,
+    amrefEntities,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -413,16 +490,6 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select staff's Name
               </MenuItem>
-              {!isLoadingStaffList &&
-              !isErrorStaffList &&
-              staffListData.data &&
-              staffListData.data.length > 0
-                ? staffListData.data.map((option) => (
-                    <MenuItem key={option.id} value={option}>
-                      {option.firstName} {option.lastName}
-                    </MenuItem>
-                  ))
-                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -468,13 +535,6 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Implementing Office
               </MenuItem>
-              {!isLoadingOrgUnits
-                ? orgUnitsData.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}
-                    </MenuItem>
-                  ))
-                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -500,16 +560,6 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Regional Programme
               </MenuItem>
-              {!isLoadingRegProg
-                ? regProgData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -535,13 +585,6 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select E/NA Supporting Office
               </MenuItem>
-              {!isLoadingAmrefEntities
-                ? amrefEntities.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}
-                    </MenuItem>
-                  ))
-                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -567,16 +610,31 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Administrative Programme
               </MenuItem>
-              {!isLoadingAdministrativeProgram
-                ? regProgData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={4}>
+            <TextField
+              name="administrativeProgrammeId"
+              label="Administrative Programme"
+              select
+              value={formik.values.administrativeProgrammeId}
+              error={Boolean(
+                formik.touched.administrativeProgrammeId &&
+                  formik.errors.administrativeProgrammeId
+              )}
+              fullWidth
+              helperText={
+                formik.touched.administrativeProgrammeId &&
+                formik.errors.administrativeProgrammeId
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select Administrative Programme
+              </MenuItem>
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -619,16 +677,6 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Currency
               </MenuItem>
-              {!isLoadingCurrency
-                ? currencyData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -660,30 +708,20 @@ const TechnicalAssistanceForm = ({
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               variant="outlined"
+              my={2}
             >
               <MenuItem disabled value="">
                 Status
               </MenuItem>
-              {!isLoadingStatuses
-                ? statusesData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
             </TextField>
           </Grid>
-          <Grid item md={4}>
+          <Grid item md={4} mt={2}>
             <FormControl sx={{ width: "100%" }}>
               <InputLabel>Donors</InputLabel>
               <Select
                 fullWidth
                 multiple
                 value={formik.values.donors}
-                error={Boolean(formik.touched.donors && formik.errors.donors)}
                 onChange={(e) => {
                   const selectedDonors = Array.isArray(e.target.value)
                     ? e.target.value
@@ -714,15 +752,7 @@ const TechnicalAssistanceForm = ({
                     ))}
                   </Stack>
                 )}
-              >
-                {!isLoadingDonor
-                  ? donorData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.donorName}({option.donorInitial})
-                      </MenuItem>
-                    ))
-                  : []}
-              </Select>
+              ></Select>
             </FormControl>
           </Grid>
 
@@ -763,15 +793,8 @@ const TechnicalAssistanceForm = ({
                     ))}
                   </Stack>
                 )}
-              >
-                {!isLoadingPartner
-                  ? partnerData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.donorName}({option.donorInitial})
-                      </MenuItem>
-                    ))
-                  : []}
-              </Select>
+                my={2}
+              ></Select>
             </FormControl>
           </Grid>
 

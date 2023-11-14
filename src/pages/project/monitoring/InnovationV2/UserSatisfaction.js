@@ -35,7 +35,11 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Label,
+} from "@mui/icons-material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -107,58 +111,11 @@ const UserSatisfactionForm = ({ id }) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
-          <Grid container spacing={12}>
-            <Grid item md={12}>
-              <Button variant="contained" color="primary" onClick={() => {}}>
-                <AddIcon /> Add Details
-              </Button>
-            </Grid>
-            <Grid item md={12}>
-              <Paper>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Metric</TableCell>
-                      <TableCell align="right">Target Group</TableCell>
-                      <TableCell align="right">Target Value</TableCell>
-                      <TableCell align="right">
-                        Actual By Reporting Period
-                      </TableCell>
-                      <TableCell align="right">% Change</TableCell>
-                      <TableCell align="right">Description</TableCell>
-                      <TableCell align="right">Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody></TableBody>
-                </Table>
-              </Paper>
-            </Grid>
+          <Grid item md={12}>
+            <Typography variant="h5" gutterBottom display="inline">
+              Coming Soon ..
+            </Typography>
           </Grid>
-          <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
-            </Button>
-          </Grid>
-          <Dialog
-            fullWidth={true}
-            maxWidth="md"
-            open={openDialog}
-            onClose={() => setOpenDialog(false)}
-            aria-labelledby="form-dialog-title"
-          >
-            <DialogTitle id="form-dialog-title">
-              Innovation Update Details
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>Add Staff Details</DialogContentText>
-              <UserSatisfactionForm handleClick={handleAddInnovationUpdate} />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenDialog(false)} color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Grid>
       )}
     </form>
