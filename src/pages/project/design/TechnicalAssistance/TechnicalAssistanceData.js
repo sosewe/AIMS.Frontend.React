@@ -16,7 +16,7 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { Link2 } from "react-feather";
-import { getTechnicalAssistanceByProcessLevelItemId } from "../../../../api/technical-assistance";
+import { getTechnicalAssistanceByInnovationId } from "../../../../api/technical-assistance";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -24,10 +24,7 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const TechnicalAssistanceGridData = ({
-  processLevelItemId,
-  processLevelTypeId,
-}) => {
+const TechnicalAssistanceGridData = ({ id }) => {
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
 
@@ -35,20 +32,11 @@ const TechnicalAssistanceGridData = ({
     data: TechnicalAssistanceData,
     isLoading: isLoadingTechnicalAssistance,
     isError: isErrorTechnicalAssistance,
-    error,
   } = useQuery(
-    ["getTechnicalAssistanceByProcessLevelItemId"],
-    getTechnicalAssistanceByProcessLevelItemId,
-    {
-      refetchOnWindowFocus: false,
-    }
+    ["getTechnicalAssistanceByInnovationId", id],
+    getTechnicalAssistanceByInnovationId,
+    { enabled: !!id }
   );
-
-  if (isErrorTechnicalAssistance) {
-    toast(error.response.data, {
-      type: "error",
-    });
-  }
 
   return (
     <Card mb={6}>
@@ -59,7 +47,7 @@ const TechnicalAssistanceGridData = ({
           color="error"
           onClick={() =>
             navigate(
-              `/project/design/technical-assistance/new-technical-assistance/${processLevelItemId}/${processLevelTypeId}`
+              `/project/design/technical-assistance/new-technical-assistance/${id}/`
             )
           }
         >

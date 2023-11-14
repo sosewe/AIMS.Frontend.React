@@ -100,10 +100,6 @@ const ThematicFocus = ({ id }) => {
               thematicAreaId: subThemesDatum.thematicAreaId,
               id: new Guid().toString(),
             };
-
-            console.log(
-              "projectThematicFocus " + JSON.stringify(innovationThematicFocus)
-            );
             await mutation.mutateAsync(innovationThematicFocus);
           }
         }

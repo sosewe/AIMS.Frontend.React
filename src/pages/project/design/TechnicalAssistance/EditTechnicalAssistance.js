@@ -298,15 +298,6 @@ const EditTechnicalAssistanceForm = ({ id }) => {
     isLoading: isLoadingInnovationData,
     isError: isErrorInnovationData,
   } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
-  const {
-    data: QualitativeCountryData,
-    isLoading: isLoadingQualitativeCountry,
-    isError: isErrorQualitativeCountry,
-  } = useQuery(
-    ["getQualitativeCountryByTypeItemId", id],
-    getQualitativeCountryByTypeItemId,
-    { enabled: !!id }
-  );
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -328,15 +319,6 @@ const EditTechnicalAssistanceForm = ({ id }) => {
   } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativePeriodData,
-    isLoading: isLoadingQualitativePeriod,
-    isError: isErrorQualitativePeriod,
-  } = useQuery(
-    ["getQualitativePeriodByTypeItemId", id],
-    getQualitativePeriodByTypeItemId,
-    { enabled: !!id }
-  );
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -380,13 +362,6 @@ const EditTechnicalAssistanceForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  // const {
-  //   data: ThematicAreas,
-  //   isLoading: isLoadingThematicAreas,
-  //   isError: isErrorThematicAreas,
-  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-  //   refetchOnWindowFocus: false,
-  // });
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,

@@ -14,9 +14,12 @@ export const getTechnicalAssistanceById = async ({ queryKey }) => {
   return await axios.get(`${apiRoutes.TechnicalAssistance}/${id}`);
 };
 
-export const getTechnicalAssistanceByInnovationId = async ({ queryKey }) => {
-  const [, id] = queryKey;
-  return await axios.get(`${apiRoutes.innovation}/${id}`);
+export const getTechnicalAssistanceByProcessLevelItemId = async ({
+  queryKey,
+}) => {
+  const [, processLevelItemId] = queryKey;
+
+  return await axios.get(apiRoutes.innovation);
 
   /*
   return await axios.get(

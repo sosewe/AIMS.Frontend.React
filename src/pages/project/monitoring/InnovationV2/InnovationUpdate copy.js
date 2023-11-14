@@ -43,17 +43,16 @@ import { Link2 } from "react-feather";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
 import { getInnovations } from "../../../../api/innovation";
-import { getInnovationMonitoringTargetMetricsByInnovationId } from "../../../../api/innovation-monitoring";
 import {
   newInnovationMonitoringUpdateRisk,
   getInnovationMonitoringUpdateRiskByInnovationId,
   deleteInnovationMonitoringUpdateRisk,
 } from "../../../../api/innovation-monitoring-risk";
 import {
-  newInnovationMonitoringUpdateMetric,
-  getInnovationMonitoringUpdateMetricByInnovationId,
-  deleteInnovationMonitoringUpdateMetric,
-} from "../../../../api/innovation-monitoring-metric";
+  newInnovationMonitoringUpdateObjective,
+  getInnovationMonitoringUpdateObjectiveByInnovationId,
+  deleteInnovationMonitoringUpdateObjective,
+} from "../../../../api/innovation-monitoring-objective";
 
 const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
@@ -64,28 +63,28 @@ const Button = styled(MuiButton)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
-const MetricDetailsForm = ({ handleMetricClick, metric }) => {
-  const initialMetricValues = {
-    actualByReportingPeriod: "",
-    innovationTargetGroupName: metric.innovationTargetGroupName,
-    innovationMetricName: metric.innovationMetricName,
-    innovationTarget: metric.innovationTarget,
-    innovationPercentageChange: "",
-  };
+const initialMetricValues = {
+  metric: "",
+  targetGroup: "",
+  targetValue: "",
+  actualByReportingPeriod: "",
+  percentageChange: "",
+  description: "",
+};
 
-  const mutation = useMutation({
-    mutationFn: newInnovationMonitoringUpdateMetric,
-  });
-
+const MetricDetailsForm = ({ handleMetricClick }) => {
   const formik = useFormik({
-    initialValues: initialMetricValues,
+    initialMetricValues: initialMetricValues,
     validationSchema: Yup.object().shape({
+      metric: Yup.object().required("Required"),
+      targetGroup: Yup.object().required("Required"),
+      targetValue: Yup.number().required("Required"),
       actualByReportingPeriod: Yup.number().required("Required"),
+      percentageChange: Yup.number().required("Required"),
+      description: Yup.string().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
-        values.innovationPercentageChange =
-          (values.actualByReportingPeriod / values.innovationTarget) * 100;
         handleMetricClick(values);
       } catch (error) {
         toast(error.response.data, {
@@ -103,75 +102,6 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={3}>
-            <Grid item md={12}>
-              <TextField
-                name="innovationMetricName"
-                label="Metric"
-                value={formik.values.innovationMetricName}
-                error={Boolean(
-                  formik.touched.innovationMetricName &&
-                    formik.errors.innovationMetricName
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationMetricName &&
-                  formik.errors.innovationMetricName
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-                rows={3}
-                disabled
-              />
-            </Grid>
-
-            <Grid item md={12}>
-              <TextField
-                name="innovationTargetGroupName"
-                label="Target Group"
-                value={formik.values.innovationTargetGroupName}
-                error={Boolean(
-                  formik.touched.innovationTargetGroupName &&
-                    formik.errors.innovationTargetGroupName
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationTargetGroupName &&
-                  formik.errors.innovationTargetGroupName
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-                rows={3}
-                disabled
-              />
-            </Grid>
-
-            <Grid item md={12}>
-              <TextField
-                name="innovationTarget"
-                label="Target Number"
-                value={formik.values.innovationTarget}
-                error={Boolean(
-                  formik.touched.innovationTarget &&
-                    formik.errors.innovationTarget
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationTarget &&
-                  formik.errors.innovationTarget
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-                rows={3}
-                disabled
-              />
-            </Grid>
-
             <Grid item md={12}>
               <TextField
                 name="actualByReportingPeriod"
@@ -218,7 +148,7 @@ const initialRiskValues = {
 
 const RiskDetailsForm = ({ handleRiskClick }) => {
   const formik = useFormik({
-    initialValues: initialRiskValues,
+    initialMetricValues: initialRiskValues,
     validationSchema: Yup.object().shape({
       riskDescription: Yup.string().required("Required"),
       riskMitigation: Yup.string().required("Required"),
@@ -269,13 +199,15 @@ const RiskDetailsForm = ({ handleRiskClick }) => {
               <TextField
                 name="riskMitigation"
                 label="Risk Mitigation"
-                value={formik.values.riskMitigation}
+                value={formik.values.riskDescription}
                 error={Boolean(
-                  formik.touched.riskMitigation && formik.errors.riskMitigation
+                  formik.touched.riskDescription &&
+                    formik.errors.riskDescription
                 )}
                 fullWidth
                 helperText={
-                  formik.touched.riskMitigation && formik.errors.riskMitigation
+                  formik.touched.riskDescription &&
+                  formik.errors.riskDescription
                 }
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -305,7 +237,6 @@ const RiskDetailsForm = ({ handleRiskClick }) => {
 };
 
 const InnovationUpdateForm = ({ id }) => {
-  const [metric, setMetric] = useState();
   const [pageSize, setPageSize] = useState(5);
   const [openMetricDialog, setOpenMetricDialog] = useState();
   const [openRiskDialog, setOpenRiskDialog] = useState();
@@ -314,54 +245,32 @@ const InnovationUpdateForm = ({ id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const mutationMetric = useMutation({
-    mutationFn: newInnovationMonitoringUpdateMetric,
-  });
-
   const mutationRisk = useMutation({
     mutationFn: newInnovationMonitoringUpdateRisk,
   });
+  const mutationObjective = useMutation({
+    mutationFn: newInnovationMonitoringUpdateObjective,
+  });
   const {
-    data: InnovationMetricsData,
-    isLoading: isLoadingInnovationMetrics,
-    isError: isErrorInnovationMetrics,
+    data: InnovationsData,
+    isLoading: isLoadingInnovations,
+    isError: isErrorInnovations,
     error,
-  } = useQuery(
-    ["getInnovationMonitoringTargetMetricsByInnovationId"],
-    getInnovationMonitoringTargetMetricsByInnovationId,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
+  } = useQuery(["getInnovations"], getInnovations, {
+    refetchOnWindowFocus: false,
+  });
 
   const formik = useFormik({
     validationSchema: Yup.object().shape({}),
     onSubmit: async (values) => {
       try {
-        const innovationMetrics = [];
-        for (const innovationMetric of innovationMetricsList) {
-          const metric = {
-            void: false,
-          };
-          innovationMetrics.push(metric);
-        }
-        await mutationMetric.mutateAsync(innovationMetrics);
-
-        const innovationRisks = [];
-        for (const innovationRisk of innovationRisks) {
-          const risk = {
-            void: false,
-          };
-          innovationRisks.push(risk);
-        }
-        await mutationMetric.mutateAsync(innovationRisks);
+        const saveObjective = {};
+        const saveRisk = {};
 
         toast("Successfully Updated an Innovation", {
           type: "success",
         });
-        await queryClient.invalidateQueries([
-          "getInnovationMonitoringTargetMetricsByInnovationId",
-        ]);
+        await queryClient.invalidateQueries(["getInnovations"]);
         navigate(`/project/design/innovation/innovation-detail/${id}`);
       } catch (error) {
         console.log(error);
@@ -373,24 +282,15 @@ const InnovationUpdateForm = ({ id }) => {
   });
 
   function handleRemoveMetric(row) {
-    setInnovationMetricsList((current) =>
-      current.filter(
-        (metric) => metric.innovationMetricName !== row.innovationMetricName
-      )
-    );
+    setInnovationMetricsList((current) => {});
   }
 
   const handleAddMetric = (values) => {
     setInnovationMetricsList((current) => [...current, values]);
-    queryClient.invalidateQueries([
-      "getInnovationMonitoringTargetMetricsByInnovationId",
-    ]);
   };
 
   function handleRemoveRisk(row) {
-    setInnovationRisksList((current) =>
-      current.filter((risk) => risk.riskDescription !== row.riskDescription)
-    );
+    setInnovationRisksList((current) => {});
   }
 
   const handleAddRisk = (values) => {
@@ -414,28 +314,34 @@ const InnovationUpdateForm = ({ id }) => {
                   <DataGrid
                     rowsPerPageOptions={[5, 10, 25]}
                     rows={
-                      isLoadingInnovationMetrics || isErrorInnovationMetrics
+                      isLoadingInnovations || isErrorInnovations
                         ? []
-                        : InnovationMetricsData
-                        ? InnovationMetricsData.data
+                        : InnovationsData
+                        ? InnovationsData.data
                         : []
                     }
                     columns={[
                       {
-                        field: "innovationMetricName",
+                        field: "title",
                         headerName: "Metric",
                         editable: false,
                         flex: 1,
                       },
                       {
-                        field: "innovationTargetGroupName",
+                        field: "shortTitle",
                         headerName: "Target Group",
                         editable: false,
                         flex: 1,
                       },
                       {
-                        field: "innovationTarget",
-                        headerName: "Target Number",
+                        field: "costCenter",
+                        headerName: "Actual By Reporting Period",
+                        editable: false,
+                        flex: 1,
+                      },
+                      {
+                        field: "Office",
+                        headerName: "% Change",
                         editable: false,
                         flex: 1,
                       },
@@ -451,7 +357,6 @@ const InnovationUpdateForm = ({ id }) => {
                               size="small"
                               onClick={() => {
                                 setOpenMetricDialog(true);
-                                setMetric(params.row);
                               }}
                             ></Button>
                           </>
@@ -460,7 +365,7 @@ const InnovationUpdateForm = ({ id }) => {
                     ]}
                     pageSize={pageSize}
                     onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                    loading={isLoadingInnovationMetrics}
+                    loading={isLoadingInnovations}
                     components={{ Toolbar: GridToolbar }}
                     getRowHeight={() => "auto"}
                   />
@@ -468,58 +373,6 @@ const InnovationUpdateForm = ({ id }) => {
               </Paper>
             </Grid>
           </Grid>
-          <Grid container item spacing={2} mt={3}>
-            <Grid item md={12}>
-              <Typography variant="h3" gutterBottom display="inline">
-                Actual Metrics By Reporting
-              </Typography>
-            </Grid>
-            <Grid item md={12}>
-              <Paper>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell align="left">Metric</TableCell>
-                      <TableCell align="left">Target Group</TableCell>
-                      <TableCell align="left">Target Number</TableCell>
-                      <TableCell align="left">Actual By Reporting</TableCell>
-                      <TableCell align="left">Percentage Change</TableCell>
-                      <TableCell align="left">Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {innovationMetricsList.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell align="left">
-                          {row.innovationMetricName}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.innovationTargetGroupName}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.innovationTarget}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.actualByReportingPeriod}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.innovationPercentageChange}%
-                        </TableCell>
-                        <TableCell align="left">
-                          <Button
-                            startIcon={<TrashIcon />}
-                            size="small"
-                            onClick={() => handleRemoveMetric(row)}
-                          ></Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Paper>
-            </Grid>
-          </Grid>
-
           <Grid container spacing={12} pt={10}>
             <Grid item md={12} my={2}>
               <Typography variant="h3" gutterBottom display="inline">
@@ -543,22 +396,22 @@ const InnovationUpdateForm = ({ id }) => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell align="left">Risk</TableCell>
-                    <TableCell align="left">Mitigation</TableCell>
-                    <TableCell align="left">Action</TableCell>
+                    <TableCell>Risk</TableCell>
+                    <TableCell align="right">Mitigation</TableCell>
+                    <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {innovationRisksList.map((row) => (
                     <TableRow key={row.id}>
-                      <TableCell align="left">{row.riskDescription}</TableCell>
-                      <TableCell align="left">{row.riskMitigation}</TableCell>
-                      <TableCell align="left">
-                        <Button
-                          startIcon={<TrashIcon />}
-                          size="small"
-                          onClick={() => handleRemoveRisk(row)}
-                        ></Button>
+                      <TableCell align="right">
+                        {row.staffDetailsWorkFlowTask.roleName}
+                      </TableCell>
+                      <TableCell align="right">
+                        {row.primaryRole ? "Yes" : "No"}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button startIcon={<TrashIcon />} size="small"></Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -583,10 +436,7 @@ const InnovationUpdateForm = ({ id }) => {
               Add Innovation Update Details
             </DialogTitle>
             <DialogContent>
-              <MetricDetailsForm
-                handleMetricClick={handleAddMetric}
-                metric={metric}
-              />
+              <MetricDetailsForm handleMetricClick={handleAddMetric} />
             </DialogContent>
             <DialogActions>
               <Button
