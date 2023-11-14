@@ -28,12 +28,6 @@ import {
   OutlinedInput,
   Stack,
   Chip,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import CancelIcon from "@mui/icons-material/Cancel";

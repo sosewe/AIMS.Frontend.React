@@ -120,7 +120,6 @@ const ObjectiveDetailsForm = ({ handleClick }) => {
 const TechnicalAssistanceObjectives = ({ id }) => {
   const [openAddObjectives, setOpenAddObjectives] = useState(false);
   const [objectivesList, setObjectivesList] = useState([]);
-  const [metricsList, setMetricsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 

@@ -134,6 +134,20 @@ const InnovationMonitoringDetail = async(() =>
   import("./pages/project/monitoring/InnovationV2/InnovationDetail")
 );
 
+// Technical Assistance Monitoring
+
+const TechnicalAssistanceMonitoring = async(() =>
+  import(
+    "./pages/project/monitoring//TechnicalAssistance/TechnicalAssistanceDetail"
+  )
+);
+
+const TechnicalAssistanceMonitoringDetail = async(() =>
+  import(
+    "./pages/project/monitoring//TechnicalAssistance/TechnicalAssistanceDetail"
+  )
+);
+
 /*
 const Innovation = async(() =>
   import("./pages/project/design/Innovation/Innovation")
@@ -343,6 +357,14 @@ const routes = [
       {
         path: "monitoring/innovation-monitoring-detail/:id",
         element: <InnovationMonitoringDetail />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring/:processLevelItemId/:processLevelTypeId/:id",
+        element: <TechnicalAssistanceMonitoring />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-detail/:id",
+        element: <TechnicalAssistanceMonitoringDetail />,
       },
       {
         path: "monitoring/advocacy-monitoring/:processLevelItemId/:processLevelTypeId/:id",

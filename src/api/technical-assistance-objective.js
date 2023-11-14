@@ -9,9 +9,11 @@ export const getTechnicalAssistanceObjectiveByTechnicalAssistanceId = async ({
   queryKey,
 }) => {
   const [, technicalAssistanceId] = queryKey;
-  return await axios.get(
+  /*return await axios.get(
     `${apiRoutes.technicalAssistanceObjective}/GetByInnovationId/${technicalAssistanceId}`
-  );
+  );*/
+
+  return await axios.get(apiRoutes.donor);
 };
 
 export const deleteTechnicalAssistanceObjective = async ({ queryKey }) => {

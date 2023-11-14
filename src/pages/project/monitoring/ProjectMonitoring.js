@@ -30,6 +30,7 @@ import Tabs from "@mui/material/Tabs";
 import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
 //import InnovationDataGrid from "./InnovationDataGrid";
 import AdvocacyDataGrid from "./AdvocacyDataGrid";
+import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -160,9 +161,16 @@ const ProjectMonitoringAccordion = ({
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
         <Tab label="Innovation" {...a11yProps(0)} />
+        <Tab label="Technical Assistance" {...a11yProps(1)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <InnovationDataGrid
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+        />
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <TechnicalAssistanceDataGrid
           processLevelItemId={processLevelItemId}
           processLevelTypeId={processLevelTypeId}
         />

@@ -26,7 +26,10 @@ const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
+const TechnicalAssistanceData = ({
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
   const [pageSize, setPageSize] = useState(5);
   const {
     data: InnovationsData,
@@ -88,7 +91,7 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
                   renderCell: (params) => (
                     <>
                       <NavLink
-                        to={`/project/monitoring/innovation-monitoring-detail/${params.id}`}
+                        to={`/project/monitoring/technical-assistance-monitoring-detail/${params.id}`}
                       >
                         <Button startIcon={<Link2 />} size="small"></Button>
                       </NavLink>
@@ -108,12 +111,15 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const InnovationDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
+const TechnicalAssistanceDataGrid = ({
+  processLevelItemId,
+  processLevelTypeId,
+}) => {
   return (
     <React.Fragment>
-      <Helmet title="Innovation" />
+      <Helmet title="Technical Assistance" />
       <Typography variant="h3" gutterBottom display="inline">
-        Innovation
+        Technical Assistance
       </Typography>
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link
@@ -122,15 +128,15 @@ const InnovationDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
         >
           Project Monitoring
         </Link>
-        <Typography>Innovation</Typography>
+        <Typography>Technical Assistance</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
-      <InnovationData
+      <TechnicalAssistanceData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
       />
     </React.Fragment>
   );
 };
-export default InnovationDataGrid;
+export default TechnicalAssistanceDataGrid;

@@ -16,9 +16,15 @@ import {
   Divider,
   Grid,
   MenuItem,
-  Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
+  InputLabel,
+  FormControl,
+  Select,
+  OutlinedInput,
+  Stack,
+  Chip,
+  Paper as MuiPaper,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import styled from "@emotion/styled";
@@ -32,12 +38,14 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getSubThemesByThematicAreaId } from "../../../../api/thematic-area-sub-theme";
 import { Check, Trash as TrashIcon } from "react-feather";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { Guid } from "../../../../utils/guid";
 import {
   deleteTechnicalAssistanceThematicFocus,
   getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
   saveTechnicalAssistanceThematicFocus,
 } from "../../../../api/technical-assistance-thematic-focus";
+import { getDonors, getstrategicObjectives } from "../../../../api/donor";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../../api/sub-theme";
 import { getUniqueProgrammesByThematicAreaId } from "../../../../api/programme-thematic-area-sub-theme";
@@ -71,12 +79,20 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     { enabled: !!thematicAreaId }
   );
   const {
-    data: projectThematicFocusData,
-    isLoading: isLoadingProjectThematicFocus,
+    data: TechnicalAssistanceThematicFocusData,
+    isLoading: isLoadingTechnicalAssistanceThematicFocus,
   } = useQuery(
     ["getTechnicalAssistanceThematicFocusByTechnicalAssistanceId", id],
     getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
     { enabled: !!id }
+  );
+
+  const { isLoading: isLoadingDonor, data: donorData } = useQuery(
+    ["getDonors"],
+    getDonors,
+    {
+      refetchOnWindowFocus: false,
+    }
   );
   const mutation = useMutation({
     mutationFn: saveTechnicalAssistanceThematicFocus,
@@ -95,7 +111,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
             values.hasOwnProperty(subThemesDatum.subThemeId) &&
             values[subThemesDatum.subThemeId].length > 0
           ) {
-            const projectThematicFocus = {
+            const TechnicalAssistanceThematicFocus = {
               processLevelItemId: id,
               processLevelTypeId: processLevelTypeId,
               createDate: new Date(),
@@ -103,7 +119,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
               thematicAreaId: subThemesDatum.thematicAreaId,
               id: new Guid().toString(),
             };
-            await mutation.mutateAsync(projectThematicFocus);
+            await mutation.mutateAsync(TechnicalAssistanceThematicFocus);
           }
         }
         await queryClient.invalidateQueries([
@@ -174,7 +190,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     { enabled: false }
   );
 
-  const handleDeleteProjectThematicFocus = async () => {
+  const handleDeleteTechnicalAssistanceThematicFocus = async () => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
@@ -201,6 +217,61 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
           <Grid item md={12}>
             <form onSubmit={formik.handleSubmit}>
               <Grid container>
+                <Grid item md={12} mb={3}>
+                  <FormControl sx={{ width: "100%" }}>
+                    <InputLabel>Amref Strategic Objectives</InputLabel>
+                    <Select
+                      fullWidth
+                      multiple
+                      required
+                      value={formik.values.strategicObjectives}
+                      error={Boolean(
+                        formik.touched.strategicObjectives &&
+                          formik.errors.strategicObjectives
+                      )}
+                      onChange={(e) => {
+                        const selectedStrategicObjectives = Array.isArray(
+                          e.target.value
+                        )
+                          ? e.target.value
+                          : [e.target.value]; // Ensure it's always an array
+                        formik.setFieldValue(
+                          "strategicObjectives",
+                          selectedStrategicObjectives
+                        );
+                      }}
+                      input={<OutlinedInput label="Multiple Select" />}
+                      renderValue={(selected) => (
+                        <Stack gap={1} direction="row" flexWrap="wrap">
+                          {selected.map((value) => (
+                            <Chip
+                              key={value.id}
+                              label={value.donorName}
+                              onDelete={() =>
+                                formik.setFieldValue(
+                                  "strategicObjectives",
+                                  formik.values.strategicObjectives.filter(
+                                    (item) => item !== value
+                                  )
+                                )
+                              }
+                              deleteIcon={
+                                <CancelIcon
+                                  onMouseDown={(event) =>
+                                    event.stopPropagation()
+                                  }
+                                />
+                              }
+                            />
+                          ))}
+                        </Stack>
+                      )}
+                    >
+                      {[]}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
                 <Grid item md={12}>
                   <TextField
                     name="thematicArea"
@@ -297,13 +368,21 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                     <DataGrid
                       rowsPerPageOptions={[5, 10, 25]}
                       rows={
-                        isLoadingProjectThematicFocus
+                        isLoadingTechnicalAssistanceThematicFocus
                           ? []
-                          : projectThematicFocusData
-                          ? projectThematicFocusData.data
+                          : TechnicalAssistanceThematicFocusData
+                          ? TechnicalAssistanceThematicFocusData.data
                           : []
                       }
                       columns={[
+                        {
+                          field: "id",
+                          colId: "subThemeId&thematicAreaId",
+                          headerName: "OBJECTIVES",
+                          editable: false,
+                          flex: 1,
+                          valueGetter: GetSubTheme,
+                        },
                         {
                           field: "subThemeId",
                           colId: "subThemeId&thematicAreaId",
@@ -332,7 +411,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                       onPageSizeChange={(newPageSize) =>
                         setPageSize(newPageSize)
                       }
-                      loading={isLoadingProjectThematicFocus}
+                      loading={isLoadingTechnicalAssistanceThematicFocus}
                       getRowHeight={() => "auto"}
                     />
                   </Paper>
@@ -343,16 +422,17 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                     aria-describedby="alert-dialog-description"
                   >
                     <DialogTitle id="alert-dialog-title">
-                      Delete Project Thematic Focus
+                      Delete Technical Assistance Thematic Focus
                     </DialogTitle>
                     <DialogContent>
                       <DialogContentText id="alert-dialog-description">
-                        Are you sure you want to delete Project Thematic Focus?
+                        Are you sure you want to delete Technical Assistance
+                        Thematic Focus?
                       </DialogContentText>
                     </DialogContent>
                     <DialogActions>
                       <Button
-                        onClick={handleDeleteProjectThematicFocus}
+                        onClick={handleDeleteTechnicalAssistanceThematicFocus}
                         color="primary"
                       >
                         Yes
