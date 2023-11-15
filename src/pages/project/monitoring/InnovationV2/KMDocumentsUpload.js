@@ -48,6 +48,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import {
+  getAMREFStaffList,
+  getLookupMasterItemsByName,
+} from "../../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -60,10 +64,52 @@ const Divider = styled(MuiDivider)(spacing);
 const initialValues = {};
 
 const KMDocumentsUploadForm = ({ id }) => {
-  const [openDialog, setOpenDialog] = useState();
-  const [innovationUpdatesList, setInnovationUpdatesList] = useState([]);
+  const MAX_COUNT = 5;
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [fileLimit, setFileLimit] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const { isLoading: isLoadingDocumentCategory, data: documentCategoryData } =
+    useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
+    });
+
+  const { isLoading: isLoadingDocumentAccess, data: documentAccessData } =
+    useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
+    });
+
+  const { isLoading: isLoadingCalendarYear, data: calendarYearData } = useQuery(
+    ["currencyType", "CurrencyType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const handleUploadFiles = (files) => {
+    const uploaded = [...uploadedFiles];
+    let limitExceeded = false;
+    files.some((file) => {
+      if (uploaded.findIndex((f) => f.name === file.name) === -1) {
+        uploaded.push(file);
+        if (uploaded.length === MAX_COUNT) setFileLimit(true);
+        if (uploaded.length > MAX_COUNT) {
+          alert(`You can only add a maximum of ${MAX_COUNT} files`);
+          setFileLimit(false);
+          limitExceeded = true;
+          return true;
+        }
+      }
+    });
+    if (!limitExceeded) setUploadedFiles(uploaded);
+  };
+
+  const handleFileEvent = (e) => {
+    const chosenFiles = Array.prototype.slice.call(e.target.files);
+    handleUploadFiles(chosenFiles);
+  };
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -87,14 +133,6 @@ const KMDocumentsUploadForm = ({ id }) => {
     },
   });
 
-  function removeInnovationUpdate(row) {
-    setInnovationUpdatesList((current) => {});
-  }
-
-  const handleAddInnovationUpdate = (values) => {
-    setInnovationUpdatesList((current) => [...current, values]);
-  };
-
   useEffect(() => {}, []);
 
   return (
@@ -105,11 +143,190 @@ const KMDocumentsUploadForm = ({ id }) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
+          <Grid item md={6}>
+            <TextField
+              name="documentInitials"
+              label="Document Initials"
+              value={formik.values.documentInitials}
+              error={Boolean(
+                formik.touched.documentInitials &&
+                  formik.errors.documentInitials
+              )}
+              fullWidth
+              helperText={
+                formik.touched.documentInitials &&
+                formik.errors.documentInitials
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              multiline
+              variant="outlined"
+              my={2}
+            />
+          </Grid>
+          <Grid item md={6}>
+            <TextField
+              name="documentName"
+              label="Document Name"
+              value={formik.values.documentName}
+              error={Boolean(
+                formik.touched.documentName && formik.errors.documentName
+              )}
+              fullWidth
+              helperText={
+                formik.touched.documentName && formik.errors.documentName
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              multiline
+              variant="outlined"
+              my={2}
+            />
+          </Grid>
+          <Grid item md={12}>
+            <TextField
+              name="documentDescription"
+              label="Document Description"
+              value={formik.values.documentDescription}
+              error={Boolean(
+                formik.touched.documentDescription &&
+                  formik.errors.documentDescription
+              )}
+              fullWidth
+              helperText={
+                formik.touched.documentDescription &&
+                formik.errors.documentDescription
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              multiline
+              variant="outlined"
+              my={2}
+              rows={3}
+            />
+          </Grid>
+          <Grid item md={6}>
+            <TextField
+              name="documentCategory"
+              label="Document Category"
+              select
+              value={formik.values.documentCategory}
+              error={Boolean(
+                formik.touched.documentCategory &&
+                  formik.errors.documentCategory
+              )}
+              fullWidth
+              helperText={
+                formik.touched.documentCategory &&
+                formik.errors.documentCategory
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select
+              </MenuItem>
+              {!isLoadingDocumentCategory
+                ? documentCategoryData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={6}>
+            <TextField
+              name="documentAccess"
+              label="Document Accesss"
+              select
+              value={formik.values.documentAccess}
+              error={Boolean(
+                formik.touched.documentAccess && formik.errors.documentAccess
+              )}
+              fullWidth
+              helperText={
+                formik.touched.documentAccess && formik.errors.documentAccess
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select
+              </MenuItem>
+              {!isLoadingDocumentAccess
+                ? documentAccessData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={12}>
+            <TextField
+              name="documentYear"
+              label="Document Year"
+              select
+              value={formik.values.documentYear}
+              error={Boolean(
+                formik.touched.documentYear && formik.errors.documentYear
+              )}
+              fullWidth
+              helperText={
+                formik.touched.documentYear && formik.errors.documentYear
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select
+              </MenuItem>
+              {!isLoadingCalendarYear
+                ? calendarYearData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
           <Grid item md={12}>
             <Button variant="outlined" component="label">
               Attach Documents
-              <input hidden accept="image/*" multiple type="file" />
+              <input
+                hidden
+                accept="application/pdf, image/png"
+                multiple
+                type="file"
+                onChange={handleFileEvent}
+                disabled={fileLimit}
+              />
             </Button>
+          </Grid>
+          <Grid item md={12}>
+            <InputLabel>
+              <div className="uploaded-files-list">
+                {uploadedFiles.map((file) => (
+                  <div>{file.name}</div>
+                ))}
+              </div>
+            </InputLabel>
           </Grid>
 
           <Grid item mt={5} md={12}>

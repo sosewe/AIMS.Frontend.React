@@ -180,7 +180,6 @@ const TechnicalAssistanceForm = ({
       enaSupportOffice: Yup.string().required("Required"),
       regionalProgrammeId: Yup.string().required("Required"),
       administrativeProgrammeId: Yup.string().required("Required"),
-      //office: Yup.string().required("Required"),
       totalBudget: Yup.number()
         .required("Required")
         .positive("Must be positive"),
@@ -201,16 +200,16 @@ const TechnicalAssistanceForm = ({
           endDate: values.endDate,
           extensionDate: values.extensionDate,
           staffNameId: values.staffNameId.id,
-          /*implementingOfficeId: values.implementingOfficeId,
+          implementingOfficeId: values.implementingOfficeId,
           regionalProgrammeId: values.regionalProgrammeId,
-          administrativeProgrammeId: values.administrativeProgrammeId.id,
+          administrativeProgrammeId: values.administrativeProgrammeId,
           office: values.enaSupportOffice,
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
           status: values.status,
           processLevelItemId: processLevelItemId,
-          processLevelTypeId: processLevelTypeId,*/
+          processLevelTypeId: processLevelTypeId,
         };
         console.log(
           "saveTechnicalAssistance  : " +
@@ -490,21 +489,29 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select staff's Name
               </MenuItem>
+              {!isLoadingStaffList &&
+              !isErrorStaffList &&
+              staffListData.data &&
+              staffListData.data.length > 0
+                ? staffListData.data.map((option) => (
+                    <MenuItem key={option.id} value={option}>
+                      {option.firstName} {option.lastName}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
             <TextField
               name="leadStaffEmail"
-              // label="Lead staff email address"
+              label="Lead staff email address"
               value={formik.values.leadStaffEmail}
               error={Boolean(
-                formik.touched.projectManagerEmail &&
-                  formik.errors.projectManagerEmail
+                formik.touched.leadStaffEmail && formik.errors.leadStaffEmail
               )}
               fullWidth
               helperText={
-                formik.touched.projectManagerEmail &&
-                formik.errors.projectManagerEmail
+                formik.touched.leadStaffEmail && formik.errors.leadStaffEmail
               }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -535,6 +542,13 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Implementing Office
               </MenuItem>
+              {!isLoadingOrgUnits
+                ? orgUnitsData.data.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>
+                      {option.name}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -560,6 +574,16 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Regional Programme
               </MenuItem>
+              {!isLoadingRegProg
+                ? regProgData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -585,6 +609,13 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select E/NA Supporting Office
               </MenuItem>
+              {!isLoadingAmrefEntities
+                ? amrefEntities.data.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>
+                      {option.name}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -610,31 +641,13 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Administrative Programme
               </MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="administrativeProgrammeId"
-              label="Administrative Programme"
-              select
-              value={formik.values.administrativeProgrammeId}
-              error={Boolean(
-                formik.touched.administrativeProgrammeId &&
-                  formik.errors.administrativeProgrammeId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.administrativeProgrammeId &&
-                formik.errors.administrativeProgrammeId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Administrative Programme
-              </MenuItem>
+              {!isLoadingAmrefEntities
+                ? amrefEntities.data.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>
+                      {option.name}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -677,6 +690,16 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Currency
               </MenuItem>
+              {!isLoadingCurrency
+                ? currencyData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
           <Grid item md={4}>
@@ -713,6 +736,16 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Status
               </MenuItem>
+              {!isLoadingStatuses
+                ? statusesData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
           <Grid item md={4} mt={2}>
@@ -752,11 +785,19 @@ const TechnicalAssistanceForm = ({
                     ))}
                   </Stack>
                 )}
-              ></Select>
+              >
+                {!isLoadingDonor
+                  ? donorData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.donorName}({option.donorInitial})
+                      </MenuItem>
+                    ))
+                  : []}
+              </Select>
             </FormControl>
           </Grid>
 
-          <Grid item md={4}>
+          <Grid item md={4} mt={2}>
             <FormControl sx={{ width: "100%" }}>
               <InputLabel>Partners</InputLabel>
               <Select
@@ -794,7 +835,15 @@ const TechnicalAssistanceForm = ({
                   </Stack>
                 )}
                 my={2}
-              ></Select>
+              >
+                {!isLoadingPartner
+                  ? partnerData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.donorName}({option.donorInitial})
+                      </MenuItem>
+                    ))
+                  : []}
+              </Select>
             </FormControl>
           </Grid>
 

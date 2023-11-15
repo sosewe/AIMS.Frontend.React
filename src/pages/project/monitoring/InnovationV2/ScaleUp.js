@@ -73,6 +73,9 @@ const initialValues = {
 };
 
 const ScaleUpForm = ({ id }) => {
+  const MAX_COUNT = 5;
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [fileLimit, setFileLimit] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -100,6 +103,29 @@ const ScaleUpForm = ({ id }) => {
   } = useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
     refetchOnWindowFocus: false,
   });
+
+  const handleUploadFiles = (files) => {
+    const uploaded = [...uploadedFiles];
+    let limitExceeded = false;
+    files.some((file) => {
+      if (uploaded.findIndex((f) => f.name === file.name) === -1) {
+        uploaded.push(file);
+        if (uploaded.length === MAX_COUNT) setFileLimit(true);
+        if (uploaded.length > MAX_COUNT) {
+          alert(`You can only add a maximum of ${MAX_COUNT} files`);
+          setFileLimit(false);
+          limitExceeded = true;
+          return true;
+        }
+      }
+    });
+    if (!limitExceeded) setUploadedFiles(uploaded);
+  };
+
+  const handleFileEvent = (e) => {
+    const chosenFiles = Array.prototype.slice.call(e.target.files);
+    handleUploadFiles(chosenFiles);
+  };
 
   const mutation = useMutation({
     mutationFn: newInnovationMonitoringScaleUp,
@@ -316,8 +342,24 @@ const ScaleUpForm = ({ id }) => {
             <Grid item md={12}>
               <Button variant="outlined" component="label">
                 Attach Documents
-                <input hidden accept="image/*" multiple type="file" />
+                <input
+                  hidden
+                  accept="application/pdf, image/png"
+                  multiple
+                  type="file"
+                  onChange={handleFileEvent}
+                  disabled={fileLimit}
+                />
               </Button>
+            </Grid>
+            <Grid item md={12}>
+              <InputLabel>
+                <div className="uploaded-files-list">
+                  {uploadedFiles.map((file) => (
+                    <div>{file.name}</div>
+                  ))}
+                </div>
+              </InputLabel>
             </Grid>
           </Grid>
 
