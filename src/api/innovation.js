@@ -17,7 +17,7 @@ export const getInnovationById = async ({ queryKey }) => {
 export const getInnovationByProcessLevelItemId = async ({ queryKey }) => {
   const [, processLevelItemId] = queryKey;
   return await axios.get(
-    `${apiRoutes.innovation}/ProcessLevelItem/${processLevelItemId}`
+    `${apiRoutes.innovation}/GetInnovationByProcessLevel/${processLevelItemId}`
   );
 };
 

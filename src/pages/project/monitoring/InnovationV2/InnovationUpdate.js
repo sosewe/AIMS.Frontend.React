@@ -54,6 +54,9 @@ import {
   getInnovationMonitoringUpdateMetricByInnovationId,
   deleteInnovationMonitoringUpdateMetric,
 } from "../../../../api/innovation-monitoring-metric";
+import { getInnovationObjectiveClassificationByInnovationId } from "../../../../api/innovation-objectivesclassification";
+import { getLookupMasterItemsByName } from "../../../../api/lookup";
+import { REPORT_FREQUENCY } from "../../../../constants";
 
 const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
@@ -66,6 +69,7 @@ const Divider = styled(MuiDivider)(spacing);
 
 const MetricDetailsForm = ({ handleMetricClick, metric }) => {
   const initialMetricValues = {
+    innovationMetricId: "",
     actualByReportingPeriod: "",
     innovationTargetGroupName: metric.innovationTargetGroupName,
     innovationMetricName: metric.innovationMetricName,
@@ -84,8 +88,11 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
+        values.innovationMetricId = metric.id;
         values.innovationPercentageChange =
           (values.actualByReportingPeriod / values.innovationTarget) * 100;
+
+        console.log("values " + JSON.stringify(values));
         handleMetricClick(values);
       } catch (error) {
         toast(error.response.data, {
@@ -304,6 +311,10 @@ const RiskDetailsForm = ({ handleRiskClick }) => {
   );
 };
 
+const initialValues = {
+  reportingPeriod: "",
+  implementationYear: "",
+};
 const InnovationUpdateForm = ({ id }) => {
   const [metric, setMetric] = useState();
   const [pageSize, setPageSize] = useState(5);
@@ -321,40 +332,141 @@ const InnovationUpdateForm = ({ id }) => {
   const mutationRisk = useMutation({
     mutationFn: newInnovationMonitoringUpdateRisk,
   });
+
+  const {
+    data: InnovationRiskData,
+    isLoading: isLoadingInnovationRisks,
+    isError: isErrorInnovationRisks,
+  } = useQuery(
+    ["getInnovationMonitoringUpdateRiskByInnovationId", id],
+    getInnovationMonitoringUpdateRiskByInnovationId,
+    {
+      enabled: !!id,
+    }
+  );
+
+  const {
+    data: InnovationMetricReportData,
+    isLoading: isLoadingInnovationMetricReport,
+    isError: isErrorInnovationMetricReport,
+  } = useQuery(
+    ["getInnovationMonitoringUpdateMetricByInnovationId", id],
+    getInnovationMonitoringUpdateMetricByInnovationId,
+    {
+      enabled: !!id,
+    }
+  );
+
   const {
     data: InnovationMetricsData,
     isLoading: isLoadingInnovationMetrics,
     isError: isErrorInnovationMetrics,
-    error,
   } = useQuery(
-    ["getInnovationMonitoringTargetMetricsByInnovationId"],
+    ["getInnovationMonitoringTargetMetricsByInnovationId", id],
     getInnovationMonitoringTargetMetricsByInnovationId,
+    {
+      enabled: !!id,
+    }
+  );
+
+  const {
+    data: InnovationObjectivesClassificationData,
+    isLoading: isLoadingObjectivesClassification,
+  } = useQuery(
+    ["getInnovationObjectiveClassificationByInnovationId", id],
+    getInnovationObjectiveClassificationByInnovationId,
+    {
+      enabled: !!id,
+    }
+  );
+
+  const { isLoading: isLoadingMonths, data: monthsData } = useQuery(
+    ["months", "Months"],
+    getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
     }
   );
 
+  const { isLoading: isLoadingYears, data: yearsData } = useQuery(
+    ["years", "Years"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingQuarters, data: quartersData } = useQuery(
+    ["quarters", "Quarters"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  let reportingFrequencyData;
+  let reportingFrequencyId;
+  if (
+    !isLoadingObjectivesClassification &&
+    !isLoadingMonths &&
+    !isLoadingQuarters &&
+    !isLoadingYears
+  ) {
+    const reportingFrequencyId =
+      InnovationObjectivesClassificationData.data.reportingFrequencyId;
+    if (
+      reportingFrequencyId.toLowerCase() ===
+      REPORT_FREQUENCY.MONTHLY.toLowerCase()
+    ) {
+      reportingFrequencyData = monthsData;
+    } else if (
+      reportingFrequencyId.toLowerCase() ===
+      REPORT_FREQUENCY.ANNUALLY.toLowerCase()
+    ) {
+      reportingFrequencyData = yearsData;
+    } else if (
+      reportingFrequencyId.toLowerCase() ===
+      REPORT_FREQUENCY.QUARTERLY.toLowerCase()
+    ) {
+      reportingFrequencyData = quartersData;
+    }
+  }
+
   const formik = useFormik({
-    validationSchema: Yup.object().shape({}),
+    initialValues: initialValues,
+    validationSchema: Yup.object().shape({
+      reportingPeriod: Yup.string().required("Required"),
+      implementationYear: Yup.string().required("Required"),
+    }),
     onSubmit: async (values) => {
       try {
         const innovationMetrics = [];
         for (const innovationMetric of innovationMetricsList) {
           const metric = {
-            void: false,
+            innovationId: id,
+            innovationMetricId: innovationMetric.innovationMetricId,
+            innovationActual: innovationMetric.actualByReportingPeriod,
+            reportingFrequencyId: values.reportingPeriod,
+            implementationYearId: values.implementationYear,
+            createDate: new Date(),
           };
           innovationMetrics.push(metric);
         }
         await mutationMetric.mutateAsync(innovationMetrics);
 
         const innovationRisks = [];
-        for (const innovationRisk of innovationRisks) {
+        for (const innovationRisk of innovationRisksList) {
           const risk = {
-            void: false,
+            innovationId: id,
+            risk: innovationRisk.riskDescription,
+            mitigation: innovationRisk.riskMitigation,
+            reportingFrequencyId: values.reportingPeriod,
+            implementationYearId: values.implementationYear,
+            createDate: new Date(),
           };
           innovationRisks.push(risk);
         }
-        await mutationMetric.mutateAsync(innovationRisks);
+        await mutationRisk.mutateAsync(innovationRisks);
 
         toast("Successfully Updated an Innovation", {
           type: "success",
@@ -362,7 +474,7 @@ const InnovationUpdateForm = ({ id }) => {
         await queryClient.invalidateQueries([
           "getInnovationMonitoringTargetMetricsByInnovationId",
         ]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
+        navigate(`/project/monitoring/innovation-monitoring-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -382,9 +494,6 @@ const InnovationUpdateForm = ({ id }) => {
 
   const handleAddMetric = (values) => {
     setInnovationMetricsList((current) => [...current, values]);
-    queryClient.invalidateQueries([
-      "getInnovationMonitoringTargetMetricsByInnovationId",
-    ]);
   };
 
   function handleRemoveRisk(row) {
@@ -398,9 +507,61 @@ const InnovationUpdateForm = ({ id }) => {
   };
 
   useEffect(() => {
-    function setCurrentFormValues() {}
+    function setCurrentFormValues() {
+      if (!isLoadingInnovationMetricReport && !isLoadingInnovationRisks) {
+        formik.setValues({
+          reportingPeriod:
+            InnovationMetricReportData.data[0].reportingFrequencyId,
+          implementationYear:
+            InnovationMetricReportData.data[0].implementationYearId,
+        });
+
+        if (InnovationRiskData.data && InnovationRiskData.data.length > 0) {
+          const allRisks = [];
+          for (const item of InnovationRiskData.data) {
+            const risk = {
+              innovationId: item.innovationId,
+              riskDescription: item.risk,
+              riskMitigation: item.mitigation,
+              createDate: new Date(),
+            };
+            allRisks.push(risk);
+          }
+          setInnovationRisksList(allRisks);
+        }
+
+        if (
+          InnovationMetricReportData.data &&
+          InnovationMetricReportData.data.length > 0
+        ) {
+          console.log(
+            "output 1 .. " + JSON.stringify(InnovationMetricReportData.data)
+          );
+          const allMetrics = [];
+          for (const item of InnovationMetricReportData.data) {
+            const metric = {
+              createDate: new Date(),
+              innovationMetricId: item.innovationMetricId,
+              actualByReportingPeriod: item.innovationActual,
+              innovationTargetGroupName:
+                item.innovationMetric.innovationTargetGroupName,
+              innovationMetricName: item.innovationMetric.innovationMetricName,
+              innovationTarget: item.innovationMetric.innovationTarget,
+              innovationPercentageChange:
+                (item.innovationActual /
+                  item.innovationMetric.innovationTarget) *
+                100,
+            };
+            allMetrics.push(metric);
+          }
+
+          console.log("output 2.. " + JSON.stringify(allMetrics));
+          setInnovationMetricsList(allMetrics);
+        }
+      }
+    }
     setCurrentFormValues();
-  }, []);
+  }, [InnovationMetricsData, InnovationMetricReportData, InnovationRiskData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -409,67 +570,138 @@ const InnovationUpdateForm = ({ id }) => {
           <CircularProgress />
         </Box>
       ) : (
-        <Grid container item spacing={2}>
-          <Grid container spacing={12}>
-            <Grid item md={12}>
-              <Paper>
-                <div style={{ height: 400, width: "100%" }}>
-                  <DataGrid
-                    rowsPerPageOptions={[5, 10, 25]}
-                    rows={
-                      isLoadingInnovationMetrics || isErrorInnovationMetrics
-                        ? []
-                        : InnovationMetricsData
-                        ? InnovationMetricsData.data
-                        : []
-                    }
-                    columns={[
-                      {
-                        field: "innovationMetricName",
-                        headerName: "Metric",
-                        editable: false,
-                        flex: 1,
-                      },
-                      {
-                        field: "innovationTargetGroupName",
-                        headerName: "Target Group",
-                        editable: false,
-                        flex: 1,
-                      },
-                      {
-                        field: "innovationTarget",
-                        headerName: "Target Number",
-                        editable: false,
-                        flex: 1,
-                      },
-                      {
-                        field: "action",
-                        headerName: "Action",
-                        sortable: false,
-                        flex: 1,
-                        renderCell: (params) => (
-                          <>
-                            <Button
-                              startIcon={<Link2 />}
-                              size="small"
-                              onClick={() => {
-                                setOpenMetricDialog(true);
-                                setMetric(params.row);
-                              }}
-                            ></Button>
-                          </>
-                        ),
-                      },
-                    ]}
-                    pageSize={pageSize}
-                    onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                    loading={isLoadingInnovationMetrics}
-                    components={{ Toolbar: GridToolbar }}
-                    getRowHeight={() => "auto"}
-                  />
-                </div>
-              </Paper>
+        <Grid container>
+          <Grid container spacing={2} md={12} mb={2}>
+            <Grid item md={6}>
+              <TextField
+                name="implementationYear"
+                label="Implementation Year"
+                select
+                value={formik.values.implementationYear}
+                error={Boolean(
+                  formik.touched.implementationYear &&
+                    formik.errors.implementationYear
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.implementationYear &&
+                  formik.errors.implementationYear
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Implementation Year
+                </MenuItem>
+                {!isLoadingYears
+                  ? yearsData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
             </Grid>
+            <Grid item md={6}>
+              <TextField
+                name="reportingPeriod"
+                label="Reporting Period"
+                select
+                value={formik.values.reportingPeriod}
+                error={Boolean(
+                  formik.touched.reportingPeriod &&
+                    formik.errors.reportingPeriod
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.reportingPeriod &&
+                  formik.errors.reportingPeriod
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Reporting Period
+                </MenuItem>
+                {reportingFrequencyData
+                  ? reportingFrequencyData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+          </Grid>
+
+          <Grid item md={12}>
+            <Paper>
+              <div style={{ height: 400, width: "100%" }}>
+                <DataGrid
+                  rowsPerPageOptions={[5, 10, 25]}
+                  rows={
+                    isLoadingInnovationMetrics || isErrorInnovationMetrics
+                      ? []
+                      : InnovationMetricsData
+                      ? InnovationMetricsData.data
+                      : []
+                  }
+                  columns={[
+                    {
+                      field: "innovationMetricName",
+                      headerName: "Metric",
+                      editable: false,
+                      flex: 1,
+                    },
+                    {
+                      field: "innovationTargetGroupName",
+                      headerName: "Target Group",
+                      editable: false,
+                      flex: 1,
+                    },
+                    {
+                      field: "innovationTarget",
+                      headerName: "Target Number",
+                      editable: false,
+                      flex: 1,
+                    },
+                    {
+                      field: "action",
+                      headerName: "Action",
+                      sortable: false,
+                      flex: 1,
+                      renderCell: (params) => (
+                        <>
+                          <Button
+                            startIcon={<Link2 />}
+                            size="small"
+                            onClick={() => {
+                              setOpenMetricDialog(true);
+                              setMetric(params.row);
+                            }}
+                          ></Button>
+                        </>
+                      ),
+                    },
+                  ]}
+                  pageSize={pageSize}
+                  onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                  loading={isLoadingInnovationMetrics}
+                  components={{ Toolbar: GridToolbar }}
+                  getRowHeight={() => "auto"}
+                />
+              </div>
+            </Paper>
           </Grid>
           <Grid container item spacing={2} mt={3}>
             <Grid item md={12}>

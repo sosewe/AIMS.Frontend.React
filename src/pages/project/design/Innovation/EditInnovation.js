@@ -691,9 +691,9 @@ const EditInnovationForm = ({ id }) => {
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.startDate && formik.errors.endDate
+                    formik.touched.endDate && formik.errors.endDate
                   )}
-                  helperText={formik.touched.startDate && formik.errors.endDate}
+                  helperText={formik.touched.endDate && formik.errors.endDate}
                   margin="normal"
                   name="endDate"
                   variant="outlined"
@@ -714,10 +714,10 @@ const EditInnovationForm = ({ id }) => {
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.startDate && formik.errors.extensionDate
+                    formik.touched.extensionDate && formik.errors.extensionDate
                   )}
                   helperText={
-                    formik.touched.startDate && formik.errors.extensionDate
+                    formik.touched.extensionDate && formik.errors.extensionDate
                   }
                   margin="normal"
                   name="endDate"

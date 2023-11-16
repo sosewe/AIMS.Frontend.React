@@ -6,20 +6,27 @@ import {
   Breadcrumbs,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Box,
+  CircularProgress,
   Divider as MuiDivider,
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
 
 import { NavLink, useNavigate } from "react-router-dom";
+import * as Yup from "yup";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Link2 } from "react-feather";
+import { Grid, Link2 } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { getInnovationByProcessLevelItemId } from "../../../../api/innovation";
+import {
+  getAMREFStaffList,
+  getLookupMasterItemsByName,
+} from "../../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -27,6 +34,9 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
 const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
+  console.log("processLevelItemId " + processLevelItemId);
+  console.log("processLevelTypeId " + processLevelTypeId);
+
   const [pageSize, setPageSize] = useState(5);
   const {
     data: InnovationsData,
@@ -41,11 +51,24 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
     }
   );
 
-  if (isErrorInnovations) {
-    toast(error.response.data, {
-      type: "error",
+  const { isLoading: isLoadingDocumentCategory, data: documentCategoryData } =
+    useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
     });
-  }
+
+  /*
+  const formik = useFormik({
+    validationSchema: Yup.object().shape({}),
+    onSubmit: async (values) => {
+      try {
+      } catch (error) {
+        console.log(error);
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
+    },
+  });*/
 
   return (
     <Card mb={6}>

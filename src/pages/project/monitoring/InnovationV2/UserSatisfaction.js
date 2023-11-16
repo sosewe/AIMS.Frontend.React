@@ -93,14 +93,6 @@ const UserSatisfactionForm = ({ id }) => {
     },
   });
 
-  function removeInnovationUpdate(row) {
-    setInnovationUpdatesList((current) => {});
-  }
-
-  const handleAddInnovationUpdate = (values) => {
-    setInnovationUpdatesList((current) => [...current, values]);
-  };
-
   useEffect(() => {}, []);
 
   return (
@@ -113,7 +105,7 @@ const UserSatisfactionForm = ({ id }) => {
         <Grid container item spacing={2}>
           <Grid item md={12}>
             <Typography variant="h5" gutterBottom display="inline">
-              Coming Soon ..
+              On Hold ...
             </Typography>
           </Grid>
         </Grid>

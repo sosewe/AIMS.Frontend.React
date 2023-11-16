@@ -5,10 +5,8 @@ export const getInnovationMonitoringTargetMetricsByInnovationId = async ({
   queryKey,
 }) => {
   const [, id] = queryKey;
-  /*return await axios.get(
-    `${apiRoutes.innovationMonitoringUpdate}/GetInnovationTargetMetrics/${id}`
-  );*/
-
+  return await axios.get(`${apiRoutes.innovationMetric}/${id}`);
+  /*
   return {
     data: [
       {
@@ -22,4 +20,5 @@ export const getInnovationMonitoringTargetMetricsByInnovationId = async ({
       },
     ],
   };
+  */
 };
