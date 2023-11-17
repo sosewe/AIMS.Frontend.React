@@ -64,36 +64,28 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  innovationMetrics: "",
-  innovationIsScalable: "",
+  innovationEffectiveness: "",
+  innovationScalabiity: "",
 };
 
 const TechnicalReviewForm = ({ id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  /*
-  const {
-    data: TechnicalReviewData,
-    isLoading: isLoadingTechnicalReviewData,
-    isError: isErrorTechnicalReviewData,
-  } = useQuery(
-    ["getInnovationMonitoringTechnicalReviewByInnovationId", id],
-    getInnovationMonitoringTechnicalReviewByInnovationId,
-    { enabled: !!id }
-  );*/
+  const { data: TechnicalReviewData, isLoading: isLoadingTechnicalReviewData } =
+    useQuery(
+      ["getInnovationMonitoringTechnicalReviewByInnovationId", id],
+      getInnovationMonitoringTechnicalReviewByInnovationId,
+      { enabled: !!id }
+    );
 
-  const { isLoading: isLoadingInnovationMetrics, data: innovationMetricsData } =
-    useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
+  const { isLoading: isLoadingBoolean, data: booleanData } = useQuery(
+    ["yesNo", "YesNo"],
+    getLookupMasterItemsByName,
+    {
       refetchOnWindowFocus: false,
-    });
-
-  const {
-    isLoading: isLoadingInnovationScalabiity,
-    data: innovationScalabiityData,
-  } = useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
-    refetchOnWindowFocus: false,
-  });
+    }
+  );
 
   const mutation = useMutation({
     mutationFn: newInnovationMonitoringTechnicalReview,
@@ -102,25 +94,27 @@ const TechnicalReviewForm = ({ id }) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      innovationMetrics: Yup.string().required("Required"),
-      innovationIsScalable: Yup.string().required("Required"),
+      innovationEffectiveness: Yup.string().required("Required"),
+      innovationScalabiity: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const saveTechnicalReview = {
           id: id ? id : new Guid().toString(),
           createDate: new Date(),
-          innovationMetMetrics: values.innovationMetMetrics,
-          innovationIsScalable: values.innovationIsScalable,
+          innovationId: id,
+          hasInnovationMetEffectivenessCriteria: values.innovationEffectiveness,
+          canInnovationBeScaledUp: values.innovationScalabiity,
         };
-
         await mutation.mutateAsync(saveTechnicalReview);
 
         toast("Successfully Updated Technical Review", {
           type: "success",
         });
-        await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
+        await queryClient.invalidateQueries([
+          "getInnovationMonitoringTechnicalReviewByInnovationId",
+        ]);
+        navigate(`/project/monitoring/innovation-monitoring-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -132,10 +126,17 @@ const TechnicalReviewForm = ({ id }) => {
 
   useEffect(() => {
     function setCurrentFormValues() {
-      formik.setValues({});
+      if (!isLoadingBoolean && !isLoadingTechnicalReviewData) {
+        formik.setValues({
+          innovationEffectiveness:
+            TechnicalReviewData.data.hasInnovationMetEffectivenessCriteria,
+          innovationScalabiity:
+            TechnicalReviewData.data.canInnovationBeScaledUp,
+        });
+      }
     }
     setCurrentFormValues();
-  }, []);
+  }, [isLoadingTechnicalReviewData, isLoadingBoolean, TechnicalReviewData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -148,18 +149,18 @@ const TechnicalReviewForm = ({ id }) => {
           <Grid container spacing={3}>
             <Grid item md={12}>
               <TextField
-                name="innovationMetMetrics"
+                name="innovationEffectiveness"
                 label="Has this innovation met its effectiveness criteria successfully (metrics)?"
                 select
-                value={formik.values.innovationMetMetrics}
+                value={formik.values.innovationEffectiveness}
                 error={Boolean(
-                  formik.touched.innovationMetMetrics &&
-                    formik.errors.innovationMetMetrics
+                  formik.touched.innovationEffectiveness &&
+                    formik.errors.innovationEffectiveness
                 )}
                 fullWidth
                 helperText={
-                  formik.touched.innovationMetMetrics &&
-                  formik.errors.innovationMetMetrics
+                  formik.touched.innovationEffectiveness &&
+                  formik.errors.innovationEffectiveness
                 }
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -169,8 +170,8 @@ const TechnicalReviewForm = ({ id }) => {
                 <MenuItem disabled value="">
                   Select
                 </MenuItem>
-                {!isLoadingInnovationMetrics
-                  ? innovationMetricsData.data.map((option) => (
+                {!isLoadingBoolean
+                  ? booleanData.data.map((option) => (
                       <MenuItem
                         key={option.lookupItemId}
                         value={option.lookupItemId}
@@ -184,18 +185,18 @@ const TechnicalReviewForm = ({ id }) => {
 
             <Grid item md={12}>
               <TextField
-                name="innovationIsScalable"
+                name="innovationScalabiity"
                 label="Based on the risks and mitigation and performance of indicators, can this innovation be scaled up?"
                 select
-                value={formik.values.innovationIsScalable}
+                value={formik.values.innovationScalabiity}
                 error={Boolean(
-                  formik.touched.innovationIsScalable &&
-                    formik.errors.innovationIsScalable
+                  formik.touched.innovationScalabiity &&
+                    formik.errors.innovationScalabiity
                 )}
                 fullWidth
                 helperText={
-                  formik.touched.innovationIsScalable &&
-                  formik.errors.innovationIsScalable
+                  formik.touched.innovationScalabiity &&
+                  formik.errors.innovationScalabiity
                 }
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -205,8 +206,8 @@ const TechnicalReviewForm = ({ id }) => {
                 <MenuItem disabled value="">
                   Select
                 </MenuItem>
-                {!isLoadingInnovationScalabiity
-                  ? innovationScalabiityData.data.map((option) => (
+                {!isLoadingBoolean
+                  ? booleanData.data.map((option) => (
                       <MenuItem
                         key={option.lookupItemId}
                         value={option.lookupItemId}

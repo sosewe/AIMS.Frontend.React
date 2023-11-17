@@ -72,8 +72,7 @@ const InnovationDetail = () => {
         <Tab label="Innovation Update" {...a11yProps(0)} />
         <Tab label="Technical Review" {...a11yProps(1)} />
         <Tab label="Scale Up" {...a11yProps(2)} />
-        <Tab label="User Satisfaction" {...a11yProps(3)} />
-        <Tab label="KM Documents Upload" {...a11yProps(4)} />
+        <Tab label="KM Documents Upload" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <InnovationUpdate id={id} />
@@ -85,9 +84,6 @@ const InnovationDetail = () => {
         <ScaleUp id={id} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <UserSatisfaction id={id} />
-      </TabPanel>
-      <TabPanel value={value} index={4}>
         <KMDocumentsUpload id={id} />
       </TabPanel>
     </Box>

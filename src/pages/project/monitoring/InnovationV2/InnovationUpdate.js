@@ -534,9 +534,6 @@ const InnovationUpdateForm = ({ id }) => {
           InnovationMetricReportData.data &&
           InnovationMetricReportData.data.length > 0
         ) {
-          console.log(
-            "output 1 .. " + JSON.stringify(InnovationMetricReportData.data)
-          );
           const allMetrics = [];
           for (const item of InnovationMetricReportData.data) {
             const metric = {
@@ -554,8 +551,6 @@ const InnovationUpdateForm = ({ id }) => {
             };
             allMetrics.push(metric);
           }
-
-          console.log("output 2.. " + JSON.stringify(allMetrics));
           setInnovationMetricsList(allMetrics);
         }
       }

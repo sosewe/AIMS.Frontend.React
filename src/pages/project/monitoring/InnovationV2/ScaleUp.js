@@ -69,7 +69,7 @@ const initialValues = {
   newTargetGroups: "",
   newProportionScaledUp: "",
   innovationClosingStatus: "",
-  innovationClosingReasons: "",
+  innovationClosingReason: "",
 };
 
 const ScaleUpForm = ({ id }) => {
@@ -79,30 +79,37 @@ const ScaleUpForm = ({ id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  /*
   const {
-    data: TechnicalReviewData,
-    isLoading: isLoadingTechnicalReviewData,
-    isError: isErrorTechnicalReviewData,
+    data: ScaleUpData,
+    isLoading: isLoadingScaleUpData,
+    isError: isErrorScaleUpData,
   } = useQuery(
-    ["getInnovationMonitoringTechnicalReviewByInnovationId", id],
-    getInnovationMonitoringTechnicalReviewByInnovationId,
+    ["getInnovationMonitoringScaleUpByInnovationId", id],
+    getInnovationMonitoringScaleUpByInnovationId,
     { enabled: !!id }
-  );*/
+  );
 
   const {
     isLoading: isLoadingInnovationClosingStatus,
     data: InnovationClosingStatusData,
-  } = useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    ["innovationClosingStatus", "InnovationClosingStatus"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const {
     isLoading: isLoadingInnovationClosingReasons,
     data: innovationClosingReasonsData,
-  } = useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    ["innovationClosingReasons", "InnovationClosingReasons"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const handleUploadFiles = (files) => {
     const uploaded = [...uploadedFiles];
@@ -139,30 +146,31 @@ const ScaleUpForm = ({ id }) => {
       newTargetGroups: Yup.number().required("Required"),
       newProportionScaledUp: Yup.number().required("Required"),
       innovationClosingStatus: Yup.string().required("Required"),
-      innovationClosingReasons: Yup.string().required("Required"),
+      innovationClosingReason: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const saveScaleUp = {
           id: id ? id : new Guid().toString(),
           createDate: new Date(),
+          innovationId: id,
           newCountriesScaledUp: values.newCountriesScaledUp,
           newRegionsWithinCountries: values.newRegionsWithinCountries,
           newTargetGroups: values.newTargetGroups,
           newProportionScaledUp: values.newProportionScaledUp,
           innovationClosingStatus: values.innovationClosingStatus,
-          innovationClosingReasons: values.innovationClosingReasons,
+          innovationClosingReason: values.innovationClosingReason,
         };
-
         await mutation.mutateAsync(saveScaleUp);
 
         toast("Successfully Updated Scale Up", {
           type: "success",
         });
-        await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
+        await queryClient.invalidateQueries([
+          "getInnovationMonitoringScaleUpByInnovationId",
+        ]);
+        navigate(`/project/monitoring/innovation-monitoring-detail/${id}`);
       } catch (error) {
-        console.log(error);
         toast(error.response.data, {
           type: "error",
         });
@@ -170,7 +178,31 @@ const ScaleUpForm = ({ id }) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingInnovationClosingReasons &&
+        !isLoadingInnovationClosingStatus &&
+        !isLoadingScaleUpData
+      ) {
+        formik.setValues({
+          innovationId: id,
+          newCountriesScaledUp: ScaleUpData.data.newCountriesScaledUp,
+          newRegionsWithinCountries: ScaleUpData.data.newRegionsWithinCountries,
+          newTargetGroups: ScaleUpData.data.newTargetGroups,
+          newProportionScaledUp: ScaleUpData.data.newProportionScaledUp,
+          innovationClosingStatus: ScaleUpData.data.innovationClosingStatus,
+          innovationClosingReason: ScaleUpData.data.innovationClosingReason,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadingInnovationClosingReasons,
+    isLoadingInnovationClosingStatus,
+    isLoadingScaleUpData,
+    ScaleUpData,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -305,18 +337,18 @@ const ScaleUpForm = ({ id }) => {
 
             <Grid item md={6}>
               <TextField
-                name="innovationClosingReasons"
-                label="Reasons for not continuing"
+                name="innovationClosingReason"
+                label="Reason for not continuing"
                 select
-                value={formik.values.innovationClosingReasons}
+                value={formik.values.innovationClosingReason}
                 error={Boolean(
-                  formik.touched.innovationClosingReasons &&
-                    formik.errors.innovationClosingReasons
+                  formik.touched.innovationClosingReason &&
+                    formik.errors.innovationClosingReason
                 )}
                 fullWidth
                 helperText={
-                  formik.touched.innovationClosingReasons &&
-                  formik.errors.innovationClosingReasons
+                  formik.touched.innovationClosingReason &&
+                  formik.errors.innovationClosingReason
                 }
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
