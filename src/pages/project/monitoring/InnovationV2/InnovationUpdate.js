@@ -410,9 +410,11 @@ const InnovationUpdateForm = ({ id }) => {
     !isLoadingObjectivesClassification &&
     !isLoadingMonths &&
     !isLoadingQuarters &&
-    !isLoadingYears
+    !isLoadingYears &&
+    InnovationObjectivesClassificationData &&
+    InnovationObjectivesClassificationData.data.length > 0
   ) {
-    const reportingFrequencyId =
+    reportingFrequencyId =
       InnovationObjectivesClassificationData.data.reportingFrequencyId;
     if (
       reportingFrequencyId.toLowerCase() ===
@@ -506,9 +508,15 @@ const InnovationUpdateForm = ({ id }) => {
     setInnovationRisksList((current) => [...current, values]);
   };
 
+  console.log("logging ..." + JSON.stringify(InnovationMetricReportData));
   useEffect(() => {
     function setCurrentFormValues() {
-      if (!isLoadingInnovationMetricReport && !isLoadingInnovationRisks) {
+      if (
+        !isLoadingInnovationMetricReport &&
+        !isLoadingInnovationRisks &&
+        InnovationRiskData.data &&
+        InnovationRiskData.data.length > 0
+      ) {
         formik.setValues({
           reportingPeriod:
             InnovationMetricReportData.data[0].reportingFrequencyId,

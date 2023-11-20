@@ -38,11 +38,27 @@ import {
 import { getDonors } from "../../../../api/donor";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
+import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
 import {
-  getTechnicalAssistanceById,
   newTechnicalAssistance,
+  getTechnicalAssistanceByTechnicalAssistanceId,
+  deleteTechnicalAssistanceById,
 } from "../../../../api/technical-assistance";
-import { newTechnicalAssistanceDonor } from "../../../../api/technical-assistance-donor";
+import {
+  newTechnicalAssistanceDonor,
+  getTechnicalAssistanceDonorByTechnicalAssistanceId,
+  deleteTechnicalAssistanceDonorById,
+} from "../../../../api/technical-assistance-donor";
+import {
+  newTechnicalAssistancePartner,
+  getTechnicalAssistancePartnerByTechnicalAssistanceId,
+  deleteTechnicalAssistancePartnerById,
+} from "../../../../api/technical-assistance-partner";
+import {
+  newTechnicalAssistanceStaff,
+  getTechnicalAssistanceStaffByTechnicalAssistanceId,
+  deleteTechnicalAssistanceStaffById,
+} from "../../../../api/technical-assistance-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 
 import { Helmet } from "react-helmet-async";
@@ -92,9 +108,13 @@ const TechnicalAssistanceForm = ({
     data: TechnicalAssistanceData,
     isLoading: isLoadingTechnicalAssistanceData,
     isError: isErrorTechnicalAssistanceData,
-  } = useQuery(["getTechnicalAssistanceById", id], getTechnicalAssistanceById, {
-    enabled: !!id,
-  });
+  } = useQuery(
+    ["getTechnicalAssistanceByTechnicalAssistanceId", id],
+    getTechnicalAssistanceByTechnicalAssistanceId,
+    {
+      enabled: !!id,
+    }
+  );
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -131,6 +151,13 @@ const TechnicalAssistanceForm = ({
       refetchOnWindowFocus: false,
     }
   );
+  const { isLoading: isLoadingAdminProg, data: adminProgData } = useQuery(
+    ["AdministrativeProgramme"],
+    getAdministrativeProgrammes,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
   const { isLoading: isLoadingDonor, data: donorData } = useQuery(
     ["donors"],
     getDonors,
@@ -163,6 +190,10 @@ const TechnicalAssistanceForm = ({
 
   const technicalAssistanceDonorsMutation = useMutation({
     mutationFn: newTechnicalAssistanceDonor,
+  });
+
+  const technicalAssistancePartnersMutation = useMutation({
+    mutationFn: newTechnicalAssistancePartner,
   });
 
   const formik = useFormik({
@@ -208,14 +239,9 @@ const TechnicalAssistanceForm = ({
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
           status: values.status,
-          processLevelItemId: processLevelItemId,
-          processLevelTypeId: processLevelTypeId,
         };
-        console.log(
-          "saveTechnicalAssistance  : " +
-            JSON.stringify(saveTechnicalAssistance)
-        );
-        /*const technicalAssistance = await mutation.mutateAsync(
+
+        const technicalAssistance = await mutation.mutateAsync(
           saveTechnicalAssistance
         );
 
@@ -223,15 +249,11 @@ const TechnicalAssistanceForm = ({
         for (const donor of values.donors) {
           const technicalAssistanceDonor = {
             donorId: donor.id,
-            innovationId: null, //technicalAssistance.data.id,
+            technicalAssistanceId: technicalAssistance.data.id,
             createDate: new Date(),
           };
           technicalAssistanceDonors.push(technicalAssistanceDonor);
         }
-        console.log(
-          "technicalAssistanceDonors  : " +
-            JSON.stringify(technicalAssistanceDonors)
-        );
         await technicalAssistanceDonorsMutation.mutateAsync(
           technicalAssistanceDonors
         );
@@ -239,27 +261,24 @@ const TechnicalAssistanceForm = ({
         let technicalAssistancePartners = [];
         for (const partner of values.partners) {
           const technicalAssistancePartner = {
-            donorId: partner.id,
-            innovationId: null, //technicalAssistance.data.id,
+            partnerId: partner.id,
+            technicalAssistanceId: technicalAssistance.data.id,
             createDate: new Date(),
           };
           technicalAssistancePartners.push(technicalAssistancePartner);
         }
-        console.log(
-          "technicalAssistancePartners  : " +
-            JSON.stringify(technicalAssistancePartners)
-        );
-        await technicalAssistanceDonorsMutation.mutateAsync(
+        await technicalAssistancePartnersMutation.mutateAsync(
           technicalAssistancePartners
         );
-        */
 
         toast("Successfully Created a Technical Assistance", {
           type: "success",
         });
-        await queryClient.invalidateQueries(["getTechnicalAssistanceById"]);
+        await queryClient.invalidateQueries([
+          "getTechnicalAssistanceByTechnicalAssistanceId",
+        ]);
         navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/bc7fd0b3-3406-490d-a3fa-abf8ffd9f13e`
+          `/project/design/technical-assistance/technical-assistance-detail/${technicalAssistance.data.id}`
         );
       } catch (error) {
         console.log(error);
@@ -641,10 +660,10 @@ const TechnicalAssistanceForm = ({
               <MenuItem disabled value="">
                 Select Administrative Programme
               </MenuItem>
-              {!isLoadingAmrefEntities
-                ? amrefEntities.data.map((option) => (
+              {!isLoadingAdminProg
+                ? adminProgData.data.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
-                      {option.name}
+                      {option.shortTitle}
                     </MenuItem>
                   ))
                 : []}

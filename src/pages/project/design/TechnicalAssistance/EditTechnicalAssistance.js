@@ -50,32 +50,34 @@ import {
   getAMREFStaffList,
   getLookupMasterItemsByName,
 } from "../../../../api/lookup";
+import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
 import { getDonors } from "../../../../api/donor";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
-import { getInnovationById, newInnovation } from "../../../../api/innovation";
-import { newInnovationDonor } from "../../../../api/innovation-donor";
 import {
-  newInnovationStaff,
-  getInnovationStaff,
-} from "../../../../api/innovation-staff";
+  getTechnicalAssistanceByTechnicalAssistanceId,
+  newTechnicalAssistance,
+} from "../../../../api/technical-assistance";
+import {
+  newTechnicalAssistanceDonor,
+  getTechnicalAssistanceDonorByTechnicalAssistanceId,
+  deleteTechnicalAssistanceDonorById,
+} from "../../../../api/technical-assistance-donor";
+import {
+  newTechnicalAssistancePartner,
+  getTechnicalAssistancePartnerByTechnicalAssistanceId,
+  deleteTechnicalAssistancePartnerById,
+} from "../../../../api/technical-assistance-partner";
+import {
+  newTechnicalAssistanceStaff,
+  getTechnicalAssistanceStaffByTechnicalAssistanceId,
+  deleteTechnicalAssistanceStaffById,
+} from "../../../../api/technical-assistance-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
 
 import { Helmet } from "react-helmet-async";
-import {
-  getQualitativeCountryByTypeItemId,
-  newQualitativeCountry,
-} from "../../../../api/qualitative-country";
-import {
-  getQualitativePeriodByTypeItemId,
-  newQualitativePeriod,
-} from "../../../../api/qualitative-period";
-import {
-  getQualitativeThematicAreaByTypeItemId,
-  newQualitativeThematicArea,
-} from "../../../../api/qualitative-thematic-area";
 import { Guid } from "../../../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
@@ -292,12 +294,15 @@ const EditTechnicalAssistanceForm = ({ id }) => {
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  let innovationQualitativeTypeId;
   const {
-    data: InnovationData,
-    isLoading: isLoadingInnovationData,
-    isError: isErrorInnovationData,
-  } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
+    data: TechnicalAssistanceData,
+    isLoading: isLoadingTechnicalAssistanceData,
+    isError: isErrorTechnicalAssistanceData,
+  } = useQuery(
+    ["getTechnicalAssistanceByTechnicalAssistanceId", id],
+    getTechnicalAssistanceByTechnicalAssistanceId,
+    { enabled: !!id }
+  );
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -348,6 +353,13 @@ const EditTechnicalAssistanceForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
+  const { isLoading: isLoadingAdminProg, data: adminProgData } = useQuery(
+    ["AdministrativeProgramme"],
+    getAdministrativeProgrammes,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
   const { isLoading: isLoadingDonor, data: donorData } = useQuery(
     ["donors"],
     getDonors,
@@ -362,49 +374,32 @@ const EditTechnicalAssistanceForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const {
-    isLoading: isLoadingAmrefEntities,
-    data: amrefEntities,
-    isError: isErrorAmrefEntities,
-  } = useQuery(["amrefEntities"], getAmrefEntities, {
-    refetchOnWindowFocus: false,
-  });
-  const {
-    data: QualitativeResultTypesData,
-    isLoading: isLoadingQualitativeResultTypes,
-    isError: isErrorQualitativeResultTypes,
-  } = useQuery(
-    ["qualitativeResultType", "QualitativeResultType"],
-    getLookupMasterItemsByName,
+  const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
+    ["amrefEntities"],
+    getAmrefEntities,
     {
       refetchOnWindowFocus: false,
     }
   );
-  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
-    const filterInnovation = QualitativeResultTypesData.data.find(
-      (obj) => obj.lookupItemName === "Innovation"
-    );
-    innovationQualitativeTypeId = filterInnovation.lookupItemId;
-  }
-  const mutation = useMutation({ mutationFn: newInnovation });
 
-  const innovationDonorsMutation = useMutation({
-    mutationFn: newInnovationDonor,
+  const mutation = useMutation({ mutationFn: newTechnicalAssistance });
+
+  const technicalAssistanceDonorsMutation = useMutation({
+    mutationFn: newTechnicalAssistanceDonor,
   });
 
-  const innovationStaffMutation = useMutation({
-    mutationFn: newInnovationStaff,
+  const technicalAssistancePartnersMutation = useMutation({
+    mutationFn: newTechnicalAssistancePartner,
   });
 
-  // eslint-disable-next-line no-unused-vars
-  const qualitativeThematicAreaMutation = useMutation({
-    mutationFn: newQualitativeThematicArea,
+  const technicalAssistanceStaffMutation = useMutation({
+    mutationFn: newTechnicalAssistanceStaff,
   });
 
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      /*title: Yup.string().required("Required"),
+      title: Yup.string().required("Required"),
       shortTitle: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
@@ -415,6 +410,7 @@ const EditTechnicalAssistanceForm = ({ id }) => {
       implementingOfficeId: Yup.string().required("Required"),
       enaSupportOffice: Yup.string().required("Required"),
       regionalProgrammeId: Yup.string().required("Required"),
+      administrativeProgrammeId: Yup.string().required("Required"),
       totalBudget: Yup.number()
         .required("Required")
         .positive("Must be positive"),
@@ -423,13 +419,11 @@ const EditTechnicalAssistanceForm = ({ id }) => {
       status: Yup.string().required("Required"),
       donors: Yup.array().required("Required"),
       partners: Yup.array().required("Required"),
-      administrativeProgrammeId: Yup.string().required("Required"),*/
     }),
     onSubmit: async (values) => {
-      /*try {
-        const guid = new Guid();
-        const saveInnovation = {
-          id: id ? id : guid.toString(),
+      try {
+        const saveTechnicalAssistance = {
+          id: id ? id : new Guid().toString(),
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
@@ -439,50 +433,77 @@ const EditTechnicalAssistanceForm = ({ id }) => {
           staffNameId: values.staffNameId.id,
           implementingOfficeId: values.implementingOfficeId,
           regionalProgrammeId: values.regionalProgrammeId,
+          administrativeProgrammeId: values.administrativeProgrammeId,
           office: values.enaSupportOffice,
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
           status: values.status,
-          administrativeProgrammeId: values.administrativeProgrammeId,
-          processLevelItemId: processLevelItemId,
-          processLevelTypeId: processLevelTypeId,
         };
+        await mutation.mutateAsync(saveTechnicalAssistance);
 
-        const innovation = await mutation.mutateAsync(saveInnovation);
-
-        let innovationDonors = [];
+        let technicalAssistanceDonors = [];
         for (const donor of values.donors) {
-          const innovationDonor = {
+          const technicalAssistanceDonor = {
             donorId: donor.id,
-            innovationId: innovation.data.id,
+            technicalAssistanceId: id,
             createDate: new Date(),
           };
-          innovationDonors.push(innovationDonor);
+          technicalAssistanceDonors.push(technicalAssistanceDonor);
         }
+        await technicalAssistanceDonorsMutation.mutateAsync(
+          technicalAssistanceDonors
+        );
 
-        await technicalAssistanceDonorsMutation.mutateAsync(innovationDonors);
+        let technicalAssistancePartners = [];
+        for (const partner of values.partners) {
+          const technicalAssistancePartner = {
+            partnerId: partner.id,
+            technicalAssistanceId: id,
+            createDate: new Date(),
+          };
+          technicalAssistancePartners.push(technicalAssistancePartner);
+        }
+        await technicalAssistancePartnersMutation.mutateAsync(
+          technicalAssistancePartners
+        );
+
+        const technicalAssistanceStaff = [];
+        console.log("staffDetailsList " + JSON.stringify(staffDetailsList));
+        for (const staffDetail of staffDetailsList) {
+          const projectRole = {
+            technicalAssistanceId: id,
+            aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
+            aimsRoleName: staffDetail.staffDetailsAIMSRole.name,
+            createDate: new Date(),
+            dqaRoleId: staffDetail.staffDetailsWorkFlowTask.roleId,
+            dqaRoleName: staffDetail.staffDetailsWorkFlowTask.roleName,
+            isPrimary:
+              staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
+            staffNames: staffDetail.staffDetailsName,
+            void: false,
+          };
+          technicalAssistanceStaff.push(projectRole);
+        }
+        await technicalAssistanceStaffMutation.mutateAsync(
+          technicalAssistanceStaff
+        );
 
         toast("Successfully Created a Technical Assistance", {
           type: "success",
         });
-        await queryClient.invalidateQueries(["getInnovations"]);
+        await queryClient.invalidateQueries([
+          "getTechnicalAssistanceByTechnicalAssistanceId",
+        ]);
         navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/${innovation.data.id}`
+          `/project/design/technical-assistance/technical-assistance-detail/${id}`
         );
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
           type: "error",
         });
-      }*/
-
-      toast("Successfully Created a Technical Assistance", {
-        type: "success",
-      });
-      navigate(
-        `/project/design/technical-assistance/technical-assistance-detail/bc7fd0b3-3406-490d-a3fa-abf8ffd9f13e`
-      );
+      }
     },
   });
 
@@ -496,7 +517,125 @@ const EditTechnicalAssistanceForm = ({ id }) => {
     setStaffDetailsList((current) => [...current, values]);
   };
 
-  useEffect(() => {});
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingTechnicalAssistanceData &&
+        !isErrorTechnicalAssistanceData &&
+        TechnicalAssistanceData
+      ) {
+        let staffId;
+        let staffEmail;
+
+        if (!isLoadingStaffList) {
+          staffId = staffListData.data.find(
+            (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
+          );
+          if (staffId != null) {
+            staffEmail = staffId.emailAddress;
+          }
+        }
+
+        let enaSupportOffice;
+        if (!isLoadingAmrefEntities) {
+          enaSupportOffice = amrefEntities.data.find(
+            (obj) => obj.id === TechnicalAssistanceData.data.office
+          );
+        }
+
+        let implementingOffice;
+        if (!isLoadingOrgUnits) {
+          implementingOffice = orgUnitsData.data.find(
+            (obj) =>
+              obj.id === TechnicalAssistanceData.data.implementingOfficeId
+          );
+        }
+
+        let currencyType;
+        if (!isLoadingCurrency) {
+          currencyType = currencyData.data.find(
+            (obj) => obj.id === TechnicalAssistanceData.data.currencyTypeId
+          );
+        }
+
+        let donorsList = [];
+        for (const donor of TechnicalAssistanceData.data.donors) {
+          const result = donorData.data.find((obj) => obj.id === donor.donorId);
+          if (result) {
+            donorsList.push(result);
+          }
+        }
+
+        let partnersList = [];
+        for (const partner of TechnicalAssistanceData.data
+          .technicalAssistancePartners) {
+          const result = partnerData.data.find(
+            (obj) => obj.id === partner.partnerId
+          );
+          if (result) {
+            partnersList.push(result);
+          }
+        }
+
+        formik.setValues({
+          title: TechnicalAssistanceData.data.title,
+          shortTitle: TechnicalAssistanceData.data.shortTitle,
+          startDate: TechnicalAssistanceData.data.startDate,
+          endDate: TechnicalAssistanceData.data.endDate,
+          extensionDate: TechnicalAssistanceData.data.extensionDate,
+          status: TechnicalAssistanceData.data.status,
+          staffNameId: staffId ? staffId : "",
+          leadStaffEmail: staffEmail ? staffEmail : "",
+          implementingOfficeId: implementingOffice ? implementingOffice.id : "",
+          enaSupportOffice: enaSupportOffice ? enaSupportOffice.id : "",
+          regionalProgrammeId: TechnicalAssistanceData.data.regionalProgrammeId,
+          administrativeProgrammeId:
+            TechnicalAssistanceData.data.administrativeProgrammeId,
+          totalBudget: TechnicalAssistanceData.data.totalBudget,
+          costCenter: TechnicalAssistanceData.data.costCenter,
+          currencyTypeId: TechnicalAssistanceData.data.currencyTypeId,
+          donors: donorsList,
+          partners: partnersList,
+        });
+
+        if (
+          TechnicalAssistanceData.data.staff &&
+          TechnicalAssistanceData.data.staff.length > 0
+        ) {
+          const allStaff = [];
+          for (const staffData of TechnicalAssistanceData.data.staff) {
+            const lookupRole =
+              !isLoadingAimsRole &&
+              aimsRolesData.data.filter(
+                (obj) => obj.id === staffData.aimsRoleId
+              );
+            const staff = {
+              id: staffData.id,
+              staffDetailsName: staffData.staffNames,
+              staffDetailsAIMSRole:
+                lookupRole && lookupRole.length > 0 ? lookupRole[0] : "",
+              staffDetailsWorkFlowTask: {
+                roleId: staffData.dqaRoleId,
+                roleName: staffData.dqaRoleName,
+              },
+              primaryRole: staffData.isPrimary,
+            };
+            allStaff.push(staff);
+          }
+          setStaffDetailsList(allStaff);
+        }
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    TechnicalAssistanceData,
+    isLoadingTechnicalAssistanceData,
+    isErrorTechnicalAssistanceData,
+    isLoadingStaffList,
+    isErrorStaffList,
+    staffListData,
+    amrefEntities,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -775,15 +914,15 @@ const EditTechnicalAssistanceForm = ({ id }) => {
               name="administrativeProgrammeId"
               label="Administrative Programme"
               select
-              value={formik.values.implementingOfficeId}
+              value={formik.values.administrativeProgrammeId}
               error={Boolean(
-                formik.touched.implementingOfficeId &&
-                  formik.errors.implementingOfficeId
+                formik.touched.administrativeProgrammeId &&
+                  formik.errors.administrativeProgrammeId
               )}
               fullWidth
               helperText={
-                formik.touched.implementingOfficeId &&
-                formik.errors.implementingOfficeId
+                formik.touched.administrativeProgrammeId &&
+                formik.errors.administrativeProgrammeId
               }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -793,10 +932,10 @@ const EditTechnicalAssistanceForm = ({ id }) => {
               <MenuItem disabled value="">
                 Select Administrative Programme
               </MenuItem>
-              {!isLoadingOrgUnits
-                ? orgUnitsData.data.map((option) => (
+              {!isLoadingAdminProg
+                ? adminProgData.data.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
-                      {option.name}
+                      {option.shortTitle}
                     </MenuItem>
                   ))
                 : []}

@@ -30,9 +30,9 @@ import {
 } from "../../../../api/administrative-unit";
 import { Check, Trash as TrashIcon } from "react-feather";
 import {
-  saveTechnicalAssistanceGeographicFocus,
-  getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId,
-  deleteTechnicalAssistanceGeographicFocus,
+  newTechnicalAssistanceGeographicalFocus,
+  getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
+  deleteTechnicalAssistanceGeographicalFocusById,
 } from "../../../../api/technical-assistance-geographic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import de from "date-fns/esm/locale/de/index.js";
@@ -71,8 +71,8 @@ const GeoFocus = ({ id }) => {
     isLoading: isLoadingProjectLocations,
     // refetch,
   } = useQuery(
-    ["getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId", id],
-    getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId,
+    ["getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId", id],
+    getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
     {
       refetchOnWindowFocus: false,
       enabled: !!id,
@@ -310,8 +310,8 @@ const GeoFocus = ({ id }) => {
   };
 
   const { refetch } = useQuery(
-    ["deleteTechnicalAssistanceGeographicFocus", locationId],
-    deleteTechnicalAssistanceGeographicFocus,
+    ["deleteTechnicalAssistanceGeographicalFocusById", locationId],
+    deleteTechnicalAssistanceGeographicalFocusById,
     { enabled: false }
   );
 
@@ -328,7 +328,7 @@ const GeoFocus = ({ id }) => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
-      "getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId",
+      "getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId",
     ]);
   };
 

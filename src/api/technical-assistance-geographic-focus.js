@@ -1,27 +1,26 @@
 import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
-export const saveTechnicalAssistanceGeographicFocus = async (values) => {
+export const newTechnicalAssistanceGeographicalFocus = async (values) => {
   return await axios.post(
     apiRoutes.technicalAssistanceGeographicalFocus,
     values
   );
 };
 
-export const getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId =
+export const getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId =
   async ({ queryKey }) => {
-    const [, innovationId] = queryKey;
+    const [, id] = queryKey;
     return await axios.get(
-      `${apiRoutes.technicalAssistanceGeographicalFocus}/GetByInnovationId/${innovationId}`
+      `${apiRoutes.technicalAssistanceGeographicalFocus}/${id}`
     );
   };
 
-export const deleteTechnicalAssistanceGeographicFocus = async ({
+export const deleteTechnicalAssistanceGeographicalFocusById = async ({
   queryKey,
 }) => {
-  console.log("queryKey " + queryKey);
-  const [, geographicFocusId] = queryKey;
+  const [, id] = queryKey;
   return await axios.delete(
-    `${apiRoutes.technicalAssistanceGeographicalFocus}/${geographicFocusId}`
+    `${apiRoutes.technicalAssistanceGeographicalFocus}/${id}`
   );
 };

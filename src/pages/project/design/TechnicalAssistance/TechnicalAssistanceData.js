@@ -16,7 +16,8 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { Link2 } from "react-feather";
-import { getTechnicalAssistanceByInnovationId } from "../../../../api/technical-assistance";
+import { getTechnicalAssistanceByProcessLevelItemId } from "../../../../api/technical-assistance";
+import { getInnovations } from "../../../../api/innovation";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -37,9 +38,9 @@ const TechnicalAssistanceGridData = ({
     isLoading: isLoadingTechnicalAssistance,
     isError: isErrorTechnicalAssistance,
   } = useQuery(
-    ["getTechnicalAssistanceByInnovationId", id],
-    getTechnicalAssistanceByInnovationId,
-    { enabled: !!id }
+    ["getTechnicalAssistanceByProcessLevelItemId", processLevelItemId],
+    getTechnicalAssistanceByProcessLevelItemId,
+    { enabled: !!processLevelItemId }
   );
 
   return (
@@ -78,14 +79,8 @@ const TechnicalAssistanceGridData = ({
                 flex: 1,
               },
               {
-                field: "startDate",
-                headerName: "Start Date",
-                editable: false,
-                flex: 1,
-              },
-              {
-                field: "endDate",
-                headerName: "End Date",
+                field: "shortTitle",
+                headerName: "Short title",
                 editable: false,
                 flex: 1,
               },

@@ -41,14 +41,15 @@ import { Check, Trash as TrashIcon } from "react-feather";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { Guid } from "../../../../utils/guid";
 import {
-  deleteTechnicalAssistanceThematicFocus,
+  newTechnicalAssistanceThematicFocus,
   getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
-  saveTechnicalAssistanceThematicFocus,
+  deleteTechnicalAssistanceThematicFocusById,
 } from "../../../../api/technical-assistance-thematic-focus";
 import { getDonors, getstrategicObjectives } from "../../../../api/donor";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../../api/sub-theme";
 import { getUniqueProgrammesByThematicAreaId } from "../../../../api/programme-thematic-area-sub-theme";
+import { getObjectives } from "../../../../api/project-objectives";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -57,6 +58,7 @@ const Button = styled(MuiButton)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
+  strategicObjectives: [],
   thematicArea: "",
 };
 
@@ -78,6 +80,8 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     getSubThemesByThematicAreaId,
     { enabled: !!thematicAreaId }
   );
+
+  /*
   const {
     data: TechnicalAssistanceThematicFocusData,
     isLoading: isLoadingTechnicalAssistanceThematicFocus,
@@ -85,7 +89,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     ["getTechnicalAssistanceThematicFocusByTechnicalAssistanceId", id],
     getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
     { enabled: !!id }
-  );
+  );*/
 
   const { isLoading: isLoadingDonor, data: donorData } = useQuery(
     ["getDonors"],
@@ -94,8 +98,14 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
       refetchOnWindowFocus: false,
     }
   );
+
+  const { isLoading: isLoadingAmrefObjectives, data: amrefObjectivesData } =
+    useQuery(["getObjectives"], getObjectives, {
+      refetchOnWindowFocus: false,
+    });
+
   const mutation = useMutation({
-    mutationFn: saveTechnicalAssistanceThematicFocus,
+    mutationFn: newTechnicalAssistanceThematicFocus,
   });
 
   const formik = useFormik({
@@ -120,6 +130,16 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
               id: new Guid().toString(),
             };
             await mutation.mutateAsync(TechnicalAssistanceThematicFocus);
+
+            let strategicObjectives = [];
+            for (const item of values.strategicObjectives) {
+              const strategicObjective = {
+                objectiveId: item.id,
+                technicalAssistanceId: id,
+                createDate: new Date(),
+              };
+              strategicObjectives.push(strategicObjective);
+            }
           }
         }
         await queryClient.invalidateQueries([
@@ -185,8 +205,8 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
   }
 
   const { refetch } = useQuery(
-    ["deleteTechnicalAssistanceThematicFocus", thematicFocusId],
-    deleteTechnicalAssistanceThematicFocus,
+    ["deleteTechnicalAssistanceThematicFocusById", thematicFocusId],
+    deleteTechnicalAssistanceThematicFocusById,
     { enabled: false }
   );
 
@@ -219,16 +239,11 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
               <Grid container>
                 <Grid item md={12} mb={3}>
                   <FormControl sx={{ width: "100%" }}>
-                    <InputLabel>Amref Strategic Objectives</InputLabel>
+                    <InputLabel>Strategic Objectives</InputLabel>
                     <Select
                       fullWidth
                       multiple
-                      required
                       value={formik.values.strategicObjectives}
-                      error={Boolean(
-                        formik.touched.strategicObjectives &&
-                          formik.errors.strategicObjectives
-                      )}
                       onChange={(e) => {
                         const selectedStrategicObjectives = Array.isArray(
                           e.target.value
@@ -246,7 +261,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                           {selected.map((value) => (
                             <Chip
                               key={value.id}
-                              label={value.donorName}
+                              label={value.objective}
                               onDelete={() =>
                                 formik.setFieldValue(
                                   "strategicObjectives",
@@ -267,7 +282,13 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                         </Stack>
                       )}
                     >
-                      {[]}
+                      {!isLoadingAmrefObjectives
+                        ? amrefObjectivesData.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.objective}
+                            </MenuItem>
+                          ))
+                        : []}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -367,13 +388,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                   <Paper style={{ height: 250, width: "100%" }}>
                     <DataGrid
                       rowsPerPageOptions={[5, 10, 25]}
-                      rows={
-                        isLoadingTechnicalAssistanceThematicFocus
-                          ? []
-                          : TechnicalAssistanceThematicFocusData
-                          ? TechnicalAssistanceThematicFocusData.data
-                          : []
-                      }
+                      rows={[]}
                       columns={[
                         {
                           field: "id",
@@ -411,7 +426,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                       onPageSizeChange={(newPageSize) =>
                         setPageSize(newPageSize)
                       }
-                      loading={isLoadingTechnicalAssistanceThematicFocus}
+                      loading={false}
                       getRowHeight={() => "auto"}
                     />
                   </Paper>

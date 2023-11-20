@@ -1,25 +1,18 @@
 import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
-export const saveTechnicalAssistanceObjective = async (values) => {
+export const newTechnicalAssistanceObjective = async (values) => {
   return await axios.post(apiRoutes.technicalAssistanceObjective, values);
 };
 
 export const getTechnicalAssistanceObjectiveByTechnicalAssistanceId = async ({
   queryKey,
 }) => {
-  const [, technicalAssistanceId] = queryKey;
-  /*return await axios.get(
-    `${apiRoutes.technicalAssistanceObjective}/GetByInnovationId/${technicalAssistanceId}`
-  );*/
-
-  return await axios.get(apiRoutes.donor);
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.technicalAssistanceObjective}/${id}`);
 };
 
-export const deleteTechnicalAssistanceObjective = async ({ queryKey }) => {
-  console.log("queryKey " + queryKey);
-  const [, objectiveId] = queryKey;
-  return await axios.delete(
-    `${apiRoutes.technicalAssistanceObjective}/${objectiveId}`
-  );
+export const deleteTechnicalAssistanceObjectiveById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.technicalAssistanceObjective}/${id}`);
 };

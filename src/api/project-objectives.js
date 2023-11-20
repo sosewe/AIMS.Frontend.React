@@ -5,6 +5,15 @@ export const newProjectObjectives = async (values) => {
   return await axios.post(apiRoutes.projectObjectives, values);
 };
 
+export const getObjectives = async ({ queryKey }) => {
+  console.log(
+    "amrefObjectivesData .." +
+      JSON.stringify(await axios.get(`${apiRoutes.projectObjectives}`))
+  );
+
+  return await axios.get(`${apiRoutes.projectObjectives}`);
+};
+
 export const getObjectiveByProcessLevelItemId = async ({ queryKey }) => {
   const [, processLevelItemId] = queryKey;
   return await axios.get(
