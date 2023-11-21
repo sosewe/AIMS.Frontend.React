@@ -368,12 +368,13 @@ const EditTechnicalAssistanceForm = ({ id }) => {
     }
   );
   const { isLoading: isLoadingPartner, data: partnerData } = useQuery(
-    ["partners"],
-    getDonors,
+    ["partnerType", "PartnerType"],
+    getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
     }
   );
+
   const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
     ["amrefEntities"],
     getAmrefEntities,
@@ -469,7 +470,6 @@ const EditTechnicalAssistanceForm = ({ id }) => {
         );
 
         const technicalAssistanceStaff = [];
-        console.log("staffDetailsList " + JSON.stringify(staffDetailsList));
         for (const staffDetail of staffDetailsList) {
           const projectRole = {
             technicalAssistanceId: id,
@@ -526,7 +526,6 @@ const EditTechnicalAssistanceForm = ({ id }) => {
       ) {
         let staffId;
         let staffEmail;
-
         if (!isLoadingStaffList) {
           staffId = staffListData.data.find(
             (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
@@ -559,21 +558,27 @@ const EditTechnicalAssistanceForm = ({ id }) => {
         }
 
         let donorsList = [];
-        for (const donor of TechnicalAssistanceData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
+        if (!isLoadingDonor) {
+          for (const donor of TechnicalAssistanceData.data.donors) {
+            const result = donorData.data.find(
+              (obj) => obj.id === donor.donorId
+            );
+            if (result) {
+              donorsList.push(result);
+            }
           }
         }
 
         let partnersList = [];
-        for (const partner of TechnicalAssistanceData.data
-          .technicalAssistancePartners) {
-          const result = partnerData.data.find(
-            (obj) => obj.id === partner.partnerId
-          );
-          if (result) {
-            partnersList.push(result);
+        if (!isLoadingPartner) {
+          for (const partner of TechnicalAssistanceData.data
+            .technicalAssistancePartners) {
+            const result = partnerData.data.find(
+              (obj) => obj.id === partner.partnerId
+            );
+            if (result) {
+              partnersList.push(result);
+            }
           }
         }
 
@@ -635,6 +640,17 @@ const EditTechnicalAssistanceForm = ({ id }) => {
     isErrorStaffList,
     staffListData,
     amrefEntities,
+    isLoadingAmrefEntities,
+    isLoadingOrgUnits,
+    isLoadingCurrency,
+    isLoadingDonor,
+    isLoadingPartner,
+    orgUnitsData,
+    currencyData,
+    donorData,
+    partnerData,
+    isLoadingAimsRole,
+    aimsRolesData,
   ]);
 
   return (
@@ -1106,8 +1122,8 @@ const EditTechnicalAssistanceForm = ({ id }) => {
                   <Stack gap={1} direction="row" flexWrap="wrap">
                     {selected.map((value) => (
                       <Chip
-                        key={value.id}
-                        label={value.donorName}
+                        key={value.lookupItemId}
+                        label={value.lookupItemName}
                         onDelete={() =>
                           formik.setFieldValue(
                             "partners",
@@ -1125,11 +1141,12 @@ const EditTechnicalAssistanceForm = ({ id }) => {
                     ))}
                   </Stack>
                 )}
+                my={2}
               >
                 {!isLoadingPartner
                   ? partnerData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.donorName}({option.donorInitial})
+                      <MenuItem key={option.lookupItemId} value={option}>
+                        {option.lookupItemName}
                       </MenuItem>
                     ))
                   : []}

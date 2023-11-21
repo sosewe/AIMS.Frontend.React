@@ -28,7 +28,6 @@ const Button = styled(MuiButton)(spacing);
 const TechnicalAssistanceGridData = ({
   processLevelItemId,
   processLevelTypeId,
-  id,
 }) => {
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();

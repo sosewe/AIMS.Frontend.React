@@ -165,13 +165,15 @@ const TechnicalAssistanceForm = ({
       refetchOnWindowFocus: false,
     }
   );
+
   const { isLoading: isLoadingPartner, data: partnerData } = useQuery(
-    ["partners"],
-    getDonors,
+    ["partnerType", "PartnerType"],
+    getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
     }
   );
+
   const {
     isLoading: isLoadingAdministrativeProgram,
     data: administrativeProgramData,
@@ -239,6 +241,8 @@ const TechnicalAssistanceForm = ({
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
           status: values.status,
+          processLevelItemId: processLevelItemId,
+          processLevelTypeId: processLevelTypeId,
         };
 
         const technicalAssistance = await mutation.mutateAsync(
@@ -337,36 +341,11 @@ const TechnicalAssistanceForm = ({
           }
         }
 
-        formik.setValues({
-          title: TechnicalAssistanceData.data.title,
-          shortTitle: TechnicalAssistanceData.data.shortTitle,
-          startDate: TechnicalAssistanceData.data.startDate,
-          endDate: TechnicalAssistanceData.data.endDate,
-          extensionDate: TechnicalAssistanceData.data.extensionDate,
-          status: TechnicalAssistanceData.data.status,
-          staffNameId: staffId ? staffId : "",
-          leadStaffEmail: staffEmail ? staffEmail : "",
-          implementingOfficeId: implementingOfficeId
-            ? implementingOfficeId
-            : "",
-          /*
-          enaSupportOffice: enaSupportOffice ? enaSupportOffice : "",
-          costCenter: TechnicalAssistanceData.data.costCenter,
-          currencyTypeId: currencyType ? currencyType : "",*/
-          donors: donorsList,
-        });
+        formik.setValues({});
       }
     }
     setCurrentFormValues();
-  }, [
-    TechnicalAssistanceData,
-    isLoadingTechnicalAssistanceData,
-    isErrorTechnicalAssistanceData,
-    isLoadingStaffList,
-    isErrorStaffList,
-    staffListData,
-    amrefEntities,
-  ]);
+  }, []);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -443,9 +422,9 @@ const TechnicalAssistanceForm = ({
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.startDate && formik.errors.endDate
+                    formik.touched.endDate && formik.errors.endDate
                   )}
-                  helperText={formik.touched.startDate && formik.errors.endDate}
+                  helperText={formik.touched.endDate && formik.errors.endDate}
                   margin="normal"
                   name="endDate"
                   variant="outlined"
@@ -466,13 +445,13 @@ const TechnicalAssistanceForm = ({
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.startDate && formik.errors.extensionDate
+                    formik.touched.extensionDate && formik.errors.extensionDate
                   )}
                   helperText={
-                    formik.touched.startDate && formik.errors.extensionDate
+                    formik.touched.extensionDate && formik.errors.extensionDate
                   }
                   margin="normal"
-                  name="endDate"
+                  name="extensionDate"
                   variant="outlined"
                   fullWidth
                   my={2}
@@ -834,8 +813,8 @@ const TechnicalAssistanceForm = ({
                   <Stack gap={1} direction="row" flexWrap="wrap">
                     {selected.map((value) => (
                       <Chip
-                        key={value.id}
-                        label={value.donorName}
+                        key={value.lookupItemId}
+                        label={value.lookupItemName}
                         onDelete={() =>
                           formik.setFieldValue(
                             "partners",
@@ -857,8 +836,8 @@ const TechnicalAssistanceForm = ({
               >
                 {!isLoadingPartner
                   ? partnerData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.donorName}({option.donorInitial})
+                      <MenuItem key={option.lookupItemId} value={option}>
+                        {option.lookupItemName}
                       </MenuItem>
                     ))
                   : []}

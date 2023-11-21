@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -45,7 +45,11 @@ import {
   getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
   deleteTechnicalAssistanceThematicFocusById,
 } from "../../../../api/technical-assistance-thematic-focus";
-import { getDonors, getstrategicObjectives } from "../../../../api/donor";
+import {
+  newTechnicalAssistanceStrategicObjective,
+  getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId,
+  deleteTechnicalAssistanceStrategicObjectiveById,
+} from "../../../../api/technical-assistance-strategic-objective";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../../api/sub-theme";
 import { getUniqueProgrammesByThematicAreaId } from "../../../../api/programme-thematic-area-sub-theme";
@@ -81,7 +85,6 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     { enabled: !!thematicAreaId }
   );
 
-  /*
   const {
     data: TechnicalAssistanceThematicFocusData,
     isLoading: isLoadingTechnicalAssistanceThematicFocus,
@@ -89,14 +92,15 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     ["getTechnicalAssistanceThematicFocusByTechnicalAssistanceId", id],
     getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
     { enabled: !!id }
-  );*/
+  );
 
-  const { isLoading: isLoadingDonor, data: donorData } = useQuery(
-    ["getDonors"],
-    getDonors,
-    {
-      refetchOnWindowFocus: false,
-    }
+  const {
+    data: TechnicalAssistanceStrategicObjectivesData,
+    isLoading: isLoadingTechnicalAssistanceStrategicObjectives,
+  } = useQuery(
+    ["getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId", id],
+    getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId,
+    { enabled: !!id }
   );
 
   const { isLoading: isLoadingAmrefObjectives, data: amrefObjectivesData } =
@@ -106,6 +110,10 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
 
   const mutation = useMutation({
     mutationFn: newTechnicalAssistanceThematicFocus,
+  });
+
+  const mutationStrategicObjective = useMutation({
+    mutationFn: newTechnicalAssistanceStrategicObjective,
   });
 
   const formik = useFormik({
@@ -121,30 +129,38 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
             values.hasOwnProperty(subThemesDatum.subThemeId) &&
             values[subThemesDatum.subThemeId].length > 0
           ) {
-            const TechnicalAssistanceThematicFocus = {
+            const technicalAssistanceThematicFocus = {
               processLevelItemId: id,
               processLevelTypeId: processLevelTypeId,
               createDate: new Date(),
               subThemeId: subThemesDatum.subThemeId,
               thematicAreaId: subThemesDatum.thematicAreaId,
+              technicalAssistanceId: id,
               id: new Guid().toString(),
             };
-            await mutation.mutateAsync(TechnicalAssistanceThematicFocus);
-
-            let strategicObjectives = [];
-            for (const item of values.strategicObjectives) {
-              const strategicObjective = {
-                objectiveId: item.id,
-                technicalAssistanceId: id,
-                createDate: new Date(),
-              };
-              strategicObjectives.push(strategicObjective);
-            }
+            await mutation.mutateAsync(technicalAssistanceThematicFocus);
           }
         }
+
+        let strategicObjectivesList = [];
+        for (const item of values.strategicObjectives) {
+          const strategicObjective = {
+            strategicObjectiveId: item.id,
+            technicalAssistanceId: id,
+            createDate: new Date(),
+          };
+          strategicObjectivesList.push(strategicObjective);
+        }
+        await mutationStrategicObjective.mutateAsync(strategicObjectivesList);
+
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceThematicFocusByTechnicalAssistanceId",
         ]);
+
+        await queryClient.invalidateQueries([
+          "getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId",
+        ]);
+
         toast("Successfully added Project Thematic Focus", {
           type: "success",
         });
@@ -217,6 +233,34 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
       "getTechnicalAssistanceThematicFocusByTechnicalAssistanceId",
     ]);
   };
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      let strategicObjectivesList = [];
+      if (
+        !isLoadingTechnicalAssistanceStrategicObjectives &&
+        TechnicalAssistanceStrategicObjectivesData &&
+        TechnicalAssistanceStrategicObjectivesData.data.length > 0
+      ) {
+        for (const objective of TechnicalAssistanceStrategicObjectivesData.data) {
+          const result = amrefObjectivesData.data.find(
+            (obj) => obj.id === objective.strategicObjectiveId
+          );
+          if (result) {
+            strategicObjectivesList.push(result);
+          }
+        }
+
+        formik.setValues({
+          strategicObjectives: strategicObjectivesList,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadingTechnicalAssistanceStrategicObjectives,
+    TechnicalAssistanceStrategicObjectivesData,
+  ]);
 
   return (
     <Card mb={12}>
@@ -388,16 +432,14 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                   <Paper style={{ height: 250, width: "100%" }}>
                     <DataGrid
                       rowsPerPageOptions={[5, 10, 25]}
-                      rows={[]}
+                      rows={
+                        isLoadingTechnicalAssistanceThematicFocus
+                          ? []
+                          : TechnicalAssistanceThematicFocusData
+                          ? TechnicalAssistanceThematicFocusData.data
+                          : []
+                      }
                       columns={[
-                        {
-                          field: "id",
-                          colId: "subThemeId&thematicAreaId",
-                          headerName: "OBJECTIVES",
-                          editable: false,
-                          flex: 1,
-                          valueGetter: GetSubTheme,
-                        },
                         {
                           field: "subThemeId",
                           colId: "subThemeId&thematicAreaId",
@@ -426,7 +468,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                       onPageSizeChange={(newPageSize) =>
                         setPageSize(newPageSize)
                       }
-                      loading={false}
+                      loading={isLoadingTechnicalAssistanceThematicFocus}
                       getRowHeight={() => "auto"}
                     />
                   </Paper>

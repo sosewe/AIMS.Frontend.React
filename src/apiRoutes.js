@@ -76,6 +76,7 @@ export const apiRoutes = {
   technicalAssistanceGeographicalFocus: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/TechnicalAssistanceGeographicalFocus`,
   technicalAssistanceThematicFocus: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/TechnicalAssistanceThematicFocus`,
   technicalAssistanceObjective: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/TechnicalAssistanceObjective`,
+  technicalAssistanceStrategicObjective: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/TechnicalAssistanceStrategicObjective`,
   advocacy: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Advocacy`,
   qualitativeCountry: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativeCountry`,
   qualitativePeriod: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativePeriod`,

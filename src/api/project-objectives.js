@@ -6,11 +6,6 @@ export const newProjectObjectives = async (values) => {
 };
 
 export const getObjectives = async ({ queryKey }) => {
-  console.log(
-    "amrefObjectivesData .." +
-      JSON.stringify(await axios.get(`${apiRoutes.projectObjectives}`))
-  );
-
   return await axios.get(`${apiRoutes.projectObjectives}`);
 };
 

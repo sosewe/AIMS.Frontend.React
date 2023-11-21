@@ -94,7 +94,9 @@ const GeoFocus = ({ id }) => {
     }
   };
 
-  const mutation = useMutation({ mutationFn: null });
+  const mutation = useMutation({
+    mutationFn: newTechnicalAssistanceGeographicalFocus,
+  });
   const formik = useFormik({
     initialValues: getFocusInitial,
     validationSchema: Yup.object().shape({
@@ -158,14 +160,14 @@ const GeoFocus = ({ id }) => {
           administrativeUnitName = values.fourthLevel.adminUnit;
         }
 
-        const innovationtLocation = {
-          innovationId: id,
+        const technicalAssistanceGeoFocus = {
+          technicalAssistanceId: id,
           createDate: new Date(),
           administrativeUnitId,
           administrativeUnitName,
         };
 
-        await mutation.mutateAsync(innovationtLocation);
+        await mutation.mutateAsync(technicalAssistanceGeoFocus);
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId",
         ]);

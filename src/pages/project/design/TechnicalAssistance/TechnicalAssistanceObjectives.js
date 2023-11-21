@@ -30,7 +30,7 @@ import { Check, Trash as TrashIcon } from "react-feather";
 import styled from "@emotion/styled";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
-  saveTechnicalAssistanceObjective,
+  newTechnicalAssistanceObjective,
   getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
   deleteTechnicalAssistanceObjective,
 } from "../../../../api/technical-assistance-objective";
@@ -125,7 +125,7 @@ const TechnicalAssistanceObjectives = ({ id }) => {
 
   const {
     data: technicalAssistanceObjectivesData,
-    isLoading: isLoadingtechnicalAssistanceObjectivesData,
+    isLoading: isLoadingTechnicalAssistanceObjectivesData,
   } = useQuery(
     ["getTechnicalAssistanceObjectiveByTechnicalAssistanceId", id],
     getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
@@ -133,11 +133,7 @@ const TechnicalAssistanceObjectives = ({ id }) => {
   );
 
   const mutation = useMutation({
-    mutationFn: newTechnicalAssistance,
-  });
-
-  const technicalAssistanceObjectivesMutation = useMutation({
-    mutationFn: newTechnicalAssistance,
+    mutationFn: newTechnicalAssistanceObjective,
   });
 
   const formik = useFormik({
@@ -145,37 +141,25 @@ const TechnicalAssistanceObjectives = ({ id }) => {
     validationSchema: Yup.object().shape({}),
     onSubmit: async (values) => {
       try {
-        const technicalAssistanceObjective = {
-          id: values.id,
-          createDate: new Date(),
-        };
-        const innovation = await mutation.mutateAsync(
-          technicalAssistanceObjective
-        );
-
         let technicalAssistanceObjectives = [];
         for (const objective of objectivesList) {
           const technicalAssistanceObjective = {
             id: new Guid().toString(),
-            technicalAssistanceObjectiveDescription:
-              objective.technicalAssistanceObjectiveDescription,
-            innovationId: innovation.data.innovationId,
+            objective: objective.technicalAssistanceObjectiveDescription,
+            technicalAssistanceId: id,
             createDate: new Date(),
           };
           technicalAssistanceObjectives.push(technicalAssistanceObjective);
         }
-        await technicalAssistanceObjectivesMutation.mutateAsync(
-          technicalAssistanceObjectives
-        );
+        await mutation.mutateAsync(technicalAssistanceObjectives);
 
         toast("Successfully Created an Innovation Objective", {
           type: "success",
         });
 
         await queryClient.invalidateQueries([
-          "gettechnicalAssistanceObjectiveClassificationByInnovationId",
+          "getTechnicalAssistanceObjectiveByTechnicalAssistanceId",
         ]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -198,7 +182,26 @@ const TechnicalAssistanceObjectives = ({ id }) => {
     setObjectivesList((current) => [...current, values]);
   };
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        technicalAssistanceObjectivesData &&
+        technicalAssistanceObjectivesData.data.length > 0
+      ) {
+        const allObjectives = [];
+        for (const objectiveData of technicalAssistanceObjectivesData.data) {
+          const objective = {
+            id: objectiveData.id,
+            technicalAssistanceId: objectiveData.technicalAssistanceId,
+            technicalAssistanceObjectiveDescription: objectiveData.objective,
+          };
+          allObjectives.push(objective);
+        }
+        setObjectivesList(allObjectives);
+      }
+    }
+    setCurrentFormValues();
+  }, [technicalAssistanceObjectivesData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>

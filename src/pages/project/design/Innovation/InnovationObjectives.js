@@ -524,11 +524,6 @@ const InnvationObjectives = ({ id }) => {
             }
             setObjectivesList(allObjectives);
           }
-
-          console.log(
-            "innovationMetricsData " + JSON.stringify(innovationMetricsData)
-          );
-
           if (
             innovationMetricsData.data &&
             innovationMetricsData.data.length > 0
