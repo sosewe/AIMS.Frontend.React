@@ -25,14 +25,34 @@ import {
 } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { spacing } from "@mui/system";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import { Check } from "react-feather";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
-import { getTechnicalAssistanceObjectiveByTechnicalAssistanceId } from "../../../../api/technical-assistance-objective";
+import {
+  newTechnicalAssistanceMonthlyUpdate,
+  getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId,
+  deleteTechnicalAssistanceMonthlyUpdateById,
+} from "../../../../api/technical-assistance-monthly-update";
+import {
+  newTechnicalAssistanceObjectiveLink,
+  getTechnicalAssistanceObjectiveLinkByTechnicalAssistanceId,
+  deleteTechnicalAssistanceObjectiveLinkById,
+} from "../../../../api/technical-assistance-objective-link";
+import {
+  newTechnicalAssistanceAgency,
+  getTechnicalAssistanceAgencyByTechnicalAssistanceId,
+  deleteTechnicalAssistanceAgencyById,
+} from "../../../../api/technical-assistance-agencies";
+import {
+  newTechnicalAssistanceModality,
+  getTechnicalAssistanceModalityByTechnicalAssistanceId,
+  deleteTechnicalAssistanceModalityById,
+} from "../../../../api/technical-assistance-modality";
+import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { Guid } from "../../../../utils/guid";
 
 const Paper = styled(MuiPaper)(spacing);
@@ -46,29 +66,160 @@ const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
   changeDescription: "",
+  objectives: [],
+  changeRelevance: "",
+  changeLevelOfRelevance: "",
+  changeLevelOfContribution: "",
+  titleOfChangeActors: "",
+  agencyOfChangeActors: [],
+  modalities: [],
+  changeContribution: "",
+  changeContributionOther: "",
+  followUp: "",
 };
 
 const MonthlyUpdateForm = ({ id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { isLoading: isLoadingObjectives, data: objectivesData } = useQuery(
-    ["objectives"],
-    getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
+  const {
+    data: MonthlyUpdateData,
+    isLoading: isLoadingMonthlyUpdate,
+    isError: isErrorMonthlyUpdate,
+  } = useQuery(
+    ["getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId", id],
+    getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId,
+    { enabled: !!id }
+  );
+
+  const { isLoading: isLoadingObjectiveLinks, data: objectiveLinksData } =
+    useQuery(["objectiveLinks", "ObjectiveLinks"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
+    });
+
+  const { isLoading: isLoadingLevelOfRelevance, data: levelOfRelevanceData } =
+    useQuery(
+      ["levelOfRelevance", "LevelOfRelevance"],
+      getLookupMasterItemsByName,
+      {
+        refetchOnWindowFocus: false,
+      }
+    );
+
+  const {
+    isLoading: isLoadingLevelOfContribution,
+    data: levelOfContributionData,
+  } = useQuery(
+    ["levelOfContribution", "LevelOfContribution"],
+    getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
     }
   );
 
+  const { isLoading: isLoadingDepartments, data: departmentsData } = useQuery(
+    ["departments", "Departments"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingModalities, data: modalitiesData } = useQuery(
+    ["modalities", "Modalities"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const mutationMonthlyUpdate = useMutation({
+    mutationFn: newTechnicalAssistanceMonthlyUpdate,
+  });
+
+  const mutationObjectiveLink = useMutation({
+    mutationFn: newTechnicalAssistanceObjectiveLink,
+  });
+
+  const mutationDepartment = useMutation({
+    mutationFn: newTechnicalAssistanceAgency,
+  });
+
+  const mutationModality = useMutation({
+    mutationFn: newTechnicalAssistanceModality,
+  });
+
   const formik = useFormik({
     initialValues: initialValues,
-    validationSchema: Yup.object().shape({}),
+    validationSchema: Yup.object().shape({
+      changeDescription: Yup.string().required("Required"),
+      objectives: Yup.array().required("Required"),
+      changeRelevance: Yup.string().required("Required"),
+      changeLevelOfRelevance: Yup.string().required("Required"),
+      changeLevelOfContribution: Yup.string().required("Required"),
+      titleOfChangeActors: Yup.string().required("Required"),
+      agencyOfChangeActors: Yup.array().required("Required"),
+      modalities: Yup.array().required("Required"),
+      changeContribution: Yup.string().required("Required"),
+      changeContributionOther: Yup.string().required("Required"),
+      changeCofollowUpntributionOther: Yup.string().required("Required"),
+      followUp: Yup.string().required("Required"),
+    }),
     onSubmit: async (values) => {
       try {
-        const guid = new Guid();
-        const saveMonthlyUpdate = {};
+        const saveMonthlyUpdate = {
+          createDate: new Date(),
+          id: new Guid().toString(),
+          technicalAssistanceId: id,
+          changeDescription: values.changeDescription,
+          // objectives: values.objectives,
+          changeRelevance: values.changeRelevance,
+          changeLevelOfRelevance: values.changeLevelOfRelevance,
+          titleOfChangeActors: values.titleOfChangeActors,
+          // agencyOfChangeActors: values.agencyOfChangeActors,
+          // modalities: values.modalities,
+          changeContribution: values.changeContribution,
+          changeContributionOther: values.changeContributionOther,
+          changeCofollowUpntributionOther:
+            values.changeCofollowUpntributionOther,
+          followUp: values.followUp,
+        };
+        await mutationMonthlyUpdate.mutateAsync(saveMonthlyUpdate);
 
-        toast("Successfully Updated an Innovation", {
+        let objectivesList = [];
+        for (const item of values.objectives) {
+          const objective = {
+            objectiveId: item.id,
+            technicalAssistanceId: id,
+            createDate: new Date(),
+          };
+          objectivesList.push(objective);
+        }
+        await mutationObjectiveLink.mutateAsync(objectivesList);
+
+        let departmentsList = [];
+        for (const item of values.agencyOfChangeActors) {
+          const department = {
+            departmentId: item.id,
+            technicalAssistanceId: id,
+            createDate: new Date(),
+          };
+          departmentsList.push(department);
+        }
+        await mutationObjectiveLink.mutateAsync(departmentsList);
+
+        let modalitiesList = [];
+        for (const item of values.modalities) {
+          const modality = {
+            modalityId: item.id,
+            technicalAssistanceId: id,
+            createDate: new Date(),
+          };
+          modalitiesList.push(modality);
+        }
+        await mutationObjectiveLink.mutateAsync(modalitiesList);
+
+        toast("Successfully Updated Monthly Monitoring", {
           type: "success",
         });
         await queryClient.invalidateQueries([
@@ -84,7 +235,63 @@ const MonthlyUpdateForm = ({ id }) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingMonthlyUpdate &&
+        !isErrorMonthlyUpdate &&
+        MonthlyUpdateData &&
+        MonthlyUpdateData.data.length > 0
+      ) {
+        let objectivesList = [];
+        for (const item of MonthlyUpdateData.data.objectives) {
+          const result = objectiveLinksData.data.find(
+            (obj) => obj.id === item.objectiveId
+          );
+          if (result) {
+            objectivesList.push(result);
+          }
+        }
+
+        let departmentsList = [];
+        for (const item of MonthlyUpdateData.data.departments) {
+          const result = departmentsData.data.find(
+            (obj) => obj.id === item.departmentId
+          );
+          if (result) {
+            departmentsList.push(result);
+          }
+        }
+
+        let modalitiesList = [];
+        for (const item of MonthlyUpdateData.data.modalities) {
+          const result = modalitiesData.data.find(
+            (obj) => obj.id === item.modalityId
+          );
+          if (result) {
+            modalitiesList.push(result);
+          }
+        }
+
+        formik.setValues({
+          changeDescription: MonthlyUpdateData.data.changeDescription,
+          objectives: objectivesList,
+          changeRelevance: MonthlyUpdateData.data.changeRelevance,
+          changeLevelOfRelevance: MonthlyUpdateData.data.changeLevelOfRelevance,
+          changeLevelOfContribution:
+            MonthlyUpdateData.data.changeLevelOfContribution,
+          titleOfChangeActors: MonthlyUpdateData.data.titleOfChangeActors,
+          agencyOfChangeActors: departmentsList,
+          modalities: modalitiesList,
+          changeContribution: MonthlyUpdateData.data.changeContribution,
+          changeContributionOther:
+            MonthlyUpdateData.data.changeContributionOther,
+          followUp: MonthlyUpdateData.data.followUp,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [MonthlyUpdateData, isErrorMonthlyUpdate, isLoadingMonthlyUpdate]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -122,6 +329,7 @@ const MonthlyUpdateForm = ({ id }) => {
               <Select
                 fullWidth
                 multiple
+                searchable
                 value={formik.values.objectives}
                 onChange={(e) => {
                   const selectedObjectives = Array.isArray(e.target.value)
@@ -154,7 +362,16 @@ const MonthlyUpdateForm = ({ id }) => {
                   </Stack>
                 )}
               >
-                {[]}
+                {objectiveLinksData
+                  ? objectiveLinksData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
               </Select>
             </FormControl>
           </Grid>
@@ -202,7 +419,16 @@ const MonthlyUpdateForm = ({ id }) => {
               <MenuItem disabled value="">
                 Select Level of Relevance
               </MenuItem>
-              {[]}
+              {levelOfRelevanceData
+                ? levelOfRelevanceData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
 
@@ -229,7 +455,16 @@ const MonthlyUpdateForm = ({ id }) => {
               <MenuItem disabled value="">
                 Select Level of Contribution
               </MenuItem>
-              {[]}
+              {levelOfContributionData
+                ? levelOfContributionData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
             </TextField>
           </Grid>
 
@@ -255,7 +490,7 @@ const MonthlyUpdateForm = ({ id }) => {
             />
           </Grid>
 
-          <Grid item md={6} mt={2}>
+          <Grid item md={12} mt={2}>
             <FormControl sx={{ width: "100%" }}>
               <InputLabel>
                 Agency/department of the actors mentioned{" "}
@@ -268,18 +503,21 @@ const MonthlyUpdateForm = ({ id }) => {
                   const selectedAgencies = Array.isArray(e.target.value)
                     ? e.target.value
                     : [e.target.value]; // Ensure it's always an array
-                  formik.setFieldValue("objectives", selectedAgencies);
+                  formik.setFieldValue(
+                    "agencyOfChangeActors",
+                    selectedAgencies
+                  );
                 }}
                 input={<OutlinedInput label="Multiple Select" />}
                 renderValue={(selected) => (
                   <Stack gap={1} direction="row" flexWrap="wrap">
                     {selected.map((value) => (
                       <Chip
-                        key={value.id}
-                        label={value.donorName}
+                        key={value.lookupItemId}
+                        label={value.lookupItemName}
                         onDelete={() =>
                           formik.setFieldValue(
-                            "objectives",
+                            "agencyOfChangeActors",
                             formik.values.objectives.filter(
                               (item) => item !== value
                             )
@@ -295,12 +533,18 @@ const MonthlyUpdateForm = ({ id }) => {
                   </Stack>
                 )}
               >
-                {[]}
+                {departmentsData
+                  ? departmentsData.data.map((option) => (
+                      <MenuItem key={option.lookupItemId} value={option}>
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
               </Select>
             </FormControl>
           </Grid>
 
-          <Grid item md={6} mt={2}>
+          <Grid item md={12} mt={2}>
             <FormControl sx={{ width: "100%" }}>
               <InputLabel>Technical Assistance Modalities </InputLabel>
               <Select
@@ -318,8 +562,8 @@ const MonthlyUpdateForm = ({ id }) => {
                   <Stack gap={1} direction="row" flexWrap="wrap">
                     {selected.map((value) => (
                       <Chip
-                        key={value.id}
-                        label={value.donorName}
+                        key={value.lookupItemId}
+                        label={value.lookupItemName}
                         onDelete={() =>
                           formik.setFieldValue(
                             "modalities",
@@ -338,7 +582,13 @@ const MonthlyUpdateForm = ({ id }) => {
                   </Stack>
                 )}
               >
-                {[]}
+                {modalitiesData
+                  ? modalitiesData.data.map((option) => (
+                      <MenuItem key={option.lookupItemId} value={option}>
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
               </Select>
             </FormControl>
           </Grid>

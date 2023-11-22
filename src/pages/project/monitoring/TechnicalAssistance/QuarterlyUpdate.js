@@ -12,27 +12,24 @@ import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
-  MenuItem,
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
 } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { spacing } from "@mui/system";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import { Check } from "react-feather";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
-import { getTechnicalAssistanceObjectiveByTechnicalAssistanceId } from "../../../../api/technical-assistance-objective";
+import {
+  newTechnicalAssistanceQuarterlyUpdate,
+  getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId,
+  deleteTechnicalAssistanceQuarterlyUpdateById,
+} from "../../../../api/technical-assistance-quarterly-update";
 import { Guid } from "../../../../utils/guid";
 
 const Paper = styled(MuiPaper)(spacing);
@@ -45,20 +42,31 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  changeDescription: "",
+  bestModelsApproaches: "",
+  resultOutcomeAnalysis: "",
+  sharedSuccessInsights: "",
+  sharedROIInsights: "",
+  systemicChanges: "",
+  revisionAdjustments: "",
 };
 
 const QuarterlyUpdateForm = ({ id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { isLoading: isLoadingObjectives, data: objectivesData } = useQuery(
-    ["objectives"],
-    getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
-    {
-      refetchOnWindowFocus: false,
-    }
+  const {
+    data: QuarterlyUpdateData,
+    isLoading: isLoadingQuarterlyUpdate,
+    isError: isErrorQuarterlyUpdate,
+  } = useQuery(
+    ["getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId", id],
+    getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId,
+    { enabled: !!id }
   );
+
+  const mutationQuarterlyUpdate = useMutation({
+    mutationFn: newTechnicalAssistanceQuarterlyUpdate,
+  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -66,13 +74,21 @@ const QuarterlyUpdateForm = ({ id }) => {
     onSubmit: async (values) => {
       try {
         const guid = new Guid();
-        const saveQuarterlyUpdate = {};
+        const saveQuarterlyUpdate = {
+          bestModelsApproaches: Yup.string().required("Required"),
+          resultOutcomeAnalysis: Yup.string().required("Required"),
+          sharedSuccessInsights: Yup.string().required("Required"),
+          sharedROIInsights: Yup.string().required("Required"),
+          systemicChanges: Yup.string().required("Required"),
+          revisionAdjustments: Yup.string().required("Required"),
+        };
+        await mutationQuarterlyUpdate.mutateAsync(saveQuarterlyUpdate);
 
-        toast("Successfully Updated an Innovation", {
+        toast("Successfully Updated Quarterly Monitoring", {
           type: "success",
         });
         await queryClient.invalidateQueries([
-          "getTechnicalAssistanceObjectiveByTechnicalAssistanceId",
+          "getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId",
         ]);
         navigate(`/project/design/monitoring/monitoring-detail/${id}`);
       } catch (error) {
@@ -84,7 +100,26 @@ const QuarterlyUpdateForm = ({ id }) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingQuarterlyUpdate &&
+        !isErrorQuarterlyUpdate &&
+        QuarterlyUpdateData &&
+        QuarterlyUpdateData.data.length > 0
+      ) {
+        formik.setValues({
+          bestModelsApproaches: QuarterlyUpdateData.data.bestModelsApproaches,
+          resultOutcomeAnalysis: QuarterlyUpdateData.data.resultOutcomeAnalysis,
+          sharedSuccessInsights: QuarterlyUpdateData.data.sharedSuccessInsights,
+          sharedROIInsights: QuarterlyUpdateData.data.sharedROIInsights,
+          systemicChanges: QuarterlyUpdateData.data.systemicChanges,
+          revisionAdjustments: QuarterlyUpdateData.data.revisionAdjustments,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [isLoadingQuarterlyUpdate, isErrorQuarterlyUpdate, QuarterlyUpdateData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
