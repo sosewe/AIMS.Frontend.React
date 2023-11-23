@@ -19,32 +19,30 @@ import { toast } from "react-toastify";
 import { Link2 } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { getTechnicalAssistanceByProcessLevelItemId } from "../../../../api/technical-assistance";
+import { getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId } from "../../../../api/technical-assistance-monthly-update";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const TechnicalAssistanceData = ({
-  processLevelItemId,
-  processLevelTypeId,
-}) => {
+const MonthlyUpdateDataGridData = ({ id }) => {
   const [pageSize, setPageSize] = useState(5);
+  const navigate = useNavigate();
   const {
-    data: InnovationsData,
-    isLoading: isLoadingInnovations,
-    isError: isErrorInnovations,
+    data: MonthlyUpdateData,
+    isLoading: isLoadingMonthlyUpdate,
+    isError: isErrorMonthlyUpdate,
     error,
   } = useQuery(
-    ["getTechnicalAssistanceByProcessLevelItemId", processLevelItemId],
-    getTechnicalAssistanceByProcessLevelItemId,
+    ["getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId", id],
+    getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId,
     {
-      enabled: !!processLevelItemId,
+      enabled: !!id,
     }
   );
 
-  if (isErrorInnovations) {
+  if (isErrorMonthlyUpdate) {
     toast(error.response.data, {
       type: "error",
     });
@@ -54,32 +52,48 @@ const TechnicalAssistanceData = ({
     <Card mb={6}>
       <CardContent pb={1}>
         <Paper>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() =>
+              navigate(
+                `/project/monitoring/technical-assistance-monitoring-monthly-update/${id}`
+              )
+            }
+          >
+            <AddIcon /> New Monthly Update
+          </Button>
+        </Paper>
+        <br></br>
+        <Paper>
           <div style={{ height: 400, width: "100%" }}>
             <DataGrid
               rowsPerPageOptions={[5, 10, 25]}
               rows={
-                isLoadingInnovations || isErrorInnovations
+                isLoadingMonthlyUpdate || isErrorMonthlyUpdate
                   ? []
-                  : InnovationsData
-                  ? InnovationsData.data
+                  : MonthlyUpdateData
+                  ? MonthlyUpdateData.data
                   : []
               }
               columns={[
                 {
                   field: "title",
-                  headerName: "Title",
+                  headerName: "Technical Assistance",
+                  editable: false,
+                  flex: 1,
+                  valueGetter: (params) =>
+                    params.row.technicalAssistances.title,
+                },
+                {
+                  field: "month",
+                  headerName: "Month",
                   editable: false,
                   flex: 1,
                 },
                 {
-                  field: "startDate",
-                  headerName: "Start Date",
-                  editable: false,
-                  flex: 1,
-                },
-                {
-                  field: "endDate",
-                  headerName: "End Date",
+                  field: "year",
+                  headerName: "Year",
                   editable: false,
                   flex: 1,
                 },
@@ -88,10 +102,12 @@ const TechnicalAssistanceData = ({
                   headerName: "Action",
                   sortable: false,
                   flex: 1,
+                  valueGetter: (params) =>
+                    params.row.technicalAssistances.title,
                   renderCell: (params) => (
                     <>
                       <NavLink
-                        to={`/project/monitoring/technical-assistance-monitoring-detail/${params.id}`}
+                        to={`/project/monitoring/technical-assistance-monitoring-monthly-update/${id}/${params.id}`}
                       >
                         <Button startIcon={<Link2 />} size="small"></Button>
                       </NavLink>
@@ -101,7 +117,7 @@ const TechnicalAssistanceData = ({
               ]}
               pageSize={pageSize}
               onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-              loading={isLoadingInnovations}
+              loading={isLoadingMonthlyUpdate}
               getRowHeight={() => "auto"}
             />
           </div>
@@ -111,32 +127,16 @@ const TechnicalAssistanceData = ({
   );
 };
 
-const TechnicalAssistanceDataGrid = ({
-  processLevelItemId,
-  processLevelTypeId,
-}) => {
+const MonthlyUpdateDataGrid = ({ id }) => {
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
       <Typography variant="h3" gutterBottom display="inline">
-        Technical Assistance
+        Monthly Update
       </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Monitoring
-        </Link>
-        <Typography>Technical Assistance</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
-      <TechnicalAssistanceData
-        processLevelItemId={processLevelItemId}
-        processLevelTypeId={processLevelTypeId}
-      />
+      <MonthlyUpdateDataGridData id={id} />
     </React.Fragment>
   );
 };
-export default TechnicalAssistanceDataGrid;
+export default MonthlyUpdateDataGrid;

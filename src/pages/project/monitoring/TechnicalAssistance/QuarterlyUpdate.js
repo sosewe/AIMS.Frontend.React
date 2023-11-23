@@ -12,6 +12,7 @@ import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
+  MenuItem,
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
@@ -28,8 +29,9 @@ import * as Yup from "yup";
 import {
   newTechnicalAssistanceQuarterlyUpdate,
   getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId,
-  deleteTechnicalAssistanceQuarterlyUpdateById,
+  getTechnicalAssistanceQuarterlyUpdateById,
 } from "../../../../api/technical-assistance-quarterly-update";
+import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { Guid } from "../../../../utils/guid";
 
 const Paper = styled(MuiPaper)(spacing);
@@ -42,6 +44,8 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
+  year: "",
+  quarter: "",
   bestModelsApproaches: "",
   resultOutcomeAnalysis: "",
   sharedSuccessInsights: "",
@@ -50,7 +54,7 @@ const initialValues = {
   revisionAdjustments: "",
 };
 
-const QuarterlyUpdateForm = ({ id }) => {
+const QuarterlyUpdateForm = ({ id, editId }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -59,9 +63,25 @@ const QuarterlyUpdateForm = ({ id }) => {
     isLoading: isLoadingQuarterlyUpdate,
     isError: isErrorQuarterlyUpdate,
   } = useQuery(
-    ["getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId", id],
-    getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId,
-    { enabled: !!id }
+    ["getTechnicalAssistanceQuarterlyUpdateById", editId],
+    getTechnicalAssistanceQuarterlyUpdateById,
+    { enabled: !!editId }
+  );
+
+  const { isLoading: isLoadingQuarters, data: quartersData } = useQuery(
+    ["quarters", "Quarters"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingYears, data: yearsData } = useQuery(
+    ["years", "Years"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
   );
 
   const mutationQuarterlyUpdate = useMutation({
@@ -70,17 +90,32 @@ const QuarterlyUpdateForm = ({ id }) => {
 
   const formik = useFormik({
     initialValues: initialValues,
-    validationSchema: Yup.object().shape({}),
+    validationSchema: Yup.object().shape({
+      year: Yup.object().required("Required"),
+      quarter: Yup.object().required("Required"),
+      bestModelsApproaches: Yup.string().required("Required"),
+      resultOutcomeAnalysis: Yup.string().required("Required"),
+      sharedSuccessInsights: Yup.string().required("Required"),
+      sharedROIInsights: Yup.string().required("Required"),
+      systemicChanges: Yup.string().required("Required"),
+      revisionAdjustments: Yup.string().required("Required"),
+    }),
     onSubmit: async (values) => {
       try {
-        const guid = new Guid();
         const saveQuarterlyUpdate = {
-          bestModelsApproaches: Yup.string().required("Required"),
-          resultOutcomeAnalysis: Yup.string().required("Required"),
-          sharedSuccessInsights: Yup.string().required("Required"),
-          sharedROIInsights: Yup.string().required("Required"),
-          systemicChanges: Yup.string().required("Required"),
-          revisionAdjustments: Yup.string().required("Required"),
+          createDate: new Date(),
+          id: editId ? editId : new Guid().toString(),
+          technicalAssistanceId: id,
+          yearId: values.year.lookupItemId,
+          quarterId: values.quarter.lookupItemId,
+          year: values.year.lookupItemName,
+          quarter: values.quarter.lookupItemName,
+          bestModelsApproaches: values.bestModelsApproaches,
+          resultOutcomeAnalysis: values.resultOutcomeAnalysis,
+          sharedSuccessInsights: values.sharedSuccessInsights,
+          sharedROIInsights: values.sharedROIInsights,
+          systemicChanges: values.systemicChanges,
+          revisionAdjustments: values.revisionAdjustments,
         };
         await mutationQuarterlyUpdate.mutateAsync(saveQuarterlyUpdate);
 
@@ -90,7 +125,9 @@ const QuarterlyUpdateForm = ({ id }) => {
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId",
         ]);
-        navigate(`/project/design/monitoring/monitoring-detail/${id}`);
+        navigate(
+          `/project/monitoring/technical-assistance-monitoring-detail/${id}`
+        );
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -106,9 +143,29 @@ const QuarterlyUpdateForm = ({ id }) => {
         !isLoadingQuarterlyUpdate &&
         !isErrorQuarterlyUpdate &&
         QuarterlyUpdateData &&
-        QuarterlyUpdateData.data.length > 0
+        QuarterlyUpdateData.data
       ) {
+        console.log(
+          "QuarterlyUpdateData " + JSON.stringify(QuarterlyUpdateData.data)
+        );
+
+        let monitoringYear;
+        if (!isLoadingYears) {
+          monitoringYear = yearsData.data.find(
+            (obj) => obj.lookupItemId === QuarterlyUpdateData.data.yearId
+          );
+        }
+
+        let monitoringQuarter;
+        if (!isLoadingQuarters) {
+          monitoringQuarter = quartersData.data.find(
+            (obj) => obj.lookupItemId === QuarterlyUpdateData.data.quarterId
+          );
+        }
+
         formik.setValues({
+          year: monitoringYear ? monitoringYear : "",
+          quarter: monitoringQuarter ? monitoringQuarter : "",
           bestModelsApproaches: QuarterlyUpdateData.data.bestModelsApproaches,
           resultOutcomeAnalysis: QuarterlyUpdateData.data.resultOutcomeAnalysis,
           sharedSuccessInsights: QuarterlyUpdateData.data.sharedSuccessInsights,
@@ -119,7 +176,13 @@ const QuarterlyUpdateForm = ({ id }) => {
       }
     }
     setCurrentFormValues();
-  }, [isLoadingQuarterlyUpdate, isErrorQuarterlyUpdate, QuarterlyUpdateData]);
+  }, [
+    isLoadingQuarterlyUpdate,
+    isErrorQuarterlyUpdate,
+    QuarterlyUpdateData,
+    isLoadingYears,
+    isLoadingQuarters,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -129,6 +192,58 @@ const QuarterlyUpdateForm = ({ id }) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
+          <Grid item md={6}>
+            <TextField
+              name="year"
+              label="Year"
+              select
+              value={formik.values.year}
+              error={Boolean(formik.touched.year && formik.errors.year)}
+              fullWidth
+              helperText={formik.touched.year && formik.errors.year}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select Year
+              </MenuItem>
+              {!isLoadingYears
+                ? yearsData.data.map((option) => (
+                    <MenuItem key={option.lookupItemId} value={option}>
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={6}>
+            <TextField
+              name="quarter"
+              label="Quarter"
+              select
+              value={formik.values.quarter}
+              error={Boolean(formik.touched.quarter && formik.errors.quarter)}
+              fullWidth
+              helperText={formik.touched.quarter && formik.errors.quarter}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select Quarter
+              </MenuItem>
+              {!isLoadingQuarters
+                ? quartersData.data.map((option) => (
+                    <MenuItem key={option.lookupItemId} value={option}>
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
           <Grid item md={12} mb={2}>
             <TextField
               name="bestModelsApproaches"
@@ -271,7 +386,7 @@ const QuarterlyUpdateForm = ({ id }) => {
 };
 
 const QuarterlyUpdate = () => {
-  let { id } = useParams();
+  let { id, editId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="Quarterly Update" />
@@ -289,7 +404,7 @@ const QuarterlyUpdate = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <QuarterlyUpdateForm id={id} />
+              <QuarterlyUpdateForm id={id} editId={editId} />
             </Grid>
           </Grid>
         </CardContent>

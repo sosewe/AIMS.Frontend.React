@@ -148,6 +148,18 @@ const TechnicalAssistanceMonitoringDetail = async(() =>
   )
 );
 
+const TechnicalAssistanceMonitoringMonthlyUpdate = async(() =>
+  import("./pages/project/monitoring//TechnicalAssistance/MonthlyUpdate")
+);
+
+const TechnicalAssistanceMonitoringQuarterlyUpdate = async(() =>
+  import("./pages/project/monitoring//TechnicalAssistance/QuarterlyUpdate")
+);
+
+const TechnicalAssistanceMonitoringKMDocumentsUpload = async(() =>
+  import("./pages/project/monitoring//TechnicalAssistance/KMDocumentsUpload")
+);
+
 /*
 const Innovation = async(() =>
   import("./pages/project/design/Innovation/Innovation")
@@ -365,6 +377,30 @@ const routes = [
       {
         path: "monitoring/technical-assistance-monitoring-detail/:id",
         element: <TechnicalAssistanceMonitoringDetail />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-monthly-update/:id",
+        element: <TechnicalAssistanceMonitoringMonthlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-monthly-update/:id/:editId",
+        element: <TechnicalAssistanceMonitoringMonthlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-quarterly-update/:id",
+        element: <TechnicalAssistanceMonitoringQuarterlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-quarterly-update/:id/:editId",
+        element: <TechnicalAssistanceMonitoringQuarterlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-documents-upload/:id",
+        element: <TechnicalAssistanceMonitoringKMDocumentsUpload />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-documents-upload/:id/:editId",
+        element: <TechnicalAssistanceMonitoringKMDocumentsUpload />,
       },
       {
         path: "monitoring/advocacy-monitoring/:processLevelItemId/:processLevelTypeId/:id",

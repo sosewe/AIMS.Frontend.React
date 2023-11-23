@@ -7,6 +7,8 @@ import { useParams } from "react-router-dom";
 import MonthlyUpdate from "./MonthlyUpdate";
 import QuarterlyUpdate from "./QuarterlyUpdate";
 import KMDocumentsUpload from "./KMDocumentsUpload";
+import MonthlyUpdateDataGrid from "./MonthlyUpdateDataGrid";
+import QuarterlyUpdateDataGrid from "./QuarterlyUpdateDataGrid";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -72,10 +74,10 @@ const TechnicalAssistanceDetail = () => {
         <Tab label="KM Documents Upload" {...a11yProps(2)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <MonthlyUpdate id={id} />
+        <MonthlyUpdateDataGrid id={id} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <QuarterlyUpdate id={id} />
+        <QuarterlyUpdateDataGrid id={id} />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <KMDocumentsUpload id={id} />

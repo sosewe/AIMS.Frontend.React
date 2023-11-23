@@ -7,9 +7,9 @@ export const newTechnicalAssistanceObjectiveLink = async (values) => {
 
 export const getTechnicalAssistanceObjectiveLinkByTechnicalAssistanceId =
   async ({ queryKey }) => {
-    const [, id] = queryKey;
+    const [, editId] = queryKey;
     return await axios.get(
-      `${apiRoutes.technicalAssistanceObjectiveLink}/${id}`
+      `${apiRoutes.technicalAssistanceObjectiveLink}/TechnicalAssistanceUpdateObjective/${editId}`
     );
   };
 
