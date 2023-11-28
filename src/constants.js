@@ -17,3 +17,9 @@ export const REPORT_FREQUENCY = {
 export const SHARED_DIRECTORY = {
   INNOVATION: "amref.remote.address/edms/",
 };
+
+var start = new Date();
+export const YEAR_RANGE = {
+  MIN_YEAR: new Date(new Date().setYear(start.getFullYear() - 5)),
+  MAX_YEAR: new Date(new Date().setYear(start.getFullYear() + 5)),
+};

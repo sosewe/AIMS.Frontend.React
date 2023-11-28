@@ -50,6 +50,7 @@ import {
   getAMREFStaffList,
   getLookupMasterItemsByName,
 } from "../../../../api/lookup";
+import { YEAR_RANGE } from "../../../../constants";
 import { getDonors } from "../../../../api/donor";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
@@ -150,42 +151,45 @@ const StaffDetailsForm = ({
         <CardContent>
           <Grid container spacing={3}>
             <Grid item md={3}>
-              <TextField
-                name="staffDetailsName"
-                label="Name"
-                select
+              <Autocomplete
+                id="staffDetailsName"
+                options={!isLoadingStaffList ? staffListData.data : []}
+                getOptionLabel={(option) => {
+                  if (!option) {
+                    return ""; // Return an empty string for null or undefined values
+                  }
+                  return `${option.firstName} ${option.lastName}`;
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.id}>
+                      {option ? `${option.firstName} ${option.lastName}` : ""}
+                    </li>
+                  );
+                }}
+                onChange={(e, val) => {
+                  formik.setFieldValue("staffDetailsName", val);
+                }}
                 value={formik.values.staffDetailsName}
-                error={Boolean(
-                  formik.touched.staffDetailsName &&
-                    formik.errors.staffDetailsName
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={Boolean(
+                      formik.touched.staffDetailsName &&
+                        formik.errors.staffDetailsName
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.staffDetailsName &&
+                      formik.errors.staffDetailsName
+                    }
+                    label="Staff Name"
+                    name="staffDetailsName"
+                    variant="outlined"
+                    my={2}
+                  />
                 )}
-                fullWidth
-                helperText={
-                  formik.touched.staffDetailsName &&
-                  formik.errors.staffDetailsName
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-              >
-                <MenuItem disabled value="">
-                  Select Name
-                </MenuItem>
-                {!isLoadingStaffList &&
-                !isErrorStaffList &&
-                staffListData.data &&
-                staffListData.data.length > 0
-                  ? staffListData.data.map((option) => (
-                      <MenuItem
-                        key={option.id}
-                        value={option.firstName + " " + option.lastName}
-                      >
-                        {option.firstName} {option.lastName}
-                      </MenuItem>
-                    ))
-                  : []}
-              </TextField>
+              />
             </Grid>
             <Grid item md={3}>
               <TextField
@@ -244,7 +248,7 @@ const StaffDetailsForm = ({
                 <MenuItem disabled value="">
                   Select DQA Work Flow Role
                 </MenuItem>
-                {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
+                {!isLoadingAdministrativeRoles
                   ? administrativeRoles.data.map((option) => (
                       <MenuItem key={option.roleId} value={option}>
                         {option.roleName}
@@ -433,11 +437,12 @@ const EditInnovationForm = ({ id }) => {
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
-        return endDate ? schema.min(endDate, "Must be after End Date") : schema;
+        return endDate
+          ? schema.min(endDate, "Must be after End Date").nullable()
+          : schema;
       }),
       staffNameId: Yup.object().required("Required"),
       implementingOfficeId: Yup.string().required("Required"),
-      enaSupportOffice: Yup.string().required("Required"),
       regionalProgrammeId: Yup.string().required("Required"),
       totalBudget: Yup.number()
         .required("Required")
@@ -449,9 +454,8 @@ const EditInnovationForm = ({ id }) => {
     }),
     onSubmit: async (values) => {
       try {
-        const guid = new Guid();
         const saveInnovation = {
-          id: id ? id : guid.toString(),
+          id: id,
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
@@ -467,14 +471,13 @@ const EditInnovationForm = ({ id }) => {
           costCenter: values.costCenter,
           status: values.status,
         };
-
-        const innovation = await mutation.mutateAsync(saveInnovation);
+        await mutation.mutateAsync(saveInnovation);
 
         let innovationDonors = [];
         for (const donor of values.donors) {
           const innovationDonor = {
             donorId: donor.id,
-            innovationId: innovation.data.id,
+            innovationId: id,
             createDate: new Date(),
           };
           innovationDonors.push(innovationDonor);
@@ -484,7 +487,7 @@ const EditInnovationForm = ({ id }) => {
         const projectRoles = [];
         for (const staffDetail of staffDetailsList) {
           const projectRole = {
-            innovationId: innovation.data.id,
+            innovationId: id,
             aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
             aimsRoleName: staffDetail.staffDetailsAIMSRole.name,
             createDate: new Date(),
@@ -661,7 +664,9 @@ const EditInnovationForm = ({ id }) => {
           <Grid item md={4}>
             <DatePicker
               label="Start Date"
-              value={formik.values.startDate}
+              value={formik.values.startDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("startDate", value, true)
               }
@@ -686,7 +691,9 @@ const EditInnovationForm = ({ id }) => {
           <Grid item md={4}>
             <DatePicker
               label="End Date"
-              value={formik.values.endDate}
+              value={formik.values.endDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) => formik.setFieldValue("endDate", value, true)}
               renderInput={(params) => (
                 <TextField
@@ -707,7 +714,9 @@ const EditInnovationForm = ({ id }) => {
           <Grid item md={4}>
             <DatePicker
               label="Extension Date"
-              value={formik.values.extensionDate}
+              value={formik.values.extensionDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("extensionDate", value, true)
               }
@@ -986,52 +995,40 @@ const EditInnovationForm = ({ id }) => {
             </TextField>
           </Grid>
           <Grid item md={12}>
-            <FormControl sx={{ m: 1, width: 450 }}>
-              <InputLabel>Donors</InputLabel>
-              <Select
-                fullWidth
-                multiple
-                value={formik.values.donors}
-                onChange={(e) => {
-                  const selectedDonors = Array.isArray(e.target.value)
-                    ? e.target.value
-                    : [e.target.value]; // Ensure it's always an array
-                  formik.setFieldValue("donors", selectedDonors);
-                }}
-                input={<OutlinedInput label="Multiple Select" />}
-                renderValue={(selected) => (
-                  <Stack gap={1} direction="row" flexWrap="wrap">
-                    {selected.map((value) => (
-                      <Chip
-                        key={value.id}
-                        label={value.donorName}
-                        onDelete={() =>
-                          formik.setFieldValue(
-                            "donors",
-                            formik.values.donors.filter(
-                              (item) => item !== value
-                            )
-                          )
-                        }
-                        deleteIcon={
-                          <CancelIcon
-                            onMouseDown={(event) => event.stopPropagation()}
-                          />
-                        }
-                      />
-                    ))}
-                  </Stack>
-                )}
-              >
-                {!isLoadingDonor
-                  ? donorData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.donorName}({option.donorInitial})
-                      </MenuItem>
-                    ))
-                  : []}
-              </Select>
-            </FormControl>
+            <Autocomplete
+              id="donors"
+              multiple
+              options={!isLoadingDonor ? donorData.data : []}
+              getOptionLabel={(option) => {
+                if (!option) {
+                  return ""; // Return an empty string for null or undefined values
+                }
+                return `${option.donorName}`;
+              }}
+              renderOption={(props, option) => {
+                return (
+                  <li {...props} key={option.id}>
+                    {option?.donorName}
+                  </li>
+                );
+              }}
+              onChange={(e, val) => {
+                formik.setFieldValue("donors", val);
+              }}
+              value={formik.values.donors}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={Boolean(formik.touched.donors && formik.errors.donors)}
+                  fullWidth
+                  helperText={formik.touched.donors && formik.errors.donors}
+                  label="Donors"
+                  name="donors"
+                  variant="outlined"
+                  my={2}
+                />
+              )}
+            />
           </Grid>
           <Grid container spacing={12} pt={10}>
             <Grid item md={12}>
@@ -1138,16 +1135,9 @@ const Innovation = () => {
   let { id } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="Edit Technical Assistance" />
       <Typography variant="h3" gutterBottom display="inline">
         Basic Information
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link>Project Design</Link>
-        <Typography>Innovation</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>

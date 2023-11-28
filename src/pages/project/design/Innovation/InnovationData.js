@@ -6,6 +6,11 @@ import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
@@ -13,10 +18,13 @@ import { spacing } from "@mui/system";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Link2 } from "react-feather";
-import { getInnovations } from "../../../../api/innovation";
+import { Trash, Edit, Link2 } from "react-feather";
+import {
+  getInnovationByProcessLevelItemId,
+  deleteInnovationById,
+} from "../../../../api/innovation";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -25,7 +33,10 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
+  const [open, setOpen] = useState(false);
+  const [innovationId, setInnovationId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const {
@@ -33,15 +44,40 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
     isLoading: isLoadingInnovations,
     isError: isErrorInnovations,
     error,
-  } = useQuery(["getInnovations"], getInnovations, {
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    ["getInnovationByProcessLevelItemId", processLevelItemId],
+    getInnovationByProcessLevelItemId,
+    { enabled: !!processLevelItemId }
+  );
 
   if (isErrorInnovations) {
     toast(error.response.data, {
       type: "error",
     });
   }
+
+  function handleClickOpen(innovationId) {
+    setInnovationId(innovationId);
+    setOpen(true);
+  }
+
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const { refetch } = useQuery(
+    ["deleteInnovationById", innovationId],
+    deleteInnovationById,
+    { enabled: false }
+  );
+
+  const handleDeleteInnovation = async () => {
+    await refetch();
+    setOpen(false);
+    await queryClient.invalidateQueries([
+      "getInnovationThematicFocusByInnovationId",
+    ]);
+  };
 
   return (
     <Card mb={6}>
@@ -94,8 +130,14 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
                     <NavLink
                       to={`/project/design/innovation/innovation-detail/${params.id}`}
                     >
-                      <Button startIcon={<Link2 />} size="small"></Button>
+                      <Button startIcon={<Edit />} size="small"></Button>
                     </NavLink>
+
+                    <Button
+                      startIcon={<Trash />}
+                      size="small"
+                      onClick={(e) => handleClickOpen(params.id)}
+                    ></Button>
                   </>
                 ),
               },
@@ -108,6 +150,28 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
           />
         </div>
       </Paper>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Delete Innovation</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete Innovation?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteInnovation} color="primary">
+            Yes
+          </Button>
+          <Button onClick={handleClose} color="error" autoFocus>
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
