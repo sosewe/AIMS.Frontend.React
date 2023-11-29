@@ -31,6 +31,7 @@ import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import { Check } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { YEAR_RANGE } from "../../../../constants";
 import {
   getAMREFStaffList,
   getLookupMasterItemsByName,
@@ -240,7 +241,7 @@ const TechnicalAssistanceForm = ({
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          status: values.status,
+          statusId: values.status,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
         };
@@ -392,7 +393,9 @@ const TechnicalAssistanceForm = ({
           <Grid item md={4}>
             <DatePicker
               label="Start Date"
-              value={formik.values.startDate}
+              value={formik.values.startDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("startDate", value, true)
               }
@@ -417,7 +420,9 @@ const TechnicalAssistanceForm = ({
           <Grid item md={4}>
             <DatePicker
               label="End Date"
-              value={formik.values.endDate}
+              value={formik.values.endDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) => formik.setFieldValue("endDate", value, true)}
               renderInput={(params) => (
                 <TextField
@@ -438,7 +443,9 @@ const TechnicalAssistanceForm = ({
           <Grid item md={4}>
             <DatePicker
               label="Extension Date"
-              value={formik.values.extensionDate}
+              value={formik.values.extensionDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("extensionDate", value, true)
               }
@@ -461,43 +468,44 @@ const TechnicalAssistanceForm = ({
             />
           </Grid>
           <Grid item md={4}>
-            <TextField
-              name="staffNameId"
-              label="Manager Name"
-              select
-              value={formik.values.staffNameId}
-              error={Boolean(
-                formik.touched.staffNameId && formik.errors.staffNameId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.staffNameId && formik.errors.staffNameId
-              }
-              onBlur={formik.handleBlur}
-              onChange={(e) => {
-                formik.handleChange(e);
-                formik.setFieldValue(
-                  "leadStaffEmail",
-                  e.target.value.emailAddress
+            <Autocomplete
+              id="staffNameId"
+              options={!isLoadingStaffList ? staffListData.data : []}
+              getOptionLabel={(option) => {
+                if (!option) {
+                  return ""; // Return an empty string for null or undefined values
+                }
+                return `${option.firstName} ${option.lastName}`;
+              }}
+              renderOption={(props, option) => {
+                return (
+                  <li {...props} key={option.id}>
+                    {option ? `${option.firstName} ${option.lastName}` : ""}
+                  </li>
                 );
               }}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select staff's Name
-              </MenuItem>
-              {!isLoadingStaffList &&
-              !isErrorStaffList &&
-              staffListData.data &&
-              staffListData.data.length > 0
-                ? staffListData.data.map((option) => (
-                    <MenuItem key={option.id} value={option}>
-                      {option.firstName} {option.lastName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
+              onChange={(e, val) => {
+                formik.setFieldValue("staffNameId", val);
+                formik.setFieldValue("leadStaffEmail", val.emailAddress);
+              }}
+              value={formik.values.staffNameId}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={Boolean(
+                    formik.touched.staffNameId && formik.errors.staffNameId
+                  )}
+                  fullWidth
+                  helperText={
+                    formik.touched.staffNameId && formik.errors.staffNameId
+                  }
+                  label="Lead Staff name"
+                  name="staffNameId"
+                  variant="outlined"
+                  my={2}
+                />
+              )}
+            />
           </Grid>
           <Grid item md={4}>
             <TextField
@@ -746,53 +754,41 @@ const TechnicalAssistanceForm = ({
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={4} mt={2}>
-            <FormControl sx={{ width: "100%" }}>
-              <InputLabel>Donors</InputLabel>
-              <Select
-                fullWidth
-                multiple
-                value={formik.values.donors}
-                onChange={(e) => {
-                  const selectedDonors = Array.isArray(e.target.value)
-                    ? e.target.value
-                    : [e.target.value]; // Ensure it's always an array
-                  formik.setFieldValue("donors", selectedDonors);
-                }}
-                input={<OutlinedInput label="Multiple Select" />}
-                renderValue={(selected) => (
-                  <Stack gap={1} direction="row" flexWrap="wrap">
-                    {selected.map((value) => (
-                      <Chip
-                        key={value.id}
-                        label={value.donorName}
-                        onDelete={() =>
-                          formik.setFieldValue(
-                            "donors",
-                            formik.values.donors.filter(
-                              (item) => item !== value
-                            )
-                          )
-                        }
-                        deleteIcon={
-                          <CancelIcon
-                            onMouseDown={(event) => event.stopPropagation()}
-                          />
-                        }
-                      />
-                    ))}
-                  </Stack>
-                )}
-              >
-                {!isLoadingDonor
-                  ? donorData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.donorName}({option.donorInitial})
-                      </MenuItem>
-                    ))
-                  : []}
-              </Select>
-            </FormControl>
+          <Grid item md={4}>
+            <Autocomplete
+              id="donors"
+              multiple
+              options={!isLoadingDonor ? donorData.data : []}
+              getOptionLabel={(option) => {
+                if (!option) {
+                  return ""; // Return an empty string for null or undefined values
+                }
+                return `${option.donorName}`;
+              }}
+              renderOption={(props, option) => {
+                return (
+                  <li {...props} key={option.id}>
+                    {option?.donorName}
+                  </li>
+                );
+              }}
+              onChange={(e, val) => {
+                formik.setFieldValue("donors", val);
+              }}
+              value={formik.values.donors}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={Boolean(formik.touched.donors && formik.errors.donors)}
+                  fullWidth
+                  helperText={formik.touched.donors && formik.errors.donors}
+                  label="Donors"
+                  name="donors"
+                  variant="outlined"
+                  my={2}
+                />
+              )}
+            />
           </Grid>
 
           <Grid item md={4} mt={2}>

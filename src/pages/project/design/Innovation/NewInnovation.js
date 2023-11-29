@@ -280,8 +280,6 @@ const StaffDetailsForm = ({
 };
 
 const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
-  const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
-  const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   let innovationQualitativeTypeId;
@@ -306,20 +304,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const { data: aimsRolesData, isLoading: isLoadingAimsRole } = useQuery(
-    ["getProjectRoles"],
-    getProjectRoles,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-  const {
-    isLoading: isLoadingAdministrativeRoles,
-    isError: isErrorAdministrativeRoles,
-    data: administrativeRoles,
-  } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
-    refetchOnWindowFocus: false,
-  });
   const {
     data: QualitativePeriodData,
     isLoading: isLoadingQualitativePeriod,
@@ -381,13 +365,13 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
   //   refetchOnWindowFocus: false,
   // });
-  const {
-    isLoading: isLoadingAmrefEntities,
-    data: amrefEntities,
-    isError: isErrorAmrefEntities,
-  } = useQuery(["amrefEntities"], getAmrefEntities, {
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
+    ["amrefEntities"],
+    getAmrefEntities,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
   const {
     data: QualitativeResultTypesData,
     isLoading: isLoadingQualitativeResultTypes,
@@ -455,11 +439,10 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          status: values.status,
+          statusId: values.status,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
         };
-
         const innovation = await mutation.mutateAsync(saveInnovation);
 
         let innovationDonors = [];
@@ -549,7 +532,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           startDate: InnovationData.data.startDate,
           endDate: InnovationData.data.endDate,
           extensionDate: InnovationData.data.extensionDate,
-          status: InnovationData.data.status,
+          status: InnovationData.data.statusId,
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",
           implementingOfficeId: implementingOfficeId

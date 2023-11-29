@@ -6,6 +6,11 @@ import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
@@ -13,11 +18,14 @@ import { spacing } from "@mui/system";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Link2 } from "react-feather";
-import { getTechnicalAssistanceByProcessLevelItemId } from "../../../../api/technical-assistance";
-import { getInnovations } from "../../../../api/innovation";
+import { Trash, Edit, Link2 } from "react-feather";
+import {
+  getTechnicalAssistanceByProcessLevelItemId,
+  deleteTechnicalAssistanceById,
+} from "../../../../api/technical-assistance";
+import { format } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -29,7 +37,10 @@ const TechnicalAssistanceGridData = ({
   processLevelItemId,
   processLevelTypeId,
 }) => {
+  const [open, setOpen] = useState(false);
+  const [technicalAssistanceId, setTechnicalAssistanceId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const {
@@ -41,6 +52,29 @@ const TechnicalAssistanceGridData = ({
     getTechnicalAssistanceByProcessLevelItemId,
     { enabled: !!processLevelItemId }
   );
+
+  function handleClickOpen(technicalAssistanceId) {
+    setTechnicalAssistanceId(technicalAssistanceId);
+    setOpen(true);
+  }
+
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const { refetch } = useQuery(
+    ["deleteTechnicalAssistanceById", technicalAssistanceId],
+    deleteTechnicalAssistanceById,
+    { enabled: false }
+  );
+
+  const handleDeleteTechnicalAssistance = async () => {
+    await refetch();
+    setOpen(false);
+    await queryClient.invalidateQueries([
+      "getTechnicalAssistanceByProcessLevelItemId",
+    ]);
+  };
 
   return (
     <Card mb={6}>
@@ -78,11 +112,32 @@ const TechnicalAssistanceGridData = ({
                 flex: 1,
               },
               {
-                field: "shortTitle",
-                headerName: "Short title",
+                field: "startDate",
+                headerName: "Start Date",
                 editable: false,
                 flex: 1,
+                valueFormatter: (params) =>
+                  params?.value
+                    ? format(new Date(params.value), "dd-MMM-yyyy")
+                    : "",
               },
+              {
+                field: "endDate",
+                headerName: "End Date",
+                editable: false,
+                flex: 1,
+                valueFormatter: (params) =>
+                  params?.value
+                    ? format(new Date(params.value), "dd-MMM-yyyy")
+                    : "",
+              },
+              /*{
+                field: "status",
+                headerName: "Status",
+                editable: false,
+                flex: 1,
+                valueGetter: (params) => params.row.status.name,
+              },*/
               {
                 field: "action",
                 headerName: "Action",
@@ -93,8 +148,14 @@ const TechnicalAssistanceGridData = ({
                     <NavLink
                       to={`/project/design/technical-assistance/technical-assistance-detail/${params.id}`}
                     >
-                      <Button startIcon={<Link2 />} size="small"></Button>
+                      <Button startIcon={<Edit />} size="small"></Button>
                     </NavLink>
+
+                    <Button
+                      startIcon={<Trash />}
+                      size="small"
+                      onClick={(e) => handleClickOpen(params.id)}
+                    ></Button>
                   </>
                 ),
               },
@@ -107,6 +168,30 @@ const TechnicalAssistanceGridData = ({
           />
         </div>
       </Paper>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Delete Technical Assistance
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete Technical Assistance?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteTechnicalAssistance} color="primary">
+            Yes
+          </Button>
+          <Button onClick={handleClose} color="error" autoFocus>
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

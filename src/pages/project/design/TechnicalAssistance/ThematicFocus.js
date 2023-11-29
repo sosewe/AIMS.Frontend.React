@@ -265,18 +265,14 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
   return (
     <Card mb={12}>
       <CardContent>
-        <Grid container spacing={12}>
+        <Grid container spacing={6}>
           <Grid item md={12}>
             <Typography variant="h3" gutterBottom display="inline">
               Thematic Focus
             </Typography>
-
-            <Breadcrumbs aria-label="Breadcrumb" mt={6}>
-              <Link>Project Design</Link>
-              <Typography>Technical Assistance</Typography>
-            </Breadcrumbs>
-
-            <Divider my={0} />
+          </Grid>
+          <Grid item md={12}>
+            <Divider my={6} />
           </Grid>
           <Grid item md={12}>
             <form onSubmit={formik.handleSubmit}>

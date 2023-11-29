@@ -333,22 +333,18 @@ const InnovationUpdateForm = ({ id }) => {
     mutationFn: newInnovationMonitoringUpdateRisk,
   });
 
-  const {
-    data: InnovationRiskData,
-    isLoading: isLoadingInnovationRisks,
-    isError: isErrorInnovationRisks,
-  } = useQuery(
-    ["getInnovationMonitoringUpdateRiskByInnovationId", id],
-    getInnovationMonitoringUpdateRiskByInnovationId,
-    {
-      enabled: !!id,
-    }
-  );
+  const { data: InnovationRiskData, isLoading: isLoadingInnovationRisks } =
+    useQuery(
+      ["getInnovationMonitoringUpdateRiskByInnovationId", id],
+      getInnovationMonitoringUpdateRiskByInnovationId,
+      {
+        enabled: !!id,
+      }
+    );
 
   const {
     data: InnovationMetricReportData,
     isLoading: isLoadingInnovationMetricReport,
-    isError: isErrorInnovationMetricReport,
   } = useQuery(
     ["getInnovationMonitoringUpdateMetricByInnovationId", id],
     getInnovationMonitoringUpdateMetricByInnovationId,
@@ -372,6 +368,7 @@ const InnovationUpdateForm = ({ id }) => {
   const {
     data: InnovationObjectivesClassificationData,
     isLoading: isLoadingObjectivesClassification,
+    isError: isErrorObjectivesClassification,
   } = useQuery(
     ["getInnovationObjectiveClassificationByInnovationId", id],
     getInnovationObjectiveClassificationByInnovationId,
@@ -408,11 +405,9 @@ const InnovationUpdateForm = ({ id }) => {
   let reportingFrequencyId;
   if (
     !isLoadingObjectivesClassification &&
-    !isLoadingMonths &&
-    !isLoadingQuarters &&
-    !isLoadingYears &&
+    !isErrorObjectivesClassification &&
     InnovationObjectivesClassificationData &&
-    InnovationObjectivesClassificationData.data.length > 0
+    InnovationObjectivesClassificationData.data
   ) {
     reportingFrequencyId =
       InnovationObjectivesClassificationData.data.reportingFrequencyId;
@@ -433,7 +428,6 @@ const InnovationUpdateForm = ({ id }) => {
       reportingFrequencyData = quartersData;
     }
   }
-
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -508,7 +502,6 @@ const InnovationUpdateForm = ({ id }) => {
     setInnovationRisksList((current) => [...current, values]);
   };
 
-  console.log("logging ..." + JSON.stringify(InnovationMetricReportData));
   useEffect(() => {
     function setCurrentFormValues() {
       if (

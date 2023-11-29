@@ -158,7 +158,7 @@ const StaffDetailsForm = ({
                   if (!option) {
                     return ""; // Return an empty string for null or undefined values
                   }
-                  return `${option.firstName} ${option.lastName}`;
+                  return `${option}`;
                 }}
                 renderOption={(props, option) => {
                   return (
@@ -168,7 +168,10 @@ const StaffDetailsForm = ({
                   );
                 }}
                 onChange={(e, val) => {
-                  formik.setFieldValue("staffDetailsName", val);
+                  formik.setFieldValue(
+                    "staffDetailsName",
+                    `${val.firstName} ${val.lastName}`
+                  );
                 }}
                 value={formik.values.staffDetailsName}
                 renderInput={(params) => (
@@ -469,7 +472,7 @@ const EditInnovationForm = ({ id }) => {
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          status: values.status,
+          statusId: values.status,
         };
         await mutation.mutateAsync(saveInnovation);
 
@@ -569,7 +572,7 @@ const EditInnovationForm = ({ id }) => {
           totalBudget: InnovationData.data.totalBudget,
           costCenter: InnovationData.data.costCenter,
           currencyTypeId: InnovationData.data.currencyTypeId,
-          status: InnovationData.data.status,
+          status: InnovationData.data.statusId,
           leadStaffEmail: staffEmail ? staffEmail : "",
           donors: donorsList,
         });
@@ -739,43 +742,44 @@ const EditInnovationForm = ({ id }) => {
             />
           </Grid>
           <Grid item md={4}>
-            <TextField
-              name="staffNameId"
-              label="Lead Staff name"
-              select
-              value={formik.values.staffNameId}
-              error={Boolean(
-                formik.touched.staffNameId && formik.errors.staffNameId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.staffNameId && formik.errors.staffNameId
-              }
-              onBlur={formik.handleBlur}
-              onChange={(e) => {
-                formik.handleChange(e);
-                formik.setFieldValue(
-                  "leadStaffEmail",
-                  e.target.value.emailAddress
+            <Autocomplete
+              id="staffNameId"
+              options={!isLoadingStaffList ? staffListData.data : []}
+              getOptionLabel={(option) => {
+                if (!option) {
+                  return ""; // Return an empty string for null or undefined values
+                }
+                return `${option.firstName} ${option.lastName}`;
+              }}
+              renderOption={(props, option) => {
+                return (
+                  <li {...props} key={option.id}>
+                    {option ? `${option.firstName} ${option.lastName}` : ""}
+                  </li>
                 );
               }}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select staff's Name
-              </MenuItem>
-              {!isLoadingStaffList &&
-              !isErrorStaffList &&
-              staffListData.data &&
-              staffListData.data.length > 0
-                ? staffListData.data.map((option) => (
-                    <MenuItem key={option.id} value={option}>
-                      {option.firstName} {option.lastName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
+              onChange={(e, val) => {
+                formik.setFieldValue("staffNameId", val);
+                formik.setFieldValue("leadStaffEmail", val.emailAddress);
+              }}
+              value={formik.values.staffNameId}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={Boolean(
+                    formik.touched.staffNameId && formik.errors.staffNameId
+                  )}
+                  fullWidth
+                  helperText={
+                    formik.touched.staffNameId && formik.errors.staffNameId
+                  }
+                  label="Lead Staff name"
+                  name="staffNameId"
+                  variant="outlined"
+                  my={2}
+                />
+              )}
+            />
           </Grid>
           <Grid item md={4}>
             <TextField

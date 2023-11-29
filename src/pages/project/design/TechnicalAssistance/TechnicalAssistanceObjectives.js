@@ -207,68 +207,62 @@ const TechnicalAssistanceObjectives = ({ id }) => {
     <form onSubmit={formik.handleSubmit}>
       <Card mb={12}>
         <CardContent>
-          <Grid container spacing={12}>
+          <Grid container>
             <Grid item md={12}>
               <Typography variant="h3" gutterBottom display="inline">
                 Objectives
               </Typography>
-
-              <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-                <Link>Project Design</Link>
-                <Typography>Technical Assistance</Typography>
-              </Breadcrumbs>
-
+            </Grid>
+            <Grid item md={12} mt={5}>
               <Divider my={6} />
             </Grid>
-          </Grid>
-          <br />
 
-          <Grid container spacing={12}>
-            <Grid item md={12}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setOpenAddObjectives(true)}
-              >
-                <AddIcon /> Add Objective
-              </Button>
-            </Grid>
-          </Grid>
-          <Grid container spacing={12}>
-            <Grid item md={12}>
-              <Paper>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Objective Description</TableCell>
-                      <TableCell align="right">Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {objectivesList.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell component="th" scope="row">
-                          {row.technicalAssistanceObjectiveDescription}
-                        </TableCell>
-                        <TableCell align="right">
-                          <Button
-                            startIcon={<TrashIcon />}
-                            size="small"
-                            onClick={() => removeObjective(row)}
-                          ></Button>
-                        </TableCell>
+            <Grid container mt={5}>
+              <Grid item md={12}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setOpenAddObjectives(true)}
+                >
+                  <AddIcon /> Add Objective
+                </Button>
+              </Grid>
+
+              <Grid item md={12}>
+                <Paper>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Objective Description</TableCell>
+                        <TableCell align="right">Action</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Paper>
+                    </TableHead>
+                    <TableBody>
+                      {objectivesList.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell component="th" scope="row">
+                            {row.technicalAssistanceObjectiveDescription}
+                          </TableCell>
+                          <TableCell align="right">
+                            <Button
+                              startIcon={<TrashIcon />}
+                              size="small"
+                              onClick={() => removeObjective(row)}
+                            ></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
 
-          <br />
-          <Button type="submit" variant="contained" color="primary" mt={3}>
-            <Check /> Save changes
-          </Button>
+            <br />
+            <Button type="submit" variant="contained" color="primary" mt={15}>
+              <Check /> Save changes
+            </Button>
+          </Grid>
         </CardContent>
       </Card>
 

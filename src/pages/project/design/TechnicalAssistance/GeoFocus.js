@@ -337,19 +337,16 @@ const GeoFocus = ({ id }) => {
   return (
     <Card mb={12}>
       <CardContent>
-        <Grid container spacing={12}>
+        <Grid container spacing={6}>
           <Grid item md={12}>
             <Typography variant="h3" gutterBottom display="inline">
               Geographic Focus
             </Typography>
-
-            <Breadcrumbs aria-label="Breadcrumb" mt={6}>
-              <Link>Project Design</Link>
-              <Typography>Technical Assistance</Typography>
-            </Breadcrumbs>
-
-            <Divider mt={3} />
           </Grid>
+          <Grid item md={12}>
+            <Divider my={6} />
+          </Grid>
+
           <Grid item md={12}>
             <Paper style={{ height: 250, width: "100%" }}>
               <DataGrid

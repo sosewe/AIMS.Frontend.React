@@ -2,7 +2,6 @@ import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
 export const newInnovationMonitoringUpdateRisk = async (values) => {
-  console.log("logging risk .. " + JSON.stringify(values));
   return await axios.post(apiRoutes.innovationRisk, values);
 };
 

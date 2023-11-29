@@ -25,6 +25,7 @@ import {
   getInnovationByProcessLevelItemId,
   deleteInnovationById,
 } from "../../../../api/innovation";
+import { format } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -115,11 +116,32 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 flex: 1,
               },
               {
-                field: "shortTitle",
-                headerName: "Short title",
+                field: "startDate",
+                headerName: "Start Date",
                 editable: false,
                 flex: 1,
+                valueFormatter: (params) =>
+                  params?.value
+                    ? format(new Date(params.value), "dd-MMM-yyyy")
+                    : "",
               },
+              {
+                field: "endDate",
+                headerName: "End Date",
+                editable: false,
+                flex: 1,
+                valueFormatter: (params) =>
+                  params?.value
+                    ? format(new Date(params.value), "dd-MMM-yyyy")
+                    : "",
+              },
+              /*{
+                field: "status",
+                headerName: "Status",
+                editable: false,
+                flex: 1,
+                valueGetter: (params) => params.row.status.name,
+              },*/
               {
                 field: "action",
                 headerName: "Action",
