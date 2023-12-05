@@ -34,9 +34,6 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
 const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
-  console.log("processLevelItemId " + processLevelItemId);
-  console.log("processLevelTypeId " + processLevelTypeId);
-
   const [pageSize, setPageSize] = useState(5);
   const {
     data: InnovationsData,

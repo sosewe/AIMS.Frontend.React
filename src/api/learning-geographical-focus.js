@@ -5,17 +5,17 @@ export const newLearningGeographicalFocus = async (values) => {
   return await axios.post(apiRoutes.learningGeographicalFocus, values);
 };
 
-export const getLearningGeographicalFocus = async ({ queryKey }) => {
-  const [, LearningId] = queryKey;
-  return await axios.get(
-    `${apiRoutes.learningGeographicalFocus}/${LearningId}`
-  );
+export const getLearningGeographicalFocusByLearningId = async ({
+  queryKey,
+}) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.learningGeographicalFocus}/${id}`);
 };
 
 export const deleteLearningGeographicalFocus = async ({ queryKey }) => {
-  const [, learningGeographicalFocusId] = queryKey;
+  const [, locationId] = queryKey;
   return await axios.delete(
-    `${apiRoutes.learningGeographicalFocus}/${learningGeographicalFocusId}`
+    `${apiRoutes.learningGeographicalFocus}/${locationId}`
   );
 };
 

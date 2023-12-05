@@ -15,7 +15,6 @@ export const getInnovationThematicFocusByInnovationId = async ({
 };
 
 export const deleteInnovationThematicFocus = async ({ queryKey }) => {
-  console.log("queryKey " + queryKey);
   const [, thematicFocusId] = queryKey;
   return await axios.delete(
     `${apiRoutes.innovationThematicFocus}/${thematicFocusId}`

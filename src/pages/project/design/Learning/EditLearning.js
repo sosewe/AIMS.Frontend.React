@@ -55,30 +55,23 @@ import { getDonors } from "../../../../api/donor";
 import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
+import { getLearningByLearningId, newLearning } from "../../../../api/learning";
+import { newLearningDonor } from "../../../../api/learning-donor";
 import {
-  getTechnicalAssistanceByTechnicalAssistanceId,
-  newTechnicalAssistance,
-} from "../../../../api/technical-assistance";
+  newLearningPartner,
+  getLearningPartnerByLearningId,
+  deleteLearningPartnerById,
+} from "../../../../api/learning-partner";
 import {
-  newTechnicalAssistanceDonor,
-  getTechnicalAssistanceDonorByTechnicalAssistanceId,
-  deleteTechnicalAssistanceDonorById,
-} from "../../../../api/technical-assistance-donor";
-import {
-  newTechnicalAssistancePartner,
-  getTechnicalAssistancePartnerByTechnicalAssistanceId,
-  deleteTechnicalAssistancePartnerById,
-} from "../../../../api/technical-assistance-partner";
-import {
-  newTechnicalAssistanceStaff,
-  getTechnicalAssistanceStaffByTechnicalAssistanceId,
-  deleteTechnicalAssistanceStaffById,
-} from "../../../../api/technical-assistance-staff";
+  newLearningStaff,
+  getLearningStaff,
+  getLearningStaffByLearningId,
+} from "../../../../api/learning-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
-
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import { YEAR_RANGE } from "../../../../constants";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -89,24 +82,23 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  title: "",
-  shortTitle: "",
+  learningQuestion: "",
+  learningMethodologyId: "",
+  keyDecisionPoint: "",
   startDate: "",
-  goal: "",
   endDate: "",
   extensionDate: "",
-  status: "",
+  statusId: "",
   staffNameId: "",
-  emailAddress: "",
   implementingOfficeId: "",
   regionalProgrammeId: "",
-  enaSupportOffice: "",
+  administrativeProgrammeId: "",
+  enaOfficeId: "",
   totalBudget: "",
   currencyTypeId: "",
-  costCentre: "",
-  donors: [], // multiple select
-  partners: [], // multiple select
-  administrativeProgrammeId: "",
+  costCenter: "",
+  donors: [],
+  partners: [],
 };
 
 const staffDetailsInitial = {
@@ -114,6 +106,111 @@ const staffDetailsInitial = {
   staffDetailsAIMSRole: "",
   staffDetailsWorkFlowTask: "",
   primaryRole: false,
+};
+
+const partnerDetailsInitial = {
+  partnerName: "",
+  partnerType: "",
+};
+
+const PartnerDetailsForm = ({
+  learningPartnerTypeData,
+  isLoadingPartnerType,
+  handlePartnerClick,
+}) => {
+  const formik = useFormik({
+    initialValues: partnerDetailsInitial,
+    validationSchema: Yup.object().shape({
+      partnerName: Yup.string().required("Required"),
+      partnerType: Yup.object().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        handlePartnerClick(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item md={12}>
+              <TextField
+                name="partnerType"
+                label="Partner Type"
+                required
+                select
+                value={formik.values.partnerType}
+                error={Boolean(
+                  formik.touched.partnerType && formik.errors.partnerType
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.partnerType && formik.errors.partnerType
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select
+                </MenuItem>
+                {!isLoadingPartnerType
+                  ? learningPartnerTypeData.data.map((option) => (
+                      <MenuItem key={option.lookupItemId} value={option}>
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+
+            <Grid item md={12}>
+              <TextField
+                name="partnerName"
+                label="Partner Name"
+                value={formik.values.partnerName}
+                error={Boolean(
+                  formik.touched.partnerName && formik.errors.partnerName
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.partnerName && formik.errors.partnerName
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                multiline
+                variant="outlined"
+                my={2}
+                rows={3}
+              />
+            </Grid>
+
+            <Grid item md={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
 };
 
 const StaffDetailsForm = ({
@@ -298,17 +395,34 @@ const StaffDetailsForm = ({
 const EditLearningForm = ({ id }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
+  const [openAddPartnerDetails, setOpenAddPartnerDetails] = useState(false);
+  const [partnerDetailsList, setPartnerDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
-    data: TechnicalAssistanceData,
-    isLoading: isLoadingTechnicalAssistanceData,
-    isError: isErrorTechnicalAssistanceData,
+    data: LearningData,
+    isLoading: isLoadingLearningData,
+    isError: isErrorLearningData,
+  } = useQuery(["getLearningByLearningId", id], getLearningByLearningId, {
+    enabled: !!id,
+  });
+
+  const {
+    isLoading: isLoadingLearningMethodology,
+    data: learningMethodologyData,
   } = useQuery(
-    ["getTechnicalAssistanceByTechnicalAssistanceId", id],
-    getTechnicalAssistanceByTechnicalAssistanceId,
-    { enabled: !!id }
+    ["learningMethodology", "LearningMethodology"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
   );
+
+  const { isLoading: isLoadingPartnerType, data: learningPartnerTypeData } =
+    useQuery(["partnerType", "PartnerType"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
+    });
+
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -389,25 +503,26 @@ const EditLearningForm = ({ id }) => {
     }
   );
 
-  const mutation = useMutation({ mutationFn: newTechnicalAssistance });
+  const mutation = useMutation({ mutationFn: newLearning });
 
-  const technicalAssistanceDonorsMutation = useMutation({
-    mutationFn: newTechnicalAssistanceDonor,
+  const learningDonorsMutation = useMutation({
+    mutationFn: newLearningDonor,
   });
 
-  const technicalAssistancePartnersMutation = useMutation({
-    mutationFn: newTechnicalAssistancePartner,
+  const learningStaffMutation = useMutation({
+    mutationFn: newLearningStaff,
   });
 
-  const technicalAssistanceStaffMutation = useMutation({
-    mutationFn: newTechnicalAssistanceStaff,
+  const learningPartnersMutation = useMutation({
+    mutationFn: newLearningPartner,
   });
 
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      title: Yup.string().required("Required"),
-      shortTitle: Yup.string().required("Required"),
+      learningQuestion: Yup.string().required("Required"),
+      learningMethodologyId: Yup.string().required("Required"),
+      keyDecisionPoint: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
@@ -415,71 +530,57 @@ const EditLearningForm = ({ id }) => {
           ? schema.min(endDate, "Must be after End Date").nullable()
           : schema;
       }),
+      statusId: Yup.string().required("Required"),
       staffNameId: Yup.object().required("Required"),
       implementingOfficeId: Yup.string().required("Required"),
-      regionalProgrammeId: Yup.string().required("Required"),
+      //regionalProgrammeId: Yup.string().required("Required"),
       administrativeProgrammeId: Yup.string().required("Required"),
+      //enaOfficeId: Yup.string().required("Required"),
       totalBudget: Yup.number()
         .required("Required")
         .positive("Must be positive"),
       currencyTypeId: Yup.string().required("Required"),
       costCenter: Yup.string().required("Required"),
-      statusId: Yup.string().required("Required"),
       donors: Yup.array().required("Required"),
-      partners: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
-        const saveTechnicalAssistance = {
-          id: id ? id : new Guid().toString(),
+        const saveLearning = {
+          id: id,
           createDate: new Date(),
-          title: values.title,
-          shortTitle: values.shortTitle,
+          learningQuestion: values.learningQuestion,
+          learningMethodologyId: values.learningMethodologyId,
+          keyDecisionPoint: values.keyDecisionPoint,
           startDate: values.startDate,
           endDate: values.endDate,
           extensionDate: values.extensionDate,
+          statusId: values.statusId,
           staffNameId: values.staffNameId.id,
           implementingOfficeId: values.implementingOfficeId,
           regionalProgrammeId: values.regionalProgrammeId,
           administrativeProgrammeId: values.administrativeProgrammeId,
-          office: values.enaSupportOffice,
+          enaOfficeId: values.enaOfficeId,
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          status: values.statusId,
         };
-        await mutation.mutateAsync(saveTechnicalAssistance);
+        await mutation.mutateAsync(saveLearning);
 
-        let technicalAssistanceDonors = [];
+        let learningDonors = [];
         for (const donor of values.donors) {
-          const technicalAssistanceDonor = {
+          const learningDonor = {
             donorId: donor.id,
-            technicalAssistanceId: id,
+            researchId: id,
             createDate: new Date(),
           };
-          technicalAssistanceDonors.push(technicalAssistanceDonor);
+          learningDonors.push(learningDonor);
         }
-        await technicalAssistanceDonorsMutation.mutateAsync(
-          technicalAssistanceDonors
-        );
+        await learningDonorsMutation.mutateAsync(learningDonors);
 
-        let technicalAssistancePartners = [];
-        for (const partner of values.partners) {
-          const technicalAssistancePartner = {
-            partnerId: partner.id,
-            technicalAssistanceId: id,
-            createDate: new Date(),
-          };
-          technicalAssistancePartners.push(technicalAssistancePartner);
-        }
-        await technicalAssistancePartnersMutation.mutateAsync(
-          technicalAssistancePartners
-        );
-
-        const technicalAssistanceStaff = [];
+        const learningStaff = [];
         for (const staffDetail of staffDetailsList) {
           const projectRole = {
-            technicalAssistanceId: id,
+            researchId: id,
             aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
             aimsRoleName: staffDetail.staffDetailsAIMSRole.name,
             createDate: new Date(),
@@ -490,21 +591,33 @@ const EditLearningForm = ({ id }) => {
             staffNames: staffDetail.staffDetailsName,
             void: false,
           };
-          technicalAssistanceStaff.push(projectRole);
+          learningStaff.push(projectRole);
         }
-        await technicalAssistanceStaffMutation.mutateAsync(
-          technicalAssistanceStaff
-        );
+        await learningStaffMutation.mutateAsync(learningStaff);
 
-        toast("Successfully Created a Technical Assistance", {
+        console.log(
+          "logging partnerDetailsList " + JSON.stringify(partnerDetailsList)
+        );
+        const learningPartners = [];
+        for (const partnerDetail of partnerDetailsList) {
+          const projectRole = {
+            researchId: id,
+            partnerTypeId: partnerDetail.partnerType.lookupItemId,
+            partnerTypeName: partnerDetail.partnerType.lookupItemName,
+            partnerName: partnerDetail.partnerName,
+            partnerId: new Guid().toString(),
+            createDate: new Date(),
+            void: false,
+          };
+          learningPartners.push(projectRole);
+        }
+        await learningPartnersMutation.mutateAsync(learningPartners);
+
+        toast("Successfully Updated Learning", {
           type: "success",
         });
-        await queryClient.invalidateQueries([
-          "getTechnicalAssistanceByTechnicalAssistanceId",
-        ]);
-        navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/${id}`
-        );
+        await queryClient.invalidateQueries(["getlearningBylearningId"]);
+        navigate(`/project/design/learning/learning-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -524,18 +637,24 @@ const EditLearningForm = ({ id }) => {
     setStaffDetailsList((current) => [...current, values]);
   };
 
+  function removePartner(row) {
+    setPartnerDetailsList((current) =>
+      current.filter((staff) => staff.staffDetailsName !== row.staffDetailsName)
+    );
+  }
+
+  const handlePartnerDetailsAdd = (values) => {
+    setPartnerDetailsList((current) => [...current, values]);
+  };
+
   useEffect(() => {
     function setCurrentFormValues() {
-      if (
-        !isLoadingTechnicalAssistanceData &&
-        !isErrorTechnicalAssistanceData &&
-        TechnicalAssistanceData
-      ) {
+      if (!isLoadingLearningData && !isErrorLearningData && LearningData) {
         let staffId;
         let staffEmail;
         if (!isLoadingStaffList) {
           staffId = staffListData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
+            (obj) => obj.id === LearningData.data.staffNameId
           );
           if (staffId != null) {
             staffEmail = staffId.emailAddress;
@@ -545,28 +664,27 @@ const EditLearningForm = ({ id }) => {
         let enaSupportOffice;
         if (!isLoadingAmrefEntities) {
           enaSupportOffice = amrefEntities.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.office
+            (obj) => obj.id === LearningData.data.office
           );
         }
 
         let implementingOffice;
         if (!isLoadingOrgUnits) {
           implementingOffice = orgUnitsData.data.find(
-            (obj) =>
-              obj.id === TechnicalAssistanceData.data.implementingOfficeId
+            (obj) => obj.id === LearningData.data.implementingOfficeId
           );
         }
 
         let currencyType;
         if (!isLoadingCurrency) {
           currencyType = currencyData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.currencyTypeId
+            (obj) => obj.id === LearningData.data.currencyTypeId
           );
         }
 
         let donorsList = [];
         if (!isLoadingDonor) {
-          for (const donor of TechnicalAssistanceData.data.donors) {
+          for (const donor of LearningData.data.donors) {
             const result = donorData.data.find(
               (obj) => obj.id === donor.donorId
             );
@@ -576,46 +694,31 @@ const EditLearningForm = ({ id }) => {
           }
         }
 
-        let partnersList = [];
-        if (!isLoadingPartner) {
-          for (const partner of TechnicalAssistanceData.data
-            .technicalAssistancePartners) {
-            const result = partnerData.data.find(
-              (obj) => obj.id === partner.partnerId
-            );
-            if (result) {
-              partnersList.push(result);
-            }
-          }
-        }
-
         formik.setValues({
-          title: TechnicalAssistanceData.data.title,
-          shortTitle: TechnicalAssistanceData.data.shortTitle,
-          startDate: TechnicalAssistanceData.data.startDate,
-          endDate: TechnicalAssistanceData.data.endDate,
-          extensionDate: TechnicalAssistanceData.data.extensionDate,
-          status: TechnicalAssistanceData.data.status,
+          learningQuestion: LearningData.data.learningQuestion,
+          learningMethodologyId: LearningData.data.learningMethodologyId,
+          keyDecisionPoint: LearningData.data.keyDecisionPoint,
+          startDate: LearningData.data.startDate,
+          endDate: LearningData.data.endDate,
+          extensionDate: LearningData.data.extensionDate,
+          statusId: LearningData.data.statusId,
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",
           implementingOfficeId: implementingOffice ? implementingOffice.id : "",
-          enaSupportOffice: enaSupportOffice ? enaSupportOffice.id : "",
-          regionalProgrammeId: TechnicalAssistanceData.data.regionalProgrammeId,
+          enaOfficeId: LearningData.data.enaOfficeId,
+          regionalProgrammeId: LearningData.data.regionalProgrammeId,
           administrativeProgrammeId:
-            TechnicalAssistanceData.data.administrativeProgrammeId,
-          totalBudget: TechnicalAssistanceData.data.totalBudget,
-          costCenter: TechnicalAssistanceData.data.costCenter,
-          currencyTypeId: TechnicalAssistanceData.data.currencyTypeId,
+            LearningData.data.administrativeProgrammeId,
+          totalBudget: LearningData.data.totalBudget,
+          costCenter: LearningData.data.costCenter,
+          currencyTypeId: LearningData.data.currencyTypeId,
           donors: donorsList,
-          partners: partnersList,
+          partners: [],
         });
 
-        if (
-          TechnicalAssistanceData.data.staff &&
-          TechnicalAssistanceData.data.staff.length > 0
-        ) {
+        if (LearningData.data.staffs && LearningData.data.staffs.length > 0) {
           const allStaff = [];
-          for (const staffData of TechnicalAssistanceData.data.staff) {
+          for (const staffData of LearningData.data.staffs) {
             const lookupRole =
               !isLoadingAimsRole &&
               aimsRolesData.data.filter(
@@ -636,13 +739,39 @@ const EditLearningForm = ({ id }) => {
           }
           setStaffDetailsList(allStaff);
         }
+
+        if (
+          LearningData.data.partners &&
+          LearningData.data.partners.length > 0
+        ) {
+          const allPartners = [];
+          for (const partnerData of LearningData.data.partners) {
+            const lookupPartner =
+              !isLoadingPartnerType &&
+              learningPartnerTypeData.data.filter(
+                (obj) => obj.id === partnerData.partnerTypeId
+              );
+
+            const partner = {
+              id: partnerData.id,
+              partnerId: partnerData.partnerId,
+              partnerName: partnerData.partnerName,
+              partnerType: {
+                lookupItemId: partnerData.partnerTypeId,
+                lookupItemName: partnerData.partnerTypeName,
+              },
+            };
+            allPartners.push(partner);
+          }
+          setPartnerDetailsList(allPartners);
+        }
       }
     }
     setCurrentFormValues();
   }, [
-    TechnicalAssistanceData,
-    isLoadingTechnicalAssistanceData,
-    isErrorTechnicalAssistanceData,
+    LearningData,
+    isLoadingLearningData,
+    isErrorLearningData,
     isLoadingStaffList,
     isErrorStaffList,
     staffListData,
@@ -670,12 +799,18 @@ const EditLearningForm = ({ id }) => {
         <Grid container item spacing={2}>
           <Grid item md={12}>
             <TextField
-              name="title"
-              label="Technical Assistance Name"
-              value={formik.values.title}
-              error={Boolean(formik.touched.title && formik.errors.title)}
+              name="learningQuestion"
+              label="Learning Question"
+              value={formik.values.learningQuestion}
+              error={Boolean(
+                formik.touched.learningQuestion &&
+                  formik.errors.learningQuestion
+              )}
               fullWidth
-              helperText={formik.touched.title && formik.errors.title}
+              helperText={
+                formik.touched.learningQuestion &&
+                formik.errors.learningQuestion
+              }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               multiline
@@ -686,14 +821,53 @@ const EditLearningForm = ({ id }) => {
           </Grid>
           <Grid item md={12}>
             <TextField
-              name="shortTitle"
-              label="Technical Assistance Short Title"
-              value={formik.values.shortTitle}
+              name="learningMethodologyId"
+              label="Learning Methodology"
+              select
+              value={formik.values.learningMethodologyId}
               error={Boolean(
-                formik.touched.shortTitle && formik.errors.shortTitle
+                formik.touched.learningMethodologyId &&
+                  formik.errors.learningMethodologyId
               )}
               fullWidth
-              helperText={formik.touched.shortTitle && formik.errors.shortTitle}
+              helperText={
+                formik.touched.learningMethodologyId &&
+                formik.errors.learningMethodologyId
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Select
+              </MenuItem>
+              {!isLoadingLearningMethodology
+                ? learningMethodologyData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={12}>
+            <TextField
+              name="keyDecisionPoint"
+              label="Key Decision Point"
+              value={formik.values.keyDecisionPoint}
+              error={Boolean(
+                formik.touched.keyDecisionPoint &&
+                  formik.errors.keyDecisionPoint
+              )}
+              fullWidth
+              helperText={
+                formik.touched.keyDecisionPoint &&
+                formik.errors.keyDecisionPoint
+              }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               multiline
@@ -702,452 +876,432 @@ const EditLearningForm = ({ id }) => {
               rows={3}
             />
           </Grid>
-          <Grid item md={4}>
-            <DatePicker
-              label="Start Date"
-              value={formik.values.startDate || null}
-              onChange={(value) =>
-                formik.setFieldValue("startDate", value, true)
-              }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.startDate && formik.errors.startDate
-                  )}
-                  helperText={
-                    formik.touched.startDate && formik.errors.startDate
-                  }
-                  margin="normal"
-                  name="startDate"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <DatePicker
-              label="End Date"
-              value={formik.values.endDate || null}
-              onChange={(value) => formik.setFieldValue("endDate", value, true)}
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.startDate && formik.errors.endDate
-                  )}
-                  helperText={formik.touched.startDate && formik.errors.endDate}
-                  margin="normal"
-                  name="endDate"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <DatePicker
-              label="Extension Date"
-              value={formik.values.extensionDate || null}
-              onChange={(value) =>
-                formik.setFieldValue("extensionDate", value, true)
-              }
-              renderInput={(params) => (
-                <TextField
-                  error={Boolean(
-                    formik.touched.startDate && formik.errors.extensionDate
-                  )}
-                  helperText={
-                    formik.touched.startDate && formik.errors.extensionDate
-                  }
-                  margin="normal"
-                  name="endDate"
-                  variant="outlined"
-                  fullWidth
-                  my={2}
-                  {...params}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <Autocomplete
-              id="staffNameId"
-              options={!isLoadingStaffList ? staffListData.data : []}
-              getOptionLabel={(option) => {
-                if (!option) {
-                  return ""; // Return an empty string for null or undefined values
-                }
-                return `${option.firstName} ${option.lastName}`;
-              }}
-              renderOption={(props, option) => {
-                return (
-                  <li {...props} key={option.id}>
-                    {option ? `${option.firstName} ${option.lastName}` : ""}
-                  </li>
-                );
-              }}
-              onChange={(e, val) => {
-                formik.setFieldValue("staffNameId", val);
-                formik.setFieldValue("leadStaffEmail", val.emailAddress);
-              }}
-              value={formik.values.staffNameId}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={Boolean(
-                    formik.touched.staffNameId && formik.errors.staffNameId
-                  )}
-                  fullWidth
-                  helperText={
-                    formik.touched.staffNameId && formik.errors.staffNameId
-                  }
-                  label="Lead Staff name"
-                  name="staffNameId"
-                  variant="outlined"
-                  my={2}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="leadStaffEmail"
-              // label="Lead staff email address"
-              value={formik.values.leadStaffEmail}
-              error={Boolean(
-                formik.touched.projectManagerEmail &&
-                  formik.errors.projectManagerEmail
-              )}
-              fullWidth
-              helperText={
-                formik.touched.projectManagerEmail &&
-                formik.errors.projectManagerEmail
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="implementingOfficeId"
-              label="Implementing Office"
-              select
-              value={formik.values.implementingOfficeId}
-              error={Boolean(
-                formik.touched.implementingOfficeId &&
-                  formik.errors.implementingOfficeId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.implementingOfficeId &&
-                formik.errors.implementingOfficeId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Implementing Office
-              </MenuItem>
-              {!isLoadingOrgUnits
-                ? orgUnitsData.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="regionalProgrammeId"
-              label="Regional Programme"
-              select
-              value={formik.values.regionalProgrammeId}
-              error={Boolean(
-                formik.touched.regionalProgrammeId &&
-                  formik.errors.regionalProgrammeId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.regionalProgrammeId &&
-                formik.errors.regionalProgrammeId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Regional Programme
-              </MenuItem>
-              {!isLoadingRegProg
-                ? regProgData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="enaSupportOffice"
-              label="E/NA Supporting Office"
-              select
-              value={formik.values.enaSupportOffice}
-              error={Boolean(
-                formik.touched.enaSupportOffice &&
-                  formik.errors.enaSupportOffice
-              )}
-              fullWidth
-              helperText={
-                formik.touched.enaSupportOffice &&
-                formik.errors.enaSupportOffice
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select E/NA Supporting Office
-              </MenuItem>
-              {!isLoadingAmrefEntities
-                ? amrefEntities.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
 
-          <Grid item md={4}>
-            <TextField
-              name="administrativeProgrammeId"
-              label="Administrative Programme"
-              select
-              value={formik.values.administrativeProgrammeId}
-              error={Boolean(
-                formik.touched.administrativeProgrammeId &&
-                  formik.errors.administrativeProgrammeId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.administrativeProgrammeId &&
-                formik.errors.administrativeProgrammeId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Administrative Programme
-              </MenuItem>
-              {!isLoadingAdminProg
-                ? adminProgData.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.shortTitle}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="totalBudget"
-              label="Overall Budget"
-              type="number"
-              value={formik.values.totalBudget}
-              error={Boolean(
-                formik.touched.totalBudget && formik.errors.totalBudget
-              )}
-              fullWidth
-              helperText={
-                formik.touched.totalBudget && formik.errors.totalBudget
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="currencyTypeId"
-              label="Currency"
-              select
-              value={formik.values.currencyTypeId}
-              error={Boolean(
-                formik.touched.currencyTypeId && formik.errors.currencyTypeId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.currencyTypeId && formik.errors.currencyTypeId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Currency
-              </MenuItem>
-              {!isLoadingCurrency
-                ? currencyData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="costCenter"
-              label="Cost Center Name"
-              value={formik.values.costCenter}
-              error={Boolean(
-                formik.touched.costCenter && formik.errors.costCenter
-              )}
-              fullWidth
-              helperText={formik.touched.costCenter && formik.errors.costCenter}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              multiline
-              variant="outlined"
-              my={2}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <TextField
-              name="status"
-              label="Status"
-              select
-              value={formik.values.status}
-              error={Boolean(formik.touched.status && formik.errors.status)}
-              fullWidth
-              helperText={formik.touched.status && formik.errors.status}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-            >
-              <MenuItem disabled value="">
-                Status
-              </MenuItem>
-              {!isLoadingStatuses
-                ? statusesData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={4}>
-            <Autocomplete
-              id="donors"
-              multiple
-              options={!isLoadingDonor ? donorData.data : []}
-              getOptionLabel={(option) => {
-                if (!option) {
-                  return ""; // Return an empty string for null or undefined values
+          <Grid container item spacing={2}>
+            <Grid item md={4}>
+              <DatePicker
+                label="Start Date"
+                value={formik.values.startDate || null}
+                minDate={YEAR_RANGE.MIN_YEAR}
+                maxDate={YEAR_RANGE.MAX_YEAR}
+                onChange={(value) =>
+                  formik.setFieldValue("startDate", value, true)
                 }
-                return `${option.donorName}`;
-              }}
-              renderOption={(props, option) => {
-                return (
-                  <li {...props} key={option.id}>
-                    {option?.donorName}
-                  </li>
-                );
-              }}
-              onChange={(e, val) => {
-                formik.setFieldValue("donors", val);
-              }}
-              value={formik.values.donors}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={Boolean(formik.touched.donors && formik.errors.donors)}
-                  fullWidth
-                  helperText={formik.touched.donors && formik.errors.donors}
-                  label="Donors"
-                  name="donors"
-                  variant="outlined"
-                  my={2}
-                />
-              )}
-            />
-          </Grid>
-
-          <Grid item md={4}>
-            <FormControl sx={{ width: "100%" }}>
-              <InputLabel>Partners</InputLabel>
-              <Select
-                fullWidth
-                multiple
-                value={formik.values.partners}
-                onChange={(e) => {
-                  const selectedPartners = Array.isArray(e.target.value)
-                    ? e.target.value
-                    : [e.target.value]; // Ensure it's always an array
-                  formik.setFieldValue("partners", selectedPartners);
-                }}
-                input={<OutlinedInput label="Multiple Select" />}
-                renderValue={(selected) => (
-                  <Stack gap={1} direction="row" flexWrap="wrap">
-                    {selected.map((value) => (
-                      <Chip
-                        key={value.lookupItemId}
-                        label={value.lookupItemName}
-                        onDelete={() =>
-                          formik.setFieldValue(
-                            "partners",
-                            formik.values.partners.filter(
-                              (item) => item !== value
-                            )
-                          )
-                        }
-                        deleteIcon={
-                          <CancelIcon
-                            onMouseDown={(event) => event.stopPropagation()}
-                          />
-                        }
-                      />
-                    ))}
-                  </Stack>
+                renderInput={(params) => (
+                  <TextField
+                    error={Boolean(
+                      formik.touched.startDate && formik.errors.startDate
+                    )}
+                    helperText={
+                      formik.touched.startDate && formik.errors.startDate
+                    }
+                    margin="normal"
+                    name="startDate"
+                    variant="outlined"
+                    fullWidth
+                    my={2}
+                    {...params}
+                  />
                 )}
+              />
+            </Grid>
+            <Grid item md={4}>
+              <DatePicker
+                label="End Date"
+                value={formik.values.endDate || null}
+                minDate={YEAR_RANGE.MIN_YEAR}
+                maxDate={YEAR_RANGE.MAX_YEAR}
+                onChange={(value) =>
+                  formik.setFieldValue("endDate", value, true)
+                }
+                renderInput={(params) => (
+                  <TextField
+                    error={Boolean(
+                      formik.touched.endDate && formik.errors.endDate
+                    )}
+                    helperText={formik.touched.endDate && formik.errors.endDate}
+                    margin="normal"
+                    name="endDate"
+                    variant="outlined"
+                    fullWidth
+                    my={2}
+                    {...params}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item md={4}>
+              <DatePicker
+                label="Extension Date"
+                value={formik.values.extensionDate || null}
+                minDate={YEAR_RANGE.MIN_YEAR}
+                maxDate={YEAR_RANGE.MAX_YEAR}
+                onChange={(value) =>
+                  formik.setFieldValue("extensionDate", value, true)
+                }
+                renderInput={(params) => (
+                  <TextField
+                    error={Boolean(
+                      formik.touched.extensionDate &&
+                        formik.errors.extensionDate
+                    )}
+                    helperText={
+                      formik.touched.extensionDate &&
+                      formik.errors.extensionDate
+                    }
+                    margin="normal"
+                    name="endDate"
+                    variant="outlined"
+                    fullWidth
+                    my={2}
+                    {...params}
+                  />
+                )}
+              />
+            </Grid>
+          </Grid>
+
+          <Grid container item spacing={2}>
+            <Grid item md={4}>
+              <Autocomplete
+                id="staffNameId"
+                options={!isLoadingStaffList ? staffListData.data : []}
+                getOptionLabel={(option) => {
+                  if (!option) {
+                    return ""; // Return an empty string for null or undefined values
+                  }
+                  return `${option.firstName} ${option.lastName}`;
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.id}>
+                      {option ? `${option.firstName} ${option.lastName}` : ""}
+                    </li>
+                  );
+                }}
+                onChange={(e, val) => {
+                  formik.setFieldValue("staffNameId", val);
+                  formik.setFieldValue("leadStaffEmail", val.emailAddress);
+                }}
+                value={formik.values.staffNameId}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={Boolean(
+                      formik.touched.staffNameId && formik.errors.staffNameId
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.staffNameId && formik.errors.staffNameId
+                    }
+                    label="Lead Staff name"
+                    name="staffNameId"
+                    variant="outlined"
+                    my={2}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="leadStaffEmail"
+                // label="Lead staff email address"
+                value={formik.values.leadStaffEmail}
+                error={Boolean(
+                  formik.touched.projectManagerEmail &&
+                    formik.errors.projectManagerEmail
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.projectManagerEmail &&
+                  formik.errors.projectManagerEmail
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              />
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="implementingOfficeId"
+                label="Implementing Office"
+                select
+                value={formik.values.implementingOfficeId}
+                error={Boolean(
+                  formik.touched.implementingOfficeId &&
+                    formik.errors.implementingOfficeId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.implementingOfficeId &&
+                  formik.errors.implementingOfficeId
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
                 my={2}
               >
-                {!isLoadingPartner
-                  ? partnerData.data.map((option) => (
-                      <MenuItem key={option.lookupItemId} value={option}>
+                <MenuItem disabled value="">
+                  Select
+                </MenuItem>
+                {!isLoadingOrgUnits
+                  ? orgUnitsData.data.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+          </Grid>
+
+          <Grid container item spacing={2}>
+            <Grid item md={4}>
+              <TextField
+                name="regionalProgrammeId"
+                label="Regional Programme"
+                select
+                value={formik.values.regionalProgrammeId}
+                error={Boolean(
+                  formik.touched.regionalProgrammeId &&
+                    formik.errors.regionalProgrammeId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.regionalProgrammeId &&
+                  formik.errors.regionalProgrammeId
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select
+                </MenuItem>
+                {!isLoadingRegProg
+                  ? regProgData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
                         {option.lookupItemName}
                       </MenuItem>
                     ))
                   : []}
-              </Select>
-            </FormControl>
+              </TextField>
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="enaOfficeId"
+                label="E/NA Supporting Office"
+                select
+                value={formik.values.enaOfficeId}
+                error={Boolean(
+                  formik.touched.enaOfficeId && formik.errors.enaOfficeId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.enaOfficeId && formik.errors.enaOfficeId
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select
+                </MenuItem>
+                {!isLoadingAmrefEntities
+                  ? amrefEntities.data.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="administrativeProgrammeId"
+                label="Administrative Programme"
+                select
+                value={formik.values.administrativeProgrammeId}
+                error={Boolean(
+                  formik.touched.administrativeProgrammeId &&
+                    formik.errors.administrativeProgrammeId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.administrativeProgrammeId &&
+                  formik.errors.administrativeProgrammeId
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select
+                </MenuItem>
+                {!isLoadingAdminProg
+                  ? adminProgData.data.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.shortTitle}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
           </Grid>
+
+          <Grid container item spacing={2}>
+            <Grid item md={4}>
+              <TextField
+                name="totalBudget"
+                label="Overall Budget"
+                type="number"
+                value={formik.values.totalBudget}
+                error={Boolean(
+                  formik.touched.totalBudget && formik.errors.totalBudget
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.totalBudget && formik.errors.totalBudget
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              />
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="currencyTypeId"
+                label="Currency"
+                select
+                value={formik.values.currencyTypeId}
+                error={Boolean(
+                  formik.touched.currencyTypeId && formik.errors.currencyTypeId
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.currencyTypeId && formik.errors.currencyTypeId
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select
+                </MenuItem>
+                {!isLoadingCurrency
+                  ? currencyData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={4}>
+              <TextField
+                name="costCenter"
+                label="Cost Center Name"
+                value={formik.values.costCenter}
+                error={Boolean(
+                  formik.touched.costCenter && formik.errors.costCenter
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.costCenter && formik.errors.costCenter
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                multiline
+                variant="outlined"
+                my={2}
+              />
+            </Grid>
+          </Grid>
+
+          <Grid container item spacing={2}>
+            <Grid item md={4}>
+              <TextField
+                name="statusId"
+                label="Status"
+                select
+                value={formik.values.statusId}
+                error={Boolean(
+                  formik.touched.statusId && formik.errors.statusId
+                )}
+                fullWidth
+                helperText={formik.touched.statusId && formik.errors.statusId}
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Status
+                </MenuItem>
+                {!isLoadingStatuses
+                  ? statusesData.data.map((option) => (
+                      <MenuItem
+                        key={option.lookupItemId}
+                        value={option.lookupItemId}
+                      >
+                        {option.lookupItemName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={8}>
+              <Autocomplete
+                id="donors"
+                multiple
+                options={!isLoadingDonor ? donorData.data : []}
+                getOptionLabel={(option) => {
+                  if (!option) {
+                    return ""; // Return an empty string for null or undefined values
+                  }
+                  return `${option.donorName}`;
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.id}>
+                      {option?.donorName}
+                    </li>
+                  );
+                }}
+                onChange={(e, val) => {
+                  formik.setFieldValue("donors", val);
+                }}
+                value={formik.values.donors}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={Boolean(
+                      formik.touched.donors && formik.errors.donors
+                    )}
+                    fullWidth
+                    helperText={formik.touched.donors && formik.errors.donors}
+                    label="Donors"
+                    name="donors"
+                    variant="outlined"
+                    my={2}
+                  />
+                )}
+              />
+            </Grid>
+          </Grid>
+
           <Grid container spacing={12} pt={10}>
             <Grid item md={12}>
               <Typography variant="h3" gutterBottom display="inline">
@@ -1210,41 +1364,123 @@ const EditLearningForm = ({ id }) => {
             </Grid>
           </Grid>
 
-          <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
+          <Grid container spacing={12} pt={10}>
+            <Grid item md={12}>
+              <Typography variant="h3" gutterBottom display="inline">
+                Partner Details
+              </Typography>
+            </Grid>
+          </Grid>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpenAddPartnerDetails(true)}
+              >
+                <AddIcon /> Partner Details
+              </Button>
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Paper>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Partner Type</TableCell>
+                      <TableCell>Partner Name</TableCell>
+                      <TableCell align="right">Action</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {partnerDetailsList.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell>{row.partnerType.lookupItemName}</TableCell>
+                        <TableCell component="th" scope="row">
+                          {row.partnerName}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Button
+                            startIcon={<TrashIcon />}
+                            size="small"
+                            onClick={() => removePartner(row)}
+                          ></Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Dialog
+            fullWidth={true}
+            maxWidth="md"
+            open={openAddStaffDetails}
+            onClose={() => setOpenAddStaffDetails(false)}
+            aria-labelledby="form-dialog-title"
+          >
+            <DialogTitle id="form-dialog-title">Staff Details</DialogTitle>
+            <DialogContent>
+              <DialogContentText>Add Staff Details</DialogContentText>
+              <StaffDetailsForm
+                aimsRolesData={aimsRolesData}
+                administrativeRoles={administrativeRoles}
+                isLoading={isLoadingAimsRole}
+                isLoadingAdministrativeRoles={isLoadingAdministrativeRoles}
+                isErrorAdministrativeRoles={isErrorAdministrativeRoles}
+                staffListData={staffListData}
+                isLoadingStaffList={isLoadingStaffList}
+                isErrorStaffList={isErrorStaffList}
+                handleClick={handleStaffDetailsAdd}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => setOpenAddStaffDetails(false)}
+                color="primary"
+              >
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            fullWidth={true}
+            maxWidth="md"
+            open={openAddPartnerDetails}
+            onClose={() => setOpenAddPartnerDetails(false)}
+            aria-labelledby="form-dialog-title"
+          >
+            <DialogTitle id="form-dialog-title">Partner Details</DialogTitle>
+            <DialogContent>
+              <DialogContentText>Add Partner Details</DialogContentText>
+              <PartnerDetailsForm
+                learningPartnerTypeData={learningPartnerTypeData}
+                isLoadingPartnerType={isLoadingPartnerType}
+                handlePartnerClick={handlePartnerDetailsAdd}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => setOpenAddPartnerDetails(false)}
+                color="primary"
+              >
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Grid item md={12} mt={20}>
+            <Button type="submit" variant="contained" color="primary">
               <Check /> Save changes
             </Button>
           </Grid>
         </Grid>
       )}
-      <Dialog
-        fullWidth={true}
-        maxWidth="md"
-        open={openAddStaffDetails}
-        onClose={() => setOpenAddStaffDetails(false)}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">Staff Details</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Add Staff Details</DialogContentText>
-          <StaffDetailsForm
-            aimsRolesData={aimsRolesData}
-            administrativeRoles={administrativeRoles}
-            isLoading={isLoadingAimsRole}
-            isLoadingAdministrativeRoles={isLoadingAdministrativeRoles}
-            isErrorAdministrativeRoles={isErrorAdministrativeRoles}
-            staffListData={staffListData}
-            isLoadingStaffList={isLoadingStaffList}
-            isErrorStaffList={isErrorStaffList}
-            handleClick={handleStaffDetailsAdd}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAddStaffDetails(false)} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </form>
   );
 };
@@ -1253,7 +1489,7 @@ const Learning = () => {
   let { id } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="Edit TechnicalAssistance" />
+      <Helmet title="Edit learning" />
       <Typography variant="h3" gutterBottom display="inline">
         Basic Information
       </Typography>

@@ -91,8 +91,6 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
         values.innovationMetricId = metric.id;
         values.innovationPercentageChange =
           (values.actualByReportingPeriod / values.innovationTarget) * 100;
-
-        console.log("values " + JSON.stringify(values));
         handleMetricClick(values);
       } catch (error) {
         toast(error.response.data, {
