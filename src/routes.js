@@ -160,14 +160,17 @@ const TechnicalAssistanceMonitoringKMDocumentsUpload = async(() =>
   import("./pages/project/monitoring//TechnicalAssistance/KMDocumentsUpload")
 );
 
-/*
-const Innovation = async(() =>
-  import("./pages/project/design/Innovation/Innovation")
-);*/
+// Learning Design
+const Learning = async(() =>
+  import("./pages/project/design/Learning/Learning")
+);
+const NewLearning = async(() =>
+  import("./pages/project/design/Learning/NewLearning")
+);
+const LearningDetail = async(() =>
+  import("./pages/project/design/Learning/LearningDetail")
+);
 
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
 const Advocacy = async(() =>
   import("./pages/project/design/NewAdvocacy/Advocacy")
 );
@@ -417,6 +420,18 @@ const routes = [
       {
         path: "design/technical-assistance/technical-assistance-detail/:id",
         element: <TechnicalAssistanceDetail />,
+      },
+      {
+        path: "design/learning/learning/:processLevelItemId/:processLevelTypeId",
+        element: <Learning />,
+      },
+      {
+        path: "design/learning/new-learning/:processLevelItemId/:processLevelTypeId",
+        element: <NewLearning />,
+      },
+      {
+        path: "design/learning/learning-detail/:id",
+        element: <LearningDetail />,
       },
     ],
   },

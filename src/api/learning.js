@@ -1,0 +1,27 @@
+import { apiRoutes } from "../apiRoutes";
+import axios from "axios";
+
+export const newLearning = async (values) => {
+  return await axios.post(apiRoutes.learning, values);
+};
+
+export const getLearnings = async () => {
+  return await axios.get(apiRoutes.learning);
+};
+
+export const getLearningById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.learning}/${id}`);
+};
+
+export const getLearningByProcessLevelItemId = async ({ queryKey }) => {
+  const [, processLevelItemId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.Learning}/GetLearningByProcessLevel/${processLevelItemId}`
+  );
+};
+
+export const deleteLearningById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.learning}/${id}`);
+};
