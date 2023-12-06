@@ -428,7 +428,7 @@ const routes = [
         element: <NewAdvocacy />,
       },
       {
-        path: "design/learning/advocacy-detail/:id",
+        path: "design/advocacy/advocacy-detail/:id",
         element: <AdvocacyDetail />,
       },
     ],

@@ -92,7 +92,7 @@ export const apiRoutes = {
   advocacy: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Advocacy`,
   advocacyDonor: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyDonor`,
   advocacyPartner: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyPartner`,
-  advocacyStaff: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Advocacy`,
+  advocacyStaff: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyStaff`,
   qualitativeCountry: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativeCountry`,
   qualitativePeriod: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativePeriod`,
   qualitativeThematicArea: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/QualitativeThematicArea`,

@@ -466,7 +466,7 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           <Grid item md={4}>
             <TextField
               name="leadStaffEmail"
-              label="Lead staff email address"
+              // label="Lead staff email address"
               value={formik.values.leadStaffEmail}
               error={Boolean(
                 formik.touched.leadStaffEmail && formik.errors.leadStaffEmail

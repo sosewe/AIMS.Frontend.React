@@ -17,17 +17,10 @@ import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
-  Link,
   Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -35,10 +28,8 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import CancelIcon from "@mui/icons-material/Cancel";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Add as AddIcon } from "@mui/icons-material";
+import { DatePicker } from "@mui/x-date-pickers";
 import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
@@ -50,34 +41,31 @@ import {
   getAMREFStaffList,
   getLookupMasterItemsByName,
 } from "../../../../api/lookup";
-import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
+import { YEAR_RANGE } from "../../../../constants";
 import { getDonors } from "../../../../api/donor";
-import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
+import { getAdvocacyById, newAdvocacy } from "../../../../api/advocacy";
+import { newAdvocacyDonor } from "../../../../api/advocacy-donor";
 import {
-  getTechnicalAssistanceByTechnicalAssistanceId,
-  newTechnicalAssistance,
-} from "../../../../api/technical-assistance";
-import {
-  newTechnicalAssistanceDonor,
-  getTechnicalAssistanceDonorByTechnicalAssistanceId,
-  deleteTechnicalAssistanceDonorById,
-} from "../../../../api/technical-assistance-donor";
-import {
-  newTechnicalAssistancePartner,
-  getTechnicalAssistancePartnerByTechnicalAssistanceId,
-  deleteTechnicalAssistancePartnerById,
-} from "../../../../api/technical-assistance-partner";
-import {
-  newTechnicalAssistanceStaff,
-  getTechnicalAssistanceStaffByTechnicalAssistanceId,
-  deleteTechnicalAssistanceStaffById,
-} from "../../../../api/technical-assistance-staff";
+  newAdvocacyStaff,
+  getAdvocacyStaff,
+} from "../../../../api/advocacy-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
-
 import { Helmet } from "react-helmet-async";
+import {
+  getQualitativeCountryByTypeItemId,
+  newQualitativeCountry,
+} from "../../../../api/qualitative-country";
+import {
+  getQualitativePeriodByTypeItemId,
+  newQualitativePeriod,
+} from "../../../../api/qualitative-period";
+import {
+  getQualitativeThematicAreaByTypeItemId,
+  newQualitativeThematicArea,
+} from "../../../../api/qualitative-thematic-area";
 import { Guid } from "../../../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
@@ -92,7 +80,6 @@ const initialValues = {
   title: "",
   shortTitle: "",
   startDate: "",
-  goal: "",
   endDate: "",
   extensionDate: "",
   status: "",
@@ -105,8 +92,6 @@ const initialValues = {
   currencyTypeId: "",
   costCentre: "",
   donors: [], // multiple select
-  partners: [], // multiple select
-  administrativeProgrammeId: "",
 };
 
 const staffDetailsInitial = {
@@ -255,7 +240,7 @@ const StaffDetailsForm = ({
                 <MenuItem disabled value="">
                   Select DQA Work Flow Role
                 </MenuItem>
-                {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
+                {!isLoadingAdministrativeRoles
                   ? administrativeRoles.data.map((option) => (
                       <MenuItem key={option.roleId} value={option}>
                         {option.roleName}
@@ -295,18 +280,24 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditLearningForm = ({ id }) => {
+const EditAdvocacyForm = ({ id }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  let advocacyQualitativeTypeId;
   const {
-    data: TechnicalAssistanceData,
-    isLoading: isLoadingTechnicalAssistanceData,
-    isError: isErrorTechnicalAssistanceData,
+    data: AdvocacyData,
+    isLoading: isLoadingAdvocacyData,
+    isError: isErrorAdvocacyData,
+  } = useQuery(["getAdvocacyById", id], getAdvocacyById, { enabled: !!id });
+  const {
+    data: QualitativeCountryData,
+    isLoading: isLoadingQualitativeCountry,
+    isError: isErrorQualitativeCountry,
   } = useQuery(
-    ["getTechnicalAssistanceByTechnicalAssistanceId", id],
-    getTechnicalAssistanceByTechnicalAssistanceId,
+    ["getQualitativeCountryByTypeItemId", id],
+    getQualitativeCountryByTypeItemId,
     { enabled: !!id }
   );
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
@@ -330,6 +321,24 @@ const EditLearningForm = ({ id }) => {
   } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
     refetchOnWindowFocus: false,
   });
+  const {
+    data: QualitativePeriodData,
+    isLoading: isLoadingQualitativePeriod,
+    isError: isErrorQualitativePeriod,
+  } = useQuery(
+    ["getQualitativePeriodByTypeItemId", id],
+    getQualitativePeriodByTypeItemId,
+    { enabled: !!id }
+  );
+  const {
+    data: QualitativeThematicAreaData,
+    isLoading: isLoadingQualitativeThematicArea,
+    isError: isErrorQualitativeThematicArea,
+  } = useQuery(
+    ["getQualitativeThematicAreaByTypeItemId", id],
+    getQualitativeThematicAreaByTypeItemId,
+    { enabled: !!id }
+  );
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -359,13 +368,6 @@ const EditLearningForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const { isLoading: isLoadingAdminProg, data: adminProgData } = useQuery(
-    ["AdministrativeProgramme"],
-    getAdministrativeProgrammes,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
   const { isLoading: isLoadingDonor, data: donorData } = useQuery(
     ["donors"],
     getDonors,
@@ -373,34 +375,50 @@ const EditLearningForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const { isLoading: isLoadingPartner, data: partnerData } = useQuery(
-    ["partnerType", "PartnerType"],
+  // const {
+  //   data: ThematicAreas,
+  //   isLoading: isLoadingThematicAreas,
+  //   isError: isErrorThematicAreas,
+  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
+  //   refetchOnWindowFocus: false,
+  // });
+  const {
+    isLoading: isLoadingAmrefEntities,
+    data: amrefEntities,
+    isError: isErrorAmrefEntities,
+  } = useQuery(["amrefEntities"], getAmrefEntities, {
+    refetchOnWindowFocus: false,
+  });
+  const {
+    data: QualitativeResultTypesData,
+    isLoading: isLoadingQualitativeResultTypes,
+    isError: isErrorQualitativeResultTypes,
+  } = useQuery(
+    ["qualitativeResultType", "QualitativeResultType"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
     }
   );
+  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
+    const filterAdvocacy = QualitativeResultTypesData.data.find(
+      (obj) => obj.lookupItemName === "Advocacy"
+    );
+    advocacyQualitativeTypeId = filterAdvocacy.lookupItemId;
+  }
+  const mutation = useMutation({ mutationFn: newAdvocacy });
 
-  const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
-    ["amrefEntities"],
-    getAmrefEntities,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const mutation = useMutation({ mutationFn: newTechnicalAssistance });
-
-  const technicalAssistanceDonorsMutation = useMutation({
-    mutationFn: newTechnicalAssistanceDonor,
+  const advocacyDonorsMutation = useMutation({
+    mutationFn: newAdvocacyDonor,
   });
 
-  const technicalAssistancePartnersMutation = useMutation({
-    mutationFn: newTechnicalAssistancePartner,
+  const advocacyStaffMutation = useMutation({
+    mutationFn: newAdvocacyStaff,
   });
 
-  const technicalAssistanceStaffMutation = useMutation({
-    mutationFn: newTechnicalAssistanceStaff,
+  // eslint-disable-next-line no-unused-vars
+  const qualitativeThematicAreaMutation = useMutation({
+    mutationFn: newQualitativeThematicArea,
   });
 
   const formik = useFormik({
@@ -418,20 +436,18 @@ const EditLearningForm = ({ id }) => {
       staffNameId: Yup.object().required("Required"),
       implementingOfficeId: Yup.string().required("Required"),
       regionalProgrammeId: Yup.string().required("Required"),
-      administrativeProgrammeId: Yup.string().required("Required"),
       totalBudget: Yup.number()
         .required("Required")
         .positive("Must be positive"),
       currencyTypeId: Yup.string().required("Required"),
       costCenter: Yup.string().required("Required"),
-      statusId: Yup.string().required("Required"),
+      status: Yup.string().required("Required"),
       donors: Yup.array().required("Required"),
-      partners: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
-        const saveTechnicalAssistance = {
-          id: id ? id : new Guid().toString(),
+        const saveAdvocacy = {
+          id: id,
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
@@ -441,45 +457,29 @@ const EditLearningForm = ({ id }) => {
           staffNameId: values.staffNameId.id,
           implementingOfficeId: values.implementingOfficeId,
           regionalProgrammeId: values.regionalProgrammeId,
-          administrativeProgrammeId: values.administrativeProgrammeId,
           office: values.enaSupportOffice,
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          status: values.statusId,
+          statusId: values.status,
         };
-        await mutation.mutateAsync(saveTechnicalAssistance);
+        await mutation.mutateAsync(saveAdvocacy);
 
-        let technicalAssistanceDonors = [];
+        let advocacyDonors = [];
         for (const donor of values.donors) {
-          const technicalAssistanceDonor = {
+          const advocacyDonor = {
             donorId: donor.id,
-            technicalAssistanceId: id,
+            advocacyId: id,
             createDate: new Date(),
           };
-          technicalAssistanceDonors.push(technicalAssistanceDonor);
+          advocacyDonors.push(advocacyDonor);
         }
-        await technicalAssistanceDonorsMutation.mutateAsync(
-          technicalAssistanceDonors
-        );
+        await advocacyDonorsMutation.mutateAsync(advocacyDonors);
 
-        let technicalAssistancePartners = [];
-        for (const partner of values.partners) {
-          const technicalAssistancePartner = {
-            partnerId: partner.id,
-            technicalAssistanceId: id,
-            createDate: new Date(),
-          };
-          technicalAssistancePartners.push(technicalAssistancePartner);
-        }
-        await technicalAssistancePartnersMutation.mutateAsync(
-          technicalAssistancePartners
-        );
-
-        const technicalAssistanceStaff = [];
+        const projectRoles = [];
         for (const staffDetail of staffDetailsList) {
           const projectRole = {
-            technicalAssistanceId: id,
+            advocacyId: id,
             aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
             aimsRoleName: staffDetail.staffDetailsAIMSRole.name,
             createDate: new Date(),
@@ -490,21 +490,15 @@ const EditLearningForm = ({ id }) => {
             staffNames: staffDetail.staffDetailsName,
             void: false,
           };
-          technicalAssistanceStaff.push(projectRole);
+          projectRoles.push(projectRole);
         }
-        await technicalAssistanceStaffMutation.mutateAsync(
-          technicalAssistanceStaff
-        );
+        await advocacyStaffMutation.mutateAsync(projectRoles);
 
-        toast("Successfully Created a Technical Assistance", {
+        toast("Successfully Updated an Advocacy", {
           type: "success",
         });
-        await queryClient.invalidateQueries([
-          "getTechnicalAssistanceByTechnicalAssistanceId",
-        ]);
-        navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/${id}`
-        );
+        await queryClient.invalidateQueries(["getAdvocacys"]);
+        navigate(`/project/design/advocacy/advocacy-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -527,95 +521,54 @@ const EditLearningForm = ({ id }) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (
-        !isLoadingTechnicalAssistanceData &&
-        !isErrorTechnicalAssistanceData &&
-        TechnicalAssistanceData
+        !isLoadingAdvocacyData &&
+        !isErrorAdvocacyData &&
+        !isLoadingQualitativeThematicArea &&
+        !isErrorQualitativeThematicArea &&
+        !isErrorQualitativePeriod &&
+        !isLoadingQualitativePeriod &&
+        !isLoadingQualitativeCountry &&
+        !isErrorQualitativeCountry
       ) {
         let staffId;
         let staffEmail;
         if (!isLoadingStaffList) {
           staffId = staffListData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
+            (obj) => obj.id === AdvocacyData.data.staffNameId
           );
-          if (staffId != null) {
-            staffEmail = staffId.emailAddress;
-          }
-        }
 
-        let enaSupportOffice;
-        if (!isLoadingAmrefEntities) {
-          enaSupportOffice = amrefEntities.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.office
-          );
-        }
-
-        let implementingOffice;
-        if (!isLoadingOrgUnits) {
-          implementingOffice = orgUnitsData.data.find(
-            (obj) =>
-              obj.id === TechnicalAssistanceData.data.implementingOfficeId
-          );
-        }
-
-        let currencyType;
-        if (!isLoadingCurrency) {
-          currencyType = currencyData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.currencyTypeId
-          );
+          staffEmail = staffId.emailAddress;
         }
 
         let donorsList = [];
-        if (!isLoadingDonor) {
-          for (const donor of TechnicalAssistanceData.data.donors) {
-            const result = donorData.data.find(
-              (obj) => obj.id === donor.donorId
-            );
-            if (result) {
-              donorsList.push(result);
-            }
-          }
-        }
-
-        let partnersList = [];
-        if (!isLoadingPartner) {
-          for (const partner of TechnicalAssistanceData.data
-            .technicalAssistancePartners) {
-            const result = partnerData.data.find(
-              (obj) => obj.id === partner.partnerId
-            );
-            if (result) {
-              partnersList.push(result);
-            }
+        for (const donor of AdvocacyData.data.donors) {
+          const result = donorData.data.find((obj) => obj.id === donor.donorId);
+          if (result) {
+            donorsList.push(result);
           }
         }
 
         formik.setValues({
-          title: TechnicalAssistanceData.data.title,
-          shortTitle: TechnicalAssistanceData.data.shortTitle,
-          startDate: TechnicalAssistanceData.data.startDate,
-          endDate: TechnicalAssistanceData.data.endDate,
-          extensionDate: TechnicalAssistanceData.data.extensionDate,
-          status: TechnicalAssistanceData.data.status,
+          title: AdvocacyData.data.title,
+          shortTitle: AdvocacyData.data.shortTitle,
+          startDate: AdvocacyData.data.startDate,
+          endDate: AdvocacyData.data.endDate,
+          extensionDate: AdvocacyData.data.extensionDate,
           staffNameId: staffId ? staffId : "",
+          implementingOfficeId: AdvocacyData.data.implementingOfficeId,
+          regionalProgrammeId: AdvocacyData.data.regionalProgrammeId,
+          enaSupportOffice: AdvocacyData.data.office,
+          totalBudget: AdvocacyData.data.totalBudget,
+          costCenter: AdvocacyData.data.costCenter,
+          currencyTypeId: AdvocacyData.data.currencyTypeId,
+          status: AdvocacyData.data.statusId,
           leadStaffEmail: staffEmail ? staffEmail : "",
-          implementingOfficeId: implementingOffice ? implementingOffice.id : "",
-          enaSupportOffice: enaSupportOffice ? enaSupportOffice.id : "",
-          regionalProgrammeId: TechnicalAssistanceData.data.regionalProgrammeId,
-          administrativeProgrammeId:
-            TechnicalAssistanceData.data.administrativeProgrammeId,
-          totalBudget: TechnicalAssistanceData.data.totalBudget,
-          costCenter: TechnicalAssistanceData.data.costCenter,
-          currencyTypeId: TechnicalAssistanceData.data.currencyTypeId,
           donors: donorsList,
-          partners: partnersList,
         });
 
-        if (
-          TechnicalAssistanceData.data.staff &&
-          TechnicalAssistanceData.data.staff.length > 0
-        ) {
+        if (AdvocacyData.data.staff && AdvocacyData.data.staff.length > 0) {
           const allStaff = [];
-          for (const staffData of TechnicalAssistanceData.data.staff) {
+          for (const staffData of AdvocacyData.data.staff) {
             const lookupRole =
               !isLoadingAimsRole &&
               aimsRolesData.data.filter(
@@ -640,24 +593,22 @@ const EditLearningForm = ({ id }) => {
     }
     setCurrentFormValues();
   }, [
-    TechnicalAssistanceData,
-    isLoadingTechnicalAssistanceData,
-    isErrorTechnicalAssistanceData,
+    AdvocacyData,
+    isLoadingAdvocacyData,
+    isErrorAdvocacyData,
     isLoadingStaffList,
     isErrorStaffList,
     staffListData,
+    isErrorQualitativePeriod,
+    isLoadingQualitativePeriod,
+    isErrorQualitativeThematicArea,
+    isLoadingQualitativeThematicArea,
+    QualitativePeriodData,
+    QualitativeThematicAreaData,
+    QualitativeCountryData,
+    isLoadingQualitativeCountry,
+    isErrorQualitativeCountry,
     amrefEntities,
-    isLoadingAmrefEntities,
-    isLoadingOrgUnits,
-    isLoadingCurrency,
-    isLoadingDonor,
-    isLoadingPartner,
-    orgUnitsData,
-    currencyData,
-    donorData,
-    partnerData,
-    isLoadingAimsRole,
-    aimsRolesData,
   ]);
 
   return (
@@ -671,7 +622,7 @@ const EditLearningForm = ({ id }) => {
           <Grid item md={12}>
             <TextField
               name="title"
-              label="Technical Assistance Name"
+              label="Advocacy Name"
               value={formik.values.title}
               error={Boolean(formik.touched.title && formik.errors.title)}
               fullWidth
@@ -687,7 +638,7 @@ const EditLearningForm = ({ id }) => {
           <Grid item md={12}>
             <TextField
               name="shortTitle"
-              label="Technical Assistance Short Title"
+              label="Advocacy Short Title"
               value={formik.values.shortTitle}
               error={Boolean(
                 formik.touched.shortTitle && formik.errors.shortTitle
@@ -706,6 +657,8 @@ const EditLearningForm = ({ id }) => {
             <DatePicker
               label="Start Date"
               value={formik.values.startDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("startDate", value, true)
               }
@@ -731,13 +684,15 @@ const EditLearningForm = ({ id }) => {
             <DatePicker
               label="End Date"
               value={formik.values.endDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) => formik.setFieldValue("endDate", value, true)}
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.startDate && formik.errors.endDate
+                    formik.touched.endDate && formik.errors.endDate
                   )}
-                  helperText={formik.touched.startDate && formik.errors.endDate}
+                  helperText={formik.touched.endDate && formik.errors.endDate}
                   margin="normal"
                   name="endDate"
                   variant="outlined"
@@ -752,16 +707,18 @@ const EditLearningForm = ({ id }) => {
             <DatePicker
               label="Extension Date"
               value={formik.values.extensionDate || null}
+              minDate={YEAR_RANGE.MIN_YEAR}
+              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("extensionDate", value, true)
               }
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.startDate && formik.errors.extensionDate
+                    formik.touched.extensionDate && formik.errors.extensionDate
                   )}
                   helperText={
-                    formik.touched.startDate && formik.errors.extensionDate
+                    formik.touched.extensionDate && formik.errors.extensionDate
                   }
                   margin="normal"
                   name="endDate"
@@ -932,39 +889,6 @@ const EditLearningForm = ({ id }) => {
                 : []}
             </TextField>
           </Grid>
-
-          <Grid item md={4}>
-            <TextField
-              name="administrativeProgrammeId"
-              label="Administrative Programme"
-              select
-              value={formik.values.administrativeProgrammeId}
-              error={Boolean(
-                formik.touched.administrativeProgrammeId &&
-                  formik.errors.administrativeProgrammeId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.administrativeProgrammeId &&
-                formik.errors.administrativeProgrammeId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Administrative Programme
-              </MenuItem>
-              {!isLoadingAdminProg
-                ? adminProgData.data.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.shortTitle}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
           <Grid item md={4}>
             <TextField
               name="totalBudget"
@@ -1046,6 +970,7 @@ const EditLearningForm = ({ id }) => {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               variant="outlined"
+              my={2}
             >
               <MenuItem disabled value="">
                 Status
@@ -1062,7 +987,7 @@ const EditLearningForm = ({ id }) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={4}>
+          <Grid item md={12}>
             <Autocomplete
               id="donors"
               multiple
@@ -1097,56 +1022,6 @@ const EditLearningForm = ({ id }) => {
                 />
               )}
             />
-          </Grid>
-
-          <Grid item md={4}>
-            <FormControl sx={{ width: "100%" }}>
-              <InputLabel>Partners</InputLabel>
-              <Select
-                fullWidth
-                multiple
-                value={formik.values.partners}
-                onChange={(e) => {
-                  const selectedPartners = Array.isArray(e.target.value)
-                    ? e.target.value
-                    : [e.target.value]; // Ensure it's always an array
-                  formik.setFieldValue("partners", selectedPartners);
-                }}
-                input={<OutlinedInput label="Multiple Select" />}
-                renderValue={(selected) => (
-                  <Stack gap={1} direction="row" flexWrap="wrap">
-                    {selected.map((value) => (
-                      <Chip
-                        key={value.lookupItemId}
-                        label={value.lookupItemName}
-                        onDelete={() =>
-                          formik.setFieldValue(
-                            "partners",
-                            formik.values.partners.filter(
-                              (item) => item !== value
-                            )
-                          )
-                        }
-                        deleteIcon={
-                          <CancelIcon
-                            onMouseDown={(event) => event.stopPropagation()}
-                          />
-                        }
-                      />
-                    ))}
-                  </Stack>
-                )}
-                my={2}
-              >
-                {!isLoadingPartner
-                  ? partnerData.data.map((option) => (
-                      <MenuItem key={option.lookupItemId} value={option}>
-                        {option.lookupItemName}
-                      </MenuItem>
-                    ))
-                  : []}
-              </Select>
-            </FormControl>
           </Grid>
           <Grid container spacing={12} pt={10}>
             <Grid item md={12}>
@@ -1249,11 +1124,10 @@ const EditLearningForm = ({ id }) => {
   );
 };
 
-const Learning = () => {
+const Advocacy = () => {
   let { id } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="Edit TechnicalAssistance" />
       <Typography variant="h3" gutterBottom display="inline">
         Basic Information
       </Typography>
@@ -1262,7 +1136,7 @@ const Learning = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditLearningForm id={id} />
+              <EditAdvocacyForm id={id} />
             </Grid>
           </Grid>
         </CardContent>
@@ -1271,4 +1145,4 @@ const Learning = () => {
   );
 };
 
-export default Learning;
+export default Advocacy;
