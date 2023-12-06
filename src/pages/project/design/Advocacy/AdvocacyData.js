@@ -6,17 +6,26 @@ import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { getAdvocates } from "../../../../api/advocacy";
-import AdvocacyDataActions from "./AdvocacyDataActions";
+import { Trash, Edit, Link2 } from "react-feather";
+import {
+  getAdvocacyByProcessLevelItemId,
+  deleteAdvocacyById,
+} from "../../../../api/advocacy";
+import { format } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -25,27 +34,43 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
+  const [open, setOpen] = useState(false);
+  const [advocacyId, setAdvocacyId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const {
     data: AdvocacyData,
     isLoading: isLoadingAdvocacy,
     isError: isErrorAdvocacy,
-    error,
-  } = useQuery(["getAdvocates"], getAdvocates, {
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    ["getAdvocacyByProcessLevelItemId", processLevelItemId],
+    getAdvocacyByProcessLevelItemId,
+    { enabled: !!processLevelItemId }
+  );
 
-  if (isErrorAdvocacy) {
-    toast(error.response.data, {
-      type: "error",
-    });
+  function handleClickOpen(advocacyId) {
+    setAdvocacyId(advocacyId);
+    setOpen(true);
   }
 
-  const actionLink = (params) => {
-    return <AdvocacyDataActions params={params} />;
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const { refetch } = useQuery(
+    ["deleteAdvocacyById", advocacyId],
+    deleteAdvocacyById,
+    { enabled: false }
+  );
+
+  const handleDeleteAdvocacy = async () => {
+    await refetch();
+    setOpen(false);
+    await queryClient.invalidateQueries(["getAdvocacyByProcessLevelItemId"]);
   };
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -55,7 +80,7 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
           color="error"
           onClick={() =>
             navigate(
-              `/project/design/new-advocacy/${processLevelItemId}/${processLevelTypeId}`
+              `/project/design/advocacy/new-advocacy/${processLevelItemId}/${processLevelTypeId}`
             )
           }
         >
@@ -82,31 +107,52 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 flex: 1,
               },
               {
-                field: "beneficiary",
-                headerName: "Beneficiary",
+                field: "startDate",
+                headerName: "Start Date",
                 editable: false,
                 flex: 1,
+                valueFormatter: (params) =>
+                  params?.value
+                    ? format(new Date(params.value), "dd-MMM-yyyy")
+                    : "",
               },
               {
-                field: "advocacyNeed",
-                headerName: "Advocacy Need",
+                field: "endDate",
+                headerName: "End Date",
                 editable: false,
                 flex: 1,
+                valueFormatter: (params) =>
+                  params?.value
+                    ? format(new Date(params.value), "dd-MMM-yyyy")
+                    : "",
               },
-              {
-                field: "expectedResult",
-                headerName: "Expected Result",
+              /*{
+                field: "status",
+                headerName: "Status",
                 editable: false,
                 flex: 1,
-              },
+                valueGetter: (params) => params.row.status.name,
+              },*/
               {
                 field: "action",
                 headerName: "Action",
                 sortable: false,
                 flex: 1,
-                renderCell: (params) => {
-                  return actionLink(params);
-                },
+                renderCell: (params) => (
+                  <>
+                    <NavLink
+                      to={`/project/design/advocacy/advocacy-detail/${params.id}`}
+                    >
+                      <Button startIcon={<Edit />} size="small"></Button>
+                    </NavLink>
+
+                    <Button
+                      startIcon={<Trash />}
+                      size="small"
+                      onClick={(e) => handleClickOpen(params.id)}
+                    ></Button>
+                  </>
+                ),
               },
             ]}
             pageSize={pageSize}
@@ -117,6 +163,28 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
           />
         </div>
       </Paper>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Delete Advocacy</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete Advocacy?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteAdvocacy} color="primary">
+            Yes
+          </Button>
+          <Button onClick={handleClose} color="error" autoFocus>
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

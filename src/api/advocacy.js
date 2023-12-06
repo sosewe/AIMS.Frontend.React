@@ -14,7 +14,7 @@ export const getAdvocacyById = async ({ queryKey }) => {
   return await axios.get(`${apiRoutes.advocacy}/${id}`);
 };
 
-export const getAdvocatesByProcessLevelItemId = async ({ queryKey }) => {
+export const getAdvocacyByProcessLevelItemId = async ({ queryKey }) => {
   const [, processLevelItemId] = queryKey;
   return await axios.get(
     `${apiRoutes.advocacy}/ProcessLevelItem/${processLevelItemId}`

@@ -4,6 +4,14 @@ import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormControlLabel,
+  FormGroup,
   Grid,
   MenuItem,
   TextField as MuiTextField,
@@ -20,31 +28,55 @@ import {
   OutlinedInput,
   Stack,
   Chip,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from "@mui/material";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { YEAR_RANGE } from "../../../../constants";
 import {
+  getAdministrativeRoles,
   getAMREFStaffList,
   getLookupMasterItemsByName,
 } from "../../../../api/lookup";
+import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
 import { getDonors } from "../../../../api/donor";
+import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
-import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
 import {
-  newTechnicalAssistance,
   getTechnicalAssistanceByTechnicalAssistanceId,
+  newTechnicalAssistance,
 } from "../../../../api/technical-assistance";
-import { newTechnicalAssistanceDonor } from "../../../../api/technical-assistance-donor";
-import { newTechnicalAssistancePartner } from "../../../../api/technical-assistance-partner";
+import {
+  newTechnicalAssistanceDonor,
+  getTechnicalAssistanceDonorByTechnicalAssistanceId,
+  deleteTechnicalAssistanceDonorById,
+} from "../../../../api/technical-assistance-donor";
+import {
+  newTechnicalAssistancePartner,
+  getTechnicalAssistancePartnerByTechnicalAssistanceId,
+  deleteTechnicalAssistancePartnerById,
+} from "../../../../api/technical-assistance-partner";
+import {
+  newTechnicalAssistanceStaff,
+  getTechnicalAssistanceStaffByTechnicalAssistanceId,
+  deleteTechnicalAssistanceStaffById,
+} from "../../../../api/technical-assistance-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { getProjectRoles } from "../../../../api/project-role";
+
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
 
@@ -77,11 +109,195 @@ const initialValues = {
   administrativeProgrammeId: "",
 };
 
-const TechnicalAssistanceForm = ({
-  processLevelItemId,
-  processLevelTypeId,
-  id,
+const staffDetailsInitial = {
+  staffDetailsName: "",
+  staffDetailsAIMSRole: "",
+  staffDetailsWorkFlowTask: "",
+  primaryRole: false,
+};
+
+const StaffDetailsForm = ({
+  aimsRolesData,
+  administrativeRoles,
+  isLoading,
+  isLoadingAdministrativeRoles,
+  isErrorAdministrativeRoles,
+  staffListData,
+  isLoadingStaffList,
+  isErrorStaffList,
+  handleClick,
 }) => {
+  const formik = useFormik({
+    initialValues: staffDetailsInitial,
+    validationSchema: Yup.object().shape({
+      staffDetailsName: Yup.string().required("Required"),
+      staffDetailsAIMSRole: Yup.object().required("Required"),
+      staffDetailsWorkFlowTask: Yup.object().required("Required"),
+      primaryRole: Yup.boolean().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        handleClick(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item md={3}>
+              <Autocomplete
+                id="staffDetailsName"
+                options={!isLoadingStaffList ? staffListData.data : []}
+                getOptionLabel={(option) => {
+                  if (!option) {
+                    return ""; // Return an empty string for null or undefined values
+                  }
+                  return `${option}`;
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.id}>
+                      {option ? `${option.firstName} ${option.lastName}` : ""}
+                    </li>
+                  );
+                }}
+                onChange={(e, val) => {
+                  formik.setFieldValue(
+                    "staffDetailsName",
+                    `${val.firstName} ${val.lastName}`
+                  );
+                }}
+                value={formik.values.staffDetailsName}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={Boolean(
+                      formik.touched.staffDetailsName &&
+                        formik.errors.staffDetailsName
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.staffDetailsName &&
+                      formik.errors.staffDetailsName
+                    }
+                    label="Staff Name"
+                    name="staffDetailsName"
+                    variant="outlined"
+                    my={2}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsAIMSRole"
+                label="Project Role"
+                required
+                select
+                value={formik.values.staffDetailsAIMSRole}
+                error={Boolean(
+                  formik.touched.staffDetailsAIMSRole &&
+                    formik.errors.staffDetailsAIMSRole
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsAIMSRole &&
+                  formik.errors.staffDetailsAIMSRole
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select Project Role
+                </MenuItem>
+                {!isLoading
+                  ? aimsRolesData.data.map((option) => (
+                      <MenuItem key={option.id} value={option}>
+                        {option.name}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsWorkFlowTask"
+                label="DQA Work Flow Role"
+                required
+                select
+                value={formik.values.staffDetailsWorkFlowTask}
+                error={Boolean(
+                  formik.touched.staffDetailsWorkFlowTask &&
+                    formik.errors.staffDetailsWorkFlowTask
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsWorkFlowTask &&
+                  formik.errors.staffDetailsWorkFlowTask
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              >
+                <MenuItem disabled value="">
+                  Select DQA Work Flow Role
+                </MenuItem>
+                {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
+                  ? administrativeRoles.data.map((option) => (
+                      <MenuItem key={option.roleId} value={option}>
+                        {option.roleName}
+                      </MenuItem>
+                    ))
+                  : []}
+              </TextField>
+            </Grid>
+            <Grid item md={2}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formik.values.primaryRole}
+                      onChange={formik.handleChange}
+                      name="primaryRole"
+                    />
+                  }
+                  label="Primary Role?"
+                />
+              </FormGroup>
+            </Grid>
+            <Grid item md={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+
+const EditLearningForm = ({ id }) => {
+  const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
+  const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
@@ -91,9 +307,7 @@ const TechnicalAssistanceForm = ({
   } = useQuery(
     ["getTechnicalAssistanceByTechnicalAssistanceId", id],
     getTechnicalAssistanceByTechnicalAssistanceId,
-    {
-      enabled: !!id,
-    }
+    { enabled: !!id }
   );
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
@@ -102,6 +316,20 @@ const TechnicalAssistanceForm = ({
       refetchOnWindowFocus: false,
     }
   );
+  const { data: aimsRolesData, isLoading: isLoadingAimsRole } = useQuery(
+    ["getProjectRoles"],
+    getProjectRoles,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const {
+    isLoading: isLoadingAdministrativeRoles,
+    isError: isErrorAdministrativeRoles,
+    data: administrativeRoles,
+  } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
+    refetchOnWindowFocus: false,
+  });
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -145,7 +373,6 @@ const TechnicalAssistanceForm = ({
       refetchOnWindowFocus: false,
     }
   );
-
   const { isLoading: isLoadingPartner, data: partnerData } = useQuery(
     ["partnerType", "PartnerType"],
     getLookupMasterItemsByName,
@@ -154,19 +381,13 @@ const TechnicalAssistanceForm = ({
     }
   );
 
-  const {
-    isLoading: isLoadingAdministrativeProgram,
-    data: administrativeProgramData,
-  } = useQuery(["administrativePrograms"], getDonors, {
-    refetchOnWindowFocus: false,
-  });
-  const {
-    isLoading: isLoadingAmrefEntities,
-    data: amrefEntities,
-    isError: isErrorAmrefEntities,
-  } = useQuery(["amrefEntities"], getAmrefEntities, {
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
+    ["amrefEntities"],
+    getAmrefEntities,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const mutation = useMutation({ mutationFn: newTechnicalAssistance });
 
@@ -178,6 +399,10 @@ const TechnicalAssistanceForm = ({
     mutationFn: newTechnicalAssistancePartner,
   });
 
+  const technicalAssistanceStaffMutation = useMutation({
+    mutationFn: newTechnicalAssistanceStaff,
+  });
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
@@ -186,11 +411,12 @@ const TechnicalAssistanceForm = ({
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
-        return endDate ? schema.min(endDate, "Must be after End Date") : schema;
+        return endDate
+          ? schema.min(endDate, "Must be after End Date").nullable()
+          : schema;
       }),
       staffNameId: Yup.object().required("Required"),
       implementingOfficeId: Yup.string().required("Required"),
-      enaSupportOffice: Yup.string().required("Required"),
       regionalProgrammeId: Yup.string().required("Required"),
       administrativeProgrammeId: Yup.string().required("Required"),
       totalBudget: Yup.number()
@@ -198,14 +424,14 @@ const TechnicalAssistanceForm = ({
         .positive("Must be positive"),
       currencyTypeId: Yup.string().required("Required"),
       costCenter: Yup.string().required("Required"),
-      status: Yup.string().required("Required"),
+      statusId: Yup.string().required("Required"),
       donors: Yup.array().required("Required"),
       partners: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const saveTechnicalAssistance = {
-          id: id ? id : new Guid(),
+          id: id ? id : new Guid().toString(),
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
@@ -220,20 +446,15 @@ const TechnicalAssistanceForm = ({
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          statusId: values.status,
-          processLevelItemId: processLevelItemId,
-          processLevelTypeId: processLevelTypeId,
+          status: values.statusId,
         };
-
-        const technicalAssistance = await mutation.mutateAsync(
-          saveTechnicalAssistance
-        );
+        await mutation.mutateAsync(saveTechnicalAssistance);
 
         let technicalAssistanceDonors = [];
         for (const donor of values.donors) {
           const technicalAssistanceDonor = {
             donorId: donor.id,
-            technicalAssistanceId: technicalAssistance.data.id,
+            technicalAssistanceId: id,
             createDate: new Date(),
           };
           technicalAssistanceDonors.push(technicalAssistanceDonor);
@@ -246,13 +467,33 @@ const TechnicalAssistanceForm = ({
         for (const partner of values.partners) {
           const technicalAssistancePartner = {
             partnerId: partner.id,
-            technicalAssistanceId: technicalAssistance.data.id,
+            technicalAssistanceId: id,
             createDate: new Date(),
           };
           technicalAssistancePartners.push(technicalAssistancePartner);
         }
         await technicalAssistancePartnersMutation.mutateAsync(
           technicalAssistancePartners
+        );
+
+        const technicalAssistanceStaff = [];
+        for (const staffDetail of staffDetailsList) {
+          const projectRole = {
+            technicalAssistanceId: id,
+            aimsRoleId: staffDetail.staffDetailsAIMSRole.id,
+            aimsRoleName: staffDetail.staffDetailsAIMSRole.name,
+            createDate: new Date(),
+            dqaRoleId: staffDetail.staffDetailsWorkFlowTask.roleId,
+            dqaRoleName: staffDetail.staffDetailsWorkFlowTask.roleName,
+            isPrimary:
+              staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
+            staffNames: staffDetail.staffDetailsName,
+            void: false,
+          };
+          technicalAssistanceStaff.push(projectRole);
+        }
+        await technicalAssistanceStaffMutation.mutateAsync(
+          technicalAssistanceStaff
         );
 
         toast("Successfully Created a Technical Assistance", {
@@ -262,7 +503,7 @@ const TechnicalAssistanceForm = ({
           "getTechnicalAssistanceByTechnicalAssistanceId",
         ]);
         navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/${technicalAssistance.data.id}`
+          `/project/design/technical-assistance/technical-assistance-detail/${id}`
         );
       } catch (error) {
         console.log(error);
@@ -273,11 +514,22 @@ const TechnicalAssistanceForm = ({
     },
   });
 
+  function removeStaff(row) {
+    setStaffDetailsList((current) =>
+      current.filter((staff) => staff.staffDetailsName !== row.staffDetailsName)
+    );
+  }
+
+  const handleStaffDetailsAdd = (values) => {
+    setStaffDetailsList((current) => [...current, values]);
+  };
+
   useEffect(() => {
     function setCurrentFormValues() {
       if (
         !isLoadingTechnicalAssistanceData &&
-        !isErrorTechnicalAssistanceData
+        !isErrorTechnicalAssistanceData &&
+        TechnicalAssistanceData
       ) {
         let staffId;
         let staffEmail;
@@ -285,47 +537,128 @@ const TechnicalAssistanceForm = ({
           staffId = staffListData.data.find(
             (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
           );
-
           if (staffId != null) {
-            staffEmail = TechnicalAssistanceData.data.staffName.emailAddress;
+            staffEmail = staffId.emailAddress;
           }
         }
 
         let enaSupportOffice;
-        if (!!isLoadingAmrefEntities) {
+        if (!isLoadingAmrefEntities) {
           enaSupportOffice = amrefEntities.data.find(
             (obj) => obj.id === TechnicalAssistanceData.data.office
           );
         }
 
-        let implementingOfficeId;
-        if (!!isLoadingOrgUnits) {
-          implementingOfficeId = orgUnitsData.data.find(
+        let implementingOffice;
+        if (!isLoadingOrgUnits) {
+          implementingOffice = orgUnitsData.data.find(
             (obj) =>
               obj.id === TechnicalAssistanceData.data.implementingOfficeId
           );
         }
 
         let currencyType;
-        if (!!isLoadingCurrency) {
+        if (!isLoadingCurrency) {
           currencyType = currencyData.data.find(
             (obj) => obj.id === TechnicalAssistanceData.data.currencyTypeId
           );
         }
 
         let donorsList = [];
-        for (const donor of TechnicalAssistanceData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
+        if (!isLoadingDonor) {
+          for (const donor of TechnicalAssistanceData.data.donors) {
+            const result = donorData.data.find(
+              (obj) => obj.id === donor.donorId
+            );
+            if (result) {
+              donorsList.push(result);
+            }
           }
         }
 
-        formik.setValues({});
+        let partnersList = [];
+        if (!isLoadingPartner) {
+          for (const partner of TechnicalAssistanceData.data
+            .technicalAssistancePartners) {
+            const result = partnerData.data.find(
+              (obj) => obj.id === partner.partnerId
+            );
+            if (result) {
+              partnersList.push(result);
+            }
+          }
+        }
+
+        formik.setValues({
+          title: TechnicalAssistanceData.data.title,
+          shortTitle: TechnicalAssistanceData.data.shortTitle,
+          startDate: TechnicalAssistanceData.data.startDate,
+          endDate: TechnicalAssistanceData.data.endDate,
+          extensionDate: TechnicalAssistanceData.data.extensionDate,
+          status: TechnicalAssistanceData.data.status,
+          staffNameId: staffId ? staffId : "",
+          leadStaffEmail: staffEmail ? staffEmail : "",
+          implementingOfficeId: implementingOffice ? implementingOffice.id : "",
+          enaSupportOffice: enaSupportOffice ? enaSupportOffice.id : "",
+          regionalProgrammeId: TechnicalAssistanceData.data.regionalProgrammeId,
+          administrativeProgrammeId:
+            TechnicalAssistanceData.data.administrativeProgrammeId,
+          totalBudget: TechnicalAssistanceData.data.totalBudget,
+          costCenter: TechnicalAssistanceData.data.costCenter,
+          currencyTypeId: TechnicalAssistanceData.data.currencyTypeId,
+          donors: donorsList,
+          partners: partnersList,
+        });
+
+        if (
+          TechnicalAssistanceData.data.staff &&
+          TechnicalAssistanceData.data.staff.length > 0
+        ) {
+          const allStaff = [];
+          for (const staffData of TechnicalAssistanceData.data.staff) {
+            const lookupRole =
+              !isLoadingAimsRole &&
+              aimsRolesData.data.filter(
+                (obj) => obj.id === staffData.aimsRoleId
+              );
+            const staff = {
+              id: staffData.id,
+              staffDetailsName: staffData.staffNames,
+              staffDetailsAIMSRole:
+                lookupRole && lookupRole.length > 0 ? lookupRole[0] : "",
+              staffDetailsWorkFlowTask: {
+                roleId: staffData.dqaRoleId,
+                roleName: staffData.dqaRoleName,
+              },
+              primaryRole: staffData.isPrimary,
+            };
+            allStaff.push(staff);
+          }
+          setStaffDetailsList(allStaff);
+        }
       }
     }
     setCurrentFormValues();
-  }, []);
+  }, [
+    TechnicalAssistanceData,
+    isLoadingTechnicalAssistanceData,
+    isErrorTechnicalAssistanceData,
+    isLoadingStaffList,
+    isErrorStaffList,
+    staffListData,
+    amrefEntities,
+    isLoadingAmrefEntities,
+    isLoadingOrgUnits,
+    isLoadingCurrency,
+    isLoadingDonor,
+    isLoadingPartner,
+    orgUnitsData,
+    currencyData,
+    donorData,
+    partnerData,
+    isLoadingAimsRole,
+    aimsRolesData,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -373,8 +706,6 @@ const TechnicalAssistanceForm = ({
             <DatePicker
               label="Start Date"
               value={formik.values.startDate || null}
-              minDate={YEAR_RANGE.MIN_YEAR}
-              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("startDate", value, true)
               }
@@ -400,15 +731,13 @@ const TechnicalAssistanceForm = ({
             <DatePicker
               label="End Date"
               value={formik.values.endDate || null}
-              minDate={YEAR_RANGE.MIN_YEAR}
-              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) => formik.setFieldValue("endDate", value, true)}
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.endDate && formik.errors.endDate
+                    formik.touched.startDate && formik.errors.endDate
                   )}
-                  helperText={formik.touched.endDate && formik.errors.endDate}
+                  helperText={formik.touched.startDate && formik.errors.endDate}
                   margin="normal"
                   name="endDate"
                   variant="outlined"
@@ -423,21 +752,19 @@ const TechnicalAssistanceForm = ({
             <DatePicker
               label="Extension Date"
               value={formik.values.extensionDate || null}
-              minDate={YEAR_RANGE.MIN_YEAR}
-              maxDate={YEAR_RANGE.MAX_YEAR}
               onChange={(value) =>
                 formik.setFieldValue("extensionDate", value, true)
               }
               renderInput={(params) => (
                 <TextField
                   error={Boolean(
-                    formik.touched.extensionDate && formik.errors.extensionDate
+                    formik.touched.startDate && formik.errors.extensionDate
                   )}
                   helperText={
-                    formik.touched.extensionDate && formik.errors.extensionDate
+                    formik.touched.startDate && formik.errors.extensionDate
                   }
                   margin="normal"
-                  name="extensionDate"
+                  name="endDate"
                   variant="outlined"
                   fullWidth
                   my={2}
@@ -489,14 +816,16 @@ const TechnicalAssistanceForm = ({
           <Grid item md={4}>
             <TextField
               name="leadStaffEmail"
-              label="Lead staff email address"
+              // label="Lead staff email address"
               value={formik.values.leadStaffEmail}
               error={Boolean(
-                formik.touched.leadStaffEmail && formik.errors.leadStaffEmail
+                formik.touched.projectManagerEmail &&
+                  formik.errors.projectManagerEmail
               )}
               fullWidth
               helperText={
-                formik.touched.leadStaffEmail && formik.errors.leadStaffEmail
+                formik.touched.projectManagerEmail &&
+                formik.errors.projectManagerEmail
               }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -603,6 +932,7 @@ const TechnicalAssistanceForm = ({
                 : []}
             </TextField>
           </Grid>
+
           <Grid item md={4}>
             <TextField
               name="administrativeProgrammeId"
@@ -716,7 +1046,6 @@ const TechnicalAssistanceForm = ({
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               variant="outlined"
-              my={2}
             >
               <MenuItem disabled value="">
                 Status
@@ -770,7 +1099,7 @@ const TechnicalAssistanceForm = ({
             />
           </Grid>
 
-          <Grid item md={4} mt={2}>
+          <Grid item md={4}>
             <FormControl sx={{ width: "100%" }}>
               <InputLabel>Partners</InputLabel>
               <Select
@@ -819,47 +1148,121 @@ const TechnicalAssistanceForm = ({
               </Select>
             </FormControl>
           </Grid>
+          <Grid container spacing={12} pt={10}>
+            <Grid item md={12}>
+              <Typography variant="h3" gutterBottom display="inline">
+                Staff Details
+              </Typography>
+            </Grid>
+          </Grid>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpenAddStaffDetails(true)}
+              >
+                <AddIcon /> Staff Details
+              </Button>
+            </Grid>
+          </Grid>
 
-          <Grid item md={12}>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Paper>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Staff Name</TableCell>
+                      <TableCell align="right">Project Role</TableCell>
+                      <TableCell align="right">DQA Workflow Role</TableCell>
+                      <TableCell align="right">Primary Role</TableCell>
+                      <TableCell align="right">Action</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {staffDetailsList.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell component="th" scope="row">
+                          {row.staffDetailsName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.staffDetailsAIMSRole.name}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.staffDetailsWorkFlowTask.roleName}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.primaryRole ? "Yes" : "No"}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Button
+                            startIcon={<TrashIcon />}
+                            size="small"
+                            onClick={() => removeStaff(row)}
+                          ></Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Grid item mt={5} md={12}>
             <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save changes
             </Button>
           </Grid>
         </Grid>
       )}
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAddStaffDetails}
+        onClose={() => setOpenAddStaffDetails(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Staff Details</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Add Staff Details</DialogContentText>
+          <StaffDetailsForm
+            aimsRolesData={aimsRolesData}
+            administrativeRoles={administrativeRoles}
+            isLoading={isLoadingAimsRole}
+            isLoadingAdministrativeRoles={isLoadingAdministrativeRoles}
+            isErrorAdministrativeRoles={isErrorAdministrativeRoles}
+            staffListData={staffListData}
+            isLoadingStaffList={isLoadingStaffList}
+            isErrorStaffList={isErrorStaffList}
+            handleClick={handleStaffDetailsAdd}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAddStaffDetails(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </form>
   );
 };
 
-const TechnicalAssistance = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+const Learning = () => {
+  let { id } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="New Technical Assistance" />
+      <Helmet title="Edit TechnicalAssistance" />
       <Typography variant="h3" gutterBottom display="inline">
-        New Technical Assistance
+        Basic Information
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Technical Assistance</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <TechnicalAssistanceForm
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                id={id}
-              />
+              <EditLearningForm id={id} />
             </Grid>
           </Grid>
         </CardContent>
@@ -868,4 +1271,4 @@ const TechnicalAssistance = () => {
   );
 };
 
-export default TechnicalAssistance;
+export default Learning;

@@ -38,12 +38,9 @@ import { getDonors } from "../../../../api/donor";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
-import {
-  newTechnicalAssistance,
-  getTechnicalAssistanceByTechnicalAssistanceId,
-} from "../../../../api/technical-assistance";
-import { newTechnicalAssistanceDonor } from "../../../../api/technical-assistance-donor";
-import { newTechnicalAssistancePartner } from "../../../../api/technical-assistance-partner";
+import { newAdvocacy, getAdvocacyById } from "../../../../api/advocacy";
+import { newAdvocacyDonor } from "../../../../api/advocacy-donor";
+import { newAdvocacyPartner } from "../../../../api/advocacy-partner";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
@@ -77,24 +74,16 @@ const initialValues = {
   administrativeProgrammeId: "",
 };
 
-const TechnicalAssistanceForm = ({
-  processLevelItemId,
-  processLevelTypeId,
-  id,
-}) => {
+const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
-    data: TechnicalAssistanceData,
-    isLoading: isLoadingTechnicalAssistanceData,
-    isError: isErrorTechnicalAssistanceData,
-  } = useQuery(
-    ["getTechnicalAssistanceByTechnicalAssistanceId", id],
-    getTechnicalAssistanceByTechnicalAssistanceId,
-    {
-      enabled: !!id,
-    }
-  );
+    data: AdvocacyData,
+    isLoading: isLoadingAdvocacyData,
+    isError: isErrorAdvocacyData,
+  } = useQuery(["getAdvocacyById", id], getAdvocacyById, {
+    enabled: !!id,
+  });
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -168,14 +157,14 @@ const TechnicalAssistanceForm = ({
     refetchOnWindowFocus: false,
   });
 
-  const mutation = useMutation({ mutationFn: newTechnicalAssistance });
+  const mutation = useMutation({ mutationFn: newAdvocacy });
 
-  const technicalAssistanceDonorsMutation = useMutation({
-    mutationFn: newTechnicalAssistanceDonor,
+  const advocacyDonorsMutation = useMutation({
+    mutationFn: newAdvocacyDonor,
   });
 
-  const technicalAssistancePartnersMutation = useMutation({
-    mutationFn: newTechnicalAssistancePartner,
+  const advocacyPartnersMutation = useMutation({
+    mutationFn: newAdvocacyPartner,
   });
 
   const formik = useFormik({
@@ -204,7 +193,7 @@ const TechnicalAssistanceForm = ({
     }),
     onSubmit: async (values) => {
       try {
-        const saveTechnicalAssistance = {
+        const saveAdvocacy = {
           id: id ? id : new Guid(),
           createDate: new Date(),
           title: values.title,
@@ -225,44 +214,36 @@ const TechnicalAssistanceForm = ({
           processLevelTypeId: processLevelTypeId,
         };
 
-        const technicalAssistance = await mutation.mutateAsync(
-          saveTechnicalAssistance
-        );
+        const advocacy = await mutation.mutateAsync(saveAdvocacy);
 
-        let technicalAssistanceDonors = [];
+        let advocacyDonors = [];
         for (const donor of values.donors) {
-          const technicalAssistanceDonor = {
+          const advocacyDonor = {
             donorId: donor.id,
-            technicalAssistanceId: technicalAssistance.data.id,
+            advocacyId: advocacy.data.id,
             createDate: new Date(),
           };
-          technicalAssistanceDonors.push(technicalAssistanceDonor);
+          advocacyDonors.push(advocacyDonor);
         }
-        await technicalAssistanceDonorsMutation.mutateAsync(
-          technicalAssistanceDonors
-        );
+        await advocacyDonorsMutation.mutateAsync(advocacyDonors);
 
-        let technicalAssistancePartners = [];
+        let advocacyPartners = [];
         for (const partner of values.partners) {
-          const technicalAssistancePartner = {
+          const advocacyPartner = {
             partnerId: partner.id,
-            technicalAssistanceId: technicalAssistance.data.id,
+            advocacyId: advocacy.data.id,
             createDate: new Date(),
           };
-          technicalAssistancePartners.push(technicalAssistancePartner);
+          advocacyPartners.push(advocacyPartner);
         }
-        await technicalAssistancePartnersMutation.mutateAsync(
-          technicalAssistancePartners
-        );
+        await advocacyPartnersMutation.mutateAsync(advocacyPartners);
 
-        toast("Successfully Created a Technical Assistance", {
+        toast("Successfully Created an Advocacy", {
           type: "success",
         });
-        await queryClient.invalidateQueries([
-          "getTechnicalAssistanceByTechnicalAssistanceId",
-        ]);
+        await queryClient.invalidateQueries(["getAdvocacyByAdvocacyId"]);
         navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/${technicalAssistance.data.id}`
+          `/project/design/advocacy/advocacy-detail/${advocacy.data.id}`
         );
       } catch (error) {
         console.log(error);
@@ -275,46 +256,42 @@ const TechnicalAssistanceForm = ({
 
   useEffect(() => {
     function setCurrentFormValues() {
-      if (
-        !isLoadingTechnicalAssistanceData &&
-        !isErrorTechnicalAssistanceData
-      ) {
+      if (!isLoadingAdvocacyData && !isErrorAdvocacyData) {
         let staffId;
         let staffEmail;
         if (!isLoadingStaffList) {
           staffId = staffListData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
+            (obj) => obj.id === AdvocacyData.data.staffNameId
           );
 
           if (staffId != null) {
-            staffEmail = TechnicalAssistanceData.data.staffName.emailAddress;
+            staffEmail = AdvocacyData.data.staffName.emailAddress;
           }
         }
 
         let enaSupportOffice;
         if (!!isLoadingAmrefEntities) {
           enaSupportOffice = amrefEntities.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.office
+            (obj) => obj.id === AdvocacyData.data.office
           );
         }
 
         let implementingOfficeId;
         if (!!isLoadingOrgUnits) {
           implementingOfficeId = orgUnitsData.data.find(
-            (obj) =>
-              obj.id === TechnicalAssistanceData.data.implementingOfficeId
+            (obj) => obj.id === AdvocacyData.data.implementingOfficeId
           );
         }
 
         let currencyType;
         if (!!isLoadingCurrency) {
           currencyType = currencyData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.currencyTypeId
+            (obj) => obj.id === AdvocacyData.data.currencyTypeId
           );
         }
 
         let donorsList = [];
-        for (const donor of TechnicalAssistanceData.data.donors) {
+        for (const donor of AdvocacyData.data.donors) {
           const result = donorData.data.find((obj) => obj.id === donor.donorId);
           if (result) {
             donorsList.push(result);
@@ -338,7 +315,7 @@ const TechnicalAssistanceForm = ({
           <Grid item md={12}>
             <TextField
               name="title"
-              label="Technical Assistance Name"
+              label="Advocacy Name"
               value={formik.values.title}
               error={Boolean(formik.touched.title && formik.errors.title)}
               fullWidth
@@ -354,7 +331,7 @@ const TechnicalAssistanceForm = ({
           <Grid item md={12}>
             <TextField
               name="shortTitle"
-              label="Technical Assistance Short Title"
+              label="Advocacy Short Title"
               value={formik.values.shortTitle}
               error={Boolean(
                 formik.touched.shortTitle && formik.errors.shortTitle
@@ -831,13 +808,13 @@ const TechnicalAssistanceForm = ({
   );
 };
 
-const TechnicalAssistance = () => {
+const Advocacy = () => {
   let { processLevelItemId, processLevelTypeId, id } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="New Technical Assistance" />
+      <Helmet title="New Advocacy" />
       <Typography variant="h3" gutterBottom display="inline">
-        New Technical Assistance
+        New Advocacy
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
@@ -847,7 +824,7 @@ const TechnicalAssistance = () => {
         >
           Project Design
         </Link>
-        <Typography>New Technical Assistance</Typography>
+        <Typography>New Advocacy</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -855,7 +832,7 @@ const TechnicalAssistance = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <TechnicalAssistanceForm
+              <AdvocacyForm
                 processLevelItemId={processLevelItemId}
                 processLevelTypeId={processLevelTypeId}
                 id={id}
@@ -868,4 +845,4 @@ const TechnicalAssistance = () => {
   );
 };
 
-export default TechnicalAssistance;
+export default Advocacy;

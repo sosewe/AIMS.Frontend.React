@@ -9,6 +9,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link,
+  Breadcrumbs,
+  Divider,
   Grid,
   MenuItem,
   Paper as MuiPaper,
@@ -27,11 +30,12 @@ import {
 } from "../../../../api/administrative-unit";
 import { Check, Trash as TrashIcon } from "react-feather";
 import {
-  deleteProjectLocation,
-  getProjectLocations,
-  newProjectLocation,
-} from "../../../../api/location";
+  newTechnicalAssistanceGeographicalFocus,
+  getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
+  deleteTechnicalAssistanceGeographicalFocusById,
+} from "../../../../api/technical-assistance-geographic-focus";
 import { DataGrid } from "@mui/x-data-grid";
+import de from "date-fns/esm/locale/de/index.js";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -47,7 +51,7 @@ const getFocusInitial = {
   fourthLevel: "",
 };
 
-const GeoFocus = ({ id, processLevelTypeId }) => {
+const GeoFocus = ({ id }) => {
   const queryClient = useQueryClient();
   const [parentTopLevel, setParentTopLevel] = useState();
   const [firstLevel, setFirstLevel] = useState();
@@ -66,10 +70,14 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     data: ProjectLocationsData,
     isLoading: isLoadingProjectLocations,
     // refetch,
-  } = useQuery(["getProjectLocationsQuery", id], getProjectLocations, {
-    refetchOnWindowFocus: false,
-    enabled: !!id,
-  });
+  } = useQuery(
+    ["getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId", id],
+    getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
 
   const GetAdministrativeUnit = (params) => {
     const administrativeUnitId = params.value;
@@ -86,7 +94,9 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     }
   };
 
-  const mutation = useMutation({ mutationFn: newProjectLocation });
+  const mutation = useMutation({
+    mutationFn: newTechnicalAssistanceGeographicalFocus,
+  });
   const formik = useFormik({
     initialValues: getFocusInitial,
     validationSchema: Yup.object().shape({
@@ -116,6 +126,8 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
       try {
         let administrativeUnitId = "";
         let administrativeUnitName = "";
+
+        // const innovationId = innovationId.id;
         if (
           values.selectedCountry &&
           !values.firstLevel &&
@@ -147,15 +159,18 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           administrativeUnitId = values.fourthLevel.id;
           administrativeUnitName = values.fourthLevel.adminUnit;
         }
-        const projectLocation = {
+
+        const technicalAssistanceGeoFocus = {
+          technicalAssistanceId: id,
+          createDate: new Date(),
           administrativeUnitId,
           administrativeUnitName,
-          processLevelItemId: id,
-          processLevelTypeId: processLevelTypeId,
-          createDate: new Date(),
         };
-        await mutation.mutateAsync(projectLocation);
-        await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
+
+        await mutation.mutateAsync(technicalAssistanceGeoFocus);
+        await queryClient.invalidateQueries([
+          "getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId",
+        ]);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -297,8 +312,8 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
   };
 
   const { refetch } = useQuery(
-    ["deleteProjectLocation", locationId],
-    deleteProjectLocation,
+    ["deleteTechnicalAssistanceGeographicalFocusById", locationId],
+    deleteTechnicalAssistanceGeographicalFocusById,
     { enabled: false }
   );
 
@@ -311,21 +326,27 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     setOpen(false);
   };
 
-  const handleDeleteProjectLocation = async () => {
+  const handleDeleteInnovationLocation = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
+    await queryClient.invalidateQueries([
+      "getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId",
+    ]);
   };
 
   return (
     <Card mb={12}>
       <CardContent>
-        <Grid container spacing={12}>
+        <Grid container spacing={6}>
           <Grid item md={12}>
             <Typography variant="h3" gutterBottom display="inline">
-              Project Locations
+              Geographic Focus
             </Typography>
           </Grid>
+          <Grid item md={12}>
+            <Divider my={6} />
+          </Grid>
+
           <Grid item md={12}>
             <Paper style={{ height: 250, width: "100%" }}>
               <DataGrid
@@ -575,15 +596,15 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Delete Project Location
+            Delete Innovation Location
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Project Location?
+              Are you sure you want to delete Innovation Location?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleDeleteProjectLocation} color="primary">
+            <Button onClick={handleDeleteInnovationLocation} color="primary">
               Yes
             </Button>
             <Button onClick={handleClose} color="error" autoFocus>

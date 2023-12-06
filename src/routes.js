@@ -170,9 +170,15 @@ const NewLearning = async(() =>
 const LearningDetail = async(() =>
   import("./pages/project/design/Learning/LearningDetail")
 );
-
+// Learning Design
 const Advocacy = async(() =>
-  import("./pages/project/design/NewAdvocacy/Advocacy")
+  import("./pages/project/design/Advocacy/Advocacy")
+);
+const NewAdvocacy = async(() =>
+  import("./pages/project/design/Advocacy/NewAdvocacy")
+);
+const AdvocacyDetail = async(() =>
+  import("./pages/project/design/Advocacy/AdvocacyDetail")
 );
 
 // TechnicalAssistance
@@ -349,22 +355,6 @@ const routes = [
         path: "design/innovation/innovation-detail/:id",
         element: <InnovationDetail />,
       },
-      /*{
-        path: "design/new-innovation/:processLevelItemId/:processLevelTypeId",
-        element: <Innovation />,
-      },
-      {
-        path: "design/new-innovation/:processLevelItemId/:processLevelTypeId/:id",
-        element: <Innovation />,
-      },*/
-      {
-        path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId",
-        element: <Advocacy />,
-      },
-      {
-        path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId/:id",
-        element: <Advocacy />,
-      },
       {
         path: "monitoring/innovation-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <InnovationMonitoring />,
@@ -430,8 +420,16 @@ const routes = [
         element: <NewLearning />,
       },
       {
-        path: "design/learning/learning-detail/:id",
-        element: <LearningDetail />,
+        path: "design/advocacy/advocacy/:processLevelItemId/:processLevelTypeId",
+        element: <Advocacy />,
+      },
+      {
+        path: "design/advocacy/new-advocacy/:processLevelItemId/:processLevelTypeId",
+        element: <NewAdvocacy />,
+      },
+      {
+        path: "design/learning/advocacy-detail/:id",
+        element: <AdvocacyDetail />,
       },
     ],
   },

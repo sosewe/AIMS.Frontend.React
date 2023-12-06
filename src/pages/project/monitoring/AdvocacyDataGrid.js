@@ -10,7 +10,7 @@ import {
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useQuery } from "@tanstack/react-query";
-import { getAdvocatesByProcessLevelItemId } from "../../../api/advocacy";
+import { getAdvocacyByProcessLevelItemId } from "../../../api/advocacy";
 import { DataGrid } from "@mui/x-data-grid";
 import AdvocacyMonitoringActions from "./AdvocacyMonitoringActions";
 import { toast } from "react-toastify";
@@ -28,8 +28,8 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
     isError: isErrorAdvocacy,
     error,
   } = useQuery(
-    ["getAdvocatesByProcessLevelItemId", processLevelItemId],
-    getAdvocatesByProcessLevelItemId,
+    ["getAdvocacyByProcessLevelItemId", processLevelItemId],
+    getAdvocacyByProcessLevelItemId,
     { enabled: !!processLevelItemId }
   );
 
