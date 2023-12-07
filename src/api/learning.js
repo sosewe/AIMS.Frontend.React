@@ -16,15 +16,6 @@ export const getLearningByLearningId = async ({ queryKey }) => {
 
 export const getLearningByProcessLevelItemId = async ({ queryKey }) => {
   const [, processLevelItemId] = queryKey;
-
-  console.log(
-    "logging .... " +
-      JSON.stringify(
-        await axios.get(
-          `${apiRoutes.learning}/GetLearningByProcessLevel/${processLevelItemId}`
-        )
-      )
-  );
   return await axios.get(
     `${apiRoutes.learning}/GetLearningByProcessLevel/${processLevelItemId}`
   );
