@@ -4,11 +4,11 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-import { useParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import EditAdvocacy from "./EditAdvocacy";
 import ThematicFocus from "./ThematicFocus";
 import GeoFocus from "./GeoFocus";
-//import LearningObjectives from "./LearningObjectives";
+import AdvocacyObjectives from "./AdvocacyObjectives";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -72,6 +72,7 @@ const AdvocacyDetail = () => {
         <Tab label="Basic Information" {...a11yProps(0)} />
         <Tab label="Thematic Focus" {...a11yProps(1)} />
         <Tab label="Geographic Focus" {...a11yProps(2)} />
+        <Tab label="Objective & Classification" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <EditAdvocacy id={id} />
@@ -81,6 +82,9 @@ const AdvocacyDetail = () => {
       </TabPanel>
       <TabPanel value={value} index={2}>
         <GeoFocus id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <AdvocacyObjectives id={id} />
       </TabPanel>
     </Box>
   );

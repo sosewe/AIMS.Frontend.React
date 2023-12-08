@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { MenuItem } from "@mui/material";
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -117,7 +116,7 @@ const ObjectiveDetailsForm = ({ handleClick }) => {
   );
 };
 
-const LearningObjectives = ({ id }) => {
+const AdvocacyObjectives = ({ id }) => {
   const [openAddObjectives, setOpenAddObjectives] = useState(false);
   const [objectivesList, setObjectivesList] = useState([]);
   const queryClient = useQueryClient();
@@ -287,4 +286,4 @@ const LearningObjectives = ({ id }) => {
   );
 };
 
-export default LearningObjectives;
+export default AdvocacyObjectives;

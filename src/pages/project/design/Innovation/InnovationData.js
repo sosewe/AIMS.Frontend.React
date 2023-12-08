@@ -135,13 +135,6 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
                     ? format(new Date(params.value), "dd-MMM-yyyy")
                     : "",
               },
-              /*{
-                field: "status",
-                headerName: "Status",
-                editable: false,
-                flex: 1,
-                valueGetter: (params) => params.row.status.name,
-              },*/
               {
                 field: "action",
                 headerName: "Action",

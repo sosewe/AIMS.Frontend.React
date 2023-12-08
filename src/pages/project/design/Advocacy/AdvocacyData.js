@@ -18,9 +18,8 @@ import { spacing } from "@mui/system";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
-import { Trash, Edit, Link2 } from "react-feather";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash, Edit } from "react-feather";
 import {
   getAdvocacyByProcessLevelItemId,
   deleteAdvocacyById,
@@ -126,13 +125,6 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
                     ? format(new Date(params.value), "dd-MMM-yyyy")
                     : "",
               },
-              /*{
-                field: "status",
-                headerName: "Status",
-                editable: false,
-                flex: 1,
-                valueGetter: (params) => params.row.status.name,
-              },*/
               {
                 field: "action",
                 headerName: "Action",

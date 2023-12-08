@@ -170,10 +170,10 @@ const NewLearning = async(() =>
 const LearningDetail = async(() =>
   import("./pages/project/design/Learning/LearningDetail")
 );
-// Learning Design
-const Advocacy = async(() =>
-  import("./pages/project/design/Advocacy/Advocacy")
-);
+// Advocacy Design
+// const Advocacy = async(() =>
+//   import("./pages/project/design/Advocacy/Advocacy")
+// );
 const NewAdvocacy = async(() =>
   import("./pages/project/design/Advocacy/NewAdvocacy")
 );
@@ -418,10 +418,6 @@ const routes = [
       {
         path: "design/learning/new-learning/:processLevelItemId/:processLevelTypeId",
         element: <NewLearning />,
-      },
-      {
-        path: "design/advocacy/advocacy/:processLevelItemId/:processLevelTypeId",
-        element: <Advocacy />,
       },
       {
         path: "design/advocacy/new-advocacy/:processLevelItemId/:processLevelTypeId",
