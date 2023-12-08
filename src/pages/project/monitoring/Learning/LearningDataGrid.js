@@ -6,66 +6,49 @@ import {
   Breadcrumbs,
   Card as MuiCard,
   CardContent as MuiCardContent,
-  Box,
-  CircularProgress,
   Divider as MuiDivider,
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
 
 import { NavLink, useNavigate } from "react-router-dom";
-import * as Yup from "yup";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Grid, Link2 } from "react-feather";
+import { Link2 } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { getInnovationByProcessLevelItemId } from "../../../../api/innovation";
 import {
-  getAMREFStaffList,
-  getLookupMasterItemsByName,
-} from "../../../../api/lookup";
+  getLearningByLearningId,
+  getLearningByProcessLevelItemId,
+} from "../../../../api/learning";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
+const LearningData = ({ processLevelItemId, processLevelTypeId }) => {
   const [pageSize, setPageSize] = useState(5);
   const {
-    data: InnovationsData,
-    isLoading: isLoadingInnovations,
-    isError: isErrorInnovations,
+    data: LearningData,
+    isLoading: isLoadingLearning,
+    isError: isErrorLearning,
     error,
   } = useQuery(
-    ["getInnovationByProcessLevelItemId", processLevelItemId],
-    getInnovationByProcessLevelItemId,
+    ["getLearningByProcessLevelItemId", processLevelItemId],
+    getLearningByProcessLevelItemId,
     {
       enabled: !!processLevelItemId,
     }
   );
 
-  const { isLoading: isLoadingDocumentCategory, data: documentCategoryData } =
-    useQuery(["currencyType", "CurrencyType"], getLookupMasterItemsByName, {
-      refetchOnWindowFocus: false,
+  if (isErrorLearning) {
+    toast(error.response.data, {
+      type: "error",
     });
-
-  /*
-  const formik = useFormik({
-    validationSchema: Yup.object().shape({}),
-    onSubmit: async (values) => {
-      try {
-      } catch (error) {
-        console.log(error);
-        toast(error.response.data, {
-          type: "error",
-        });
-      }
-    },
-  });*/
+  }
 
   return (
     <Card mb={6}>
@@ -75,16 +58,16 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
             <DataGrid
               rowsPerPageOptions={[5, 10, 25]}
               rows={
-                isLoadingInnovations || isErrorInnovations
+                isLoadingLearning || isErrorLearning
                   ? []
-                  : InnovationsData
-                  ? InnovationsData.data
+                  : LearningData
+                  ? LearningData.data
                   : []
               }
               columns={[
                 {
-                  field: "title",
-                  headerName: "Title",
+                  field: "learningQuestion",
+                  headerName: "Learning Question",
                   editable: false,
                   flex: 1,
                 },
@@ -108,7 +91,7 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
                   renderCell: (params) => (
                     <>
                       <NavLink
-                        to={`/project/monitoring/innovation-monitoring-detail/${params.id}`}
+                        to={`/project/monitoring/learning-monitoring-detail/${processLevelItemId}/${params.id}`}
                       >
                         <Button startIcon={<Link2 />} size="small"></Button>
                       </NavLink>
@@ -118,7 +101,7 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
               ]}
               pageSize={pageSize}
               onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-              loading={isLoadingInnovations}
+              loading={isLoadingLearning}
               getRowHeight={() => "auto"}
             />
           </div>
@@ -128,12 +111,12 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const InnovationDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
+const LearningDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <React.Fragment>
-      <Helmet title="Innovation" />
+      <Helmet title="Research (Learning)" />
       <Typography variant="h3" gutterBottom display="inline">
-        Innovation
+        Research (Learning)
       </Typography>
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link
@@ -142,15 +125,15 @@ const InnovationDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
         >
           Project Monitoring
         </Link>
-        <Typography>Innovation</Typography>
+        <Typography>Research (Learning)</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
-      <InnovationData
+      <LearningData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
       />
     </React.Fragment>
   );
 };
-export default InnovationDataGrid;
+export default LearningDataGrid;

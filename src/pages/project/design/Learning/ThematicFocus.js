@@ -11,19 +11,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Link,
-  Breadcrumbs,
   Divider,
   Grid,
   MenuItem,
   TextField as MuiTextField,
   Typography,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
   Paper as MuiPaper,
 } from "@mui/material";
 import { spacing } from "@mui/system";
@@ -41,15 +33,10 @@ import { Check, Trash as TrashIcon } from "react-feather";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { Guid } from "../../../../utils/guid";
 import {
-  newTechnicalAssistanceThematicFocus,
-  getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
-  deleteTechnicalAssistanceThematicFocusById,
-} from "../../../../api/technical-assistance-thematic-focus";
-import {
-  newTechnicalAssistanceStrategicObjective,
-  getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId,
-  deleteTechnicalAssistanceStrategicObjectiveById,
-} from "../../../../api/technical-assistance-strategic-objective";
+  newLearningThematicFocus,
+  getLearningThematicFocusByLearningId,
+  deleteLearningThematicFocusById,
+} from "../../../../api/learning-thematic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../../api/sub-theme";
 import { getUniqueProgrammesByThematicAreaId } from "../../../../api/programme-thematic-area-sub-theme";
@@ -62,7 +49,7 @@ const Button = styled(MuiButton)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 
 const initialValues = {
-  strategicObjectives: [],
+  strategicObjectiveId: "",
   thematicArea: "",
 };
 
@@ -86,20 +73,11 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
   );
 
   const {
-    data: TechnicalAssistanceThematicFocusData,
-    isLoading: isLoadingTechnicalAssistanceThematicFocus,
+    data: LearningThematicFocusData,
+    isLoading: isLoadingLearningThematicFocus,
   } = useQuery(
-    ["getTechnicalAssistanceThematicFocusByTechnicalAssistanceId", id],
-    getTechnicalAssistanceThematicFocusByTechnicalAssistanceId,
-    { enabled: !!id }
-  );
-
-  const {
-    data: TechnicalAssistanceStrategicObjectivesData,
-    isLoading: isLoadingTechnicalAssistanceStrategicObjectives,
-  } = useQuery(
-    ["getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId", id],
-    getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId,
+    ["getLearningThematicFocusByLearningId", id],
+    getLearningThematicFocusByLearningId,
     { enabled: !!id }
   );
 
@@ -109,17 +87,14 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     });
 
   const mutation = useMutation({
-    mutationFn: newTechnicalAssistanceThematicFocus,
-  });
-
-  const mutationStrategicObjective = useMutation({
-    mutationFn: newTechnicalAssistanceStrategicObjective,
+    mutationFn: newLearningThematicFocus,
   });
 
   const formik = useFormik({
     initialValues: initialValues,
     enableReinitialize: true,
     validationSchema: Yup.object().shape({
+      strategicObjectiveId: Yup.object().required("Required"),
       thematicArea: Yup.object().required("Required"),
     }),
     onSubmit: async (values) => {
@@ -129,39 +104,29 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
             values.hasOwnProperty(subThemesDatum.subThemeId) &&
             values[subThemesDatum.subThemeId].length > 0
           ) {
-            const technicalAssistanceThematicFocus = {
+            const learningThematicFocus = {
               processLevelItemId: id,
               processLevelTypeId: processLevelTypeId,
               createDate: new Date(),
               subThemeId: subThemesDatum.subThemeId,
               thematicAreaId: subThemesDatum.thematicAreaId,
-              technicalAssistanceId: id,
+              strategicObjectiveId: values.strategicObjectiveId.id,
+              researchId: id,
               id: new Guid().toString(),
             };
-            await mutation.mutateAsync(technicalAssistanceThematicFocus);
+            await mutation.mutateAsync(learningThematicFocus);
           }
         }
 
-        let strategicObjectivesList = [];
-        for (const item of values.strategicObjectives) {
-          const strategicObjective = {
-            strategicObjectiveId: item.id,
-            technicalAssistanceId: id,
-            createDate: new Date(),
-          };
-          strategicObjectivesList.push(strategicObjective);
-        }
-        await mutationStrategicObjective.mutateAsync(strategicObjectivesList);
-
         await queryClient.invalidateQueries([
-          "getTechnicalAssistanceThematicFocusByTechnicalAssistanceId",
+          "getLearningThematicFocusByLearningId",
         ]);
 
         await queryClient.invalidateQueries([
-          "getTechnicalAssistanceStrategicObjectiveByTechnicalAssistanceId",
+          "getTechnicalAssistanceStrategicObjectiveByLearningId",
         ]);
 
-        toast("Successfully added Project Thematic Focus", {
+        toast("Successfully Updated Research Thematic Focus", {
           type: "success",
         });
       } catch (error) {
@@ -221,46 +186,23 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
   }
 
   const { refetch } = useQuery(
-    ["deleteTechnicalAssistanceThematicFocusById", thematicFocusId],
-    deleteTechnicalAssistanceThematicFocusById,
+    ["deleteLearningThematicFocusById", thematicFocusId],
+    deleteLearningThematicFocusById,
     { enabled: false }
   );
 
-  const handleDeleteTechnicalAssistanceThematicFocus = async () => {
+  const handleDeleteLearningThematicFocus = async () => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
-      "getTechnicalAssistanceThematicFocusByTechnicalAssistanceId",
+      "getLearningThematicFocusByLearningId",
     ]);
   };
 
   useEffect(() => {
-    function setCurrentFormValues() {
-      let strategicObjectivesList = [];
-      if (
-        !isLoadingTechnicalAssistanceStrategicObjectives &&
-        TechnicalAssistanceStrategicObjectivesData &&
-        TechnicalAssistanceStrategicObjectivesData.data.length > 0
-      ) {
-        for (const objective of TechnicalAssistanceStrategicObjectivesData.data) {
-          const result = amrefObjectivesData.data.find(
-            (obj) => obj.id === objective.strategicObjectiveId
-          );
-          if (result) {
-            strategicObjectivesList.push(result);
-          }
-        }
-
-        formik.setValues({
-          strategicObjectives: strategicObjectivesList,
-        });
-      }
-    }
+    function setCurrentFormValues() {}
     setCurrentFormValues();
-  }, [
-    isLoadingTechnicalAssistanceStrategicObjectives,
-    TechnicalAssistanceStrategicObjectivesData,
-  ]);
+  }, []);
 
   return (
     <Card mb={12}>
@@ -278,59 +220,36 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
             <form onSubmit={formik.handleSubmit}>
               <Grid container>
                 <Grid item md={12} mb={3}>
-                  <FormControl sx={{ width: "100%" }}>
-                    <InputLabel>Strategic Objectives</InputLabel>
-                    <Select
-                      fullWidth
-                      multiple
-                      value={formik.values.strategicObjectives}
-                      onChange={(e) => {
-                        const selectedStrategicObjectives = Array.isArray(
-                          e.target.value
-                        )
-                          ? e.target.value
-                          : [e.target.value]; // Ensure it's always an array
-                        formik.setFieldValue(
-                          "strategicObjectives",
-                          selectedStrategicObjectives
-                        );
-                      }}
-                      input={<OutlinedInput label="Multiple Select" />}
-                      renderValue={(selected) => (
-                        <Stack gap={1} direction="row" flexWrap="wrap">
-                          {selected.map((value) => (
-                            <Chip
-                              key={value.id}
-                              label={value.objective}
-                              onDelete={() =>
-                                formik.setFieldValue(
-                                  "strategicObjectives",
-                                  formik.values.strategicObjectives.filter(
-                                    (item) => item !== value
-                                  )
-                                )
-                              }
-                              deleteIcon={
-                                <CancelIcon
-                                  onMouseDown={(event) =>
-                                    event.stopPropagation()
-                                  }
-                                />
-                              }
-                            />
-                          ))}
-                        </Stack>
-                      )}
-                    >
-                      {!isLoadingAmrefObjectives
-                        ? amrefObjectivesData.data.map((option) => (
-                            <MenuItem key={option.id} value={option}>
-                              {option.objective}
-                            </MenuItem>
-                          ))
-                        : []}
-                    </Select>
-                  </FormControl>
+                  <TextField
+                    name="strategicObjectiveId"
+                    label="Strategic Objective"
+                    select
+                    value={formik.values.strategicObjectiveId}
+                    error={Boolean(
+                      formik.touched.strategicObjectiveId &&
+                        formik.errors.strategicObjectiveId
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.strategicObjectiveId &&
+                      formik.errors.strategicObjectiveId
+                    }
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    my={2}
+                  >
+                    <MenuItem disabled value="">
+                      Select
+                    </MenuItem>
+                    {!isLoadingAmrefObjectives
+                      ? amrefObjectivesData.data.map((option) => (
+                          <MenuItem key={option.id} value={option}>
+                            {option.objective}
+                          </MenuItem>
+                        ))
+                      : []}
+                  </TextField>
                 </Grid>
 
                 <Grid item md={12}>
@@ -429,10 +348,10 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                     <DataGrid
                       rowsPerPageOptions={[5, 10, 25]}
                       rows={
-                        isLoadingTechnicalAssistanceThematicFocus
+                        isLoadingLearningThematicFocus
                           ? []
-                          : TechnicalAssistanceThematicFocusData
-                          ? TechnicalAssistanceThematicFocusData.data
+                          : LearningThematicFocusData
+                          ? LearningThematicFocusData.data
                           : []
                       }
                       columns={[
@@ -464,7 +383,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                       onPageSizeChange={(newPageSize) =>
                         setPageSize(newPageSize)
                       }
-                      loading={isLoadingTechnicalAssistanceThematicFocus}
+                      loading={isLoadingLearningThematicFocus}
                       getRowHeight={() => "auto"}
                     />
                   </Paper>
@@ -485,7 +404,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                     </DialogContent>
                     <DialogActions>
                       <Button
-                        onClick={handleDeleteTechnicalAssistanceThematicFocus}
+                        onClick={handleDeleteLearningThematicFocus}
                         color="primary"
                       >
                         Yes

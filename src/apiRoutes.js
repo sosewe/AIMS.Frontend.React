@@ -89,6 +89,8 @@ export const apiRoutes = {
   learningStaff: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResearchStaff`,
   learningGeographicalFocus: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResearchGeographicalFocus`,
   learningThematicFocus: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResearchThematicFocus`,
+  learningResearchProgressUpdate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResearchProgressUpdate`,
+  learningDocument: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ResearchDocument`,
   advocacy: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Advocacy`,
   advocacyDonor: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyDonor`,
   advocacyPartner: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyPartner`,

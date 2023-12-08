@@ -22,9 +22,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { Trash, Edit, Link2 } from "react-feather";
 import {
-  getTechnicalAssistanceByProcessLevelItemId,
-  deleteTechnicalAssistanceById,
-} from "../../../../api/technical-assistance";
+  getLearningByProcessLevelItemId,
+  deleteLearningById,
+} from "../../../../api/learning";
 import { format } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
@@ -35,23 +35,23 @@ const Button = styled(MuiButton)(spacing);
 
 const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
   const [open, setOpen] = useState(false);
-  const [technicalAssistanceId, setTechnicalAssistanceId] = useState(false);
+  const [learningId, setlearningId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const {
-    data: TechnicalAssistanceData,
-    isLoading: isLoadingTechnicalAssistance,
-    isError: isErrorTechnicalAssistance,
+    data: LearningData,
+    isLoading: isLoadingLearning,
+    isError: isErrorLearning,
   } = useQuery(
-    ["getTechnicalAssistanceByProcessLevelItemId", processLevelItemId],
-    getTechnicalAssistanceByProcessLevelItemId,
+    ["getLearningByProcessLevelItemId", processLevelItemId],
+    getLearningByProcessLevelItemId,
     { enabled: !!processLevelItemId }
   );
 
-  function handleClickOpen(technicalAssistanceId) {
-    setTechnicalAssistanceId(technicalAssistanceId);
+  function handleClickOpen(learningId) {
+    setlearningId(learningId);
     setOpen(true);
   }
 
@@ -60,17 +60,15 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
   }
 
   const { refetch } = useQuery(
-    ["deleteTechnicalAssistanceById", technicalAssistanceId],
-    deleteTechnicalAssistanceById,
+    ["deleteLearningById", learningId],
+    deleteLearningById,
     { enabled: false }
   );
 
-  const handleDeleteTechnicalAssistance = async () => {
+  const handleDeleteLearning = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries([
-      "getTechnicalAssistanceByProcessLevelItemId",
-    ]);
+    await queryClient.invalidateQueries(["getLearningByProcessLevelItemId"]);
   };
 
   return (
@@ -95,16 +93,16 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
           <DataGrid
             rowsPerPageOptions={[5, 10, 25]}
             rows={
-              isLoadingTechnicalAssistance || isErrorTechnicalAssistance
+              isLoadingLearning || isErrorLearning
                 ? []
-                : TechnicalAssistanceData
-                ? TechnicalAssistanceData.data
+                : LearningData
+                ? LearningData.data
                 : []
             }
             columns={[
               {
-                field: "title",
-                headerName: "Title",
+                field: "learningQuestion",
+                headerName: "Learning Question",
                 editable: false,
                 flex: 1,
               },
@@ -128,13 +126,6 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
                     ? format(new Date(params.value), "dd-MMM-yyyy")
                     : "",
               },
-              /*{
-                field: "status",
-                headerName: "Status",
-                editable: false,
-                flex: 1,
-                valueGetter: (params) => params.row.status.name,
-              },*/
               {
                 field: "action",
                 headerName: "Action",
@@ -143,7 +134,7 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 renderCell: (params) => (
                   <>
                     <NavLink
-                      to={`/project/design/technical-assistance/technical-assistance-detail/${params.id}`}
+                      to={`/project/design/learning/learning-detail/${params.id}`}
                     >
                       <Button startIcon={<Edit />} size="small"></Button>
                     </NavLink>
@@ -159,7 +150,7 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
             ]}
             pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-            loading={isLoadingTechnicalAssistance}
+            loading={isLoadingLearning}
             components={{ Toolbar: GridToolbar }}
             getRowHeight={() => "auto"}
           />
@@ -179,7 +170,7 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteTechnicalAssistance} color="primary">
+          <Button onClick={handleDeleteLearning} color="primary">
             Yes
           </Button>
           <Button onClick={handleClose} color="error" autoFocus>
