@@ -4,8 +4,9 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useParams } from "react-router-dom";
-import AdvocacyUpdate from "./AdvocacyMonitoring";
 import KMDocumentsUpload from "./KMDocumentsUpload";
+import AdvocacyDataGrid from "./AdvocacyUpdateDataGrid";
+import AdvocacyProgressUpdateDataGrid from "./AdvocacyUpdateDataGrid";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,7 +44,7 @@ function a11yProps(index: number) {
   };
 }
 
-const InnovationDetail = () => {
+const TechnicalAssistanceDetail = () => {
   const [value, setValue] = React.useState(0);
   let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -67,16 +68,16 @@ const InnovationDetail = () => {
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
         <Tab label="Advocacy Update" {...a11yProps(0)} />
-        <Tab label="KM Documents Upload" {...a11yProps(3)} />
+        <Tab label="KM Documents Upload" {...a11yProps(1)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <AdvocacyUpdate id={id} />
+        <AdvocacyProgressUpdateDataGrid id={id} />
       </TabPanel>
-      <TabPanel value={value} index={3}>
+      <TabPanel value={value} index={1}>
         <KMDocumentsUpload id={id} />
       </TabPanel>
     </Box>
   );
 };
 
-export default InnovationDetail;
+export default TechnicalAssistanceDetail;

@@ -1,19 +1,25 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import {
+  Button,
+  Link,
+  Breadcrumbs,
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
+
+import { NavLink, useNavigate } from "react-router-dom";
+import { Add as AddIcon } from "@mui/icons-material";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { Link2 } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { useQuery } from "@tanstack/react-query";
-import { getAdvocacyByProcessLevelItemId } from "../../../api/advocacy";
-import { DataGrid } from "@mui/x-data-grid";
-import AdvocacyMonitoringActions from "./AdvocacyMonitoringActions";
-import { toast } from "react-toastify";
+import { getAdvocacyByProcessLevelItemId } from "../../../../api/advocacy";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -30,7 +36,9 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
   } = useQuery(
     ["getAdvocacyByProcessLevelItemId", processLevelItemId],
     getAdvocacyByProcessLevelItemId,
-    { enabled: !!processLevelItemId }
+    {
+      enabled: !!processLevelItemId,
+    }
   );
 
   if (isErrorAdvocacy) {
@@ -38,10 +46,6 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
       type: "error",
     });
   }
-
-  const actionLink = (params) => {
-    return <AdvocacyMonitoringActions params={params} />;
-  };
 
   return (
     <Card mb={6}>
@@ -65,20 +69,14 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
                   flex: 1,
                 },
                 {
-                  field: "beneficiary",
-                  headerName: "Beneficiary",
+                  field: "startDate",
+                  headerName: "Start Date",
                   editable: false,
                   flex: 1,
                 },
                 {
-                  field: "advocacyNeed",
-                  headerName: "Advocacy Need",
-                  editable: false,
-                  flex: 1,
-                },
-                {
-                  field: "expectedResult",
-                  headerName: "Expected Result",
+                  field: "endDate",
+                  headerName: "End Date",
                   editable: false,
                   flex: 1,
                 },
@@ -87,9 +85,15 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
                   headerName: "Action",
                   sortable: false,
                   flex: 1,
-                  renderCell: (params) => {
-                    return actionLink(params);
-                  },
+                  renderCell: (params) => (
+                    <>
+                      <NavLink
+                        to={`/project/monitoring/advocacy-monitoring-detail/${params.id}`}
+                      >
+                        <Button startIcon={<Link2 />} size="small"></Button>
+                      </NavLink>
+                    </>
+                  ),
                 },
               ]}
               pageSize={pageSize}
@@ -107,10 +111,20 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
 const AdvocacyDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <React.Fragment>
-      <Helmet title="Advocacy Monitoring" />
+      <Helmet title="Technical Assistance" />
       <Typography variant="h3" gutterBottom display="inline">
-        Advocacy Monitoring
+        Advocacy
       </Typography>
+      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+        <Link
+          component={NavLink}
+          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
+        >
+          Project Monitoring
+        </Link>
+        <Typography>Advocacy</Typography>
+      </Breadcrumbs>
+
       <Divider my={6} />
       <AdvocacyData
         processLevelItemId={processLevelItemId}

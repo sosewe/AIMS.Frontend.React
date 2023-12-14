@@ -28,7 +28,7 @@ import { green, purple } from "@mui/material/colors";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
-import AdvocacyDataGrid from "./AdvocacyDataGrid";
+import AdvocacyDataGrid from "./Advocacy/AdvocacyDataGrid";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 
 const Card = styled(MuiCard)(spacing);

@@ -38,10 +38,9 @@ import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
-  newInnovationMonitoringUpdateDocument,
-  getInnovationMonitoringUpdateDocumentByInnovationId,
-  deleteInnovationMonitoringUpdateDocument,
-} from "../../../../api/innovation-monitoring-document";
+  newAdvocacyDocument,
+  getAdvocacyDocumentByAdvocacyId,
+} from "../../../../api/advocacy-document";
 import { SHARED_DIRECTORY } from "../../../../constants";
 
 const Card = styled(MuiCard)(spacing);
@@ -361,16 +360,14 @@ const KMDocumentsUploadForm = ({ id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const {
-    data: InnovationDocumentData,
-    isLoading: isLoadingInnovationDocument,
-  } = useQuery(
-    ["getInnovationMonitoringUpdateDocumentByInnovationId", id],
-    getInnovationMonitoringUpdateDocumentByInnovationId,
-    {
-      enabled: !!id,
-    }
-  );
+  const { data: AdvocacyDocumentData, isLoading: isLoadingAdvocacyDocument } =
+    useQuery(
+      ["getAdvocacyDocumentByAdvocacyId", id],
+      getAdvocacyDocumentByAdvocacyId,
+      {
+        enabled: !!id,
+      }
+    );
 
   const handleAddDocument = (values) => {
     setDocumentsList((current) => [...current, values]);
@@ -384,7 +381,7 @@ const KMDocumentsUploadForm = ({ id }) => {
   function handleViewDocument(row) {}
 
   const mutationDocument = useMutation({
-    mutationFn: newInnovationMonitoringUpdateDocument,
+    mutationFn: newAdvocacyDocument,
   });
 
   const formik = useFormik({
@@ -395,7 +392,8 @@ const KMDocumentsUploadForm = ({ id }) => {
         const innovationDocuments = [];
         for (const item of documentsList) {
           const document = {
-            innovationId: id,
+            id: new Guid().toString(),
+            advocacyId: id,
             createDate: new Date(),
             documentInitials: item.documentInitials,
             documentName: item.documentName,
@@ -412,8 +410,11 @@ const KMDocumentsUploadForm = ({ id }) => {
         toast("Successfully Updated Documents", {
           type: "success",
         });
-        await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(`/project/monitoring/innovation-monitoring-detail/${id}`);
+        await queryClient.invalidateQueries([
+          "getAdvocacyDocumentByAdvocacyId",
+        ]);
+
+        navigate(`/project/monitoring/advocacy-monitoring-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -426,12 +427,12 @@ const KMDocumentsUploadForm = ({ id }) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (
-        !isLoadingInnovationDocument &&
-        InnovationDocumentData.data &&
-        InnovationDocumentData.data.length > 0
+        !isLoadingAdvocacyDocument &&
+        AdvocacyDocumentData.data &&
+        AdvocacyDocumentData.data.length > 0
       ) {
         const allDocuments = [];
-        for (const item of InnovationDocumentData.data) {
+        for (const item of AdvocacyDocumentData.data) {
           const document = {
             documentInitials: item.documentInitials,
             documentName: item.documentName,
@@ -447,7 +448,7 @@ const KMDocumentsUploadForm = ({ id }) => {
       }
     }
     setCurrentFormValues();
-  }, [InnovationDocumentData, isLoadingInnovationDocument]);
+  }, [AdvocacyDocumentData, isLoadingAdvocacyDocument]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -547,11 +548,6 @@ const KMDocumentsUpload = () => {
           KM Documents Upload
         </Grid>
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link>Project Monitoring</Link>
-        <Typography>KM Documents Upload</Typography>
-      </Breadcrumbs>
 
       <Divider my={6} />
       <Card mb={12}>

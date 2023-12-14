@@ -23,7 +23,6 @@ import Page500 from "./pages/auth/Page500";
 
 // Home
 import Home from "./pages/home";
-import AdvocacyMonitoring from "./pages/project/monitoring/Advocacy/AdvocacyMonitoring";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
@@ -135,24 +134,32 @@ const InnovationMonitoringDetail = async(() =>
 );
 
 //Advocacy Monitoring
+const AdvocacyMonitoring = async(() =>
+  import("./pages/project/monitoring/Advocacy/AdvocacyDetail")
+);
+
 const AdvocacyMonitoringDetail = async(() =>
-  import("./pages/project/monitoring/Advocacy/AdvocacyMonitoringDetail")
+  import("./pages/project/monitoring/Advocacy/AdvocacyDetail")
 );
 const AdvocacyMonitoringKMDocumentsUpload = async(() =>
   import("./pages/project/monitoring/Advocacy/KMDocumentsUpload")
+);
+
+const AdvocacyMonitoringUpdate = async(() =>
+  import("./pages/project/monitoring//Advocacy/AdvocacyUpdate")
 );
 
 // Technical Assistance Monitoring
 
 const TechnicalAssistanceMonitoring = async(() =>
   import(
-    "./pages/project/monitoring//TechnicalAssistance/TechnicalAssistanceDetail"
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceDetail"
   )
 );
 
 const TechnicalAssistanceMonitoringDetail = async(() =>
   import(
-    "./pages/project/monitoring//TechnicalAssistance/TechnicalAssistanceDetail"
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceDetail"
   )
 );
 
@@ -460,6 +467,14 @@ const routes = [
       {
         path: "monitoring/advocacy-monitoring-documents-upload/:id/:editId",
         element: <AdvocacyMonitoringKMDocumentsUpload />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-update/:id",
+        element: <AdvocacyMonitoringUpdate />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-update/:id/:editId",
+        element: <AdvocacyMonitoringUpdate />,
       },
     ],
   },
