@@ -180,6 +180,9 @@ const NewAdvocacy = async(() =>
 const AdvocacyDetail = async(() =>
   import("./pages/project/design/Advocacy/AdvocacyDetail")
 );
+const NewAdvocacyObjective = async(() =>
+  import("./pages/project/design/Advocacy/NewAdvocacyObjective")
+);
 
 // TechnicalAssistance
 const TechnicalAssistance = async(() =>
@@ -426,6 +429,10 @@ const routes = [
       {
         path: "design/advocacy/advocacy-detail/:id",
         element: <AdvocacyDetail />,
+      },
+      {
+        path: "design/advocacy/new-advocacy-objective/:processLevelItemId/:processLevelTypeId",
+        element: <NewAdvocacyObjective />,
       },
     ],
   },
