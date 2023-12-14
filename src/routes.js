@@ -134,11 +134,19 @@ const InnovationMonitoringDetail = async(() =>
   import("./pages/project/monitoring/InnovationV2/InnovationDetail")
 );
 
+//Advocacy Monitoring
+const AdvocacyMonitoringDetail = async(() =>
+  import("./pages/project/monitoring/Advocacy/AdvocacyMonitoringDetail")
+);
+const AdvocacyMonitoringKMDocumentsUpload = async(() =>
+  import("./pages/project/monitoring/Advocacy/KMDocumentsUpload")
+);
+
 // Technical Assistance Monitoring
 
 const TechnicalAssistanceMonitoring = async(() =>
   import(
-    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceDetail"
+    "./pages/project/monitoring//TechnicalAssistance/TechnicalAssistanceDetail"
   )
 );
 
@@ -149,15 +157,15 @@ const TechnicalAssistanceMonitoringDetail = async(() =>
 );
 
 const TechnicalAssistanceMonitoringMonthlyUpdate = async(() =>
-  import("./pages/project/monitoring/TechnicalAssistance/MonthlyUpdate")
+  import("./pages/project/monitoring//TechnicalAssistance/MonthlyUpdate")
 );
 
 const TechnicalAssistanceMonitoringQuarterlyUpdate = async(() =>
-  import("./pages/project/monitoring/TechnicalAssistance/QuarterlyUpdate")
+  import("./pages/project/monitoring//TechnicalAssistance/QuarterlyUpdate")
 );
 
 const TechnicalAssistanceMonitoringKMDocumentsUpload = async(() =>
-  import("./pages/project/monitoring/TechnicalAssistance/KMDocumentsUpload")
+  import("./pages/project/monitoring//TechnicalAssistance/KMDocumentsUpload")
 );
 
 // Learning Design
@@ -170,35 +178,14 @@ const NewLearning = async(() =>
 const LearningDetail = async(() =>
   import("./pages/project/design/Learning/LearningDetail")
 );
-// Advocacy Design
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
 const NewAdvocacy = async(() =>
   import("./pages/project/design/Advocacy/NewAdvocacy")
 );
 const AdvocacyDetail = async(() =>
   import("./pages/project/design/Advocacy/AdvocacyDetail")
-=======
-
-const LearningMonitoring = async(() =>
-  import("./pages/project/monitoring/Learning/LearningDetail")
 );
-
-const LearningMonitoringDetail = async(() =>
-  import("./pages/project/monitoring/Learning/LearningDetail")
-);
-
-const LearningMonitoringUpdate = async(() =>
-  import("./pages/project/monitoring/Learning/LearningUpdate")
-);
-
-const LearningMonitoringKMDocumentsUpload = async(() =>
-  import("./pages/project/monitoring/Learning/KMDocumentsUpload")
-);
-
-const Advocacy = async(() =>
-  import("./pages/project/design/NewAdvocacy/Advocacy")
+const NewAdvocacyObjective = async(() =>
+  import("./pages/project/design/Advocacy/NewAdvocacyObjective")
 );
 
 // TechnicalAssistance
@@ -448,28 +435,20 @@ const routes = [
         element: <AdvocacyDetail />,
       },
       {
-        path: "monitoring/learning-monitoring/:processLevelItemId/:processLevelTypeId/:id",
-        element: <LearningMonitoring />,
+        path: "design/advocacy/new-advocacy-objective/:processLevelItemId/:processLevelTypeId",
+        element: <NewAdvocacyObjective />,
       },
       {
-        path: "monitoring/learning-monitoring-detail/:processLevelItemId/:id",
-        element: <LearningMonitoringDetail />,
+        path: "monitoring/advocacy-monitoring-detail/:id",
+        element: <AdvocacyMonitoringDetail />,
       },
       {
-        path: "monitoring/learning-monitoring-update/:processLevelItemId/:id",
-        element: <LearningMonitoringUpdate />,
+        path: "monitoring/advocacy-monitoring-documents-upload/:id",
+        element: <AdvocacyMonitoringKMDocumentsUpload />,
       },
       {
-        path: "monitoring/learning-monitoring-update/:processLevelItemId/:id/:editId",
-        element: <LearningMonitoringUpdate />,
-      },
-      {
-        path: "monitoring/learning-monitoring-documents-upload/:id",
-        element: <LearningMonitoringKMDocumentsUpload />,
-      },
-      {
-        path: "monitoring/learning-monitoring-documents-upload/:id/:editId",
-        element: <LearningMonitoringKMDocumentsUpload />,
+        path: "monitoring/advocacy-monitoring-documents-upload/:id/:editId",
+        element: <AdvocacyMonitoringKMDocumentsUpload />,
       },
     ],
   },
