@@ -454,7 +454,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           };
           innovationDonors.push(innovationDonor);
         }
-        console.log("innovationDonors " + JSON.stringify(innovationDonors));
         await innovationDonorsMutation.mutateAsync(innovationDonors);
 
         toast("Successfully Created an Innovation", {

@@ -30,10 +30,10 @@ import {
 } from "../../../../api/administrative-unit";
 import { Check, Trash as TrashIcon } from "react-feather";
 import {
-  newTechnicalAssistanceGeographicalFocus,
-  getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
-  deleteTechnicalAssistanceGeographicalFocusById,
-} from "../../../../api/technical-assistance-geographic-focus";
+  newLearningGeographicalFocus,
+  getLearningGeographicalFocusByLearningId,
+  deleteLearningGeographicalFocus,
+} from "../../../../api/learning-geographical-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import de from "date-fns/esm/locale/de/index.js";
 
@@ -71,8 +71,8 @@ const GeoFocus = ({ id }) => {
     isLoading: isLoadingProjectLocations,
     // refetch,
   } = useQuery(
-    ["getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId", id],
-    getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
+    ["getLearningGeographicalFocusByLearningId", id],
+    getLearningGeographicalFocusByLearningId,
     {
       refetchOnWindowFocus: false,
       enabled: !!id,
@@ -95,7 +95,7 @@ const GeoFocus = ({ id }) => {
   };
 
   const mutation = useMutation({
-    mutationFn: newTechnicalAssistanceGeographicalFocus,
+    mutationFn: newLearningGeographicalFocus,
   });
   const formik = useFormik({
     initialValues: getFocusInitial,
@@ -160,16 +160,16 @@ const GeoFocus = ({ id }) => {
           administrativeUnitName = values.fourthLevel.adminUnit;
         }
 
-        const technicalAssistanceGeoFocus = {
-          technicalAssistanceId: id,
+        const learningGeoFocus = {
+          researchId: id,
           createDate: new Date(),
           administrativeUnitId,
           administrativeUnitName,
         };
 
-        await mutation.mutateAsync(technicalAssistanceGeoFocus);
+        await mutation.mutateAsync(learningGeoFocus);
         await queryClient.invalidateQueries([
-          "getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId",
+          "getLearningGeographicalFocusByLearningId",
         ]);
       } catch (error) {
         toast(error.response.data, {
@@ -312,8 +312,8 @@ const GeoFocus = ({ id }) => {
   };
 
   const { refetch } = useQuery(
-    ["deleteTechnicalAssistanceGeographicalFocusById", locationId],
-    deleteTechnicalAssistanceGeographicalFocusById,
+    ["deleteLearningGeographicalFocus", locationId],
+    deleteLearningGeographicalFocus,
     { enabled: false }
   );
 
@@ -326,11 +326,11 @@ const GeoFocus = ({ id }) => {
     setOpen(false);
   };
 
-  const handleDeleteInnovationLocation = async () => {
+  const handleDeleteLearningLocation = async () => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
-      "getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId",
+      "getLearningGeographicalFocusByLearningId",
     ]);
   };
 
@@ -596,15 +596,15 @@ const GeoFocus = ({ id }) => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Delete Innovation Location
+            Delete Learning Location
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Innovation Location?
+              Are you sure you want to delete Learning Location?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleDeleteInnovationLocation} color="primary">
+            <Button onClick={handleDeleteLearningLocation} color="primary">
               Yes
             </Button>
             <Button onClick={handleClose} color="error" autoFocus>

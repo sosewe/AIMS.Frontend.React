@@ -25,8 +25,6 @@ export const getTechnicalAssistanceQuarterlyUpdateById = async ({
 export const getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId =
   async ({ queryKey }) => {
     const [, id] = queryKey;
-
-    console.log("logging id .." + id);
     return await axios.get(
       `${apiRoutes.technicalAssistanceQuarterlyUpdate}/${id}`
     );

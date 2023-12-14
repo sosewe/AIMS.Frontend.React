@@ -78,28 +78,26 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
-    ["currencyType", "CurrencyType"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
   const {
-    isLoading: isLoadingStaffList,
-    isError: isErrorStaffList,
-    data: staffListData,
-  } = useQuery(["staffList"], getAMREFStaffList, {
-    refetchOnWindowFocus: false,
-    retry: 0,
-  });
-  const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
-    ["status", "status"],
+    isLoading: isLoadingLearningMethodology,
+    data: learningMethodologyData,
+  } = useQuery(
+    ["learningMethodology", "LearningMethodology"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
     }
   );
+
+  const { isLoading: isLoadingStaffList, data: staffListData } = useQuery(
+    ["staffList"],
+    getAMREFStaffList,
+    {
+      refetchOnWindowFocus: false,
+      retry: 0,
+    }
+  );
+
   const { isLoading: isLoadingOrgUnits, data: orgUnitsData } = useQuery(
     ["organizationUnits"],
     getOrganizationUnits,
@@ -107,8 +105,41 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
+
   const { isLoading: isLoadingRegProg, data: regProgData } = useQuery(
     ["regionalProgramme", "RegionalProgramme"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
+    ["amrefEntities"],
+    getAmrefEntities,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingAdminProg, data: adminProgData } = useQuery(
+    ["AdministrativeProgramme"],
+    getAdministrativeProgrammes,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
+    ["currencyType", "CurrencyType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
+    ["status", "status"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
@@ -122,29 +153,6 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-
-  const { isLoading: isLoadingPartner, data: partnerData } = useQuery(
-    ["partnerType", "PartnerType"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingAdminProg, data: adminProgData } = useQuery(
-    ["AdministrativeProgramme"],
-    getAdministrativeProgrammes,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-  const {
-    isLoading: isLoadingAmrefEntities,
-    data: amrefEntities,
-    isError: isErrorAmrefEntities,
-  } = useQuery(["amrefEntities"], getAmrefEntities, {
-    refetchOnWindowFocus: false,
-  });
 
   const mutation = useMutation({ mutationFn: newLearning });
 
@@ -161,7 +169,9 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
-        return endDate ? schema.min(endDate, "Must be after End Date") : schema;
+        return endDate
+          ? schema.min(endDate, "Must be after End Date").nullable()
+          : schema;
       }),
       statusId: Yup.string().required("Required"),
       staffNameId: Yup.object().required("Required"),
@@ -200,8 +210,6 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           processLevelTypeId: processLevelTypeId,
         };
 
-        console.log("saveLearning " + JSON.stringify(saveLearning));
-
         const learning = await mutation.mutateAsync(saveLearning);
 
         let learningDonors = [];
@@ -211,7 +219,7 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             researchId: learning.data.id,
             createDate: new Date(),
           };
-          learningDonors.push(learningDonors);
+          learningDonors.push(learningDonor);
         }
         await learningDonorsMutation.mutateAsync(learningDonors);
 
@@ -219,9 +227,9 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           type: "success",
         });
 
-        navigate(
-          `/project/design/learning/learning-detail/${learning.data.id}`
-        );
+        await queryClient.invalidateQueries(["getLearningByLearningId"]);
+
+        navigate(`/project/design/learning/learning-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -289,8 +297,8 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               <MenuItem disabled value="">
                 Select
               </MenuItem>
-              {!isLoadingStatuses
-                ? statusesData.data.map((option) => (
+              {!isLoadingLearningMethodology
+                ? learningMethodologyData.data.map((option) => (
                     <MenuItem
                       key={option.lookupItemId}
                       value={option.lookupItemId}
@@ -407,6 +415,7 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               />
             </Grid>
           </Grid>
+
           <Grid container item spacing={2}>
             <Grid item md={4}>
               <Autocomplete
@@ -589,7 +598,7 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                 my={2}
               >
                 <MenuItem disabled value="">
-                  Select Administrative Programme
+                  Select
                 </MenuItem>
                 {!isLoadingAdminProg
                   ? adminProgData.data.map((option) => (

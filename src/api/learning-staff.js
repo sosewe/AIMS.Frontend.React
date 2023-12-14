@@ -5,7 +5,7 @@ export const newLearningStaff = async (values) => {
   return await axios.post(apiRoutes.learningStaff, values);
 };
 
-export const getLearningStaff = async ({ queryKey }) => {
+export const getLearningStaffByLearningId = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.get(`${apiRoutes.learningStaff}/${id}`);
 };

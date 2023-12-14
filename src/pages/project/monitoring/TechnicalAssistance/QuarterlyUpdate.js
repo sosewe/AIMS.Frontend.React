@@ -145,10 +145,6 @@ const QuarterlyUpdateForm = ({ id, editId }) => {
         QuarterlyUpdateData &&
         QuarterlyUpdateData.data
       ) {
-        console.log(
-          "QuarterlyUpdateData " + JSON.stringify(QuarterlyUpdateData.data)
-        );
-
         let monitoringYear;
         if (!isLoadingYears) {
           monitoringYear = yearsData.data.find(

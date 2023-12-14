@@ -9,7 +9,7 @@ export const getLearnings = async () => {
   return await axios.get(apiRoutes.learning);
 };
 
-export const getLearningById = async ({ queryKey }) => {
+export const getLearningByLearningId = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.get(`${apiRoutes.learning}/${id}`);
 };
@@ -17,7 +17,7 @@ export const getLearningById = async ({ queryKey }) => {
 export const getLearningByProcessLevelItemId = async ({ queryKey }) => {
   const [, processLevelItemId] = queryKey;
   return await axios.get(
-    `${apiRoutes.Learning}/GetLearningByProcessLevel/${processLevelItemId}`
+    `${apiRoutes.learning}/GetLearningByProcessLevel/${processLevelItemId}`
   );
 };
 
