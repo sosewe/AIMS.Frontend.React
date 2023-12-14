@@ -28,7 +28,6 @@ import { green, purple } from "@mui/material/colors";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
-//import InnovationDataGrid from "./InnovationDataGrid";
 import AdvocacyDataGrid from "./AdvocacyDataGrid";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 
@@ -162,6 +161,7 @@ const ProjectMonitoringAccordion = ({
       >
         <Tab label="Innovation" {...a11yProps(0)} />
         <Tab label="Technical Assistance" {...a11yProps(1)} />
+        <Tab label="Advocacy" {...a11yProps(2)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <InnovationDataGrid
@@ -171,6 +171,12 @@ const ProjectMonitoringAccordion = ({
       </TabPanel>
       <TabPanel value={value} index={1}>
         <TechnicalAssistanceDataGrid
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+        />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        <AdvocacyDataGrid
           processLevelItemId={processLevelItemId}
           processLevelTypeId={processLevelTypeId}
         />

@@ -134,6 +134,14 @@ const InnovationMonitoringDetail = async(() =>
   import("./pages/project/monitoring/InnovationV2/InnovationDetail")
 );
 
+//Advocacy Monitoring
+const AdvocacyMonitoringDetail = async(() =>
+  import("./pages/project/monitoring/Advocacy/AdvocacyMonitoringDetail")
+);
+const AdvocacyMonitoringKMDocumentsUpload = async(() =>
+  import("./pages/project/monitoring/Advocacy/KMDocumentsUpload")
+);
+
 // Technical Assistance Monitoring
 
 const TechnicalAssistanceMonitoring = async(() =>
@@ -170,10 +178,6 @@ const NewLearning = async(() =>
 const LearningDetail = async(() =>
   import("./pages/project/design/Learning/LearningDetail")
 );
-// Advocacy Design
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
 const NewAdvocacy = async(() =>
   import("./pages/project/design/Advocacy/NewAdvocacy")
 );
@@ -433,6 +437,18 @@ const routes = [
       {
         path: "design/advocacy/new-advocacy-objective/:processLevelItemId/:processLevelTypeId",
         element: <NewAdvocacyObjective />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-detail/:id",
+        element: <AdvocacyMonitoringDetail />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-documents-upload/:id",
+        element: <AdvocacyMonitoringKMDocumentsUpload />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-documents-upload/:id/:editId",
+        element: <AdvocacyMonitoringKMDocumentsUpload />,
       },
     ],
   },
