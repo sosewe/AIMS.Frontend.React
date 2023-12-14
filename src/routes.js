@@ -170,16 +170,13 @@ const NewLearning = async(() =>
 const LearningDetail = async(() =>
   import("./pages/project/design/Learning/LearningDetail")
 );
-// Advocacy Design
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
+
 const NewAdvocacy = async(() =>
   import("./pages/project/design/Advocacy/NewAdvocacy")
 );
 const AdvocacyDetail = async(() =>
   import("./pages/project/design/Advocacy/AdvocacyDetail")
-=======
+);
 
 const LearningMonitoring = async(() =>
   import("./pages/project/monitoring/Learning/LearningDetail")
@@ -198,7 +195,7 @@ const LearningMonitoringKMDocumentsUpload = async(() =>
 );
 
 const Advocacy = async(() =>
-  import("./pages/project/design/NewAdvocacy/Advocacy")
+  import("./pages/project/design/Advocacy/NewAdvocacy")
 );
 
 // TechnicalAssistance
@@ -430,6 +427,10 @@ const routes = [
       {
         path: "design/technical-assistance/technical-assistance-detail/:id",
         element: <TechnicalAssistanceDetail />,
+      },
+      {
+        path: "design/learning/learning-detail/:id",
+        element: <LearningDetail />,
       },
       {
         path: "design/learning/learning/:processLevelItemId/:processLevelTypeId",
