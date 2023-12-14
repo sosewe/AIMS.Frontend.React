@@ -39,14 +39,14 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  statusChange: "",
-  amrefContribution: "",
-  implimentationYear: "",
-  description: "",
-  actorInvolved: "",
+  title: "",
+  shortTitle: "",
+  initiativeType: "",
+  influence: "",
   intendedChange: "",
   reportingFrequency: "",
-  bragStatus: "",
+  policyType: "",
+  status: "",
 };
 
 const AdvocacyObjectiveForm = ({
@@ -63,7 +63,13 @@ const AdvocacyObjectiveForm = ({
   } = useQuery(["getAdvocacyObjectiveById", id], getAdvocacyObjectiveById, {
     enabled: !!id,
   });
-
+  const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
+    ["currencyType", "CurrencyType"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
   const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
     ["status", "status"],
     getLookupMasterItemsByName,
@@ -82,73 +88,57 @@ const AdvocacyObjectiveForm = ({
     }
   );
 
-  const { isLoading: isLoadingStatusChange, data: statusChangeData } = useQuery(
-    ["statuschange", "statusChange"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingAmrefContribution, data: amrefContributionData } =
-    useQuery(
-      ["amrefcontribution", "amrefContribution"],
-      getLookupMasterItemsByName,
-      {
-        refetchOnWindowFocus: false,
-      }
-    );
-
-  const {
-    isLoading: isLoadingImplimentationYear,
-    data: implimentationYearData,
-  } = useQuery(
-    ["implimentationyear", "implimentationYear"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingActorInvolved, data: actorInvolvedData } =
-    useQuery(["actorinvolved", "actorInvolved"], getLookupMasterItemsByName, {
+  const { isLoading: isLoadingInitiativeType, data: initiativeTypeData } =
+    useQuery(["initiativetype", "initiativeType"], getLookupMasterItemsByName, {
       refetchOnWindowFocus: false,
     });
 
-  const { isLoading: isLoadingBragStatuses, data: bragStatusesData } = useQuery(
-    ["bragstatus", "bragStatus"],
+  const { isLoading: isLoadingPolicyType, data: policyTypeData } = useQuery(
+    ["policytype", "policyType"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
     }
   );
+
+  const { isLoading: isLoadingInfluence, data: influenceData } = useQuery(
+    ["influence", "influence"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { isLoading: isLoadingIntendedChange, data: intendedChangeData } =
+    useQuery(["intendedchange", "intendedChange"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
+    });
 
   const mutation = useMutation({ mutationFn: newAdvocacyObjective });
 
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      statusChange: Yup.string().required("Required"),
-      implimentationYear: Yup.string().required("Required"),
-      amrefContribution: Yup.string().required("Required"),
-      description: Yup.string().required("Required"),
-      actorInvolved: Yup.string().required("Required"),
+      title: Yup.string().required("Required"),
+      initiativeType: Yup.string().required("Required"),
+      influence: Yup.string().required("Required"),
       intendedChange: Yup.string().required("Required"),
       reportingFrequency: Yup.string().required("Required"),
-      bragStatus: Yup.string().required("Required"),
+      policyType: Yup.string().required("Required"),
+      status: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const saveAdvocacyObjective = {
           id: id ? id : new Guid(),
           createDate: new Date(),
-          statusChange: values.statusChange,
-          description: values.description,
-          implimentationYear: values.implimentationYear,
-          amrefContribution: values.amrefContribution,
+          initiativeType: values.initiativeType,
+          influence: values.influence,
+          policyType: values.policyType,
+          title: values.title,
           reportingFrequency: values.reportingFrequency,
-          actorInvolved: values.actorInvolved,
-          bragStatus: values.status,
+          intendedChange: values.intendedChange,
+          statusId: values.status,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
         };
@@ -195,20 +185,18 @@ const AdvocacyObjectiveForm = ({
         </Box>
       ) : (
         <Grid container item spacing={2}>
-          <Grid item md={6}>
+          <Grid item md={12}>
             <TextField
-              name="implimentationYear"
-              label="Implimentation Year"
+              name="initiativeType"
+              label="Type of Initiative"
               select
-              value={formik.values.implimentationYear}
+              value={formik.values.initiativeType}
               error={Boolean(
-                formik.touched.implimentationYear &&
-                  formik.errors.implimentationYear
+                formik.touched.initiativeType && formik.errors.initiativeType
               )}
               fullWidth
               helperText={
-                formik.touched.implimentationYear &&
-                formik.errors.implimentationYear
+                formik.touched.initiativeType && formik.errors.initiativeType
               }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -216,10 +204,10 @@ const AdvocacyObjectiveForm = ({
               my={2}
             >
               <MenuItem disabled value="">
-                Implimentation Year
+                Initiative Type
               </MenuItem>
-              {!isLoadingImplimentationYear
-                ? implimentationYearData.data.map((option) => (
+              {!isLoadingInitiativeType
+                ? initiativeTypeData.data.map((option) => (
                     <MenuItem
                       key={option.lookupItemId}
                       value={option.lookupItemId}
@@ -230,10 +218,150 @@ const AdvocacyObjectiveForm = ({
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={6}>
+          <Grid item md={12}>
+            <TextField
+              name="policyType"
+              label="Type of Policy"
+              select
+              value={formik.values.status}
+              error={Boolean(
+                formik.touched.policyType && formik.errors.policyType
+              )}
+              fullWidth
+              helperText={formik.touched.policyType && formik.errors.policyType}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Policy Type
+              </MenuItem>
+              {!isLoadingPolicyType
+                ? policyTypeData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={12}>
+            <TextField
+              name="title"
+              label="Name (topic) of policy/ advocacy initiative"
+              value={formik.values.title}
+              error={Boolean(formik.touched.title && formik.errors.title)}
+              fullWidth
+              helperText={formik.touched.title && formik.errors.title}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              multiline
+              variant="outlined"
+              my={2}
+              rows={3}
+            />
+          </Grid>
+          <Grid item md={4}>
+            <TextField
+              name="influence"
+              label="Kind of Influence"
+              select
+              value={formik.values.influence}
+              error={Boolean(
+                formik.touched.influence && formik.errors.influence
+              )}
+              fullWidth
+              helperText={formik.touched.influence && formik.errors.influence}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Status
+              </MenuItem>
+              {!isLoadingInfluence
+                ? influenceData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={4}>
+            <TextField
+              name="status"
+              label="Status"
+              select
+              value={formik.values.status}
+              error={Boolean(formik.touched.status && formik.errors.status)}
+              fullWidth
+              helperText={formik.touched.status && formik.errors.status}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Status
+              </MenuItem>
+              {!isLoadingStatuses
+                ? statusesData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={4}>
+            <TextField
+              name="intendedChange"
+              label="Intended (targeted) change in status"
+              select
+              value={formik.values.status}
+              error={Boolean(
+                formik.touched.intendedChange && formik.errors.intendedChange
+              )}
+              fullWidth
+              helperText={
+                formik.touched.intendedChange && formik.errors.intendedChange
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            >
+              <MenuItem disabled value="">
+                Status
+              </MenuItem>
+              {!isLoadingIntendedChange
+                ? intendedChangeData.data.map((option) => (
+                    <MenuItem
+                      key={option.lookupItemId}
+                      value={option.lookupItemId}
+                    >
+                      {option.lookupItemName}
+                    </MenuItem>
+                  ))
+                : []}
+            </TextField>
+          </Grid>
+          <Grid item md={12}>
             <TextField
               name="reportingFrequency"
-              label="Frequency"
+              label="Reporting Frequency"
               select
               value={formik.values.reportingFrequency}
               error={Boolean(
@@ -266,159 +394,6 @@ const AdvocacyObjectiveForm = ({
             </TextField>
           </Grid>
           <Grid item md={12}>
-            <TextField
-              name="statusChange"
-              label="Actual change in status of advocacy/policy during the reporting period "
-              select
-              value={formik.values.statusChange}
-              error={Boolean(
-                formik.touched.statusChange && formik.errors.statusChange
-              )}
-              fullWidth
-              helperText={
-                formik.touched.statusChange && formik.errors.statusChange
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Status Change
-              </MenuItem>
-              {!isLoadingStatusChange
-                ? statusChangeData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={12}>
-            <TextField
-              name="amrefContribution"
-              label="Contribution of Amref during the reporting period"
-              select
-              value={formik.values.amrefContribution}
-              error={Boolean(
-                formik.touched.amrefContribution &&
-                  formik.errors.amrefContribution
-              )}
-              fullWidth
-              helperText={
-                formik.touched.amrefContribution &&
-                formik.errors.amrefContribution
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Amref Contribution
-              </MenuItem>
-              {!isLoadingAmrefContribution
-                ? amrefContributionData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={12}>
-            <TextField
-              name="description"
-              label="Additional description of policy /advocacy progress"
-              value={formik.values.description}
-              error={Boolean(
-                formik.touched.description && formik.errors.description
-              )}
-              fullWidth
-              helperText={
-                formik.touched.description && formik.errors.description
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              multiline
-              variant="outlined"
-              my={2}
-              rows={3}
-            />
-          </Grid>
-          <Grid item md={6}>
-            <TextField
-              name="actorInvolved"
-              label="Actors involved during the period"
-              select
-              value={formik.values.actorInvolved}
-              error={Boolean(
-                formik.touched.actorInvolved && formik.errors.actorInvolved
-              )}
-              fullWidth
-              helperText={
-                formik.touched.actorInvolved && formik.errors.actorInvolved
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Actors Involved
-              </MenuItem>
-              {!isLoadingActorInvolved
-                ? actorInvolvedData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={6}>
-            <TextField
-              name="bragstatus"
-              label="Brag Status"
-              select
-              value={formik.values.bragstatus}
-              error={Boolean(
-                formik.touched.bragstatus && formik.errors.bragstatus
-              )}
-              fullWidth
-              helperText={formik.touched.bragstatus && formik.errors.bragstatus}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Status
-              </MenuItem>
-              {!isLoadingBragStatuses
-                ? bragStatusesData.data.map((option) => (
-                    <MenuItem
-                      key={option.lookupItemId}
-                      value={option.lookupItemId}
-                    >
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-
-          <Grid item md={12}>
             <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save changes
             </Button>
@@ -429,13 +404,13 @@ const AdvocacyObjectiveForm = ({
   );
 };
 
-const AdvocacyMonitoringForm = () => {
+const AdvocacyObjective = () => {
   let { processLevelItemId, processLevelTypeId, id } = useParams();
   return (
     <React.Fragment>
-      <Helmet title="Advocacy Objective Monitoring" />
+      <Helmet title="New Advocacy Objective" />
       <Typography variant="h3" gutterBottom display="inline">
-        Advocacy Objective Monitoring
+        New Advocacy Objective
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
@@ -443,9 +418,9 @@ const AdvocacyMonitoringForm = () => {
           component={NavLink}
           to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
         >
-          Advocacy Monitoring
+          Project Design
         </Link>
-        <Typography>Advocacy Objective Monitoring</Typography>
+        <Typography>New Advocacy Objective</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -466,4 +441,4 @@ const AdvocacyMonitoringForm = () => {
   );
 };
 
-export default AdvocacyMonitoringForm;
+export default AdvocacyObjective;

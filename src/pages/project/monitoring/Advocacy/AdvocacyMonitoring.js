@@ -10,11 +10,6 @@ const Divider = styled(MuiDivider)(spacing);
 const AdvocacyMonitoring = () => {
   return (
     <React.Fragment>
-      <Helmet title="Advocacy Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Advocacy Monitoring
-      </Typography>
-      <Divider my={6} />
       <AdvocacyMonitoringForm />
     </React.Fragment>
   );
