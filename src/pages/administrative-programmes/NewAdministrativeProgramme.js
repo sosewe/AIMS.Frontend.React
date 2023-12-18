@@ -243,7 +243,6 @@ const NewAdministrativeProgrammeForm = () => {
                     name="personnelId"
                     label="Project Manager's Name"
                     select
-                    required
                     value={formik.values.personnelId}
                     error={Boolean(
                       formik.touched.personnelId && formik.errors.personnelId

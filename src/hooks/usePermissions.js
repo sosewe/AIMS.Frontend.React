@@ -1,13 +1,15 @@
 import { useApi } from "../contexts/ApiContext";
-import { useAccount, useMsal } from "@azure/msal-react";
+import useKeyCloakAuth from "./useKeyCloakAuth";
+// import { useAccount, useMsal } from "@azure/msal-react";
 
 const usePermissions = () => {
   const { data: permissionData } = useApi();
-  const { accounts } = useMsal();
-  const account = useAccount(accounts[0]);
-  const roles = account?.idTokenClaims?.roles;
+  const user = useKeyCloakAuth();
+  // const { accounts } = useMsal();
+  // const account = useAccount(accounts[0]);
+  const roles = user?.roles ?? [];
   const hasPermission = (permissionName) => {
-    if (roles.includes("Super.Admin")) {
+    if (roles.includes("ADMIN")) {
       return true;
     }
     const returnVal =

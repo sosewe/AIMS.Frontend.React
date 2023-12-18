@@ -42,7 +42,7 @@ const SidebarNav = ({ items }) => {
             items.map((item) => (
               <SidebarNavSection
                 component="div"
-                key={item.title}
+                key={Math.random().toString(36)}
                 pages={item.pages}
                 title={item.title}
               />

@@ -1,12 +1,8 @@
-import React from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { useRoutes } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { CacheProvider } from "@emotion/react";
-import {
-  AuthenticatedTemplate,
-  useMsalAuthentication,
-} from "@azure/msal-react";
 
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -26,37 +22,88 @@ import createEmotionCache from "./utils/createEmotionCache";
 // import { AuthProvider } from "./contexts/CognitoContext";
 import { ApiProvider } from "./contexts/ApiContext";
 
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { InteractionType } from "@azure/msal-browser";
+import { kc } from "./keycloak";
 
+export const AuthProvider = createContext(null);
+export const OfficeContext = createContext(null);
+export const UserLevelContext = createContext(null);
 const clientSideEmotionCache = createEmotionCache();
 
 function App({ emotionCache = clientSideEmotionCache }) {
-  useMsalAuthentication(InteractionType.Redirect);
-  const content = useRoutes(routes);
+  const [userInformation, SetUserInformation] = useState(null);
+  const [selectedOffice, setSelectedOffice] = useState(null);
+  const [selectedUserLevel, setSelectedUserLevel] = useState(null);
 
+  useEffect(() => {
+    kc.init({
+      onLoad: "login-required",
+      checkLoginIframe: false,
+    }).then((auth) => {
+      try {
+        if (auth) {
+          const user = {
+            name: kc.tokenParsed.name,
+            token: kc.token,
+            roles: kc.tokenParsed?.resource_access?.["aims_frontend"]?.roles,
+            sub: kc.tokenParsed.sub,
+            tokenParsed: kc.tokenParsed,
+          };
+          const office =
+            kc.tokenParsed?.Office && kc.tokenParsed?.Office.length > 0
+              ? kc.tokenParsed?.Office[0]
+              : null;
+          SetUserInformation(user);
+          setSelectedUserLevel(kc.tokenParsed?.UserLevel);
+          setSelectedOffice(office);
+          console.log(user);
+        } else {
+          SetUserInformation(null);
+          toast("Login failed", {
+            type: "error",
+          });
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    });
+    kc.onTokenExpired = () => {
+      kc.updateToken(30);
+    };
+  }, []);
+  const content = useRoutes(routes);
   const { theme } = useTheme();
 
   return (
-    <ApiProvider>
-      <CacheProvider value={emotionCache}>
-        <HelmetProvider>
-          <Helmet
-            titleTemplate="%s | AIMS"
-            defaultTitle="AIMS - AMREF Information Management System"
-          />
-          <Provider store={store}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <MuiThemeProvider theme={createTheme(theme)}>
-                <AuthenticatedTemplate>{content}</AuthenticatedTemplate>
-              </MuiThemeProvider>
-            </LocalizationProvider>
-          </Provider>
-          <ToastContainer position="top-right" newestOnTop />
-        </HelmetProvider>
-      </CacheProvider>
-    </ApiProvider>
+    // <ApiProvider>
+    <CacheProvider value={emotionCache}>
+      <HelmetProvider>
+        <Helmet
+          titleTemplate="%s | AIMS"
+          defaultTitle="AIMS - AMREF Information Management System"
+        />
+        <Provider store={store}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <MuiThemeProvider theme={createTheme(theme)}>
+              <AuthProvider.Provider value={userInformation}>
+                <OfficeContext.Provider
+                  value={{ selectedOffice, setSelectedOffice }}
+                >
+                  <UserLevelContext.Provider value={selectedUserLevel}>
+                    <ApiProvider user={userInformation}>
+                      {userInformation && content}
+                    </ApiProvider>
+                  </UserLevelContext.Provider>
+                </OfficeContext.Provider>
+              </AuthProvider.Provider>
+            </MuiThemeProvider>
+          </LocalizationProvider>
+        </Provider>
+        <ToastContainer position="top-right" newestOnTop />
+      </HelmetProvider>
+    </CacheProvider>
+    // </ApiProvider>
   );
 }
 

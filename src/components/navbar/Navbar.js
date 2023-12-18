@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "@emotion/styled";
 import { withTheme } from "@emotion/react";
 import { darken } from "polished";
 import { Search as SearchIcon } from "react-feather";
 import { useTranslation } from "react-i18next";
-import { useMsal } from "@azure/msal-react";
 
 import {
   Grid,
@@ -21,6 +20,9 @@ import NavbarNotificationsDropdown from "./NavbarNotificationsDropdown";
 import NavbarMessagesDropdown from "./NavbarMessagesDropdown";
 import NavbarLanguagesDropdown from "./NavbarLanguagesDropdown";
 import NavbarUserDropdown from "./NavbarUserDropdown";
+import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
+import OfficeSelect from "../../pages/home/OfficeSelect";
+import { OfficeContext } from "../../App";
 
 const AppBar = styled(MuiAppBar)`
   background: ${(props) => props.theme.header.background};
@@ -81,14 +83,16 @@ const Input = styled(InputBase)`
 
 const Navbar = ({ onDrawerToggle }) => {
   const { t } = useTranslation();
-  const { accounts } = useMsal();
-  const user = accounts.length > 0 && accounts[0];
+  const user = useKeyCloakAuth();
+  console.log(user);
+  const officeContext = useContext(OfficeContext);
+  const selectedOffice = officeContext.selectedOffice;
 
   return (
     <React.Fragment>
       <AppBar position="sticky" elevation={0}>
         <Toolbar>
-          <Grid container alignItems="center">
+          <Grid container alignItems="center" spacing={2}>
             <Typography variant="h2" color="white" fontWeight="bold">
               Amref Information Management System
             </Typography>
@@ -113,12 +117,18 @@ const Navbar = ({ onDrawerToggle }) => {
             <Grid item xs />
             <Grid item>
               {!!user && (
-                <Typography variant="body1" color="white">
+                <Typography variant="body1" color="white" gutterBottom>
                   Welcome, {user.name}
                 </Typography>
               )}
             </Grid>
             <Grid item>
+              <Typography variant="h5" gutterBottom>
+                {selectedOffice ? selectedOffice : ""}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <OfficeSelect />
               {/*<NavbarMessagesDropdown />*/}
               {/*<NavbarNotificationsDropdown />*/}
               {/*<NavbarLanguagesDropdown />*/}

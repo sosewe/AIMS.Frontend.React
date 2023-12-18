@@ -8,8 +8,9 @@ import async from "./components/Async";
 // Layouts
 import AuthLayout from "./layouts/Auth";
 import DashboardLayout from "./layouts/Dashboard";
-// import DocLayout from "./layouts/Doc";
+import ProjectLayout from "./layouts/ProjectLayout";
 // import PresentationLayout from "./layouts/Presentation";
+import DynamicLayout from "./layouts/DynamicLayout";
 
 // Guards
 import AuthGuard from "./components/guards/AuthGuard";
@@ -23,7 +24,9 @@ import Page500 from "./pages/auth/Page500";
 
 // Home
 import Home from "./pages/home";
+import ProjectAccess from "./pages/home/ProjectAccess";
 import AdvocacyMonitoring from "./pages/project/monitoring/Advocacy/AdvocacyMonitoring";
+import NewAttributeResponseOption from "./pages/attributes/NewAttributeResponseOption";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
@@ -69,6 +72,7 @@ const NewAdministrativeProgramme = async(() =>
 );
 // Programmes
 const Programmes = async(() => import("./pages/programmes/Programmes"));
+const NewProgramme = async(() => import("./pages/programmes/NewProgramme"));
 const ViewProgramme = async(() => import("./pages/programmes/ViewProgramme"));
 // Thematic Areas
 const ThematicAreas = async(() =>
@@ -137,6 +141,8 @@ const NewProjectRole = async(() =>
 
 // Attributes
 const AttributesList = async(() => import("./pages/attributes/AttributesList"));
+const NewAttribute = async(() => import("./pages/attributes/NewAttribute"));
+const ViewAttribute = async(() => import("./pages/attributes/ViewAttribute"));
 
 //Roles
 const Roles = async(() => import("./pages/admin/Roles"));
@@ -151,7 +157,7 @@ const routes = [
     path: "/",
     element: (
       <AuthGuard>
-        <DashboardLayout />
+        <DynamicLayout />
       </AuthGuard>
     ),
     children: [
@@ -162,12 +168,30 @@ const routes = [
     ],
   },
   {
+    path: "project-access",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <ProjectAccess />,
+      },
+    ],
+  },
+  {
     path: "programme",
     element: <DashboardLayout />,
     children: [
       {
         path: "programmes",
         element: <Programmes />,
+      },
+      {
+        path: "new-programme",
+        element: <NewProgramme />,
+      },
+      {
+        path: "new-programme/:id",
+        element: <NewProgramme />,
       },
       {
         path: "view-programme/:id",
@@ -234,6 +258,29 @@ const routes = [
       {
         path: "attributes-list",
         element: <AttributesList />,
+      },
+      {
+        path: "new-attribute",
+        element: <NewAttribute />,
+      },
+      {
+        path: "new-attribute/:id",
+        element: <NewAttribute />,
+      },
+      {
+        path: "view-attribute/:id",
+        element: <ViewAttribute />,
+      },
+      {
+        path: "new-attribute-response-option/:attributeTypeId",
+        element: <NewAttributeResponseOption />,
+      },
+      {
+        path: "new-attribute-response-option/:attributeTypeId/:id",
+        element: <NewAttributeResponseOption />,
+      },
+      {
+        path: "aggregate-disaggregate",
       },
     ],
   },

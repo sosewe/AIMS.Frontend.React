@@ -9,9 +9,7 @@ import {
   MenuItem,
   IconButton as MuiIconButton,
 } from "@mui/material";
-import { useMsal } from "@azure/msal-react";
-
-// import useAuth from "../../hooks/useAuth";
+import { kc } from "../../keycloak";
 
 const IconButton = styled(MuiIconButton)`
   svg {
@@ -24,7 +22,7 @@ function NavbarUserDropdown() {
   const [anchorMenu, setAnchorMenu] = React.useState(null);
   // const navigate = useNavigate();
   // const { signOut } = useAuth();
-  const { instance } = useMsal();
+  // const { instance } = useMsal();
 
   const toggleMenu = (event) => {
     setAnchorMenu(event.currentTarget);
@@ -35,11 +33,7 @@ function NavbarUserDropdown() {
   };
 
   const handleSignOut = async () => {
-    await instance.logoutRedirect({
-      postLogoutRedirectUri: "/",
-    });
-    // await signOut();
-    // navigate("/auth/sign-in");
+    await kc.logout();
   };
 
   return (

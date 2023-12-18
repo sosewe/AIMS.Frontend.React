@@ -25,13 +25,13 @@ import {
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { Helmet } from "react-helmet-async";
-import { NavLink } from "react-router-dom";
-// import { Add as AddIcon } from "@mui/icons-material";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { deleteProgrammeById, getProgrammes } from "../../api/programmes";
-import { Trash as TrashIcon, PlusCircle, Eye } from "react-feather";
+import { Trash as TrashIcon, PlusCircle, Eye, Edit2 } from "react-feather";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { getAllThematicAreas } from "../../api/thematic-area";
@@ -208,6 +208,7 @@ const AddThematicAreaForm = ({ handleClick, handleCloseThematicAreaPopup }) => {
   );
 };
 const ProgrammesData = () => {
+  const navigate = useNavigate();
   const [pageSize, setPageSize] = useState(5);
   const [open, setOpen] = useState(false);
   const [openThematicAreaPopup, setOpenThematicAreaPopup] = useState(false);
@@ -285,16 +286,16 @@ const ProgrammesData = () => {
 
   return (
     <Card mb={6}>
-      {/*<CardContent pb={1}>*/}
-      {/*  <Button*/}
-      {/*    mr={2}*/}
-      {/*    variant="contained"*/}
-      {/*    color="error"*/}
-      {/*    onClick={() => navigate("/programme/new-programme")}*/}
-      {/*  >*/}
-      {/*    <AddIcon /> New Programme*/}
-      {/*  </Button>*/}
-      {/*</CardContent>*/}
+      <CardContent pb={1}>
+        <Button
+          mr={2}
+          variant="contained"
+          color="error"
+          onClick={() => navigate("/programme/new-programme")}
+        >
+          <AddIcon /> New Programme
+        </Button>
+      </CardContent>
       <br />
       <Paper>
         <div style={{ height: 600, width: "100%" }}>
@@ -333,11 +334,9 @@ const ProgrammesData = () => {
                 flex: 2,
                 renderCell: (params) => (
                   <>
-                    {/*<NavLink*/}
-                    {/*  to={`/programme/new-administrative-programme/${params.id}`}*/}
-                    {/*>*/}
-                    {/*  <Button startIcon={<Edit2 />} size="small"></Button>*/}
-                    {/*</NavLink>*/}
+                    <NavLink to={`/programme/new-programme/${params.id}`}>
+                      <Button startIcon={<Edit2 />} size="small"></Button>
+                    </NavLink>
                     <NavLink to={`/programme/view-programme/${params.id}`}>
                       <Button startIcon={<Eye />} size="small"></Button>
                     </NavLink>

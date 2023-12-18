@@ -2,7 +2,8 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import { Badge, Grid, Avatar, Typography } from "@mui/material";
-import { useMsal } from "@azure/msal-react";
+import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
+// import { useMsal } from "@azure/msal-react";
 
 const Footer = styled.div`
   background-color: ${(props) =>
@@ -36,8 +37,12 @@ const FooterBadge = styled(Badge)`
 `;
 
 const SidebarFooter = ({ ...rest }) => {
-  const { accounts } = useMsal();
-  const user = accounts.length > 0 && accounts[0];
+  const user = useKeyCloakAuth();
+  const userRoles = user?.roles;
+  let roleString = "";
+  if (userRoles.length > 0) {
+    roleString = userRoles.join(",");
+  }
 
   return (
     <Footer {...rest}>
@@ -51,11 +56,11 @@ const SidebarFooter = ({ ...rest }) => {
             }}
             variant="dot"
           >
-            {!!user && <Avatar alt={user.name} />}
+            {/*{!!user && <Avatar alt={user.name} />}*/}
           </FooterBadge>
         </Grid>
         <Grid item>
-          {!!user && <FooterText variant="body2">{user.name}</FooterText>}
+          {!!user && <FooterText variant="body2">{roleString}</FooterText>}
           {/*<FooterSubText variant="caption">UX Designer</FooterSubText>*/}
         </Grid>
       </Grid>
