@@ -82,18 +82,11 @@ const ThematicFocus = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const { data: themesData, isLoading: isLoadingThemes } = useQuery(
-    ["getUniqueThematicAreasByProgrammeId", strategicObjectiveId],
-    getUniqueThematicAreasByProgrammeId,
-    { enabled: !!strategicObjectiveId }
-  );
-
   const { data: subThemesData, isLoading: isLoadingSubThemes } = useQuery(
     ["getSubThemesByThematicAreaId", thematicAreaId],
     getSubThemesByThematicAreaId,
     { enabled: !!thematicAreaId }
   );
-
   const {
     data: projectThematicFocusData,
     isLoading: isLoadingProjectThematicFocus,
@@ -150,7 +143,10 @@ const ThematicFocus = ({ id }) => {
   function HandleStrategicObjectiveChange(e) {
     const strategicObjectiveId = e.target.value.id;
     setStrategicObjectiveId(strategicObjectiveId);
-    HandleThematicAreaChange(e);
+  }
+
+  function GetTheme(params) {
+    const subThemeId = params.row.subThemeId;
   }
 
   function HandleThematicAreaChange(e) {
@@ -288,8 +284,8 @@ const ThematicFocus = ({ id }) => {
                         <MenuItem disabled value="">
                           Select Thematic Area
                         </MenuItem>
-                        {!isLoadingThemes
-                          ? themesData.data.map((option) => (
+                        {!isLoading
+                          ? data.data.map((option) => (
                               <MenuItem key={option.id} value={option}>
                                 {option.name}
                               </MenuItem>
