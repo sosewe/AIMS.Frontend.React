@@ -40,7 +40,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import * as Yup from "yup";
-import { spacing } from "@mui/system";
+import { display, spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import { Check, Trash as TrashIcon } from "react-feather";
@@ -76,6 +76,7 @@ const ScaleUpForm = ({ id }) => {
   const MAX_COUNT = 5;
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fileLimit, setFileLimit] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -132,6 +133,17 @@ const ScaleUpForm = ({ id }) => {
   const handleFileEvent = (e) => {
     const chosenFiles = Array.prototype.slice.call(e.target.files);
     handleUploadFiles(chosenFiles);
+  };
+
+  const handleStatusChange = (e) => {
+    const status = e.target.value;
+    if (status === "4803db33-d778-4530-5172-08dc11e4499b") {
+      setIsOpen(true);
+    }
+
+    if (status === "1d2c305f-1f20-426a-5171-08dc11e4499b") {
+      setIsOpen(false);
+    }
   };
 
   const mutation = useMutation({
@@ -217,7 +229,8 @@ const ScaleUpForm = ({ id }) => {
               <TextField
                 name="newCountriesScaledUp"
                 label="New countries scaled up to "
-                value={formik.values.title}
+                value={formik.values.newCountriesScaledUp}
+                type="number"
                 error={Boolean(
                   formik.touched.newCountriesScaledUp &&
                     formik.errors.newCountriesScaledUp
@@ -231,7 +244,6 @@ const ScaleUpForm = ({ id }) => {
                 onChange={formik.handleChange}
                 variant="outlined"
                 my={2}
-                rows={3}
               />
             </Grid>
 
@@ -240,6 +252,7 @@ const ScaleUpForm = ({ id }) => {
                 name="newRegionsWithinCountries"
                 label="Number of new regions within countries"
                 value={formik.values.newRegionsWithinCountries}
+                type="number"
                 error={Boolean(
                   formik.touched.newRegionsWithinCountries &&
                     formik.errors.newRegionsWithinCountries
@@ -261,6 +274,7 @@ const ScaleUpForm = ({ id }) => {
                 name="newTargetGroups"
                 label="Number of new target groups "
                 value={formik.values.newTargetGroups}
+                type="number"
                 error={Boolean(
                   formik.touched.newTargetGroups &&
                     formik.errors.newTargetGroups
@@ -283,6 +297,7 @@ const ScaleUpForm = ({ id }) => {
                 name="newProportionScaledUp"
                 label="Proportion of users where Innovation has been Scaled up"
                 value={formik.values.newProportionScaledUp}
+                type="number"
                 error={Boolean(
                   formik.touched.newProportionScaledUp &&
                     formik.errors.newProportionScaledUp
@@ -299,7 +314,7 @@ const ScaleUpForm = ({ id }) => {
               />
             </Grid>
 
-            <Grid item md={6}>
+            <Grid item md={12}>
               <TextField
                 name="innovationClosingStatus"
                 label="What is the closing status of this innovation?"
@@ -315,7 +330,12 @@ const ScaleUpForm = ({ id }) => {
                   formik.errors.innovationClosingStatus
                 }
                 onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
+                //onChange={formik.handleChange}
+                onChange={(e) => {
+                  formik.handleChange(e);
+                  formik.setFieldValue("innovationClosingReason", "");
+                  handleStatusChange(e);
+                }}
                 variant="outlined"
                 my={2}
               >
@@ -335,41 +355,45 @@ const ScaleUpForm = ({ id }) => {
               </TextField>
             </Grid>
 
-            <Grid item md={6}>
-              <TextField
-                name="innovationClosingReason"
-                label="Reason for not continuing"
-                select
-                value={formik.values.innovationClosingReason}
-                error={Boolean(
-                  formik.touched.innovationClosingReason &&
+            {isOpen ? (
+              <Grid item md={12}>
+                <TextField
+                  name="innovationClosingReason"
+                  label="Reason for not continuing"
+                  select
+                  value={formik.values.innovationClosingReason}
+                  error={Boolean(
+                    formik.touched.innovationClosingReason &&
+                      formik.errors.innovationClosingReason
+                  )}
+                  fullWidth
+                  helperText={
+                    formik.touched.innovationClosingReason &&
                     formik.errors.innovationClosingReason
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationClosingReason &&
-                  formik.errors.innovationClosingReason
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-              >
-                <MenuItem disabled value="">
-                  Select
-                </MenuItem>
-                {!isLoadingInnovationClosingReasons
-                  ? innovationClosingReasonsData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
-                        {option.lookupItemName}
-                      </MenuItem>
-                    ))
-                  : []}
-              </TextField>
-            </Grid>
+                  }
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  variant="outlined"
+                  my={2}
+                >
+                  <MenuItem disabled value="">
+                    Select
+                  </MenuItem>
+                  {!isLoadingInnovationClosingReasons
+                    ? innovationClosingReasonsData.data.map((option) => (
+                        <MenuItem
+                          key={option.lookupItemId}
+                          value={option.lookupItemId}
+                        >
+                          {option.lookupItemName}
+                        </MenuItem>
+                      ))
+                    : []}
+                </TextField>
+              </Grid>
+            ) : (
+              <></>
+            )}
 
             <Grid item md={12}>
               <Button variant="outlined" component="label">
