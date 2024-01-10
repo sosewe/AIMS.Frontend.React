@@ -91,8 +91,8 @@ const Divider = styled(MuiDivider)(spacing);
 const initialValues = {
   title: "",
   shortTitle: "",
-  startDate: "",
   goal: "",
+  startDate: "",
   endDate: "",
   extensionDate: "",
   status: "",
@@ -408,6 +408,7 @@ const EditTechnicalAssistanceForm = ({ id }) => {
     validationSchema: Yup.object().shape({
       title: Yup.string().required("Required"),
       shortTitle: Yup.string().required("Required"),
+      goal: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
@@ -424,17 +425,18 @@ const EditTechnicalAssistanceForm = ({ id }) => {
         .positive("Must be positive"),
       currencyTypeId: Yup.string().required("Required"),
       costCenter: Yup.string().required("Required"),
-      statusId: Yup.string().required("Required"),
+      status: Yup.string().required("Required"),
       donors: Yup.array().required("Required"),
       partners: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
         const saveTechnicalAssistance = {
-          id: id ? id : new Guid().toString(),
+          id: id,
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
+          goal: values.goal,
           startDate: values.startDate,
           endDate: values.endDate,
           extensionDate: values.extensionDate,
@@ -446,7 +448,7 @@ const EditTechnicalAssistanceForm = ({ id }) => {
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          status: values.statusId,
+          statusId: values.status,
         };
         await mutation.mutateAsync(saveTechnicalAssistance);
 
@@ -592,10 +594,11 @@ const EditTechnicalAssistanceForm = ({ id }) => {
         formik.setValues({
           title: TechnicalAssistanceData.data.title,
           shortTitle: TechnicalAssistanceData.data.shortTitle,
+          goal: TechnicalAssistanceData.data.goal,
           startDate: TechnicalAssistanceData.data.startDate,
           endDate: TechnicalAssistanceData.data.endDate,
           extensionDate: TechnicalAssistanceData.data.extensionDate,
-          status: TechnicalAssistanceData.data.status,
+          status: TechnicalAssistanceData.data.statusId,
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",
           implementingOfficeId: implementingOffice ? implementingOffice.id : "",
@@ -694,6 +697,22 @@ const EditTechnicalAssistanceForm = ({ id }) => {
               )}
               fullWidth
               helperText={formik.touched.shortTitle && formik.errors.shortTitle}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              multiline
+              variant="outlined"
+              my={2}
+              rows={3}
+            />
+          </Grid>
+          <Grid item md={12}>
+            <TextField
+              name="goal"
+              label="Technical Assistance Goal"
+              value={formik.values.goal}
+              error={Boolean(formik.touched.goal && formik.errors.goal)}
+              fullWidth
+              helperText={formik.touched.goal && formik.errors.goal}
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               multiline

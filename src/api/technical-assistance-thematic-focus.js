@@ -1,7 +1,7 @@
 import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
-export const newTechnicalAssistanceThematicFocus = async (values) => {
+export const saveTechnicalAssistanceThematicFocus = async (values) => {
   return await axios.post(apiRoutes.technicalAssistanceThematicFocus, values);
 };
 
@@ -13,9 +13,7 @@ export const getTechnicalAssistanceThematicFocusByTechnicalAssistanceId =
     );
   };
 
-export const deleteTechnicalAssistanceThematicFocusById = async ({
-  queryKey,
-}) => {
+export const deleteTechnicalAssistanceThematicFocus = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.delete(
     `${apiRoutes.technicalAssistanceThematicFocus}/${id}`

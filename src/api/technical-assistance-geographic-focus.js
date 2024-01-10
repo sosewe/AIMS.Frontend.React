@@ -8,15 +8,14 @@ export const newTechnicalAssistanceGeographicalFocus = async (values) => {
   );
 };
 
-export const getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId =
-  async ({ queryKey }) => {
-    const [, id] = queryKey;
-    return await axios.get(
-      `${apiRoutes.technicalAssistanceGeographicalFocus}/${id}`
-    );
-  };
+export const getTechnicalAssistanceGeographicalFocus = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(
+    `${apiRoutes.technicalAssistanceGeographicalFocus}/${id}`
+  );
+};
 
-export const deleteTechnicalAssistanceGeographicalFocusById = async ({
+export const deleteTechnicalAssistanceGeographicalFocus = async ({
   queryKey,
 }) => {
   const [, id] = queryKey;

@@ -827,29 +827,6 @@ const MonthlyUpdateForm = ({ id, editId }) => {
             />
           </Grid>
 
-          <Grid item md={12} mt={2}>
-            <Button variant="outlined" component="label">
-              Attach evidence documents
-              <input
-                hidden
-                accept="application/pdf, image/png"
-                multiple
-                type="file"
-                onChange={handleFileEvent}
-                disabled={fileLimit}
-              />
-            </Button>
-          </Grid>
-          <Grid item md={12}>
-            <InputLabel>
-              <div className="uploaded-files-list">
-                {uploadedFiles.map((file) => (
-                  <div>{file.name}</div>
-                ))}
-              </div>
-            </InputLabel>
-          </Grid>
-
           <Grid item mt={5} md={12}>
             <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save changes

@@ -164,10 +164,6 @@ const GeoFocus = ({ id }) => {
           administrativeUnitName,
         };
 
-        console.log(
-          "innovationtLocation ..." + JSON.stringify(innovationtLocation)
-        );
-
         await mutation.mutateAsync(innovationtLocation);
         await queryClient.invalidateQueries(["getInnovationGeographicalFocus"]);
       } catch (error) {

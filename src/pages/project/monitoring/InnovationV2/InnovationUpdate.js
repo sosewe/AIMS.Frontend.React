@@ -71,6 +71,7 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
   const initialMetricValues = {
     innovationMetricId: "",
     actualByReportingPeriod: "",
+    innovationMetricDescription: "",
     innovationTargetGroupName: metric.innovationTargetGroupName,
     innovationMetricName: metric.innovationMetricName,
     innovationTarget: metric.innovationTarget,
@@ -85,6 +86,7 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
     initialValues: initialMetricValues,
     validationSchema: Yup.object().shape({
       actualByReportingPeriod: Yup.number().required("Required"),
+      innovationMetricDescription: Yup.string().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
@@ -182,6 +184,7 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
                 name="actualByReportingPeriod"
                 label="Actual By Reporting Period"
                 value={formik.values.actualByReportingPeriod}
+                type="number"
                 error={Boolean(
                   formik.touched.actualByReportingPeriod &&
                     formik.errors.actualByReportingPeriod
@@ -193,6 +196,29 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
                 }
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+                rows={3}
+              />
+            </Grid>
+
+            <Grid item md={12}>
+              <TextField
+                name="innovationMetricDescription"
+                label="Description"
+                value={formik.values.innovationMetricDescription}
+                error={Boolean(
+                  formik.touched.innovationMetricDescription &&
+                    formik.errors.innovationMetricDescription
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.innovationMetricDescription &&
+                  formik.errors.innovationMetricDescription
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                multiline
                 variant="outlined"
                 my={2}
                 rows={3}
@@ -440,6 +466,8 @@ const InnovationUpdateForm = ({ id }) => {
             innovationId: id,
             innovationMetricId: innovationMetric.innovationMetricId,
             innovationActual: innovationMetric.actualByReportingPeriod,
+            innovationMetricDescription:
+              innovationMetric.innovationMetricDescription,
             reportingFrequencyId: values.reportingPeriod,
             implementationYearId: values.implementationYear,
             createDate: new Date(),
@@ -713,6 +741,7 @@ const InnovationUpdateForm = ({ id }) => {
                       <TableCell align="left">Target Number</TableCell>
                       <TableCell align="left">Actual By Reporting</TableCell>
                       <TableCell align="left">Percentage Change</TableCell>
+                      <TableCell align="left">Description</TableCell>
                       <TableCell align="left">Action</TableCell>
                     </TableRow>
                   </TableHead>
@@ -733,6 +762,9 @@ const InnovationUpdateForm = ({ id }) => {
                         </TableCell>
                         <TableCell align="left">
                           {row.innovationPercentageChange}%
+                        </TableCell>
+                        <TableCell align="left">
+                          {row.innovationMetricDescription}
                         </TableCell>
                         <TableCell align="left">
                           <Button

@@ -31,8 +31,8 @@ import {
 import { Check, Trash as TrashIcon } from "react-feather";
 import {
   newTechnicalAssistanceGeographicalFocus,
-  getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
-  deleteTechnicalAssistanceGeographicalFocusById,
+  getTechnicalAssistanceGeographicalFocus,
+  deleteTechnicalAssistanceGeographicalFocus,
 } from "../../../../api/technical-assistance-geographic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import de from "date-fns/esm/locale/de/index.js";
@@ -71,8 +71,8 @@ const GeoFocus = ({ id }) => {
     isLoading: isLoadingProjectLocations,
     // refetch,
   } = useQuery(
-    ["getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId", id],
-    getTechnicalAssistanceGeographicalFocusByTechnicalAssistanceId,
+    ["getTechnicalAssistanceGeographicalFocus", id],
+    getTechnicalAssistanceGeographicalFocus,
     {
       refetchOnWindowFocus: false,
       enabled: !!id,
@@ -169,7 +169,7 @@ const GeoFocus = ({ id }) => {
 
         await mutation.mutateAsync(technicalAssistanceGeoFocus);
         await queryClient.invalidateQueries([
-          "getTechnicalAssistanceGeographicFocusByTechnicalAssistanceId",
+          "getTechnicalAssistanceGeographicalFocus",
         ]);
       } catch (error) {
         toast(error.response.data, {
@@ -312,8 +312,8 @@ const GeoFocus = ({ id }) => {
   };
 
   const { refetch } = useQuery(
-    ["deleteTechnicalAssistanceGeographicalFocusById", locationId],
-    deleteTechnicalAssistanceGeographicalFocusById,
+    ["deleteTechnicalAssistanceGeographicalFocus", locationId],
+    deleteTechnicalAssistanceGeographicalFocus,
     { enabled: false }
   );
 
@@ -326,7 +326,7 @@ const GeoFocus = ({ id }) => {
     setOpen(false);
   };
 
-  const handleDeleteInnovationLocation = async () => {
+  const handleDeleteTechnicalAssistanceLocation = async () => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
@@ -596,15 +596,18 @@ const GeoFocus = ({ id }) => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Delete Innovation Location
+            Delete Technical Assistance Location
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Innovation Location?
+              Are you sure you want to delete Technical Assistance Location?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleDeleteInnovationLocation} color="primary">
+            <Button
+              onClick={handleDeleteTechnicalAssistanceLocation}
+              color="primary"
+            >
               Yes
             </Button>
             <Button onClick={handleClose} color="error" autoFocus>

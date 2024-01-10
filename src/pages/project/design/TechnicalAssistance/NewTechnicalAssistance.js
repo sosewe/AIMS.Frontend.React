@@ -183,6 +183,7 @@ const TechnicalAssistanceForm = ({
     validationSchema: Yup.object().shape({
       title: Yup.string().required("Required"),
       shortTitle: Yup.string().required("Required"),
+      goal: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
@@ -209,6 +210,7 @@ const TechnicalAssistanceForm = ({
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
+          goal: values.goal,
           startDate: values.startDate,
           endDate: values.endDate,
           extensionDate: values.extensionDate,
@@ -361,6 +363,22 @@ const TechnicalAssistanceForm = ({
               )}
               fullWidth
               helperText={formik.touched.shortTitle && formik.errors.shortTitle}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              multiline
+              variant="outlined"
+              my={2}
+              rows={3}
+            />
+          </Grid>
+          <Grid item md={12}>
+            <TextField
+              name="goal"
+              label="Technical Assistance Goal"
+              value={formik.values.goal}
+              error={Boolean(formik.touched.goal && formik.errors.goal)}
+              fullWidth
+              helperText={formik.touched.goal && formik.errors.goal}
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               multiline
