@@ -87,6 +87,8 @@ const initialValues = {
   status: "",
   staffNameId: "",
   emailAddress: "",
+  technicalReviewerId: "",
+  technicalReviewerEmailAddress: "",
   implementingOfficeId: "",
   regionalProgrammeId: "",
   enaSupportOffice: "",
@@ -411,6 +413,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         return endDate ? schema.min(endDate, "Must be after End Date") : schema;
       }),
       staffNameId: Yup.object().required("Required"),
+      technicalReviewerId: Yup.object().required("Required"),
       implementingOfficeId: Yup.string().required("Required"),
       regionalProgrammeId: Yup.string().required("Required"),
       totalBudget: Yup.number()
@@ -433,6 +436,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           endDate: values.endDate,
           extensionDate: values.extensionDate,
           staffNameId: values.staffNameId.id,
+          technicalReviewerId: values.technicalReviewerId.id,
           implementingOfficeId: values.implementingOfficeId,
           regionalProgrammeId: values.regionalProgrammeId,
           office: values.enaSupportOffice,
@@ -496,6 +500,18 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           }
         }
 
+        /*let reviewerId;
+        let reviewerEmail;
+        if (!isLoadingStaffList) {
+          reviewerId = staffListData.data.find(
+            (obj) => obj.id === InnovationData.data.technicalReviewerId
+          );
+
+          if (reviewerId != null) {
+            reviewerEmail = InnovationData.data.staffName.emailAddress;
+          }
+        }*/
+
         let enaSupportOffice;
         if (!!isLoadingAmrefEntities) {
           enaSupportOffice = amrefEntities.data.find(
@@ -534,6 +550,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           status: InnovationData.data.statusId,
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",
+          //technicalReviewerEmailAddress
           implementingOfficeId: implementingOfficeId
             ? implementingOfficeId
             : "",
@@ -716,7 +733,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                   helperText={
                     formik.touched.staffNameId && formik.errors.staffNameId
                   }
-                  label="Lead Staff name"
+                  label="Lead Staff Name"
                   name="staffNameId"
                   variant="outlined"
                   my={2}
@@ -730,13 +747,11 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
               // label="Lead staff email address"
               value={formik.values.leadStaffEmail}
               error={Boolean(
-                formik.touched.projectManagerEmail &&
-                  formik.errors.projectManagerEmail
+                formik.touched.leadStaffEmail && formik.errors.leadStaffEmail
               )}
               fullWidth
               helperText={
-                formik.touched.projectManagerEmail &&
-                formik.errors.projectManagerEmail
+                formik.touched.leadStaffEmail && formik.errors.leadStaffEmail
               }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -775,6 +790,71 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                   ))
                 : []}
             </TextField>
+          </Grid>
+          <Grid item md={4}>
+            <Autocomplete
+              id="technicalReviewerId"
+              options={!isLoadingStaffList ? staffListData.data : []}
+              getOptionLabel={(option) => {
+                if (!option) {
+                  return ""; // Return an empty string for null or undefined values
+                }
+                return `${option.firstName} ${option.lastName}`;
+              }}
+              renderOption={(props, option) => {
+                return (
+                  <li {...props} key={option.id}>
+                    {option ? `${option.firstName} ${option.lastName}` : ""}
+                  </li>
+                );
+              }}
+              onChange={(e, val) => {
+                formik.setFieldValue("technicalReviewerId", val);
+                formik.setFieldValue(
+                  "technicalReviewerEmailAddress",
+                  val.emailAddress
+                );
+              }}
+              value={formik.values.technicalReviewerId}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={Boolean(
+                    formik.touched.technicalReviewerId &&
+                      formik.errors.technicalReviewerId
+                  )}
+                  fullWidth
+                  helperText={
+                    formik.touched.technicalReviewerId &&
+                    formik.errors.technicalReviewerId
+                  }
+                  label="Technical Reviewer"
+                  name="technicalReviewerId"
+                  variant="outlined"
+                  my={2}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item md={4}>
+            <TextField
+              name="technicalReviewerEmailAddress"
+              // label="Lead staff email address"
+              value={formik.values.technicalReviewerEmailAddress}
+              error={Boolean(
+                formik.touched.technicalReviewerEmailAddress &&
+                  formik.errors.technicalReviewerEmailAddress
+              )}
+              fullWidth
+              helperText={
+                formik.touched.technicalReviewerEmailAddress &&
+                formik.errors.technicalReviewerEmailAddress
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            />
           </Grid>
           <Grid item md={4}>
             <TextField
@@ -941,7 +1021,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={12}>
+          <Grid item md={4}>
             <Autocomplete
               id="donors"
               multiple

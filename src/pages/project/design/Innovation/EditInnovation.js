@@ -96,6 +96,8 @@ const initialValues = {
   status: "",
   staffNameId: "",
   emailAddress: "",
+  technicalReviewerId: "",
+  technicalReviewerEmailAddress: "",
   implementingOfficeId: "",
   regionalProgrammeId: "",
   enaSupportOffice: "",
@@ -445,6 +447,7 @@ const EditInnovationForm = ({ id }) => {
           : schema;
       }),
       staffNameId: Yup.object().required("Required"),
+      technicalReviewerId: Yup.object().required("Required"),
       implementingOfficeId: Yup.string().required("Required"),
       regionalProgrammeId: Yup.string().required("Required"),
       totalBudget: Yup.number()
@@ -466,6 +469,7 @@ const EditInnovationForm = ({ id }) => {
           endDate: values.endDate,
           extensionDate: values.extensionDate,
           staffNameId: values.staffNameId.id,
+          technicalReviewerId: values.technicalReviewerId.id,
           implementingOfficeId: values.implementingOfficeId,
           regionalProgrammeId: values.regionalProgrammeId,
           office: values.enaSupportOffice,
@@ -551,6 +555,16 @@ const EditInnovationForm = ({ id }) => {
           staffEmail = staffId.emailAddress;
         }
 
+        let reviewerId;
+        let reviewerEmail;
+        if (!isLoadingStaffList) {
+          reviewerId = staffListData.data.find(
+            (obj) => obj.id === InnovationData.data.technicalReviewerId
+          );
+
+          reviewerEmail = reviewerId.emailAddress;
+        }
+
         let donorsList = [];
         for (const donor of InnovationData.data.donors) {
           const result = donorData.data.find((obj) => obj.id === donor.donorId);
@@ -566,6 +580,9 @@ const EditInnovationForm = ({ id }) => {
           endDate: InnovationData.data.endDate,
           extensionDate: InnovationData.data.extensionDate,
           staffNameId: staffId ? staffId : "",
+          leadStaffEmail: staffEmail ? staffEmail : "",
+          technicalReviewerId: reviewerId ? reviewerId : "",
+          technicalReviewerEmailAddress: reviewerEmail ? reviewerEmail : "",
           implementingOfficeId: InnovationData.data.implementingOfficeId,
           regionalProgrammeId: InnovationData.data.regionalProgrammeId,
           enaSupportOffice: InnovationData.data.office,
@@ -573,7 +590,6 @@ const EditInnovationForm = ({ id }) => {
           costCenter: InnovationData.data.costCenter,
           currencyTypeId: InnovationData.data.currencyTypeId,
           status: InnovationData.data.statusId,
-          leadStaffEmail: staffEmail ? staffEmail : "",
           donors: donorsList,
         });
 
@@ -834,6 +850,71 @@ const EditInnovationForm = ({ id }) => {
             </TextField>
           </Grid>
           <Grid item md={4}>
+            <Autocomplete
+              id="technicalReviewerId"
+              options={!isLoadingStaffList ? staffListData.data : []}
+              getOptionLabel={(option) => {
+                if (!option) {
+                  return ""; // Return an empty string for null or undefined values
+                }
+                return `${option.firstName} ${option.lastName}`;
+              }}
+              renderOption={(props, option) => {
+                return (
+                  <li {...props} key={option.id}>
+                    {option ? `${option.firstName} ${option.lastName}` : ""}
+                  </li>
+                );
+              }}
+              onChange={(e, val) => {
+                formik.setFieldValue("technicalReviewerId", val);
+                formik.setFieldValue(
+                  "technicalReviewerEmailAddress",
+                  val.emailAddress
+                );
+              }}
+              value={formik.values.technicalReviewerId}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={Boolean(
+                    formik.touched.technicalReviewerId &&
+                      formik.errors.technicalReviewerId
+                  )}
+                  fullWidth
+                  helperText={
+                    formik.touched.technicalReviewerId &&
+                    formik.errors.technicalReviewerId
+                  }
+                  label="Technical Reviewer"
+                  name="technicalReviewerId"
+                  variant="outlined"
+                  my={2}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item md={4}>
+            <TextField
+              name="technicalReviewerEmailAddress"
+              // label="Lead staff email address"
+              value={formik.values.technicalReviewerEmailAddress}
+              error={Boolean(
+                formik.touched.technicalReviewerEmailAddress &&
+                  formik.errors.technicalReviewerEmailAddress
+              )}
+              fullWidth
+              helperText={
+                formik.touched.technicalReviewerEmailAddress &&
+                formik.errors.technicalReviewerEmailAddress
+              }
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              variant="outlined"
+              my={2}
+            />
+          </Grid>
+          <Grid item md={4}>
             <TextField
               name="regionalProgrammeId"
               label="Regional Programme"
@@ -998,7 +1079,7 @@ const EditInnovationForm = ({ id }) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={12}>
+          <Grid item md={4}>
             <Autocomplete
               id="donors"
               multiple
