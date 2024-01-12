@@ -52,7 +52,7 @@ import {
 import {
   newInnovationMonitoringUpdateMetric,
   getInnovationMonitoringUpdateMetricByInnovationId,
-  deleteInnovationMonitoringUpdateMetric,
+  getInnovationMonitoringTargetMetricsByMetricId,
 } from "../../../../api/innovation-monitoring-metric";
 import { getInnovationObjectiveClassificationByInnovationId } from "../../../../api/innovation-objectivesclassification";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
@@ -68,6 +68,7 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const MetricDetailsForm = ({ handleMetricClick, metric }) => {
+  const [pageSize, setPageSize] = useState(5);
   const initialMetricValues = {
     innovationMetricId: "",
     actualByReportingPeriod: "",
@@ -77,6 +78,18 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
     innovationTarget: metric.innovationTarget,
     innovationPercentageChange: "",
   };
+
+  const {
+    data: InnovationMetricsData,
+    isLoading: isLoadingInnovationMetrics,
+    isError: isErrorInnovationMetrics,
+  } = useQuery(
+    ["getInnovationMonitoringTargetMetricsByMetricId", metric.id],
+    getInnovationMonitoringTargetMetricsByMetricId,
+    {
+      enabled: !!metric.id,
+    }
+  );
 
   const mutation = useMutation({
     mutationFn: newInnovationMonitoringUpdateMetric,
@@ -109,6 +122,56 @@ const MetricDetailsForm = ({ handleMetricClick, metric }) => {
     <form onSubmit={formik.handleSubmit}>
       <Card mb={12}>
         <CardContent>
+          <Grid item md={12}>
+            <Paper>
+              <div style={{ height: 400, width: "100%" }}>
+                <DataGrid
+                  rowsPerPageOptions={[5, 10, 25]}
+                  rows={
+                    isLoadingInnovationMetrics || isErrorInnovationMetrics
+                      ? []
+                      : InnovationMetricsData
+                      ? InnovationMetricsData.data
+                      : []
+                  }
+                  columns={[
+                    {
+                      field: "innovationMetricName",
+                      headerName: "Metric",
+                      editable: false,
+                      flex: 1,
+                      valueGetter: (params) =>
+                        params.row.innovationMetric.innovationMetricName,
+                    },
+                    {
+                      field: "innovationActual",
+                      headerName: "Actual By Reporting",
+                      editable: false,
+                      flex: 1,
+                    },
+                    {
+                      field: "implementationYear",
+                      headerName: "Implementation Year",
+                      sortable: false,
+                      flex: 1,
+                    },
+                    {
+                      field: "reportingFrequency",
+                      headerName: "Reporting Period",
+                      sortable: false,
+                      flex: 1,
+                    },
+                  ]}
+                  pageSize={pageSize}
+                  onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                  loading={isLoadingInnovationMetrics}
+                  components={{ Toolbar: GridToolbar }}
+                  getRowHeight={() => "auto"}
+                />
+              </div>
+            </Paper>
+          </Grid>
+
           <Grid container spacing={3}>
             <Grid item md={12}>
               <TextField
@@ -455,8 +518,8 @@ const InnovationUpdateForm = ({ id }) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      reportingPeriod: Yup.string().required("Required"),
-      implementationYear: Yup.string().required("Required"),
+      reportingPeriod: Yup.object().required("Required"),
+      implementationYear: Yup.object().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -468,8 +531,10 @@ const InnovationUpdateForm = ({ id }) => {
             innovationActual: innovationMetric.actualByReportingPeriod,
             innovationMetricDescription:
               innovationMetric.innovationMetricDescription,
-            reportingFrequencyId: values.reportingPeriod,
-            implementationYearId: values.implementationYear,
+            reportingFrequencyId: values.reportingPeriod.lookupItemId,
+            reportingFrequency: values.reportingPeriod.lookupItemName,
+            implementationYearId: values.implementationYear.lookupItemId,
+            implementationYear: values.implementationYear.lookupItemName,
             createDate: new Date(),
           };
           innovationMetrics.push(metric);
@@ -482,8 +547,10 @@ const InnovationUpdateForm = ({ id }) => {
             innovationId: id,
             risk: innovationRisk.riskDescription,
             mitigation: innovationRisk.riskMitigation,
-            reportingFrequencyId: values.reportingPeriod,
-            implementationYearId: values.implementationYear,
+            reportingFrequencyId: values.reportingPeriod.lookupItemId,
+            reportingFrequency: values.reportingPeriod.lookupItemName,
+            implementationYearId: values.implementationYear.lookupItemId,
+            implementationYear: values.implementationYear.lookupItemName,
             createDate: new Date(),
           };
           innovationRisks.push(risk);
@@ -619,10 +686,7 @@ const InnovationUpdateForm = ({ id }) => {
                 </MenuItem>
                 {!isLoadingYears
                   ? yearsData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
+                      <MenuItem key={option.lookupItemId} value={option}>
                         {option.lookupItemName}
                       </MenuItem>
                     ))
@@ -654,10 +718,7 @@ const InnovationUpdateForm = ({ id }) => {
                 </MenuItem>
                 {reportingFrequencyData
                   ? reportingFrequencyData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
+                      <MenuItem key={option.lookupItemId} value={option}>
                         {option.lookupItemName}
                       </MenuItem>
                     ))
@@ -841,7 +902,7 @@ const InnovationUpdateForm = ({ id }) => {
             aria-labelledby="form-dialog-title"
           >
             <DialogTitle id="form-dialog-title">
-              Add Innovation Update Details
+              Add Innovation Metric Details
             </DialogTitle>
             <DialogContent>
               <MetricDetailsForm
