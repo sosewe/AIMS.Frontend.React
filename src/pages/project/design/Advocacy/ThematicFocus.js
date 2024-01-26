@@ -17,8 +17,6 @@ import {
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
-  Breadcrumbs,
-  Link,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import styled from "@emotion/styled";
@@ -28,7 +26,6 @@ import {
   getThematicArea,
 } from "../../../../api/thematic-area";
 import { useFormik } from "formik";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getSubThemesByThematicAreaId } from "../../../../api/thematic-area-sub-theme";
