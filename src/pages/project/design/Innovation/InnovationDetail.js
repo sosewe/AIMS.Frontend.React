@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 import { useParams } from "react-router-dom";
-import NewInnovation from "./NewInnovation";
+import EditInnovation from "./EditInnovation";
 import ThematicFocus from "./ThematicFocus";
 import GeoFocus from "./GeoFocus";
 import InnovationObjectives from "./InnovationObjectives";
@@ -48,7 +48,7 @@ function a11yProps(index: number) {
 
 const InnovationDetail = () => {
   const [value, setValue] = React.useState(0);
-  let { id, processLevelTypeId } = useParams();
+  let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -70,9 +70,21 @@ const InnovationDetail = () => {
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
         <Tab label="Basic Information" {...a11yProps(0)} />
+        <Tab label="Thematic Focus" {...a11yProps(1)} />
+        <Tab label="Geographic Focus" {...a11yProps(2)} />
+        <Tab label="Objective & Classification" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <NewInnovation id={id} />
+        <EditInnovation id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <ThematicFocus id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        <GeoFocus id={id} />
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <InnovationObjectives id={id} />
       </TabPanel>
     </Box>
   );

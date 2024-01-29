@@ -56,9 +56,7 @@ const AdvocacyMonitoringActions = ({ params }) => {
     setAnchorEl(null);
   };
   const handleReportAdvocacy = () => {
-    navigate(
-      `/project/monitoring/advocacy-monitoring/${params.row.processLevelItemId}/${params.row.processLevelTypeId}/${params.id}`
-    );
+    navigate(`/project/monitoring/advocacy-monitoring-detail/${params.id}`);
   };
   return (
     <React.Fragment>
