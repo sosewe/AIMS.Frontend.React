@@ -4,11 +4,11 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-import Addinnovation from "./addInnovation";
 import { useParams } from "react-router-dom";
+import NewInnovation from "./NewInnovation";
+import ThematicFocus from "./ThematicFocus";
 import GeoFocus from "./GeoFocus";
 import InnovationObjectives from "./InnovationObjectives";
-import ThematicFocus from "./ThematicFocus";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,7 +46,7 @@ function a11yProps(index: number) {
   };
 }
 
-const Innovation = () => {
+const InnovationDetail = () => {
   const [value, setValue] = React.useState(0);
   let { id, processLevelTypeId } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -70,26 +70,12 @@ const Innovation = () => {
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
         <Tab label="Basic Information" {...a11yProps(0)} />
-        <Tab label="Thematic Focus" {...a11yProps(1)} />
-        <Tab label="Geographic Focus" {...a11yProps(2)} />
-        <Tab label="Objective & classification" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <Addinnovation id={id} />
+        <NewInnovation id={id} />
       </TabPanel>
-      <TabPanel value={value} index={1}>
-        <ThematicFocus id={id} processLevelTypeId={processLevelTypeId} />
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
-      </TabPanel>
-      <TabPanel value={value} index={3}>
-        <InnovationObjectives id={id} processLevelTypeId={processLevelTypeId} />
-      </TabPanel>
-      <TabPanel index={5} value={value}></TabPanel>
-      <TabPanel index={6} value={value}></TabPanel>
     </Box>
   );
 };
 
-export default Innovation;
+export default InnovationDetail;

@@ -65,6 +65,7 @@ export const apiRoutes = {
   advocacyMilestone: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyMilestone`,
   innovationProgress: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/InnovationProgress`,
   innovationChallenge: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/InnovationChallenge`,
+  innovationDonor: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/InnovationDonor`,
   advocacyProgress: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyProgress`,
   advocacyMilestoneProgress: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AdvocacyMilestoneProgress`,
   primaryResultChainAttribute: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/PrimaryResultChainAttribute`,

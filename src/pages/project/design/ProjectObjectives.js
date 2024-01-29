@@ -26,7 +26,7 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import EditProjectObjective from "./NewInnovation/EditProjectObjective";
+//import EditProjectObjective from "./NewInnovation/EditProjectObjective";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
