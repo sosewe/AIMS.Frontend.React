@@ -151,6 +151,16 @@ const Pages = async(() => import("./pages/admin/Pages"));
 const NewModule = async(() => import("./pages/admin/NewModule"));
 const NewPage = async(() => import("./pages/admin/NewPage"));
 const NewAction = async(() => import("./pages/admin/NewAction"));
+// Aggregate - Disaggregate
+const Aggregate = async(() => import("./pages/aggregate/Aggregate"));
+const NewAggregate = async(() => import("./pages/aggregate/NewAggregate"));
+const ViewAggregate = async(() => import("./pages/aggregate/ViewAggregate"));
+const DisAggregatesList = async(() =>
+  import("./pages/dis-aggregates/DisAggregatesList")
+);
+const NewDisAggregate = async(() =>
+  import("./pages/dis-aggregates/NewDisAggregate")
+);
 
 const routes = [
   {
@@ -280,7 +290,32 @@ const routes = [
         element: <NewAttributeResponseOption />,
       },
       {
-        path: "aggregate-disaggregate",
+        path: "aggregates",
+        element: <Aggregate />,
+      },
+      {
+        path: "new-aggregate",
+        element: <NewAggregate />,
+      },
+      {
+        path: "new-aggregate/:id",
+        element: <NewAggregate />,
+      },
+      {
+        path: "view-aggregate/:id",
+        element: <ViewAggregate />,
+      },
+      {
+        path: "dis-aggregates",
+        element: <DisAggregatesList />,
+      },
+      {
+        path: "new-dis-aggregate",
+        element: <NewDisAggregate />,
+      },
+      {
+        path: "new-dis-aggregate/:id",
+        element: <NewDisAggregate />,
       },
     ],
   },

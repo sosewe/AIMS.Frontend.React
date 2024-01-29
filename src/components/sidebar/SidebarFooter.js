@@ -60,7 +60,9 @@ const SidebarFooter = ({ ...rest }) => {
           </FooterBadge>
         </Grid>
         <Grid item>
-          {!!user && <FooterText variant="body2">{roleString}</FooterText>}
+          {!!user && (
+            <FooterText variant="body2">Role: {roleString}</FooterText>
+          )}
           {/*<FooterSubText variant="caption">UX Designer</FooterSubText>*/}
         </Grid>
       </Grid>

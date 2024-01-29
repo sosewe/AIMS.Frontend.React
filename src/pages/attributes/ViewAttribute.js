@@ -15,7 +15,6 @@ import {
   Divider as MuiDivider,
   Grid,
   Link,
-  TextField as MuiTextField,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
@@ -34,7 +33,6 @@ const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
-const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const ViewAttributeContainer = () => {
