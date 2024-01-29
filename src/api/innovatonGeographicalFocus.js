@@ -1,18 +1,18 @@
 import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
-export const newinnovationGeographicalFocus = async (values) => {
+export const newInnovationGeographicalFocus = async (values) => {
   return await axios.post(apiRoutes.innovationGeographicalFocus, values);
 };
 
-export const getinnovationGeographicalFocus = async ({ queryKey }) => {
-  const [, processLevelItemId] = queryKey;
+export const getInnovationGeographicalFocus = async ({ queryKey }) => {
+  const [, innovationId] = queryKey;
   return await axios.get(
-    `${apiRoutes.innovationGeographicalFocus}/GetGeographicalFocusByProcessLevelItemId/${processLevelItemId}`
+    `${apiRoutes.innovationGeographicalFocus}/${innovationId}`
   );
 };
 
-export const deleteinnovationGeographicalFocus = async ({ queryKey }) => {
+export const deleteInnovationGeographicalFocus = async ({ queryKey }) => {
   const [, innovationGeographicalFocusId] = queryKey;
   return await axios.delete(
     `${apiRoutes.innovationGeographicalFocus}/${innovationGeographicalFocusId}`

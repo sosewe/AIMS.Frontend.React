@@ -117,6 +117,7 @@ const EnterQuantitativeResults = async(() =>
   import("./pages/project/monitoring/EnterQuantitativeResults")
 );
 
+// Innovation Design
 const Innovation = async(() =>
   import("./pages/project/design/Innovation/Innovation")
 );
@@ -127,30 +128,95 @@ const InnovationDetail = async(() =>
   import("./pages/project/design/Innovation/InnovationDetail")
 );
 
-// const Innovation = async(() =>
-//   import("./pages/project/design/Innovation/Innovation")
-// );
+// Innovation Monitoring
 
-/*
-const Innovation = async(() =>
-  import("./pages/project/design/Innovation/Innovation")
-);*/
-
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
-const Advocacy = async(() =>
-  import("./pages/project/design/NewAdvocacy/Advocacy")
-);
-const TechnicalAssistance = async(() =>
-  import("./pages/project/design/TechnicalAssistance/TechnicalAssistance")
-);
-
-/*
 const InnovationMonitoring = async(() =>
   import("./pages/project/monitoring/Innovation/InnovationMonitoring")
 );
-*/
+
+const InnovationMonitoringDetail = async(() =>
+  import("./pages/project/monitoring/InnovationV2/InnovationDetail")
+);
+
+//Advocacy Monitoring
+const AdvocacyMonitoring = async(() =>
+  import("./pages/project/monitoring/Advocacy/AdvocacyDetail")
+);
+
+const AdvocacyMonitoringDetail = async(() =>
+  import("./pages/project/monitoring/Advocacy/AdvocacyDetail")
+);
+const AdvocacyMonitoringKMDocumentsUpload = async(() =>
+  import("./pages/project/monitoring/Advocacy/KMDocumentsUpload")
+);
+
+const AdvocacyMonitoringUpdate = async(() =>
+  import("./pages/project/monitoring//Advocacy/AdvocacyUpdate")
+);
+
+// Technical Assistance Monitoring
+
+const TechnicalAssistanceMonitoring = async(() =>
+  import(
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceDetail"
+  )
+);
+
+const TechnicalAssistanceMonitoringDetail = async(() =>
+  import(
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceDetail"
+  )
+);
+
+const TechnicalAssistanceMonitoringMonthlyUpdate = async(() =>
+  import("./pages/project/monitoring//TechnicalAssistance/MonthlyUpdate")
+);
+
+const TechnicalAssistanceMonitoringQuarterlyUpdate = async(() =>
+  import("./pages/project/monitoring//TechnicalAssistance/QuarterlyUpdate")
+);
+
+const TechnicalAssistanceMonitoringKMDocumentsUpload = async(() =>
+  import("./pages/project/monitoring//TechnicalAssistance/KMDocumentsUpload")
+);
+
+// Learning Design
+const Learning = async(() =>
+  import("./pages/project/design/Learning/Learning")
+);
+const NewLearning = async(() =>
+  import("./pages/project/design/Learning/NewLearning")
+);
+const LearningDetail = async(() =>
+  import("./pages/project/design/Learning/LearningDetail")
+);
+// Advocacy Design
+// const Advocacy = async(() =>
+//   import("./pages/project/design/Advocacy/Advocacy")
+// );
+// const Advocacy = async(() =>
+//   import("./pages/project/design/Advocacy/Advocacy")
+// );
+const NewAdvocacy = async(() =>
+  import("./pages/project/design/Advocacy/NewAdvocacy")
+);
+const AdvocacyDetail = async(() =>
+  import("./pages/project/design/Advocacy/AdvocacyDetail")
+);
+const NewAdvocacyObjective = async(() =>
+  import("./pages/project/design/Advocacy/NewAdvocacyObjective")
+);
+
+// TechnicalAssistance
+const TechnicalAssistance = async(() =>
+  import("./pages/project/design/TechnicalAssistance/TechnicalAssistance")
+);
+const NewTechnicalAssistance = async(() =>
+  import("./pages/project/design/TechnicalAssistance/NewTechnicalAssistance")
+);
+const TechnicalAssistanceDetail = async(() =>
+  import("./pages/project/design/TechnicalAssistance/TechnicalAssistanceDetail")
+);
 
 const ProjectRoles = async(() => import("./pages/project-role/ProjectRoles"));
 const NewProjectRole = async(() =>
@@ -393,36 +459,105 @@ const routes = [
         path: "design/innovation/innovation-detail/:id",
         element: <InnovationDetail />,
       },
-      /*{
-        path: "design/new-innovation/:processLevelItemId/:processLevelTypeId",
-        element: <Innovation />,
-      },
       {
-        path: "design/new-innovation/:processLevelItemId/:processLevelTypeId/:id",
-        element: <Innovation />,
-      },*/
-      {
-        path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId",
-        element: <Advocacy />,
-      },
-      {
-        path: "design/new-advocacy/:processLevelItemId/:processLevelTypeId/:id",
-        element: <Advocacy />,
-      },
-      {
-        path: "design/new-technicalassistance/:processLevelItemId/:processLevelTypeId",
-        element: <TechnicalAssistance />,
-      },
-      {
-        path: "design/new-technicalassistance/:processLevelItemId/:processLevelTypeId/:id",
-        element: <TechnicalAssistance />,
-      },
-      /*{
         path: "monitoring/innovation-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <InnovationMonitoring />,
-      }*/ {
+      },
+      {
+        path: "monitoring/innovation-monitoring-detail/:id",
+        element: <InnovationMonitoringDetail />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring/:processLevelItemId/:processLevelTypeId/:id",
+        element: <TechnicalAssistanceMonitoring />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-detail/:id",
+        element: <TechnicalAssistanceMonitoringDetail />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-monthly-update/:id",
+        element: <TechnicalAssistanceMonitoringMonthlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-monthly-update/:id/:editId",
+        element: <TechnicalAssistanceMonitoringMonthlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-quarterly-update/:id",
+        element: <TechnicalAssistanceMonitoringQuarterlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-quarterly-update/:id/:editId",
+        element: <TechnicalAssistanceMonitoringQuarterlyUpdate />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-documents-upload/:id",
+        element: <TechnicalAssistanceMonitoringKMDocumentsUpload />,
+      },
+      {
+        path: "monitoring/technical-assistance-monitoring-documents-upload/:id/:editId",
+        element: <TechnicalAssistanceMonitoringKMDocumentsUpload />,
+      },
+      {
         path: "monitoring/advocacy-monitoring/:processLevelItemId/:processLevelTypeId/:id",
         element: <AdvocacyMonitoring />,
+      },
+      {
+        path: "design/technical-assistance/technical-assistance/:processLevelItemId/:processLevelTypeId",
+        element: <TechnicalAssistance />,
+      },
+      {
+        path: "design/technical-assistance/new-technical-assistance/:processLevelItemId/:processLevelTypeId",
+        element: <NewTechnicalAssistance />,
+      },
+      {
+        path: "design/technical-assistance/technical-assistance-detail/:id",
+        element: <TechnicalAssistanceDetail />,
+      },
+      {
+        path: "design/learning/learning-detail/:id",
+        element: <LearningDetail />,
+      },
+      {
+        path: "design/learning/learning/:processLevelItemId/:processLevelTypeId",
+        element: <Learning />,
+      },
+      {
+        path: "design/learning/new-learning/:processLevelItemId/:processLevelTypeId",
+        element: <NewLearning />,
+      },
+      {
+        path: "design/advocacy/new-advocacy/:processLevelItemId/:processLevelTypeId",
+        element: <NewAdvocacy />,
+      },
+      {
+        path: "design/advocacy/advocacy-detail/:id",
+        element: <AdvocacyDetail />,
+      },
+      {
+        path: "design/advocacy/new-advocacy-objective/:processLevelItemId/:processLevelTypeId",
+        element: <NewAdvocacyObjective />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-detail/:id",
+        element: <AdvocacyMonitoringDetail />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-documents-upload/:id",
+        element: <AdvocacyMonitoringKMDocumentsUpload />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-documents-upload/:id/:editId",
+        element: <AdvocacyMonitoringKMDocumentsUpload />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-update/:id",
+        element: <AdvocacyMonitoringUpdate />,
+      },
+      {
+        path: "monitoring/advocacy-monitoring-update/:id/:editId",
+        element: <AdvocacyMonitoringUpdate />,
       },
     ],
   },

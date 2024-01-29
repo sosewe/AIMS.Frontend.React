@@ -13,6 +13,7 @@ import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeRe
 import InnovationData from "./Innovation/InnovationData";
 import AdvocacyData from "./Advocacy/AdvocacyData";
 import TechnicalAssistanceData from "./TechnicalAssistance/TechnicalAssistanceData";
+import LearningData from "./Learning/LearningData";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -80,8 +81,8 @@ const DesignProject = () => {
         <Tab label="Results Framework" {...a11yProps(4)} />
         <Tab label="Innovation" {...a11yProps(5)} />
         <Tab label="Advocacy" {...a11yProps(6)} />
-        <Tab label="Technical assistance" {...a11yProps(7)} />
-        <Tab label="Research(Learning)" {...a11yProps(8)} />
+        <Tab label="Technical Assistance" {...a11yProps(7)} />
+        <Tab label="Research (Learning)" {...a11yProps(8)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <NewProjectForm id={id} />
@@ -120,7 +121,7 @@ const DesignProject = () => {
         />
       </TabPanel>
       <TabPanel index={8} value={value}>
-        <AdvocacyData
+        <LearningData
           processLevelItemId={id}
           processLevelTypeId={processLevelTypeId}
         />

@@ -40,7 +40,7 @@ const EntitiesData = () => {
   const [id, setId] = React.useState();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { hasPermission } = usePermissions();
+  //const { hasPermission } = usePermissions();
   // fetch Entities
   const { data, isLoading, isError, error } = useQuery(
     ["entities"],
@@ -86,16 +86,14 @@ const EntitiesData = () => {
   return (
     <Card mb={6}>
       <CardContent pb={1}>
-        {hasPermission("new-entity") && (
-          <Button
-            mr={2}
-            variant="contained"
-            color="error"
-            onClick={() => navigate("/settings/new-entity")}
-          >
-            <AddIcon /> New Entity
-          </Button>
-        )}
+        <Button
+          mr={2}
+          variant="contained"
+          color="error"
+          onClick={() => navigate("/settings/new-entity")}
+        >
+          <AddIcon /> New Entity
+        </Button>
       </CardContent>
       <br />
       <Paper>

@@ -55,3 +55,10 @@ export const getUniqueSubThemesByProgrammeId = async ({ queryKey }) => {
     `${apiRoutes.programmeThematicAreaSubTheme}/GetUniqueSubThemesByProgrammeId/${programmeId}`
   );
 };
+
+export const getUniqueThematicAreasByProgrammeId = async ({ queryKey }) => {
+  const [, strategicObjectiveId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.programmeThematicAreaSubTheme}/GetUniqueThematicAreasByProgrammeId/${strategicObjectiveId}`
+  );
+};

@@ -27,8 +27,9 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { green, purple } from "@mui/material/colors";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import InnovationDataGrid from "./InnovationDataGrid";
-import AdvocacyDataGrid from "./AdvocacyDataGrid";
+import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
+import AdvocacyDataGrid from "./Advocacy/AdvocacyDataGrid";
+import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -158,111 +159,18 @@ const ProjectMonitoringAccordion = ({
         aria-label="Vertical tabs example"
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
-        <Tab label="Quantitative Monitoring" {...a11yProps(0)} />
-        <Tab label="Innovation" {...a11yProps(1)} />
+        <Tab label="Innovation" {...a11yProps(0)} />
+        <Tab label="Technical Assistance" {...a11yProps(1)} />
         <Tab label="Advocacy" {...a11yProps(2)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <Typography variant="h3" gutterBottom display="inline">
-          Quantitative Monitoring
-        </Typography>
-        <form onSubmit={formik.handleSubmit}>
-          <Card mb={12}>
-            <CardContent>
-              {formik.isSubmitting ? (
-                <Box display="flex" justifyContent="center" my={6}>
-                  <CircularProgress />
-                </Box>
-              ) : (
-                <Grid container spacing={6}>
-                  <Grid item md={4}>
-                    <TextField
-                      name="implementationYear"
-                      label="Implementation Year"
-                      select
-                      required
-                      value={formik.values.implementationYear}
-                      error={Boolean(
-                        formik.touched.implementationYear &&
-                          formik.errors.implementationYear
-                      )}
-                      fullWidth
-                      helperText={
-                        formik.touched.implementationYear &&
-                        formik.errors.implementationYear
-                      }
-                      onBlur={formik.handleBlur}
-                      onChange={formik.handleChange}
-                      variant="outlined"
-                      my={2}
-                    >
-                      <MenuItem disabled value="">
-                        Select Implementation Year
-                      </MenuItem>
-                      {!isLoading && !isError
-                        ? implementationYears.data.map((option) => (
-                            <MenuItem
-                              key={option.lookupItemId}
-                              value={option.lookupItemId}
-                            >
-                              {option.lookupItemName}
-                            </MenuItem>
-                          ))
-                        : []}
-                    </TextField>
-                  </Grid>
-                  <Grid item md={4}>
-                    <TextField
-                      name="location"
-                      label="Location"
-                      select
-                      required
-                      value={formik.values.location}
-                      error={Boolean(
-                        formik.touched.location && formik.errors.location
-                      )}
-                      fullWidth
-                      helperText={
-                        formik.touched.location && formik.errors.location
-                      }
-                      onBlur={formik.handleBlur}
-                      onChange={formik.handleChange}
-                      variant="outlined"
-                      my={2}
-                    >
-                      <MenuItem disabled value="">
-                        Select Location
-                      </MenuItem>
-                      {!isLoadingGeoFocus && !isErrorGeoFocus
-                        ? projectGeographicalFocus.data.map((option) => (
-                            <MenuItem key={option.id} value={option.id}>
-                              {option.administrativeUnitName}
-                            </MenuItem>
-                          ))
-                        : []}
-                    </TextField>
-                  </Grid>
-
-                  <Grid item md={4}>
-                    <ThemeProvider theme={theme}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        color="secondaryGray"
-                        mt={2}
-                      >
-                        Continue
-                      </Button>
-                    </ThemeProvider>
-                  </Grid>
-                </Grid>
-              )}
-            </CardContent>
-          </Card>
-        </form>
+        <InnovationDataGrid
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+        />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <InnovationDataGrid
+        <TechnicalAssistanceDataGrid
           processLevelItemId={processLevelItemId}
           processLevelTypeId={processLevelTypeId}
         />

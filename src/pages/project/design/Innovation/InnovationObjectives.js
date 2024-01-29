@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { MenuItem } from "@mui/material";
-
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -17,23 +17,36 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Grid,
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon } from "react-feather";
 import styled from "@emotion/styled";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  getObjectiveByProcessLevelItemId,
-  newProjectObjectives,
-} from "../../../../api/project-objectives";
+  newInnovationObjectiveClassification,
+  getInnovationObjectiveClassificationByInnovationId,
+  deleteInnovationObjectiveClassification,
+} from "../../../../api/innovation-objectivesclassification";
+import {
+  newInnovationObjective,
+  getInnovationObjectiveByInnovationId,
+} from "../../../../api/innovation-objective";
+import {
+  newInnovationMetric,
+  getInnovationMetricByInnovationId,
+} from "../../../../api/innovation-metric";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
+import { Guid } from "../../../../utils/guid";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 
 const Card = styled(MuiCard)(spacing);
@@ -42,27 +55,55 @@ const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 
-const innovationMetricsInitial = {
-  innovationTargetGroup: "",
+const initialValues = {
+  innovationType: "",
+  innovationClass: "",
+  innovationTechnology: "",
+  whatMakesInnovation: "",
+  phcProblemSolved: "",
+  estimatedImpact: "",
   reportingFrequency: "",
-  innovationMetric: "",
 };
 
-const InnovationMetricForm = ({
-  isLoadinginnovationTargetGroup,
-  innovationtargetGroupData,
-  isLoadingreportingFrequency,
-  reportingFrequencyData,
-  isLoadingInovationMetric,
-  innovationMetricData,
-  handleClick,
-}) => {
+const objectiveDetailsInitialValues = {
+  innovationObjectiveDescription: "",
+};
+
+const metricDetailsInitialValues = {
+  innovationMetricId: "",
+  innovationMetricName: "",
+  innovationTargetGroupId: "",
+  innovationTargetGroupName: "",
+  innovationTarget: "",
+};
+
+const MetricDetailsForm = ({ handleClick }) => {
+  const { isLoading: isLoadingInnovationMetric, data: innovationMetricData } =
+    useQuery(
+      ["innovationMetric", "InnovationMetric"],
+      getLookupMasterItemsByName,
+      {
+        refetchOnWindowFocus: false,
+      }
+    );
+
+  const {
+    isLoading: isLoadinginnovationTargetGroup,
+    data: innovationTargetGroupData,
+  } = useQuery(
+    ["innovationTargetGroup", "InnovationTargetGroup"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
   const formik = useFormik({
-    initialValues: innovationMetricsInitial,
+    initialValues: metricDetailsInitialValues,
     validationSchema: Yup.object().shape({
-      reportingFrequency: Yup.string().required("Required"),
-      innovationTargetGroup: Yup.string().required("Required"),
-      innovationMetric: Yup.string().required("Required"),
+      innovationMetricId: Yup.object().required("Required"),
+      innovationTargetGroupId: Yup.object().required("Required"),
+      innovationTarget: Yup.number().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
@@ -85,18 +126,18 @@ const InnovationMetricForm = ({
           <Grid container spacing={3}>
             <Grid item md={3}>
               <TextField
-                name="innovationMetric"
+                name="innovationMetricId"
                 label="Innovation Metric"
                 select
-                value={formik.values.innovationMetric}
+                value={formik.values.innovationMetricId}
                 error={Boolean(
-                  formik.touched.innovationMetric &&
-                    formik.errors.innovationMetric
+                  formik.touched.innovationMetricId &&
+                    formik.errors.innovationMetricId
                 )}
                 fullWidth
                 helperText={
-                  formik.touched.innovationMetric &&
-                  formik.errors.innovationMetric
+                  formik.touched.innovationMetricId &&
+                  formik.errors.innovationMetricId
                 }
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -106,12 +147,9 @@ const InnovationMetricForm = ({
                 <MenuItem disabled value="">
                   Innovation Metric
                 </MenuItem>
-                {!isLoadingInovationMetric
+                {!isLoadingInnovationMetric
                   ? innovationMetricData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
+                      <MenuItem key={option.lookupItemId} value={option}>
                         {option.lookupItemName}
                       </MenuItem>
                     ))
@@ -120,19 +158,19 @@ const InnovationMetricForm = ({
             </Grid>
             <Grid item md={3}>
               <TextField
-                name="innovationTargetGroup"
+                name="innovationTargetGroupId"
                 label="Target Group"
                 select
                 multiple
-                value={formik.values.innovationTargetGroup}
+                value={formik.values.innovationTargetGroupId}
                 error={Boolean(
-                  formik.touched.innovationTargetGroup &&
-                    formik.errors.innovationTargetGroup
+                  formik.touched.innovationTargetGroupId &&
+                    formik.errors.innovationTargetGroupId
                 )}
                 fullWidth
                 helperText={
-                  formik.touched.innovationTargetGroup &&
-                  formik.errors.innovationTargetGroup
+                  formik.touched.innovationTargetGroupId &&
+                  formik.errors.innovationTargetGroupId
                 }
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -143,16 +181,34 @@ const InnovationMetricForm = ({
                   Target Group
                 </MenuItem>
                 {!isLoadinginnovationTargetGroup
-                  ? innovationtargetGroupData.data.map((option) => (
-                      <MenuItem
-                        key={option.lookupItemId}
-                        value={option.lookupItemId}
-                      >
+                  ? innovationTargetGroupData.data.map((option) => (
+                      <MenuItem key={option.lookupItemId} value={option}>
                         {option.lookupItemName}
                       </MenuItem>
                     ))
                   : []}
               </TextField>
+            </Grid>
+
+            <Grid item md={3}>
+              <TextField
+                name="innovationTarget"
+                label="Target Number"
+                value={formik.values.innovationTarget}
+                error={Boolean(
+                  formik.touched.innovationTarget &&
+                    formik.errors.innovationTarget
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.innovationTarget &&
+                  formik.errors.innovationTarget
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+              />
             </Grid>
 
             <Grid item md={1}>
@@ -172,114 +228,15 @@ const InnovationMetricForm = ({
   );
 };
 
-const InnvationObjectives = ({ id, processLevelTypeId }) => {
-  const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [InnovationMetricsArray, setInnovationMetricsArray] = useState([]);
-  const [whatMakesInnovation, setWhatMakesInnovation] = useState("");
-  const [phcProblemSolved, setPhcProblemSolved] = useState("");
-  const [estimatedImpact, setEstimatedImpact] = useState("");
-  const [targetGroup, setTargetGroup] = useState("");
-  const [innovationObjectives, setInnovationObjectives] = useState([]);
-  const [innovationMetrics, setInnovationMetrics] = useState("");
-  const [reportingFrequency, setReportingFrequency] = useState("");
-
-  const { isLoading: isLoadingInovationType, data: innovationTypeData } =
-    useQuery(["innovationType", "InnovationType"], getLookupMasterItemsByName, {
-      refetchOnWindowFocus: false,
-    });
-
-  const { isLoading: isLoadingInovationClass, data: innovationClassData } =
-    useQuery(
-      ["innovationClass", "InnovationClass"],
-      getLookupMasterItemsByName,
-      {
-        refetchOnWindowFocus: false,
-      }
-    );
-
-  const {
-    isLoading: isLoadingInovationTechnology,
-    data: innovationTechnologyData,
-  } = useQuery(
-    ["innovationTechnology", "InnovationTechnology"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingInovationMetric, data: innovationMetricData } =
-    useQuery(
-      ["innovationMetric", "InnovationMetric"],
-      getLookupMasterItemsByName,
-      {
-        refetchOnWindowFocus: false,
-      }
-    );
-
-  const {
-    isLoading: isLoadinginnovationTargetGroup,
-    data: innovationtargetGroupData,
-  } = useQuery(
-    ["innovationTargetGroup", "InnovationTargetGroup"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const {
-    isLoading: isLoadingreportingFrequency,
-    data: reportingFrequencyData,
-  } = useQuery(
-    ["reportingFrequency", "ReportingFrequency"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const initialValues = {
-    objective: "",
-    innovationType: "",
-    innovationClass: "",
-    innovationTechnology: "",
-    whatMakesInnovation: "",
-    phcProblemSolved: "",
-    estimatedImpact: "",
-    innovationTargetGroup: "",
-    innovationObjectives: [],
-    innovationMetric: "",
-    reportingFrequency: "",
-  };
-
-  const { data, isLoading } = useQuery(
-    ["getObjectiveByProcessLevelItemId", id],
-    getObjectiveByProcessLevelItemId
-  );
-
-  const mutation = useMutation({ mutationFn: newProjectObjectives });
-
+const ObjectiveDetailsForm = ({ handleClick }) => {
   const formik = useFormik({
-    initialValues: initialValues,
+    initialValues: objectiveDetailsInitialValues,
     validationSchema: Yup.object().shape({
-      objective: Yup.string().required("Required"),
+      innovationObjectiveDescription: Yup.string().required("Required"),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
-        const innovationObjective = {
-          code: !isLoading && data.data.length > 0 ? data.data.length + 1 : 1,
-          objective: values.objective,
-          processLevelItemId: id,
-          processLevelTypeId: processLevelTypeId,
-          createDate: new Date(),
-        };
-        await mutation.mutateAsync(innovationObjective);
-        await queryClient.invalidateQueries([
-          "getObjectiveByProcessLevelItemId",
-        ]);
+        handleClick(values);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -291,38 +248,336 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
     },
   });
 
-  const handleClick = (values) => {
-    // setInnovationMetricsArray((current) => [...current, values]);
-    console.log(values);
-  };
-
-  function removeMetric(row) {
-    setInnovationMetricsArray((current) =>
-      current.filter(
-        (metric) => metric.innovationMetric !== row.innovationMetric
-      )
-    );
-  }
-
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card mb={12}>
         <CardContent>
-          {/* {formik.isSubmitting ? (
-            <Box display="flex" justifyContent="center" my={6}>
-              <CircularProgress />
-            </Box>
-          ) : ( */}
-          <>
-            <Grid container spacing={12}>
-              <Grid item md={12}>
-                <Typography variant="h3" gutterBottom display="inline">
-                  Innovation Objectives
-                </Typography>
-              </Grid>
+          <Grid container spacing={3}>
+            <Grid item md={12}>
+              <TextField
+                name="innovationObjectiveDescription"
+                label="Objective Description"
+                value={formik.values.innovationObjectiveDescription}
+                error={Boolean(
+                  formik.touched.innovationObjectiveDescription &&
+                    formik.errors.innovationObjectiveDescription
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.innovationObjectiveDescription &&
+                  formik.errors.innovationObjectiveDescription
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                rows={4}
+                multiline
+                my={2}
+              />
             </Grid>
-            <br />
-            <Grid container spacing={12}>
+            <Grid item md={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
+};
+
+const InnvationObjectives = ({ id }) => {
+  const [openAddObjectives, setOpenAddObjectives] = useState(false);
+  const [openAddMetrics, setOpenAddMetrics] = useState(false);
+  const [objectivesList, setObjectivesList] = useState([]);
+  const [metricsList, setMetricsList] = useState([]);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const {
+    data: innovationObjectivesClassificationData,
+    isLoading: isLoadinginnovationObjectivesClassificationData,
+  } = useQuery(
+    ["getInnovationObjectiveClassificationByInnovationId", id],
+    getInnovationObjectiveClassificationByInnovationId,
+    { enabled: !!id }
+  );
+
+  const {
+    data: innovationObjectivesData,
+    isLoading: isLoadingInnovationObjectivesData,
+  } = useQuery(
+    ["getInnovationObjectiveByInnovationId", id],
+    getInnovationObjectiveByInnovationId,
+    { enabled: !!id }
+  );
+
+  const { data: innovationMetricsData, isLoading: isLoadingMetricsData } =
+    useQuery(
+      ["getInnovationMetricByInnovationId", id],
+      getInnovationMetricByInnovationId,
+      { enabled: !!id }
+    );
+
+  const { isLoading: isLoadingInovationType, data: innovationTypeData } =
+    useQuery(["innovationType", "InnovationType"], getLookupMasterItemsByName, {
+      refetchOnWindowFocus: false,
+    });
+
+  const { isLoading: isLoadingInnovationClass, data: innovationClassData } =
+    useQuery(
+      ["innovationClass", "InnovationClass"],
+      getLookupMasterItemsByName,
+      {
+        refetchOnWindowFocus: false,
+      }
+    );
+
+  const {
+    isLoading: isLoadingInnovationTechnology,
+    data: innovationTechnologyData,
+  } = useQuery(
+    ["innovationTechnology", "InnovationTechnology"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const {
+    isLoading: isLoadingReportingFrequency,
+    data: reportingFrequencyData,
+  } = useQuery(
+    ["reportingFrequency", "ReportingFrequency"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const mutation = useMutation({
+    mutationFn: newInnovationObjectiveClassification,
+  });
+
+  const innovationObjectivesMutation = useMutation({
+    mutationFn: newInnovationObjective,
+  });
+
+  const innovationMetricsMutation = useMutation({
+    mutationFn: newInnovationMetric,
+  });
+
+  const formik = useFormik({
+    initialValues: initialValues,
+    validationSchema: Yup.object().shape({
+      innovationType: Yup.string().required("Required"),
+      innovationClass: Yup.string().required("Required"),
+      innovationTechnology: Yup.string().required("Required"),
+      whatMakesThisInnovative: Yup.string().required("Required"),
+      phcProblemBeingSolved: Yup.string().required("Required"),
+      estimatedImpact: Yup.string().required("Required"),
+      reportingFrequency: Yup.string().required("Required"),
+    }),
+    onSubmit: async (values) => {
+      if (innovationObjectivesClassificationData) {
+        values.id = innovationObjectivesClassificationData.data.id;
+      } else {
+        values.id = new Guid().toString();
+      }
+
+      try {
+        const innovationObjective = {
+          id: values.id,
+          createDate: new Date(),
+          innovationId: id,
+          innovationTypeId: values.innovationType,
+          innovationClassId: values.innovationClass,
+          innovationTechnologyId: values.innovationTechnology,
+          whatMakesThisInnovative: values.whatMakesThisInnovative,
+          phcProblemBeingSolved: values.phcProblemBeingSolved,
+          estimatedImpact: values.estimatedImpact,
+          reportingFrequencyId: values.reportingFrequency,
+        };
+        const innovation = await mutation.mutateAsync(innovationObjective);
+
+        let innovationObjectives = [];
+        for (const objective of objectivesList) {
+          const innovationObjective = {
+            id: new Guid().toString(),
+            innovationObjectiveDescription:
+              objective.innovationObjectiveDescription,
+            innovationId: innovation.data.innovationId,
+            createDate: new Date(),
+          };
+          innovationObjectives.push(innovationObjective);
+        }
+        await innovationObjectivesMutation.mutateAsync(innovationObjectives);
+
+        let innovationMetrics = [];
+        for (const metric of metricsList) {
+          const innovationMetric = {
+            id: new Guid().toString(),
+            innovationMetricId: metric.innovationMetricId.lookupItemId,
+            innovationMetricName: metric.innovationMetricId.lookupItemName,
+            innovationTargetGroupId:
+              metric.innovationTargetGroupId.lookupItemId,
+            innovationTargetGroupName:
+              metric.innovationTargetGroupId.lookupItemName,
+            innovationTarget: metric.innovationTarget,
+            innovationId: innovation.data.innovationId,
+            createDate: new Date(),
+          };
+          innovationMetrics.push(innovationMetric);
+        }
+        await innovationMetricsMutation.mutateAsync(innovationMetrics);
+
+        toast("Successfully Created an Innovation Objective", {
+          type: "success",
+        });
+
+        await queryClient.invalidateQueries([
+          "getInnovationObjectiveClassificationByInnovationId",
+        ]);
+        navigate(`/project/design/innovation/innovation-detail/${id}`);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
+    },
+  });
+
+  function removeObjective(row) {
+    setObjectivesList((current) =>
+      current.filter(
+        (objective) =>
+          objective.innovationObjectiveDescription !==
+          row.innovationObjectiveDescription
+      )
+    );
+  }
+
+  const handleObjectiveAdd = (values) => {
+    setObjectivesList((current) => [...current, values]);
+  };
+
+  function removeMetrics(row) {
+    setMetricsList((current) =>
+      current.filter(
+        (metric) => metric.innovationMetricId !== row.innovationMetricId
+      )
+    );
+  }
+
+  const handleMetricsAdd = (values) => {
+    setMetricsList((current) => [...current, values]);
+  };
+
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (innovationObjectivesClassificationData) {
+        if (
+          !isLoadinginnovationObjectivesClassificationData &&
+          !isLoadingInovationType &&
+          !isLoadingInnovationClass &&
+          !isLoadingInnovationTechnology &&
+          !isLoadingReportingFrequency &&
+          !isLoadingInnovationObjectivesData
+        ) {
+          formik.setValues({
+            innovationType:
+              innovationObjectivesClassificationData.data.innovationTypeId,
+            innovationClass:
+              innovationObjectivesClassificationData.data.innovationClassId,
+            innovationTechnology:
+              innovationObjectivesClassificationData.data
+                .innovationTechnologyId,
+            whatMakesThisInnovative:
+              innovationObjectivesClassificationData.data
+                .whatMakesThisInnovative,
+            phcProblemBeingSolved:
+              innovationObjectivesClassificationData.data.phcProblemBeingSolved,
+            estimatedImpact:
+              innovationObjectivesClassificationData.data.estimatedImpact,
+            reportingFrequency:
+              innovationObjectivesClassificationData.data.reportingFrequencyId,
+          });
+
+          if (
+            innovationObjectivesData.data &&
+            innovationObjectivesData.data.length > 0
+          ) {
+            const allObjectives = [];
+            for (const objectiveData of innovationObjectivesData.data) {
+              const objective = {
+                id: objectiveData.id,
+                innovationId: objectiveData.innovationId,
+                innovationObjectiveDescription:
+                  objectiveData.innovationObjectiveDescription,
+              };
+              allObjectives.push(objective);
+            }
+            setObjectivesList(allObjectives);
+          }
+          if (
+            innovationMetricsData.data &&
+            innovationMetricsData.data.length > 0
+          ) {
+            const allMetrics = [];
+            for (const metricData of innovationMetricsData.data) {
+              const metric = {
+                id: metricData.id,
+                innovationId: metricData.innovationId,
+                innovationMetricId: {
+                  lookupItemId: metricData.innovationMetricId,
+                  lookupItemName: metricData.innovationMetricName,
+                },
+                innovationTargetGroupId: {
+                  lookupItemId: metricData.innovationTargetGroupId,
+                  lookupItemName: metricData.innovationTargetGroupName,
+                },
+                innovationTarget: metricData.innovationTarget,
+              };
+              allMetrics.push(metric);
+            }
+            setMetricsList(allMetrics);
+          }
+        }
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadinginnovationObjectivesClassificationData,
+    isLoadingInovationType,
+    isLoadingInnovationClass,
+    isLoadingInnovationTechnology,
+    isLoadingReportingFrequency,
+    innovationTypeData,
+    innovationClassData,
+    innovationTechnologyData,
+    reportingFrequencyData,
+    innovationObjectivesData,
+  ]);
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <React.Fragment>
+        <Grid item md={12}>
+          <Typography variant="h3" gutterBottom display="inline">
+            Objectives & Classification
+          </Typography>
+        </Grid>
+        <Grid item md={12} mt={5}>
+          <Divider my={6} />
+        </Grid>
+        <Card mb={12}>
+          <CardContent>
+            <Grid item md={12}>
               <Grid item md={4}>
                 <TextField
                   name="innovationType"
@@ -381,7 +636,7 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
                   <MenuItem disabled value="">
                     Innovation Class
                   </MenuItem>
-                  {!isLoadingInovationClass
+                  {!isLoadingInnovationClass
                     ? innovationClassData.data.map((option) => (
                         <MenuItem
                           key={option.lookupItemId}
@@ -416,7 +671,7 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
                   <MenuItem disabled value="">
                     Innovation Technology
                   </MenuItem>
-                  {!isLoadingInovationTechnology
+                  {!isLoadingInnovationTechnology
                     ? innovationTechnologyData.data.map((option) => (
                         <MenuItem
                           key={option.lookupItemId}
@@ -429,41 +684,75 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
                 </TextField>
               </Grid>
             </Grid>
+            <Grid item md={12}>
+              <TextField
+                name="whatMakesThisInnovative"
+                label="What Makes This an Innovation"
+                value={formik.values.whatMakesThisInnovative}
+                error={Boolean(
+                  formik.touched.whatMakesThisInnovative &&
+                    formik.errors.whatMakesThisInnovative
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.whatMakesThisInnovative &&
+                  formik.errors.whatMakesThisInnovative
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                rows={4}
+                multiline
+                my={2}
+              />
+            </Grid>
+            <Grid item md={12}>
+              <TextField
+                name="phcProblemBeingSolved"
+                label="What PHC Problem Does It Solve and How"
+                value={formik.values.phcProblemBeingSolved}
+                error={Boolean(
+                  formik.touched.phcProblemBeingSolved &&
+                    formik.errors.phcProblemBeingSolved
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.phcProblemBeingSolved &&
+                  formik.errors.phcProblemBeingSolved
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                rows={4}
+                multiline
+                my={2}
+              />
+            </Grid>
 
-            <TextField
-              name="whatMakesInnovation"
-              label="What Makes This an Innovation"
-              value={whatMakesInnovation}
-              onChange={(e) => setWhatMakesInnovation(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              variant="outlined"
-              my={2}
-            />
-            <TextField
-              name="phcProblemSolved"
-              label="What PHC Problem Does It Solve and How"
-              value={phcProblemSolved}
-              onChange={(e) => setPhcProblemSolved(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              variant="outlined"
-              my={2}
-            />
-            <TextField
-              name="estimatedImpact"
-              label="Estimated Impact and Target Group"
-              value={estimatedImpact}
-              onChange={(e) => setEstimatedImpact(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              variant="outlined"
-              my={2}
-            />
-            <Grid item md={4}>
+            <Grid item md={12}>
+              <TextField
+                name="estimatedImpact"
+                label="Estimated Impact and Target Group"
+                value={formik.values.estimatedImpact}
+                error={Boolean(
+                  formik.touched.estimatedImpact &&
+                    formik.errors.estimatedImpact
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.estimatedImpact &&
+                  formik.errors.estimatedImpact
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                rows={4}
+                multiline
+                my={2}
+              />
+            </Grid>
+
+            <Grid item md={12}>
               <TextField
                 name="reportingFrequency"
                 label="Reporting Frequency"
@@ -486,7 +775,7 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
                 <MenuItem disabled value="">
                   Reporting Frequency
                 </MenuItem>
-                {!isLoadingreportingFrequency
+                {!isLoadingReportingFrequency
                   ? reportingFrequencyData.data.map((option) => (
                       <MenuItem
                         key={option.lookupItemId}
@@ -498,10 +787,11 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
                   : []}
               </TextField>
             </Grid>
-            <Grid container spacing={12}>
+            <br />
+            <Grid container spacing={12} pt={10}>
               <Grid item md={12}>
                 <Typography variant="h3" gutterBottom display="inline">
-                  Innovation Metric
+                  Objectives
                 </Typography>
               </Grid>
             </Grid>
@@ -510,9 +800,9 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => setOpen(true)}
+                  onClick={() => setOpenAddObjectives(true)}
                 >
-                  <AddIcon /> Add Innovation Metric
+                  <AddIcon /> Add Objective
                 </Button>
               </Grid>
             </Grid>
@@ -522,32 +812,79 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Innovation Metric</TableCell>
-                        <TableCell align="right">Target Group</TableCell>
-                        {/* <TableCell align="right">Reporting Frequency</TableCell> */}
+                        <TableCell>Objective Description</TableCell>
                         <TableCell align="right">Action</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {InnovationMetricsArray.map((row) => (
+                      {objectivesList.map((row) => (
                         <TableRow key={row.id}>
                           <TableCell component="th" scope="row">
-                            {row.innovationMetric.lookupItemName}
+                            {row.innovationObjectiveDescription}
                           </TableCell>
-                          <TableCell align="right">
-                            {row.innovationClass.lookupItemName}
-                          </TableCell>
-                          {/* <TableCell align="right">
-                            {row.reportingFrequency.lookupItemName}
-                          </TableCell> */}
                           <TableCell align="right">
                             <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={() => removeMetric(row)}
-                            >
-                              <DeleteIcon />
-                            </Button>
+                              startIcon={<TrashIcon />}
+                              size="small"
+                              onClick={() => removeObjective(row)}
+                            ></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Grid>
+            </Grid>
+            <br />
+            <Grid container spacing={12} pt={10}>
+              <Grid item md={12}>
+                <Typography variant="h3" gutterBottom display="inline">
+                  Metrics
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid container spacing={12}>
+              <Grid item md={12}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setOpenAddMetrics(true)}
+                >
+                  <AddIcon /> Add Metric
+                </Button>
+              </Grid>
+            </Grid>
+            <Grid container spacing={12} pt={10}>
+              <Grid item md={12}>
+                <Paper>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="left">Innovation Metric</TableCell>
+                        <TableCell align="left">Target Group</TableCell>
+                        <TableCell align="left">Target Number</TableCell>
+                        <TableCell align="left">Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {metricsList.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell component="th" scope="row">
+                            {row.innovationMetricId.lookupItemName}
+                          </TableCell>
+                          <TableCell component="th" scope="row">
+                            {row.innovationTargetGroupId.lookupItemName}
+                          </TableCell>
+                          <TableCell component="th" scope="row">
+                            {row.innovationTarget}
+                          </TableCell>
+                          <TableCell align="left">
+                            <Button
+                              startIcon={<TrashIcon />}
+                              size="small"
+                              onClick={() => removeMetrics(row)}
+                            ></Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -560,35 +897,43 @@ const InnvationObjectives = ({ id, processLevelTypeId }) => {
             <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save changes
             </Button>
-          </>
-        </CardContent>
-      </Card>
-      <Dialog
-        fullWidth={true}
-        maxWidth="md"
-        open={open}
-        onClose={() => setOpen(false)}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">Innovation Metric</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Add Innovation Metrics</DialogContentText>
-          <InnovationMetricForm
-            innovationMetricData={innovationMetricData}
-            isLoadingInovationMetric={isLoadingInovationMetric}
-            isLoadinginnovationTargetGroup={isLoadinginnovationTargetGroup}
-            innovationtargetGroupData={innovationtargetGroupData}
-            reportingFrequencyData={reportingFrequencyData}
-            isLoadingreportingFrequency={isLoadingreportingFrequency}
-            handleClick={handleClick}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </CardContent>
+        </Card>
+        <Dialog
+          fullWidth={true}
+          maxWidth="md"
+          open={openAddObjectives}
+          onClose={() => setOpenAddObjectives(false)}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Objective Details</DialogTitle>
+          <DialogContent>
+            <ObjectiveDetailsForm handleClick={handleObjectiveAdd} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenAddObjectives(false)} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          fullWidth={true}
+          maxWidth="md"
+          open={openAddMetrics}
+          onClose={() => setOpenAddMetrics(false)}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Metric Details</DialogTitle>
+          <DialogContent>
+            <MetricDetailsForm handleClick={handleMetricsAdd} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenAddMetrics(false)} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </React.Fragment>
     </form>
   );
 };

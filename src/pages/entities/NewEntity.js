@@ -202,7 +202,7 @@ const NewEntity = () => {
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/settings/entities">
+        <Link component={NavLink} to="/innovation/">
           Entities
         </Link>
         <Typography>New Entity</Typography>

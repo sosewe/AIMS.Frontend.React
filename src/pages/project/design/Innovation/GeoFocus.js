@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "@emotion/styled";
 import {
+  Breadcrumbs,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
@@ -9,8 +10,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Grid,
   MenuItem,
+  Link,
   Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
@@ -27,13 +30,10 @@ import {
 } from "../../../../api/administrative-unit";
 import { Check, Trash as TrashIcon } from "react-feather";
 import {
-  deleteProjectLocation,
-  getProjectLocations,
-  newProjectLocation,
-  getAlllocations,
-} from "../../../../api/location";
-import { getInnovationById } from "../../../../api/innovation";
-import { newinnovationGeographicalFocus } from "../../../../api/innovatonGeographicalFocus";
+  newInnovationGeographicalFocus,
+  deleteInnovationGeographicalFocus,
+  getInnovationGeographicalFocus,
+} from "../../../../api/innovatonGeographicalFocus";
 import { DataGrid } from "@mui/x-data-grid";
 
 const Card = styled(MuiCard)(spacing);
@@ -50,7 +50,7 @@ const getFocusInitial = {
   fourthLevel: "",
 };
 
-const GeoFocus = ({ id, processLevelTypeId }) => {
+const GeoFocus = ({ id }) => {
   const queryClient = useQueryClient();
   const [parentTopLevel, setParentTopLevel] = useState();
   const [firstLevel, setFirstLevel] = useState();
@@ -66,22 +66,17 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
   const [locationId, setLocationId] = React.useState();
 
   const {
-    data: InnovationData,
-    isLoading: isLoadingInnovationData,
-    isError: isErrorInnovationData,
-  } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
-
-  // Get the innovationId from InnovationData
-  const innovationId = InnovationData?.data?.id;
-
-  const {
     data: ProjectLocationsData,
     isLoading: isLoadingProjectLocations,
     // refetch,
-  } = useQuery(["getAlllocationsQuery", id], getAlllocations, {
-    refetchOnWindowFocus: false,
-    enabled: !!id,
-  });
+  } = useQuery(
+    ["getInnovationGeographicalFocus", id],
+    getInnovationGeographicalFocus,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!id,
+    }
+  );
 
   const GetAdministrativeUnit = (params) => {
     const administrativeUnitId = params.value;
@@ -98,7 +93,7 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     }
   };
 
-  const mutation = useMutation({ mutationFn: newinnovationGeographicalFocus });
+  const mutation = useMutation({ mutationFn: newInnovationGeographicalFocus });
   const formik = useFormik({
     initialValues: getFocusInitial,
     validationSchema: Yup.object().shape({
@@ -163,16 +158,14 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
         }
 
         const innovationtLocation = {
-          innovationId,
+          innovationId: id,
+          createDate: new Date(),
           administrativeUnitId,
           administrativeUnitName,
-          processLevelItemId: id, // Use the innovation ID here
-          processLevelTypeId: processLevelTypeId,
-          createDate: new Date(),
         };
 
         await mutation.mutateAsync(innovationtLocation);
-        await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
+        await queryClient.invalidateQueries(["getInnovationGeographicalFocus"]);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -314,8 +307,8 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
   };
 
   const { refetch } = useQuery(
-    ["deleteProjectLocation", locationId],
-    deleteProjectLocation,
+    ["deleteInnovationGeographicalFocus", locationId],
+    deleteInnovationGeographicalFocus,
     { enabled: false }
   );
 
@@ -328,288 +321,303 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     setOpen(false);
   };
 
-  const handleDeleteProjectLocation = async () => {
+  const handleDeleteInnovationLocation = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
+    await queryClient.invalidateQueries(["getInnovationGeographicalFocus"]);
   };
 
   return (
-    <Card mb={12}>
-      <CardContent>
-        <Grid container spacing={12}>
-          <Grid item md={12}>
-            <Typography variant="h3" gutterBottom display="inline">
-              Innovation Locations
-            </Typography>
-          </Grid>
-          <Grid item md={12}>
-            <Paper style={{ height: 250, width: "100%" }}>
-              <DataGrid
-                rowsPerPageOptions={[5, 10, 25]}
-                rows={
-                  isLoadingProjectLocations
-                    ? []
-                    : ProjectLocationsData
-                    ? ProjectLocationsData.data
-                    : []
-                }
-                columns={[
-                  {
-                    field: "administrativeUnitId",
-                    headerName: "Administrative Unit",
-                    editable: false,
-                    flex: 1,
-                    valueGetter: GetAdministrativeUnit,
-                  },
-                  {
-                    field: "action",
-                    headerName: "Action",
-                    sortable: false,
-                    flex: 1,
-                    renderCell: (params) => (
-                      <>
-                        <Button
-                          startIcon={<TrashIcon />}
-                          size="small"
-                          onClick={() => handleClickOpen(params.id)}
-                        ></Button>
-                      </>
-                    ),
-                  },
-                ]}
-                loading={isLoadingProjectLocations}
-              />
-            </Paper>
-          </Grid>
-          <Grid item md={12}>
-            <form onSubmit={formik.handleSubmit}>
-              <Grid container item spacing={2}>
-                <Grid item md={2}>
-                  <TextField
-                    name="selectedCountry"
-                    label="Select Country"
-                    select
-                    value={formik.values.selectedCountry}
-                    error={Boolean(
-                      formik.touched.selectedCountry &&
+    <React.Fragment>
+      <Grid item md={12}>
+        <Typography variant="h3" gutterBottom display="inline">
+          Geographical Focus
+        </Typography>
+      </Grid>
+      <Grid item md={12} mt={5}>
+        <Divider my={6} />
+      </Grid>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={12}>
+            <Grid item md={12}>
+              <Paper style={{ height: 250, width: "100%" }}>
+                <DataGrid
+                  rowsPerPageOptions={[5, 10, 25]}
+                  rows={
+                    isLoadingProjectLocations
+                      ? []
+                      : ProjectLocationsData
+                      ? ProjectLocationsData.data
+                      : []
+                  }
+                  columns={[
+                    {
+                      field: "administrativeUnitId",
+                      headerName: "Administrative Unit",
+                      editable: false,
+                      flex: 1,
+                      valueGetter: GetAdministrativeUnit,
+                    },
+                    {
+                      field: "action",
+                      headerName: "Action",
+                      sortable: false,
+                      flex: 1,
+                      renderCell: (params) => (
+                        <>
+                          <Button
+                            startIcon={<TrashIcon />}
+                            size="small"
+                            onClick={() => handleClickOpen(params.id)}
+                          ></Button>
+                        </>
+                      ),
+                    },
+                  ]}
+                  loading={isLoadingProjectLocations}
+                />
+              </Paper>
+            </Grid>
+            <Grid item md={12}>
+              <form onSubmit={formik.handleSubmit}>
+                <Grid container item spacing={2}>
+                  <Grid item md={2}>
+                    <TextField
+                      name="selectedCountry"
+                      label="Select Country"
+                      select
+                      value={formik.values.selectedCountry}
+                      error={Boolean(
+                        formik.touched.selectedCountry &&
+                          formik.errors.selectedCountry
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.selectedCountry &&
                         formik.errors.selectedCountry
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.selectedCountry &&
-                      formik.errors.selectedCountry
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      onSelectedCountry(e);
-                    }}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Country
-                    </MenuItem>
-                    {!isLoading && !isError && data.data && data.data.length > 0
-                      ? data.data.map((option) => (
-                          <MenuItem key={option.id} value={option}>
-                            {option.adminUnit}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        onSelectedCountry(e);
+                      }}
+                      variant="outlined"
+                      my={2}
+                    >
+                      <MenuItem disabled value="">
+                        Select Country
+                      </MenuItem>
+                      {!isLoading &&
+                      !isError &&
+                      data.data &&
+                      data.data.length > 0
+                        ? data.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.adminUnit}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+                  <Grid item md={2}>
+                    <TextField
+                      name="firstLevel"
+                      label="Select First Level"
+                      select
+                      value={formik.values.firstLevel}
+                      error={Boolean(
+                        formik.touched.firstLevel && formik.errors.firstLevel
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.firstLevel && formik.errors.firstLevel
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        onFirstLevelSelected(e);
+                      }}
+                      variant="outlined"
+                      my={2}
+                      disabled={
+                        firstLevelDisabled ||
+                        (!isLoadingFirstLevel &&
+                          firstLevelData.data.length === 0)
+                      }
+                    >
+                      <MenuItem disabled value="">
+                        Select First Level
+                      </MenuItem>
+                      {!isLoadingFirstLevel &&
+                      firstLevelData.data &&
+                      firstLevelData.data.length > 0
+                        ? firstLevelData.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.adminUnit}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+                  <Grid item md={2}>
+                    <TextField
+                      name="secondLevel"
+                      label="Select Second Level"
+                      select
+                      value={formik.values.secondLevel}
+                      error={Boolean(
+                        formik.touched.secondLevel && formik.errors.secondLevel
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.secondLevel && formik.errors.secondLevel
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        onSecondLevelSelected(e);
+                      }}
+                      variant="outlined"
+                      my={2}
+                      disabled={
+                        secondLevelDisabled ||
+                        (!isLoadingSecondLevel &&
+                          secondLevelData.data.length === 0)
+                      }
+                    >
+                      <MenuItem disabled value="">
+                        Select Second Level
+                      </MenuItem>
+                      {!isLoadingSecondLevel &&
+                      secondLevelData.data &&
+                      secondLevelData.data.length > 0
+                        ? secondLevelData.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.adminUnit}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+                  <Grid item md={2}>
+                    <TextField
+                      name="thirdLevel"
+                      label="Select Third Level"
+                      select
+                      value={formik.values.thirdLevel}
+                      error={Boolean(
+                        formik.touched.thirdLevel && formik.errors.thirdLevel
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.thirdLevel && formik.errors.thirdLevel
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        onThirdLevelSelected(e);
+                      }}
+                      variant="outlined"
+                      my={2}
+                      disabled={
+                        thirdLevelDisabled ||
+                        (!isLoadingThirdLevel &&
+                          thirdLevelData.data.length === 0)
+                      }
+                    >
+                      <MenuItem disabled value="">
+                        Select Third Level
+                      </MenuItem>
+                      {!isLoadingThirdLevel &&
+                      thirdLevelData.data &&
+                      thirdLevelData.data.length > 0
+                        ? thirdLevelData.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.adminUnit}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+                  <Grid item md={2}>
+                    <TextField
+                      name="fourthLevel"
+                      label="Select Fourth Level"
+                      select
+                      value={formik.values.fourthLevel}
+                      error={Boolean(
+                        formik.touched.fourthLevel && formik.errors.fourthLevel
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.fourthLevel && formik.errors.fourthLevel
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                      }}
+                      variant="outlined"
+                      my={2}
+                      disabled={
+                        fourthLevelDisabled ||
+                        (!isLoadingFourthLevel &&
+                          fourthLevelData.data.length === 0)
+                      }
+                    >
+                      <MenuItem disabled value="">
+                        Select Fourth Level
+                      </MenuItem>
+                      {!isLoadingFourthLevel &&
+                      fourthLevelData.data &&
+                      fourthLevelData.data.length > 0
+                        ? fourthLevelData.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.adminUnit}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
                 </Grid>
-                <Grid item md={2}>
-                  <TextField
-                    name="firstLevel"
-                    label="Select First Level"
-                    select
-                    value={formik.values.firstLevel}
-                    error={Boolean(
-                      formik.touched.firstLevel && formik.errors.firstLevel
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.firstLevel && formik.errors.firstLevel
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      onFirstLevelSelected(e);
-                    }}
-                    variant="outlined"
-                    my={2}
-                    disabled={
-                      firstLevelDisabled ||
-                      (!isLoadingFirstLevel && firstLevelData.data.length === 0)
-                    }
-                  >
-                    <MenuItem disabled value="">
-                      Select First Level
-                    </MenuItem>
-                    {!isLoadingFirstLevel &&
-                    firstLevelData.data &&
-                    firstLevelData.data.length > 0
-                      ? firstLevelData.data.map((option) => (
-                          <MenuItem key={option.id} value={option}>
-                            {option.adminUnit}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={2}>
-                  <TextField
-                    name="secondLevel"
-                    label="Select Second Level"
-                    select
-                    value={formik.values.secondLevel}
-                    error={Boolean(
-                      formik.touched.secondLevel && formik.errors.secondLevel
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.secondLevel && formik.errors.secondLevel
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      onSecondLevelSelected(e);
-                    }}
-                    variant="outlined"
-                    my={2}
-                    disabled={
-                      secondLevelDisabled ||
-                      (!isLoadingSecondLevel &&
-                        secondLevelData.data.length === 0)
-                    }
-                  >
-                    <MenuItem disabled value="">
-                      Select Second Level
-                    </MenuItem>
-                    {!isLoadingSecondLevel &&
-                    secondLevelData.data &&
-                    secondLevelData.data.length > 0
-                      ? secondLevelData.data.map((option) => (
-                          <MenuItem key={option.id} value={option}>
-                            {option.adminUnit}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={2}>
-                  <TextField
-                    name="thirdLevel"
-                    label="Select Third Level"
-                    select
-                    value={formik.values.thirdLevel}
-                    error={Boolean(
-                      formik.touched.thirdLevel && formik.errors.thirdLevel
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.thirdLevel && formik.errors.thirdLevel
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      onThirdLevelSelected(e);
-                    }}
-                    variant="outlined"
-                    my={2}
-                    disabled={
-                      thirdLevelDisabled ||
-                      (!isLoadingThirdLevel && thirdLevelData.data.length === 0)
-                    }
-                  >
-                    <MenuItem disabled value="">
-                      Select Third Level
-                    </MenuItem>
-                    {!isLoadingThirdLevel &&
-                    thirdLevelData.data &&
-                    thirdLevelData.data.length > 0
-                      ? thirdLevelData.data.map((option) => (
-                          <MenuItem key={option.id} value={option}>
-                            {option.adminUnit}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={2}>
-                  <TextField
-                    name="fourthLevel"
-                    label="Select Fourth Level"
-                    select
-                    value={formik.values.fourthLevel}
-                    error={Boolean(
-                      formik.touched.fourthLevel && formik.errors.fourthLevel
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.fourthLevel && formik.errors.fourthLevel
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                    }}
-                    variant="outlined"
-                    my={2}
-                    disabled={
-                      fourthLevelDisabled ||
-                      (!isLoadingFourthLevel &&
-                        fourthLevelData.data.length === 0)
-                    }
-                  >
-                    <MenuItem disabled value="">
-                      Select Fourth Level
-                    </MenuItem>
-                    {!isLoadingFourthLevel &&
-                    fourthLevelData.data &&
-                    fourthLevelData.data.length > 0
-                      ? fourthLevelData.data.map((option) => (
-                          <MenuItem key={option.id} value={option}>
-                            {option.adminUnit}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-              </Grid>
-              <br />
-              <Button type="submit" variant="contained" color="primary" mt={3}>
-                <Check /> Save Location
-              </Button>
-            </form>
+                <br />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  mt={3}
+                >
+                  <Check /> Save Location
+                </Button>
+              </form>
+            </Grid>
           </Grid>
-        </Grid>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            Delete Project Location
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Project Location?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleDeleteProjectLocation} color="primary">
-              Yes
-            </Button>
-            <Button onClick={handleClose} color="error" autoFocus>
-              No
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </CardContent>
-    </Card>
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              Delete Innovation Location
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Are you sure you want to delete Innovation Location?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDeleteInnovationLocation} color="primary">
+                Yes
+              </Button>
+              <Button onClick={handleClose} color="error" autoFocus>
+                No
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </CardContent>
+      </Card>
+    </React.Fragment>
   );
 };
 export default GeoFocus;
