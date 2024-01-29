@@ -22,8 +22,7 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Edit2, Eye, Trash as TrashIcon } from "react-feather";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
-import { getAttributeTypes } from "../../api/attribute-type";
+import { deleteAggregateById, getAllAggregates } from "../../api/aggregate";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -32,18 +31,37 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const AttributesListData = () => {
+const AggregateData = () => {
   const navigate = useNavigate();
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
+  const [open, setOpen] = React.useState(false);
+  const [id, setId] = React.useState();
+  const queryClient = useQueryClient();
   const { isLoading, isError, data } = useQuery(
-    ["getAttributeTypes"],
-    getAttributeTypes
+    ["getAllAggregates"],
+    getAllAggregates
   );
 
-  function GetAttributeDataType(params) {
-    console.log(params);
-    const personnelId = params.value;
+  const { refetch } = useQuery(
+    ["deleteAggregateById", id],
+    deleteAggregateById,
+    { enabled: false }
+  );
+
+  function handleClickOpen(id) {
+    setOpen(true);
+    setId(id);
   }
+
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const handleDeleteAggregate = async () => {
+    await refetch();
+    setOpen(false);
+    await queryClient.invalidateQueries(["getAllAggregates"]);
+  };
 
   return (
     <Card mb={6}>
@@ -52,9 +70,9 @@ const AttributesListData = () => {
           mr={2}
           variant="contained"
           color="error"
-          onClick={() => navigate("/indicator/new-attribute")}
+          onClick={() => navigate("/indicator/new-aggregate")}
         >
-          <AddIcon /> New Attribute Type
+          <AddIcon /> New Aggregate
         </Button>
       </CardContent>
       <br />
@@ -71,11 +89,16 @@ const AttributesListData = () => {
                 flex: 1,
               },
               {
-                field: "attributeDataType",
-                headerName: "Attribute Data Type",
+                field: "initials",
+                headerName: "Initials",
                 editable: false,
                 flex: 1,
-                valueGetter: ({ row }) => row.attributeDataType.dataType,
+              },
+              {
+                field: "description",
+                headerName: "Description",
+                editable: false,
+                flex: 1,
               },
               {
                 field: "action",
@@ -84,17 +107,17 @@ const AttributesListData = () => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink to={`/indicator/new-attribute/${params.id}`}>
+                    <NavLink to={`/indicator/new-aggregate/${params.id}`}>
                       <Button startIcon={<Edit2 />} size="small"></Button>
                     </NavLink>
-                    <NavLink to={`/indicator/view-attribute/${params.id}`}>
+                    <NavLink to={`/indicator/view-aggregate/${params.id}`}>
                       <Button startIcon={<Eye />} size="small"></Button>
                     </NavLink>
-                    {/*<Button*/}
-                    {/*  startIcon={<TrashIcon />}*/}
-                    {/*  size="small"*/}
-                    {/*  onClick={() => handleClickOpen(params.id)}*/}
-                    {/*></Button>*/}
+                    <Button
+                      startIcon={<TrashIcon />}
+                      size="small"
+                      onClick={() => handleClickOpen(params.id)}
+                    ></Button>
                   </>
                 ),
               },
@@ -106,54 +129,49 @@ const AttributesListData = () => {
             getRowHeight={() => "auto"}
           />
         </div>
-        {/*<Dialog*/}
-        {/*  open={open}*/}
-        {/*  onClose={handleClose}*/}
-        {/*  aria-labelledby="alert-dialog-title"*/}
-        {/*  aria-describedby="alert-dialog-description"*/}
-        {/*>*/}
-        {/*  <DialogTitle id="alert-dialog-title">*/}
-        {/*    Delete Administrative Programme*/}
-        {/*  </DialogTitle>*/}
-        {/*  <DialogContent>*/}
-        {/*    <DialogContentText id="alert-dialog-description">*/}
-        {/*      Are you sure you want to delete Administrative Programme?*/}
-        {/*    </DialogContentText>*/}
-        {/*  </DialogContent>*/}
-        {/*  <DialogActions>*/}
-        {/*    <Button*/}
-        {/*      onClick={handleDeleteAdministrativeProgramme}*/}
-        {/*      color="primary"*/}
-        {/*    >*/}
-        {/*      Yes*/}
-        {/*    </Button>*/}
-        {/*    <Button onClick={handleClose} color="error" autoFocus>*/}
-        {/*      No*/}
-        {/*    </Button>*/}
-        {/*  </DialogActions>*/}
-        {/*</Dialog>*/}
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Delete Aggregate</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete Aggregate?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDeleteAggregate} color="primary">
+              Yes
+            </Button>
+            <Button onClick={handleClose} color="error" autoFocus>
+              No
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
     </Card>
   );
 };
 
-const AttributesList = () => {
+const Aggregate = () => {
   return (
     <React.Fragment>
-      <Helmet title="Attributes Types" />
+      <Helmet title="Aggregate" />
       <Typography variant="h3" gutterBottom display="inline">
-        Attributes Types
+        Aggregate
       </Typography>
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/indicator/attributes-list">
-          Attributes Types
+        <Link component={NavLink} to="/indicator/aggregates">
+          Aggregates
         </Link>
-        <Typography>Attributes Types List</Typography>
+        <Typography>Aggregates List</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
-      <AttributesListData />
+      <AggregateData />
     </React.Fragment>
   );
 };
-export default AttributesList;
+export default Aggregate;

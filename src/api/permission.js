@@ -9,3 +9,7 @@ export const getByRoleId = async ({ queryKey }) => {
   const [, roleId] = queryKey;
   return await axios.get(`${apiRoutes.permission}/GetByRoleId/${roleId}`);
 };
+
+export const getAllRoles = async () => {
+  return await axios.get(`${apiRoutes.permission}/GetAllRoles`);
+};

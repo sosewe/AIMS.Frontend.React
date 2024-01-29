@@ -16,3 +16,12 @@ export const getAttributeResponseOptionById = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.get(`${apiRoutes.attributeResponseOption}/${id}`);
 };
+
+export const deleteAttributeResponseOptionById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.attributeResponseOption}/${id}`);
+};
+
+export const createAttributeResponseOption = async (values) => {
+  return await axios.post(`${apiRoutes.attributeResponseOption}`, values);
+};

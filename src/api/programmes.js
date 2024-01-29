@@ -1,6 +1,10 @@
 import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
+export const createProgramme = async (values) => {
+  return await axios.post(`${apiRoutes.programme}`, values);
+};
+
 export const getProgrammes = async () => {
   return await axios.get(apiRoutes.programme);
 };

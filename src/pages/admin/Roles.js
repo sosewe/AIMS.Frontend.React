@@ -22,13 +22,16 @@ import {
 import { NavLink } from "react-router-dom";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { useAccount, useMsal } from "@azure/msal-react";
 import axios from "axios";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getModules } from "../../api/modules";
-import { getByRoleId, savePermissions } from "../../api/permission";
+import {
+  getAllRoles,
+  getByRoleId,
+  savePermissions,
+} from "../../api/permission";
 import { toast } from "react-toastify";
 
 const Card = styled(MuiCard)(spacing);
@@ -39,9 +42,6 @@ const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
 const AzureRoles = () => {
-  const { instance, accounts } = useMsal();
-  const account = useAccount(accounts[0] || {});
-  const [appRoles, setAppRoles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [roleId, SetRoleId] = useState();
 
@@ -52,36 +52,11 @@ const AzureRoles = () => {
     data: RolesData,
   } = useQuery(["getByRoleId", roleId], getByRoleId, { enabled: !!roleId });
 
-  useEffect(() => {
-    if (account) {
-      instance
-        .acquireTokenSilent({
-          scopes: [
-            "Application.Read.All",
-            "Application.ReadWrite.All",
-            "AppRoleAssignment.ReadWrite.All",
-          ],
-          account: account,
-        })
-        .then(async (response) => {
-          if (response) {
-            const res = await axios.get(
-              `https://graph.microsoft.com/v1.0/servicePrincipals?$filter=displayName eq '${process.env.REACT_APP_DISPLAY_NAME}'&$select=id,displayName,appId,appRoles`,
-              {
-                headers: {
-                  Authorization: "Bearer " + response.accessToken, //the token is a variable which holds the token
-                },
-              }
-            );
-            const roles =
-              res.data.value && res.data.value.length > 0
-                ? res.data.value[0].appRoles
-                : [];
-            setAppRoles(roles);
-          }
-        });
-    }
-  }, [account, instance]);
+  const {
+    isLoading: isLoadingAllRoles,
+    isError: isErrorAllRoles,
+    data: appRoles,
+  } = useQuery(["getAllRoles"], getAllRoles);
 
   const mutation = useMutation({ mutationFn: savePermissions });
   const formik = useFormik({
@@ -97,6 +72,7 @@ const AzureRoles = () => {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
+        setIsSubmitting(true);
         const InData = [];
         const datas = !isLoading && !isError ? data.data : [];
         // Extract the permissions object from values
@@ -114,7 +90,7 @@ const AzureRoles = () => {
               ? element[0].pages[0].actions[0].name
               : "";
           const InDataObject = {
-            RoleName: values.appRoleId.value,
+            RoleName: values.appRoleId.name,
             RoleId: values.appRoleId.id,
             ActionId: trueKey,
             CreateDate: new Date(),
@@ -124,6 +100,7 @@ const AzureRoles = () => {
         }
         await mutation.mutateAsync(InData);
         setSubmitting(false);
+        setIsSubmitting(false);
         toast("Successfully Updated Permissions", {
           type: "success",
         });
@@ -220,11 +197,13 @@ const AzureRoles = () => {
                       <MenuItem disabled value="">
                         Select App Role
                       </MenuItem>
-                      {appRoles.map((option) => (
-                        <MenuItem key={option.id} value={option}>
-                          {option.displayName} ({option.value})
-                        </MenuItem>
-                      ))}
+                      {!isLoadingAllRoles && !isErrorAllRoles
+                        ? appRoles.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.name}
+                            </MenuItem>
+                          ))
+                        : []}
                     </TextField>
                   </Grid>
                 </Grid>

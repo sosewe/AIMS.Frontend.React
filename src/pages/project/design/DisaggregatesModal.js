@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Autocomplete as MuiAutocomplete,
   Button,
@@ -16,6 +16,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
+import { getAllAggregateDisaggregates } from "../../../api/aggregate-disaggregate";
 // import {
 //   getResultChainAttributeByIndicatorId,
 //   saveResultChainAttributes,
@@ -31,6 +32,7 @@ const DisaggregatesModal = ({
   processLevelTypeId,
   handleClick,
 }) => {
+  const [level3Data, setLevel3Data] = useState([]);
   const {
     data: ResultChains,
     isLoading: isLoadingResultChains,
@@ -40,6 +42,11 @@ const DisaggregatesModal = ({
     getResultChainAggregateByResultChainIndicatorId,
     { enabled: !!resultChainIndicatorId }
   );
+  const {
+    data: AllAggregatesDisAggregates,
+    isLoading,
+    isError,
+  } = useQuery(["getAllAggregateDisaggregates"], getAllAggregateDisaggregates);
 
   const aggregatesCount = indicatorAggregates.length;
   const mutation = useMutation({ mutationFn: saveResultChainAggregate });
@@ -47,6 +54,7 @@ const DisaggregatesModal = ({
     initialValues: {
       sex: [],
       age: [],
+      level3: [],
     },
     validationSchema: Yup.object().shape({
       sex: Yup.array().min(aggregatesCount > 0 ? 1 : 0, "Please select gender"),
@@ -54,6 +62,7 @@ const DisaggregatesModal = ({
         aggregatesCount > 0 ? 1 : 0,
         "Please select age groups"
       ),
+      level3: Yup.array(),
     }),
     onSubmit: async (values) => {
       try {
@@ -66,16 +75,29 @@ const DisaggregatesModal = ({
           selectedResultChains: [],
           selectedResultChainAttributes: [],
         };
-        for (let i = 0; i < values.sex.length; i++) {
-          for (let j = 0; j < values.age.length; j++) {
-            resultChainAggregate.selectedResultChains.push({
-              disaggregateId1:
-                values.sex[i].aggregateDisaggregate.disaggregate.id,
-              disaggregateId2:
-                values.age[j].aggregateDisaggregate.disaggregate.id,
-            });
+        if (values && values.level3 && values.level3.length > 0) {
+          for (let i = 0; i < values.sex.length; i++) {
+            for (let j = 0; j < values.level3.length; j++) {
+              resultChainAggregate.selectedResultChains.push({
+                disaggregateId1:
+                  values.sex[i].aggregateDisaggregate.disaggregate.id,
+                disaggregateId2: values.level3[j].disaggregate.id,
+              });
+            }
+          }
+        } else {
+          for (let i = 0; i < values.sex.length; i++) {
+            for (let j = 0; j < values.age.length; j++) {
+              resultChainAggregate.selectedResultChains.push({
+                disaggregateId1:
+                  values.sex[i].aggregateDisaggregate.disaggregate.id,
+                disaggregateId2:
+                  values.age[j].aggregateDisaggregate.disaggregate.id,
+              });
+            }
           }
         }
+
         await mutation.mutateAsync(resultChainAggregate);
         toast("Successfully Created Disaggregates", {
           type: "success",
@@ -123,40 +145,38 @@ const DisaggregatesModal = ({
             }
           }
         }
-        // if (ResultChainAttribute.data.length > 0) {
-        //   attributeType = attributeTypes.find(
-        //     (obj) =>
-        //       obj.attributeTypeId === ResultChainAttribute.data[0].attributeId
-        //   );
-        // }
-        // for (const resultChainAttributeValue of ResultChainAttribute.data) {
-        //   const res = attributeResponseOptions.find(
-        //     (obj) => obj.id === resultChainAttributeValue.attributeOptionsId
-        //   );
-        //   attributeValues.push(res);
-        // }
+
         formik.setValues({
           sex: sexVal ? [sexVal] : [],
           age: ageVal,
+          level3: [],
           // attributeType: attributeType ? [attributeType] : [],
           // attributeValues: attributeValues,
         });
       }
     }
     setCurrentFormValues();
-  }, [
-    ResultChains,
-    isLoadingResultChains,
-    isErrorResultChains,
-    // ResultChainAttribute,
-    // isLoadingResultChainAttribute,
-    // isErrorResultChainAttribute,
-  ]);
+  }, [ResultChains, isLoadingResultChains, isErrorResultChains]);
+
+  const onLevel2Change = (val) => {
+    if (!isError && !isLoading) {
+      const filteredArray2 = AllAggregatesDisAggregates.data.filter((item2) => {
+        const matchingItem1 = val.find(
+          (item1) =>
+            item1.aggregateDisaggregateId === item2.parentId &&
+            item2.disaggregate.level === 3
+        );
+        return matchingItem1 !== undefined;
+      });
+      setLevel3Data(filteredArray2);
+    }
+  };
+
   return (
     <>
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={6}>
-          <Grid item md={6}>
+          <Grid item md={4}>
             <Autocomplete
               id="sex"
               multiple
@@ -188,7 +208,7 @@ const DisaggregatesModal = ({
               )}
             />
           </Grid>
-          <Grid item md={6}>
+          <Grid item md={4}>
             <Autocomplete
               id="age"
               multiple
@@ -203,7 +223,10 @@ const DisaggregatesModal = ({
                   </li>
                 );
               }}
-              onChange={(_, val) => formik.setFieldValue("age", val)}
+              onChange={(_, val) => {
+                formik.setFieldValue("age", val);
+                onLevel2Change(val);
+              }}
               value={formik.values.age}
               disabled={aggregatesCount > 0 ? false : true}
               renderInput={(params) => (
@@ -212,7 +235,7 @@ const DisaggregatesModal = ({
                   error={Boolean(formik.touched.age && formik.errors.age)}
                   fullWidth
                   helperText={formik.touched.age && formik.errors.age}
-                  label="Age"
+                  label="Age(Level 2)"
                   name="age"
                   variant="outlined"
                   my={2}
@@ -220,6 +243,43 @@ const DisaggregatesModal = ({
               )}
             />
           </Grid>
+          {level3Data && level3Data.length > 0 && (
+            <Grid item md={4}>
+              <Autocomplete
+                id="level3"
+                multiple
+                defaultValue={[]}
+                options={level3Data}
+                getOptionLabel={(option) =>
+                  option ? `${option?.disaggregate?.name}` : "No Options"
+                }
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.id}>
+                      {option?.disaggregate?.name}
+                    </li>
+                  );
+                }}
+                onChange={(_, val) => formik.setFieldValue("level3", val)}
+                value={formik.values.level3}
+                disabled={!level3Data?.length}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={Boolean(
+                      formik.touched.level3 && formik.errors.level3
+                    )}
+                    fullWidth
+                    helperText={formik.touched.level3 && formik.errors.level3}
+                    label="Age(Level 3)"
+                    name="level3"
+                    variant="outlined"
+                    my={2}
+                  />
+                )}
+              />
+            </Grid>
+          )}
         </Grid>
         <Button type="submit" variant="contained" color="primary" mt={3}>
           Save changes

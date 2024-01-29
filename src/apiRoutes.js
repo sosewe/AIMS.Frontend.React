@@ -39,6 +39,7 @@ export const apiRoutes = {
   aggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/Aggregate`,
   aggregateDisaggregate: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AggregateDisaggergate`,
   attributeType: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AttributeType`,
+  attributeDataType: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/AttributeDataType`,
   indicatorProgramme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/IndicatorProgramme`,
   indicatorThematicArea: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/IndicatorThematicArea`,
   indicatorSubTheme: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/IndicatorSubTheme`,

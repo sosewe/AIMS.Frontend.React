@@ -1,7 +1,8 @@
 // ApiContext.js
 import React, { createContext, useContext, useReducer, useEffect } from "react";
 import { apiRoutes } from "../apiRoutes";
-import { useAccount, useMsal } from "@azure/msal-react";
+import useKeyCloakAuth from "../hooks/useKeyCloakAuth";
+// import { useAccount, useMsal } from "@azure/msal-react";
 
 const ApiContext = createContext();
 
@@ -30,11 +31,11 @@ function apiReducer(state, action) {
   }
 }
 
-export function ApiProvider({ children }) {
+export function ApiProvider({ children, user }) {
   const [state, dispatch] = useReducer(apiReducer, initialState);
-  const { accounts } = useMsal();
-  const account = useAccount(accounts[0]);
-  const roles = account?.idTokenClaims?.roles ?? [];
+  // const { accounts } = useMsal();
+  // const account = useAccount(accounts[0]);
+  const roles = user?.roles ?? [];
 
   useEffect(() => {
     // Make your API request here and dispatch the result

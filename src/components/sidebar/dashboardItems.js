@@ -59,6 +59,14 @@ const programmeSection = [
         href: "/indicator/attributes-list",
         title: "Attributes",
       },
+      {
+        href: "/indicator/aggregates",
+        title: "Aggregate",
+      },
+      {
+        href: "/indicator/dis-aggregates",
+        title: "DisAggregates",
+      },
     ],
   },
 ];

@@ -52,13 +52,19 @@ import {
 } from "../../api/programme-thematic-area-sub-theme";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { getAggregatesByName, getAllAggregates } from "../../api/aggregate";
-import { getAggregateDisaggregates } from "../../api/aggregate-disaggregate";
+import {
+  getAggregateDisaggregates,
+  getAllAggregateDisaggregates,
+  getParentAggregateDisAggregateByAggregateId,
+} from "../../api/aggregate-disaggregate";
 import { getAttributeTypes } from "../../api/attribute-type";
 import { saveIndicatorProgrammes } from "../../api/indicator-programme";
 import { saveIndicatorThematicAreas } from "../../api/indicator-thematic-area";
 import { saveIndicatorSubThemes } from "../../api/indicator-sub-theme";
 import { saveIndicatorAggregates } from "../../api/indicator-aggregate";
 import { saveIndicatorAttributeTypes } from "../../api/indicator-attribute-type";
+import { getAllThematicAreas } from "../../api/thematic-area";
+import { getAllSubThemes } from "../../api/sub-theme";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -235,8 +241,8 @@ const AggregateDisAggregateForm = ({ handleClickAggregate }) => {
     isLoading: isLoadingSecondaryAggregateDisaggregates,
     isError: isErrorSecondaryAggregateDisaggregates,
   } = useQuery(
-    ["getSecondaryAggregateDisaggregates", secondaryAggregateId],
-    getAggregateDisaggregates,
+    ["getParentAggregateDisAggregateByAggregateId", secondaryAggregateId],
+    getParentAggregateDisAggregateByAggregateId,
     {
       enabled: !!secondaryAggregateId,
     }
@@ -683,14 +689,23 @@ const NewIndicatorForm = () => {
     isError,
     error,
   } = useQuery(["getIndicator", id], getIndicator, { enabled: !!id });
-  // fetch all indicators
-  // const {
-  //   data,
-  //   isLoading,
-  //   isError: isErrorAllIndicators,
-  // } = useQuery(["getAllIndicators", 1, 5], getAllIndicators, {
-  //   retry: 0,
-  // });
+  // fetch all Programmes
+  const { data: programmesData, isLoading: isLoadingProgrammes } = useQuery(
+    ["getProgrammes"],
+    getProgrammes
+  );
+  // fetch all Thematic Areas
+  const { data: thematicAreasData, isLoading: isLoadingThematicAreas } =
+    useQuery(["getAllThematicAreas"], getAllThematicAreas);
+  // fetch all Sub-Themes
+  const { data: subThemesData, isLoading: isLoadingSubThemes } = useQuery(
+    ["getAllSubThemes"],
+    getAllSubThemes
+  );
+  const {
+    data: allAggregateDisaggregate,
+    isLoading: isLoadingAggregateDisaggregate,
+  } = useQuery(["getAllAggregateDisaggregates"], getAllAggregateDisaggregates);
   // fetch IndicatorType Lookup
   const {
     data: indicatorTypeData,
@@ -1071,6 +1086,7 @@ const NewIndicatorForm = () => {
           indicatorCalculationType: IndicatorData.data.indicatorCalculationType
             ? IndicatorData.data.indicatorCalculationType
             : "",
+          reference: IndicatorData.data.reference,
         });
         for (const indicatorAttributeType of IndicatorData.data
           .indicatorAttributeTypes) {
@@ -1083,6 +1099,74 @@ const NewIndicatorForm = () => {
           if (val && res.length === 0) {
             setAttributesTypesArray((current) => [...current, val]);
           }
+        }
+
+        for (const indicatorSubTheme of IndicatorData.data.indicatorSubThemes) {
+          const val =
+            !isLoadingProgrammes &&
+            programmesData.data.find(
+              (obj) => obj.id === indicatorSubTheme.programmeId
+            );
+          const valThematicArea =
+            !isLoadingThematicAreas &&
+            thematicAreasData.data.find(
+              (obj) => obj.id === indicatorSubTheme.thematicAreaId
+            );
+          const valSubTheme =
+            !isLoadingSubThemes &&
+            subThemesData.data.find(
+              (obj) => obj.id === indicatorSubTheme.subThemeId
+            );
+          const indicatorProgrammeVal = {
+            indicatorProgrammeId: val,
+            indicatorThematicAreaId: valThematicArea,
+            indicatorSubThemeId: valSubTheme,
+          };
+          const res = subThemesArray.filter(
+            (obj) =>
+              obj.indicatorSubThemeId.id ===
+              indicatorProgrammeVal.indicatorSubThemeId.id
+          );
+          if (
+            res.length === 0 &&
+            indicatorProgrammeVal.indicatorProgrammeId &&
+            indicatorProgrammeVal.indicatorSubThemeId &&
+            indicatorProgrammeVal.indicatorThematicAreaId
+          ) {
+            setSubThemesArray((current) => [...current, indicatorProgrammeVal]);
+          }
+        }
+
+        for (const indicatorAggregate of IndicatorData.data
+          .indicatorAggregates) {
+          const selectedIndicatorAggregate =
+            !isLoadingAggregateDisaggregate &&
+            allAggregateDisaggregate.data.find(
+              (obj) => obj.id === indicatorAggregate.aggregateDisaggregateId
+            );
+          const indicatorAggregateDisaggregates = {
+            indicatorAggregateDisaggregateId: [],
+            indicatorAggregateId: "",
+            indicatorSecondaryAggregateDisaggregateId: [],
+            indicatorSecondaryAggregateId: "",
+          };
+          if (indicatorAggregate.isPrimary) {
+            indicatorAggregateDisaggregates.indicatorAggregateDisaggregateId.push(
+              selectedIndicatorAggregate
+            );
+            indicatorAggregateDisaggregates.indicatorAggregateId =
+              selectedIndicatorAggregate.aggregate;
+          } else {
+            indicatorAggregateDisaggregates.indicatorAggregateDisaggregateId.push(
+              selectedIndicatorAggregate
+            );
+            indicatorAggregateDisaggregates.indicatorSecondaryAggregateId =
+              selectedIndicatorAggregate.aggregate;
+          }
+          setAggregateDisAggregateArray((current) => [
+            ...current,
+            indicatorAggregateDisaggregates,
+          ]);
         }
       }
     }
@@ -1100,7 +1184,7 @@ const NewIndicatorForm = () => {
     isErrorIndicatorMeasureType,
   ]);
 
-  const handleClick = (values) => {
+  const handleClick = async (values) => {
     const res = subThemesArray.find(
       (obj) =>
         obj &&
@@ -1111,6 +1195,19 @@ const NewIndicatorForm = () => {
     if (!res) {
       setSubThemesArray((current) => [...current, values]);
       setOpen(false);
+      if (id) {
+        // Sub Theme
+        const indicatorSubThemes = [];
+        const indicatorSubTheme = {
+          createDate: new Date(),
+          indicatorId: id,
+          subThemeId: values.indicatorSubThemeId.id,
+          thematicAreaId: values.indicatorThematicAreaId.id,
+          programmeId: values.indicatorProgrammeId.id,
+        };
+        indicatorSubThemes.push(indicatorSubTheme);
+        await mutationIndicatorSubTheme.mutateAsync(indicatorSubThemes);
+      }
     } else {
       toast("Duplicate SubTheme Selected", {
         type: "error",
@@ -1121,9 +1218,11 @@ const NewIndicatorForm = () => {
   const handleClickAggregate = (values) => {
     setAggregateDisAggregateArray((current) => [...current, values]);
     setOpenAggregate(false);
+    if (id) {
+    }
   };
 
-  const handleClickAttributes = (values) => {
+  const handleClickAttributes = async (values) => {
     for (const value of values.attributeTypeId) {
       const res = attributesTypesArray.filter((obj) => obj.id === value.id);
       if (res.length > 0) {
@@ -1138,6 +1237,20 @@ const NewIndicatorForm = () => {
       ...values.attributeTypeId,
     ]);
     setOpenAttributeTypes(false);
+
+    // Attribute Type
+    if (id) {
+      const indicatorAttributeTypes = [];
+      for (const selectedAttributeType of values.attributeTypeId) {
+        const indicatorAttributeType = {
+          createDate: new Date(),
+          attributeTypeId: selectedAttributeType.id,
+          indicatorId: id,
+        };
+        indicatorAttributeTypes.push(indicatorAttributeType);
+      }
+      await mutationIndicatorAttributeType.mutateAsync(indicatorAttributeTypes);
+    }
   };
 
   const removeSubTheme = (row) => {

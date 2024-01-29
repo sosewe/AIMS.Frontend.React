@@ -125,7 +125,7 @@ const StaffDetailsForm = ({
   const formik = useFormik({
     initialValues: staffDetailsInitial,
     validationSchema: Yup.object().shape({
-      staffDetailsName: Yup.string().required("Required"),
+      staffDetailsName: Yup.object().required("Required"),
       staffDetailsAIMSRole: Yup.object().required("Required"),
       staffDetailsWorkFlowTask: Yup.object().required("Required"),
       primaryRole: Yup.boolean().required("Required"),
@@ -177,10 +177,7 @@ const StaffDetailsForm = ({
                 staffListData.data &&
                 staffListData.data.length > 0
                   ? staffListData.data.map((option) => (
-                      <MenuItem
-                        key={option.id}
-                        value={option.firstName + " " + option.lastName}
-                      >
+                      <MenuItem key={option.id} value={option}>
                         {option.firstName} {option.lastName}
                       </MenuItem>
                     ))
@@ -557,8 +554,7 @@ const NewProjectForm = ({ id }) => {
         const projectRoles = [];
         for (const staffDetailsArrayElement of staffDetailsArray) {
           const projectRole = {
-            aimsRoleId:
-              staffDetailsArrayElement.staffDetailsAIMSRole.lookupItemId,
+            aimsRoleId: staffDetailsArrayElement.staffDetailsAIMSRole.id,
             createDate: new Date(),
             dqaRoleId: staffDetailsArrayElement.staffDetailsWorkFlowTask.roleId,
             dqaRoleName:
@@ -569,8 +565,12 @@ const NewProjectForm = ({ id }) => {
                 : staffDetailsArrayElement.primaryRole,
             processLevelId: project.data.id,
             processLevelTypeId: processLevelTypeId,
-            staffNames: staffDetailsArrayElement.staffDetailsName,
+            staffNames:
+              staffDetailsArrayElement.staffDetailsName.firstName +
+              " " +
+              staffDetailsArrayElement.staffDetailsName.lastName,
             void: false,
+            staffId: staffDetailsArrayElement.staffDetailsName.id,
           };
           if (staffDetailsArrayElement.id) {
             projectRole.id = staffDetailsArrayElement.id;
@@ -714,9 +714,13 @@ const NewProjectForm = ({ id }) => {
               aimsRolesData.data.filter(
                 (obj) => obj.id === staffData.aimsRoleId
               );
+            const staffNames =
+              !isLoadingStaffList && !isErrorStaffList
+                ? staffListData.data.find((obj) => obj.id == staffData.staffId)
+                : null;
             const staff = {
               id: staffData.id,
-              staffDetailsName: staffData.staffNames,
+              staffDetailsName: staffNames,
               staffDetailsAIMSRole:
                 lookupRole && lookupRole.length > 0 ? lookupRole[0] : "",
               staffDetailsWorkFlowTask: {
@@ -728,6 +732,7 @@ const NewProjectForm = ({ id }) => {
             allStaff.push(staff);
           }
           setStaffDetailsArray(allStaff);
+          console.log(allStaff);
         }
         if (
           processLevelCostCentreData &&
@@ -1422,12 +1427,14 @@ const NewProjectForm = ({ id }) => {
                       </TableHead>
                       <TableBody>
                         {staffDetailsArray.map((row) => (
-                          <TableRow key={row.id}>
+                          <TableRow key={row?.staffDetailsName?.id}>
                             <TableCell component="th" scope="row">
-                              {row.staffDetailsName}
+                              {row?.staffDetailsName?.firstName +
+                                " " +
+                                row?.staffDetailsName?.lastName}
                             </TableCell>
                             <TableCell align="right">
-                              {row.staffDetailsAIMSRole.lookupItemName}
+                              {row.staffDetailsAIMSRole.name}
                             </TableCell>
                             <TableCell align="right">
                               {row.staffDetailsWorkFlowTask.roleName}
