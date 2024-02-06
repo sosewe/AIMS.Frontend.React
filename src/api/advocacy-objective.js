@@ -10,6 +10,13 @@ export const getAdvocacyObjectiveById = async ({ queryKey }) => {
   return await axios.get(`${apiRoutes.advocacyObjective}/${id}`);
 };
 
+export const getAdvocacyObjectiveByAdvocacyId = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(
+    `${apiRoutes.advocacyObjective}/GetAdvocacyObjectiveByAdvocacyId/${id}`
+  );
+};
+
 export const deleteAdvocacyObjectiveById = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.delete(`${apiRoutes.advocacyObjective}/${id}`);

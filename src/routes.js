@@ -25,7 +25,6 @@ import Page500 from "./pages/auth/Page500";
 // Home
 import Home from "./pages/home";
 import ProjectAccess from "./pages/home/ProjectAccess";
-import AdvocacyMonitoring from "./pages/project/monitoring/Advocacy/AdvocacyMonitoring";
 import NewAttributeResponseOption from "./pages/attributes/NewAttributeResponseOption";
 
 // Lookup
@@ -205,6 +204,10 @@ const AdvocacyDetail = async(() =>
 );
 const NewAdvocacyObjective = async(() =>
   import("./pages/project/design/Advocacy/NewAdvocacyObjective")
+);
+
+const EditAdvocacyObjective = async(() =>
+  import("./pages/project/design/Advocacy/EditAdvocacyObjective")
 );
 
 // TechnicalAssistance
@@ -536,8 +539,12 @@ const routes = [
         element: <AdvocacyDetail />,
       },
       {
-        path: "design/advocacy/new-advocacy-objective/:processLevelItemId/:processLevelTypeId",
+        path: "design/advocacy/new-advocacy-objective/:id",
         element: <NewAdvocacyObjective />,
+      },
+      {
+        path: "design/advocacy/edit-advocacy-objective/:id/:editId",
+        element: <EditAdvocacyObjective />,
       },
       {
         path: "monitoring/advocacy-monitoring-detail/:id",

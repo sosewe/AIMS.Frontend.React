@@ -21,7 +21,7 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash, Edit } from "react-feather";
 import {
-  getAdvocacyObjectiveById,
+  getAdvocacyObjectiveByAdvocacyId,
   deleteAdvocacyObjectiveById,
 } from "../../../../api/advocacy-objective";
 import { format } from "date-fns";
@@ -32,10 +32,7 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const AdvocacyObjectiveGridData = ({
-  processLevelItemId,
-  processLevelTypeId,
-}) => {
+const AdvocacyObjectiveGridData = ({ id }) => {
   const [open, setOpen] = useState(false);
   const [advocacyObjectiveId, setAdvocacyObjectiveId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
@@ -47,9 +44,11 @@ const AdvocacyObjectiveGridData = ({
     isLoading: isLoadingAdvocacyObjective,
     isError: isErrorAdvocacyObjective,
   } = useQuery(
-    ["getAdvocacyObjectiveById", processLevelItemId],
-    getAdvocacyObjectiveById,
-    { enabled: !!processLevelItemId }
+    ["getAdvocacyObjectiveByAdvocacyId", id],
+    getAdvocacyObjectiveByAdvocacyId,
+    {
+      enabled: !!id,
+    }
   );
 
   function handleClickOpen(advocacyObjectiveId) {
@@ -70,7 +69,7 @@ const AdvocacyObjectiveGridData = ({
   const handleDeleteAdvocacyObjective = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["getAdvocacyObjectiveById"]);
+    await queryClient.invalidateQueries(["getAdvocacyObjectiveByAdvocacyId"]);
   };
 
   return (
@@ -81,9 +80,7 @@ const AdvocacyObjectiveGridData = ({
           variant="contained"
           color="error"
           onClick={() =>
-            navigate(
-              `/project/design/advocacy/new-advocacy-objective/${processLevelItemId}/${processLevelTypeId}`
-            )
+            navigate(`/project/design/advocacy/new-advocacy-objective/${id}`)
           }
         >
           <AddIcon /> New Advocacy Objective
@@ -103,30 +100,10 @@ const AdvocacyObjectiveGridData = ({
             }
             columns={[
               {
-                field: "title",
-                headerName: "Title",
+                field: "nameOfTopic",
+                headerName: "Name Of Topic",
                 editable: false,
                 flex: 1,
-              },
-              {
-                field: "startDate",
-                headerName: "Start Date",
-                editable: false,
-                flex: 1,
-                valueFormatter: (params) =>
-                  params?.value
-                    ? format(new Date(params.value), "dd-MMM-yyyy")
-                    : "",
-              },
-              {
-                field: "endDate",
-                headerName: "End Date",
-                editable: false,
-                flex: 1,
-                valueFormatter: (params) =>
-                  params?.value
-                    ? format(new Date(params.value), "dd-MMM-yyyy")
-                    : "",
               },
               {
                 field: "action",
@@ -136,7 +113,7 @@ const AdvocacyObjectiveGridData = ({
                 renderCell: (params) => (
                   <>
                     <NavLink
-                      to={`/project/design/advocacy/advocacy-detail/${params.id}`}
+                      to={`/project/design/advocacy/edit-advocacy-objective/${id}/${params.id}`}
                     >
                       <Button startIcon={<Edit />} size="small"></Button>
                     </NavLink>
@@ -186,7 +163,7 @@ const AdvocacyObjectiveGridData = ({
   );
 };
 
-const AdvocacyObjectiveData = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyObjectives = ({ id }) => {
   return (
     <React.Fragment>
       <Helmet title="Advocacy Objective" />
@@ -195,11 +172,8 @@ const AdvocacyObjectiveData = ({ processLevelItemId, processLevelTypeId }) => {
       </Typography>
 
       <Divider my={6} />
-      <AdvocacyObjectiveGridData
-        processLevelItemId={processLevelItemId}
-        processLevelTypeId={processLevelTypeId}
-      />
+      <AdvocacyObjectiveGridData id={id} />
     </React.Fragment>
   );
 };
-export default AdvocacyObjectiveData;
+export default AdvocacyObjectives;

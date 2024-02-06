@@ -48,15 +48,17 @@ const initialValues = {
   startStatusId: "",
 };
 
-const AdvocacyObjectiveForm = ({ id }) => {
+const AdvocacyObjectiveForm = ({ id, editId }) => {
+  console.log("id .." + id);
+  console.log("editId .." + editId);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
     data: AdvocacyObjectiveData,
     isLoading: isLoadingAdvocacyObjectiveData,
     isError: isErrorAdvocacyObjectiveData,
-  } = useQuery(["getAdvocacyObjectiveById", id], getAdvocacyObjectiveById, {
-    enabled: !!id,
+  } = useQuery(["getAdvocacyObjectiveById", editId], getAdvocacyObjectiveById, {
+    enabled: !!editId,
   });
 
   const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
@@ -119,9 +121,7 @@ const AdvocacyObjectiveForm = ({ id }) => {
     onSubmit: async (values) => {
       try {
         const saveAdvocacyObjective = {
-          id: new Guid(),
-          createDate: new Date(),
-          advocacyId: id,
+          id: editId,
           typeOfInitiativeId: values.typeOfInitiativeId,
           kindOfInfluenceId: values.kindOfInfluenceId,
           typeOfPolicyAdvocacyId: values.typeOfPolicyAdvocacyId,
@@ -133,7 +133,7 @@ const AdvocacyObjectiveForm = ({ id }) => {
 
         await mutation.mutateAsync(saveAdvocacyObjective);
 
-        toast("Successfully Created an Advocacy Objective", {
+        toast("Successfully Updated an Advocacy Objective", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getAdvocacyObjectiveById"]);
@@ -150,18 +150,20 @@ const AdvocacyObjectiveForm = ({ id }) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (!isLoadingAdvocacyObjectiveData && !isErrorAdvocacyObjectiveData) {
-        let status;
-        if (!!isLoadingStatuses) {
-          status = status.data.find(
-            (obj) => obj.id === AdvocacyObjectiveData.data.status
-          );
-        }
-
-        formik.setValues({});
+        formik.setValues({
+          typeOfInitiativeId: AdvocacyObjectiveData.data.typeOfInitiativeId,
+          kindOfInfluenceId: AdvocacyObjectiveData.data.kindOfInfluenceId,
+          typeOfPolicyAdvocacyId:
+            AdvocacyObjectiveData.data.typeOfPolicyAdvocacyId,
+          nameOfTopic: AdvocacyObjectiveData.data.nameOfTopic,
+          reportingFrequencyId: AdvocacyObjectiveData.data.reportingFrequencyId,
+          targetStatusId: AdvocacyObjectiveData.data.targetStatusId,
+          startStatusId: AdvocacyObjectiveData.data.startStatusId,
+        });
       }
     }
     setCurrentFormValues();
-  }, []);
+  }, [isErrorAdvocacyObjectiveData, isLoadingAdvocacyObjectiveData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -409,22 +411,22 @@ const AdvocacyObjectiveForm = ({ id }) => {
 };
 
 const AdvocacyObjective = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+  let { id, editId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Advocacy Objective" />
       <Typography variant="h3" gutterBottom display="inline">
-        New Advocacy Objective
+        Edit Advocacy Objective
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link
           component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
+          to={`/project/design/advocacy/advocacy-detail/${id}`}
         >
-          Project Design
+          Advocacy Design
         </Link>
-        <Typography>New Advocacy Objective</Typography>
+        <Typography>Edit Advocacy Objective</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
@@ -432,11 +434,7 @@ const AdvocacyObjective = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <AdvocacyObjectiveForm
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                id={id}
-              />
+              <AdvocacyObjectiveForm id={id} editId={editId} />
             </Grid>
           </Grid>
         </CardContent>
