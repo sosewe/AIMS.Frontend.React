@@ -126,8 +126,13 @@ const GeoFocus = ({ id }) => {
       try {
         let administrativeUnitId = "";
         let administrativeUnitName = "";
+        let administrativeUnitCountryId = "";
+        let administrativeUnitCountryName = "";
+        if (values.selectedCountry) {
+          administrativeUnitCountryId = values.selectedCountry.id;
+          administrativeUnitCountryName = values.selectedCountry.adminUnit;
+        }
 
-        // const innovationId = innovationId.id;
         if (
           values.selectedCountry &&
           !values.firstLevel &&
@@ -165,6 +170,8 @@ const GeoFocus = ({ id }) => {
           createDate: new Date(),
           administrativeUnitId,
           administrativeUnitName,
+          administrativeUnitCountryId,
+          administrativeUnitCountryName,
         };
 
         await mutation.mutateAsync(learningGeoFocus);
@@ -359,6 +366,13 @@ const GeoFocus = ({ id }) => {
                     : []
                 }
                 columns={[
+                  {
+                    field: "administrativeUnitCountryId",
+                    headerName: "Administrative Country",
+                    editable: false,
+                    flex: 1,
+                    valueGetter: GetAdministrativeUnit,
+                  },
                   {
                     field: "administrativeUnitId",
                     headerName: "Administrative Unit",
