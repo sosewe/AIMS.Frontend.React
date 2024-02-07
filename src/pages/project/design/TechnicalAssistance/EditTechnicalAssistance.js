@@ -110,6 +110,7 @@ const initialValues = {
 };
 
 const staffDetailsInitial = {
+  staffId: "",
   staffDetailsName: "",
   staffDetailsAIMSRole: "",
   staffDetailsWorkFlowTask: "",
@@ -130,6 +131,7 @@ const StaffDetailsForm = ({
   const formik = useFormik({
     initialValues: staffDetailsInitial,
     validationSchema: Yup.object().shape({
+      staffId: Yup.object().required("Required"),
       staffDetailsName: Yup.string().required("Required"),
       staffDetailsAIMSRole: Yup.object().required("Required"),
       staffDetailsWorkFlowTask: Yup.object().required("Required"),
@@ -156,46 +158,63 @@ const StaffDetailsForm = ({
           <Grid container spacing={3}>
             <Grid item md={3}>
               <Autocomplete
-                id="staffDetailsName"
+                id="staffId"
                 options={!isLoadingStaffList ? staffListData.data : []}
                 getOptionLabel={(option) => {
                   if (!option) {
                     return ""; // Return an empty string for null or undefined values
                   }
-                  return `${option}`;
+                  return `${option.emailAddress}`;
                 }}
                 renderOption={(props, option) => {
                   return (
                     <li {...props} key={option.id}>
-                      {option ? `${option.firstName} ${option.lastName}` : ""}
+                      {option ? `${option.emailAddress}` : ""}
                     </li>
                   );
                 }}
                 onChange={(e, val) => {
+                  formik.setFieldValue("staffId", val);
                   formik.setFieldValue(
                     "staffDetailsName",
                     `${val.firstName} ${val.lastName}`
                   );
                 }}
-                value={formik.values.staffDetailsName}
+                value={formik.values.staffId}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     error={Boolean(
-                      formik.touched.staffDetailsName &&
-                        formik.errors.staffDetailsName
+                      formik.touched.staffId && formik.errors.staffId
                     )}
                     fullWidth
-                    helperText={
-                      formik.touched.staffDetailsName &&
-                      formik.errors.staffDetailsName
-                    }
-                    label="Staff Name"
-                    name="staffDetailsName"
+                    helperText={formik.touched.staffId && formik.errors.staffId}
+                    label="Staff Email"
+                    name="staffId"
                     variant="outlined"
                     my={2}
                   />
                 )}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsName"
+                value={formik.values.staffDetailsName}
+                error={Boolean(
+                  formik.touched.staffDetailsName &&
+                    formik.errors.staffDetailsName
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsName &&
+                  formik.errors.staffDetailsName
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                label="Staff Name"
+                variant="outlined"
+                my={2}
               />
             </Grid>
             <Grid item md={3}>
@@ -255,7 +274,7 @@ const StaffDetailsForm = ({
                 <MenuItem disabled value="">
                   Select DQA Work Flow Role
                 </MenuItem>
-                {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
+                {!isLoadingAdministrativeRoles
                   ? administrativeRoles.data.map((option) => (
                       <MenuItem key={option.roleId} value={option}>
                         {option.roleName}
@@ -490,6 +509,7 @@ const EditTechnicalAssistanceForm = ({ id }) => {
             isPrimary:
               staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
             staffNames: staffDetail.staffDetailsName,
+            staffId: staffDetail.staffId.personId,
             void: false,
           };
           technicalAssistanceStaff.push(projectRole);

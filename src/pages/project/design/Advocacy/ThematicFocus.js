@@ -40,7 +40,11 @@ import {
 } from "../../../../api/advocacy-thematic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../../api/sub-theme";
-import { getUniqueProgrammesByThematicAreaId } from "../../../../api/programme-thematic-area-sub-theme";
+import {
+  getUniqueProgrammesByThematicAreaId,
+  getUniqueThematicAreasByProgrammeId,
+} from "../../../../api/programme-thematic-area-sub-theme";
+import { getProgrammes } from "../../../../api/programmes";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -54,10 +58,21 @@ const initialValues = {
 
 const ThematicFocus = ({ id }) => {
   const queryClient = useQueryClient();
+  const [strategicObjectiveId, setStrategicObjectiveId] = useState();
   const [thematicAreaId, setThematicAreaId] = useState();
   const [open, setOpen] = React.useState(false);
   const [thematicFocusId, setThematicFocusId] = React.useState();
   const [pageSize, setPageSize] = useState(5);
+
+  const {
+    isLoading: isLoadingStrategicObjectives,
+    isError: isErrorStrategicObjectives,
+    data: strategicObjectivesData,
+  } = useQuery(["objectivesList"], getProgrammes, {
+    refetchOnWindowFocus: false,
+    retry: 0,
+  });
+
   const { data, isLoading } = useQuery(
     ["getAllThematicAreas"],
     getAllThematicAreas,
@@ -65,14 +80,21 @@ const ThematicFocus = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
+  const { data: themesData, isLoading: isLoadingThemes } = useQuery(
+    ["getUniqueThematicAreasByProgrammeId", strategicObjectiveId],
+    getUniqueThematicAreasByProgrammeId,
+    { enabled: !!strategicObjectiveId }
+  );
+
   const { data: subThemesData, isLoading: isLoadingSubThemes } = useQuery(
     ["getSubThemesByThematicAreaId", thematicAreaId],
     getSubThemesByThematicAreaId,
     { enabled: !!thematicAreaId }
   );
+
   const {
-    data: AdvocacyThematicFocusData,
-    isLoading: isLoadingAdvocacyThematicFocus,
+    data: projectThematicFocusData,
+    isLoading: isLoadingProjectThematicFocus,
   } = useQuery(
     ["getAdvocacyThematicFocusByAdvocacyId", id],
     getAdvocacyThematicFocusByAdvocacyId,
@@ -93,18 +115,18 @@ const ThematicFocus = ({ id }) => {
             values.hasOwnProperty(subThemesDatum.subThemeId) &&
             values[subThemesDatum.subThemeId].length > 0
           ) {
-            const advocacyThematicFocus = {
+            const innovationThematicFocus = {
               advocacyId: id,
               createDate: new Date(),
               subThemeId: subThemesDatum.subThemeId,
               thematicAreaId: subThemesDatum.thematicAreaId,
               id: new Guid().toString(),
             };
-            await mutation.mutateAsync(advocacyThematicFocus);
+            await mutation.mutateAsync(innovationThematicFocus);
           }
         }
         await queryClient.invalidateQueries([
-          "getAdvocacyThematicFocusByInnovationId",
+          "getAdvocacyThematicFocusByAdvocacyId",
         ]);
         toast("Successfully added Advocacy Thematic Focus", {
           type: "success",
@@ -122,6 +144,12 @@ const ThematicFocus = ({ id }) => {
       }
     },
   });
+
+  function HandleStrategicObjectiveChange(e) {
+    const strategicObjectiveId = e.target.value.id;
+    setStrategicObjectiveId(strategicObjectiveId);
+    HandleThematicAreaChange(e);
+  }
 
   function HandleThematicAreaChange(e) {
     const thematicAreaId = e.target.value.id;
@@ -175,7 +203,7 @@ const ThematicFocus = ({ id }) => {
     await refetch();
     setOpen(false);
     await queryClient.invalidateQueries([
-      "getAdvocacyThematicFocusByInnovationId",
+      "getInnovationThematicFocusByInnovationId",
     ]);
   };
 
@@ -183,7 +211,7 @@ const ThematicFocus = ({ id }) => {
     <React.Fragment>
       <Grid item md={12}>
         <Typography variant="h3" gutterBottom display="inline">
-          Advocacy Thematic Focus
+          Thematic Focus
         </Typography>
       </Grid>
       <Grid item md={12} mt={5}>
@@ -196,6 +224,42 @@ const ThematicFocus = ({ id }) => {
               <CardContent pb={1}>
                 <form onSubmit={formik.handleSubmit}>
                   <Grid container item spacing={2}>
+                    <Grid item md={12} mb={5}>
+                      <TextField
+                        name="strategicObjective"
+                        label="Strategic Objective"
+                        required
+                        select
+                        value={formik.values.strategicObjective}
+                        error={Boolean(
+                          formik.touched.strategicObjective &&
+                            formik.errors.strategicObjective
+                        )}
+                        fullWidth
+                        helperText={
+                          formik.touched.strategicObjective &&
+                          formik.errors.strategicObjective
+                        }
+                        onBlur={formik.handleBlur}
+                        onChange={(e) => {
+                          formik.handleChange(e);
+                          HandleStrategicObjectiveChange(e);
+                        }}
+                        variant="outlined"
+                      >
+                        <MenuItem disabled value="">
+                          Select Strategic Objective
+                        </MenuItem>
+                        {!isLoadingStrategicObjectives
+                          ? strategicObjectivesData.data.map((option) => (
+                              <MenuItem key={option.id} value={option}>
+                                {option.name}
+                              </MenuItem>
+                            ))
+                          : []}
+                      </TextField>
+                    </Grid>
+
                     <Grid item md={12}>
                       <TextField
                         name="thematicArea"
@@ -222,8 +286,8 @@ const ThematicFocus = ({ id }) => {
                         <MenuItem disabled value="">
                           Select Thematic Area
                         </MenuItem>
-                        {!isLoading
-                          ? data.data.map((option) => (
+                        {!isLoadingThemes
+                          ? themesData.data.map((option) => (
                               <MenuItem key={option.id} value={option}>
                                 {option.name}
                               </MenuItem>
@@ -293,10 +357,10 @@ const ThematicFocus = ({ id }) => {
                         <DataGrid
                           rowsPerPageOptions={[5, 10, 25]}
                           rows={
-                            isLoadingAdvocacyThematicFocus
+                            isLoadingProjectThematicFocus
                               ? []
-                              : AdvocacyThematicFocusData
-                              ? AdvocacyThematicFocusData.data
+                              : projectThematicFocusData
+                              ? projectThematicFocusData.data
                               : []
                           }
                           columns={[
@@ -328,7 +392,7 @@ const ThematicFocus = ({ id }) => {
                           onPageSizeChange={(newPageSize) =>
                             setPageSize(newPageSize)
                           }
-                          loading={isLoadingAdvocacyThematicFocus}
+                          loading={isLoadingProjectThematicFocus}
                           getRowHeight={() => "auto"}
                         />
                       </Paper>
@@ -339,11 +403,11 @@ const ThematicFocus = ({ id }) => {
                         aria-describedby="alert-dialog-description"
                       >
                         <DialogTitle id="alert-dialog-title">
-                          Delete Advocacy Thematic Focus
+                          Delete Project Thematic Focus
                         </DialogTitle>
                         <DialogContent>
                           <DialogContentText id="alert-dialog-description">
-                            Are you sure you want to delete Innovation Thematic
+                            Are you sure you want to delete Advocacy Thematic
                             Focus?
                           </DialogContentText>
                         </DialogContent>
