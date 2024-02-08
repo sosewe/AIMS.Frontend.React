@@ -160,6 +160,22 @@ const ThematicFocus = ({ id }) => {
     setThematicAreaId(thematicAreaId);
   }
 
+  function GetStrategicObjective(params) {
+    const thematicAreaId = params.row.thematicAreaId;
+    const resultProgrammeThematicAreaSubTheme = useQuery(
+      ["getUniqueProgrammesByThematicAreaId", thematicAreaId],
+      getUniqueProgrammesByThematicAreaId
+    );
+
+    if (
+      resultProgrammeThematicAreaSubTheme &&
+      resultProgrammeThematicAreaSubTheme.data
+    ) {
+      let returnVal = `${resultProgrammeThematicAreaSubTheme.data.data[0].name}`;
+      return returnVal;
+    }
+  }
+
   function GetSubTheme(params) {
     const subThemeId = params.row.subThemeId;
     const thematicAreaId = params.row.thematicAreaId;
@@ -172,18 +188,8 @@ const ThematicFocus = ({ id }) => {
       ["getUniqueProgrammesByThematicAreaId", thematicAreaId],
       getUniqueProgrammesByThematicAreaId
     );
-    if (
-      result &&
-      result.data &&
-      resultThematic &&
-      resultThematic.data &&
-      resultProgrammeThematicAreaSubTheme &&
-      resultProgrammeThematicAreaSubTheme.data
-    ) {
-      let returnVal = `${result.data.data.name}(${resultThematic.data.data.name})`;
-      if (resultProgrammeThematicAreaSubTheme.data.data.length > 0) {
-        returnVal += `(${resultProgrammeThematicAreaSubTheme.data.data[0].name})`;
-      }
+    if (result && result.data && resultThematic && resultThematic.data) {
+      let returnVal = `${result.data.data.name} [${resultThematic.data.data.name}]`;
       return returnVal;
     }
   }
@@ -369,16 +375,24 @@ const ThematicFocus = ({ id }) => {
                           }
                           columns={[
                             {
+                              field: "thematicAreaId",
+                              colId: "subThemeId&thematicAreaId",
+                              headerName: "STRATEGIC OBJECTIVE",
+                              editable: false,
+                              flex: 1,
+                              valueGetter: GetStrategicObjective,
+                            },
+                            {
                               field: "subThemeId",
                               colId: "subThemeId&thematicAreaId",
-                              headerName: "SUB-THEME(THEMATIC AREA)",
+                              headerName: "SUB-THEME [THEMATIC AREA]",
                               editable: false,
                               flex: 1,
                               valueGetter: GetSubTheme,
                             },
                             {
                               field: "action",
-                              headerName: "Action",
+                              headerName: "ACTION",
                               sortable: false,
                               flex: 1,
                               renderCell: (params) => (

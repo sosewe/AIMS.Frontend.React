@@ -38,7 +38,11 @@ const FooterBadge = styled(Badge)`
 
 const SidebarFooter = ({ ...rest }) => {
   const user = useKeyCloakAuth();
+
+  console.log("useKeyCloakAuth ... " + JSON.stringify(user));
   const userRoles = user?.roles;
+  const userLevel = user?.tokenParsed.UserLevel;
+
   let roleString = "";
   if (userRoles.length > 0) {
     roleString = userRoles.join(",");
@@ -61,7 +65,11 @@ const SidebarFooter = ({ ...rest }) => {
         </Grid>
         <Grid item>
           {!!user && (
-            <FooterText variant="body2">Role: {roleString}</FooterText>
+            <>
+              <FooterText variant="body2">
+                {userLevel} : {roleString}
+              </FooterText>
+            </>
           )}
           {/*<FooterSubText variant="caption">UX Designer</FooterSubText>*/}
         </Grid>
