@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
   Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   FormControlLabel,
   FormGroup,
   Grid,
@@ -22,18 +17,10 @@ import {
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
 } from "@mui/material";
 import SelectSearch from "react-select-search";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import CancelIcon from "@mui/icons-material/Cancel";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
@@ -42,32 +29,17 @@ import { Check } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { YEAR_RANGE } from "../../../../constants";
 import {
-  getAdministrativeRoles,
   getAMREFStaffList,
   getLookupMasterItemsByName,
 } from "../../../../api/lookup";
 import { getDonors } from "../../../../api/donor";
-import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getInnovationById, newInnovation } from "../../../../api/innovation";
 import { newInnovationDonor } from "../../../../api/innovation-donor";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { getProjectRoles } from "../../../../api/project-role";
 
 import { Helmet } from "react-helmet-async";
-import {
-  getQualitativeCountryByTypeItemId,
-  newQualitativeCountry,
-} from "../../../../api/qualitative-country";
-import {
-  getQualitativePeriodByTypeItemId,
-  newQualitativePeriod,
-} from "../../../../api/qualitative-period";
-import {
-  getQualitativeThematicAreaByTypeItemId,
-  newQualitativeThematicArea,
-} from "../../../../api/qualitative-thematic-area";
 import { Guid } from "../../../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
@@ -75,7 +47,6 @@ const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
@@ -281,24 +252,13 @@ const StaffDetailsForm = ({
   );
 };
 
-const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+const InnovationForm = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  let innovationQualitativeTypeId;
-  const {
-    data: InnovationData,
-    isLoading: isLoadingInnovationData,
-    isError: isErrorInnovationData,
-  } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
-  const {
-    data: QualitativeCountryData,
-    isLoading: isLoadingQualitativeCountry,
-    isError: isErrorQualitativeCountry,
-  } = useQuery(
-    ["getQualitativeCountryByTypeItemId", id],
-    getQualitativeCountryByTypeItemId,
-    { enabled: !!id }
-  );
+
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -306,24 +266,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const {
-    data: QualitativePeriodData,
-    isLoading: isLoadingQualitativePeriod,
-    isError: isErrorQualitativePeriod,
-  } = useQuery(
-    ["getQualitativePeriodByTypeItemId", id],
-    getQualitativePeriodByTypeItemId,
-    { enabled: !!id }
-  );
-  const {
-    data: QualitativeThematicAreaData,
-    isLoading: isLoadingQualitativeThematicArea,
-    isError: isErrorQualitativeThematicArea,
-  } = useQuery(
-    ["getQualitativeThematicAreaByTypeItemId", id],
-    getQualitativeThematicAreaByTypeItemId,
-    { enabled: !!id }
-  );
+
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -360,13 +303,6 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  // const {
-  //   data: ThematicAreas,
-  //   isLoading: isLoadingThematicAreas,
-  //   isError: isErrorThematicAreas,
-  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-  //   refetchOnWindowFocus: false,
-  // });
   const { isLoading: isLoadingAmrefEntities, data: amrefEntities } = useQuery(
     ["amrefEntities"],
     getAmrefEntities,
@@ -374,38 +310,24 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  const {
-    data: QualitativeResultTypesData,
-    isLoading: isLoadingQualitativeResultTypes,
-    isError: isErrorQualitativeResultTypes,
-  } = useQuery(
-    ["qualitativeResultType", "QualitativeResultType"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange(true);
+    },
+    [onActionChange]
   );
-  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
-    const filterInnovation = QualitativeResultTypesData.data.find(
-      (obj) => obj.lookupItemName === "Innovation"
-    );
-    innovationQualitativeTypeId = filterInnovation.lookupItemId;
-  }
+
   const mutation = useMutation({ mutationFn: newInnovation });
 
   const innovationDonorsMutation = useMutation({
     mutationFn: newInnovationDonor,
   });
 
-  // eslint-disable-next-line no-unused-vars
-  const qualitativeThematicAreaMutation = useMutation({
-    mutationFn: newQualitativeThematicArea,
-  });
-
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      title: Yup.string().required("Required"),
+      /*title: Yup.string().required("Required"),
       shortTitle: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
@@ -422,13 +344,13 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
       currencyTypeId: Yup.string().required("Required"),
       costCenter: Yup.string().required("Required"),
       status: Yup.string().required("Required"),
-      donors: Yup.array().required("Required"),
+      donors: Yup.array().required("Required"),*/
     }),
     onSubmit: async (values) => {
       try {
-        const guid = new Guid();
+        /*const guid = new Guid();
         const saveInnovation = {
-          id: id ? id : guid.toString(),
+          id: guid.toString(),
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
@@ -459,14 +381,14 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
           innovationDonors.push(innovationDonor);
         }
         await innovationDonorsMutation.mutateAsync(innovationDonors);
+        */
 
         toast("Successfully Created an Innovation", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(
-          `/project/design/innovation/innovation-detail/${innovation.data.id}`
-        );
+
+        handleActionChange();
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -476,111 +398,7 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     },
   });
 
-  useEffect(() => {
-    function setCurrentFormValues() {
-      if (
-        !isLoadingInnovationData &&
-        !isErrorInnovationData &&
-        !isLoadingQualitativeThematicArea &&
-        !isErrorQualitativeThematicArea &&
-        !isErrorQualitativePeriod &&
-        !isLoadingQualitativePeriod &&
-        !isLoadingQualitativeCountry &&
-        !isErrorQualitativeCountry
-      ) {
-        let staffId;
-        let staffEmail;
-        if (!isLoadingStaffList) {
-          staffId = staffListData.data.find(
-            (obj) => obj.id === InnovationData.data.staffNameId
-          );
-
-          if (staffId != null) {
-            staffEmail = InnovationData.data.staffName.emailAddress;
-          }
-        }
-
-        /*let reviewerId;
-        let reviewerEmail;
-        if (!isLoadingStaffList) {
-          reviewerId = staffListData.data.find(
-            (obj) => obj.id === InnovationData.data.technicalReviewerId
-          );
-
-          if (reviewerId != null) {
-            reviewerEmail = InnovationData.data.staffName.emailAddress;
-          }
-        }*/
-
-        let enaSupportOffice;
-        if (!!isLoadingAmrefEntities) {
-          enaSupportOffice = amrefEntities.data.find(
-            (obj) => obj.id === InnovationData.data.office
-          );
-        }
-
-        let implementingOfficeId;
-        if (!!isLoadingOrgUnits) {
-          implementingOfficeId = orgUnitsData.data.find(
-            (obj) => obj.id === InnovationData.data.implementingOfficeId
-          );
-        }
-
-        let currencyType;
-        if (!!isLoadingCurrency) {
-          currencyType = currencyData.data.find(
-            (obj) => obj.id === InnovationData.data.currencyTypeId
-          );
-        }
-
-        let donorsList = [];
-        for (const donor of InnovationData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
-          }
-        }
-
-        formik.setValues({
-          title: InnovationData.data.title,
-          shortTitle: InnovationData.data.shortTitle,
-          startDate: InnovationData.data.startDate,
-          endDate: InnovationData.data.endDate,
-          extensionDate: InnovationData.data.extensionDate,
-          status: InnovationData.data.statusId,
-          staffNameId: staffId ? staffId : "",
-          leadStaffEmail: staffEmail ? staffEmail : "",
-          //technicalReviewerEmailAddress
-          implementingOfficeId: implementingOfficeId
-            ? implementingOfficeId
-            : "",
-          /*
-          enaSupportOffice: enaSupportOffice ? enaSupportOffice : "",
-          costCenter: InnovationData.data.costCenter,
-          currencyTypeId: currencyType ? currencyType : "",*/
-          donors: donorsList,
-        });
-      }
-    }
-    setCurrentFormValues();
-  }, [
-    InnovationData,
-    isLoadingInnovationData,
-    isErrorInnovationData,
-    isLoadingStaffList,
-    isErrorStaffList,
-    staffListData,
-    isErrorQualitativePeriod,
-    isLoadingQualitativePeriod,
-    isErrorQualitativeThematicArea,
-    isLoadingQualitativeThematicArea,
-    QualitativePeriodData,
-    QualitativeThematicAreaData,
-    QualitativeCountryData,
-    isLoadingQualitativeCountry,
-    isErrorQualitativeCountry,
-    amrefEntities,
-  ]);
+  useEffect(() => {}, []);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -1069,34 +887,23 @@ const InnovationForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   );
 };
 
-const Innovation = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+const Innovation = ({ onActionChange }) => {
+  let { id, processLevelTypeId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Innovation" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         New Innovation
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Innovation</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
               <InnovationForm
-                processLevelItemId={processLevelItemId}
+                processLevelItemId={id}
                 processLevelTypeId={processLevelTypeId}
-                id={id}
+                onActionChange={onActionChange}
               />
             </Grid>
           </Grid>

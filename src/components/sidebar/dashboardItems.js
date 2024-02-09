@@ -8,6 +8,7 @@ import {
 } from "react-feather";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 
+/*
 const projectSection = [
   {
     href: "/project",
@@ -21,6 +22,7 @@ const projectSection = [
     ],
   },
 ];
+*/
 
 const programmeSection = [
   {
@@ -161,10 +163,10 @@ const navItems = [
     title: "Programmes",
     pages: programmeSection,
   },
-  {
+  /*{
     title: "Projects",
     pages: projectSection,
-  },
+  },*/
   {
     title: "Configuration",
     pages: configurationSection,

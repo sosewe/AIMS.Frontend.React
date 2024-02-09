@@ -10,6 +10,7 @@ import GeoFocus from "./GeoFocus";
 import ProjectObjectives from "./ProjectObjectives";
 import ThematicFocus from "./ThematicFocus";
 import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
+import Innovation from "./Innovation/NewInnovation";
 import InnovationData from "./Innovation/InnovationData";
 import AdvocacyData from "./Advocacy/AdvocacyData";
 import TechnicalAssistanceData from "./TechnicalAssistance/TechnicalAssistanceData";
@@ -52,8 +53,10 @@ function a11yProps(index: number) {
 }
 
 const DesignProject = () => {
+  const [action, setAction] = React.useState(true);
   const [value, setValue] = React.useState(0);
   let { id, processLevelTypeId } = useParams();
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -103,10 +106,21 @@ const DesignProject = () => {
         />
       </TabPanel>
       <TabPanel index={5} value={value}>
-        <InnovationData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
+        {action ? (
+          <InnovationData
+            processLevelItemId={id}
+            processLevelTypeId={processLevelTypeId}
+            onActionChange={setAction}
+          />
+        ) : (
+          <>
+            <Innovation
+              processLevelItemId={id}
+              processLevelTypeId={processLevelTypeId}
+              onActionChange={setAction}
+            />
+          </>
+        )}
       </TabPanel>
       <TabPanel index={6} value={value}>
         <AdvocacyData
