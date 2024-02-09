@@ -38,8 +38,6 @@ const FooterBadge = styled(Badge)`
 
 const SidebarFooter = ({ ...rest }) => {
   const user = useKeyCloakAuth();
-
-  console.log("useKeyCloakAuth ... " + JSON.stringify(user));
   const userRoles = user?.roles;
   const userLevel = user?.tokenParsed.UserLevel;
 

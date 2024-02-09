@@ -85,8 +85,8 @@ const InnovationGridData = ({
   };
 
   const handleActionChange = useCallback(
-    (event) => {
-      onActionChange(false);
+    (id, status) => {
+      onActionChange({ id: id, status: status });
     },
     [onActionChange]
   );
@@ -98,7 +98,7 @@ const InnovationGridData = ({
           mr={2}
           variant="contained"
           color="error"
-          onClick={() => handleActionChange()}
+          onClick={() => handleActionChange(0, false)}
         >
           <AddIcon /> New Innovation
         </Button>
@@ -149,15 +149,14 @@ const InnovationGridData = ({
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/innovation/innovation-detail/${params.id}`}
-                    >
-                      <Button
-                        startIcon={<Edit />}
-                        size="small"
-                        onClick={(e) => handleActionChange()}
-                      ></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleActionChange(params.id, false);
+                        setInnovationId(params.id);
+                      }}
+                    ></Button>
 
                     <Button
                       startIcon={<Trash />}

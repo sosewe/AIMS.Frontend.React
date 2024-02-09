@@ -11,6 +11,7 @@ import ProjectObjectives from "./ProjectObjectives";
 import ThematicFocus from "./ThematicFocus";
 import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
 import Innovation from "./Innovation/NewInnovation";
+import EditInnovation from "./Innovation/EditInnovation";
 import InnovationData from "./Innovation/InnovationData";
 import AdvocacyData from "./Advocacy/AdvocacyData";
 import TechnicalAssistanceData from "./TechnicalAssistance/TechnicalAssistanceData";
@@ -53,9 +54,11 @@ function a11yProps(index: number) {
 }
 
 const DesignProject = () => {
-  const [action, setAction] = React.useState(true);
+  const [action, setAction] = React.useState({ id: 0, status: true });
   const [value, setValue] = React.useState(0);
   let { id, processLevelTypeId } = useParams();
+
+  console.log("action ..." + JSON.stringify(action));
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -106,21 +109,38 @@ const DesignProject = () => {
         />
       </TabPanel>
       <TabPanel index={5} value={value}>
-        {action ? (
-          <InnovationData
-            processLevelItemId={id}
-            processLevelTypeId={processLevelTypeId}
-            onActionChange={setAction}
-          />
-        ) : (
-          <>
-            <Innovation
-              processLevelItemId={id}
-              processLevelTypeId={processLevelTypeId}
-              onActionChange={setAction}
-            />
-          </>
-        )}
+        {(() => {
+          if (action.status) {
+            return (
+              <InnovationData
+                processLevelItemId={id}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else if (!action.status && action.id === 0) {
+            return (
+              <>
+                <Innovation
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <EditInnovation
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel index={6} value={value}>
         <AdvocacyData

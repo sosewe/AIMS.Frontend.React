@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -17,17 +17,10 @@ import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
-  Link,
   Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -43,7 +36,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -63,21 +56,6 @@ import {
 } from "../../../../api/innovation-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
-
-import { Helmet } from "react-helmet-async";
-import {
-  getQualitativeCountryByTypeItemId,
-  newQualitativeCountry,
-} from "../../../../api/qualitative-country";
-import {
-  getQualitativePeriodByTypeItemId,
-  newQualitativePeriod,
-} from "../../../../api/qualitative-period";
-import {
-  getQualitativeThematicAreaByTypeItemId,
-  newQualitativeThematicArea,
-} from "../../../../api/qualitative-thematic-area";
-import { Guid } from "../../../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -312,26 +290,18 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditInnovationForm = ({ id }) => {
+const EditInnovationForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  let innovationQualitativeTypeId;
+
   const {
     data: InnovationData,
     isLoading: isLoadingInnovationData,
     isError: isErrorInnovationData,
   } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
-  const {
-    data: QualitativeCountryData,
-    isLoading: isLoadingQualitativeCountry,
-    isError: isErrorQualitativeCountry,
-  } = useQuery(
-    ["getQualitativeCountryByTypeItemId", id],
-    getQualitativeCountryByTypeItemId,
-    { enabled: !!id }
-  );
+
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -353,24 +323,6 @@ const EditInnovationForm = ({ id }) => {
   } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativePeriodData,
-    isLoading: isLoadingQualitativePeriod,
-    isError: isErrorQualitativePeriod,
-  } = useQuery(
-    ["getQualitativePeriodByTypeItemId", id],
-    getQualitativePeriodByTypeItemId,
-    { enabled: !!id }
-  );
-  const {
-    data: QualitativeThematicAreaData,
-    isLoading: isLoadingQualitativeThematicArea,
-    isError: isErrorQualitativeThematicArea,
-  } = useQuery(
-    ["getQualitativeThematicAreaByTypeItemId", id],
-    getQualitativeThematicAreaByTypeItemId,
-    { enabled: !!id }
-  );
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -407,13 +359,7 @@ const EditInnovationForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  // const {
-  //   data: ThematicAreas,
-  //   isLoading: isLoadingThematicAreas,
-  //   isError: isErrorThematicAreas,
-  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-  //   refetchOnWindowFocus: false,
-  // });
+
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,
@@ -421,23 +367,14 @@ const EditInnovationForm = ({ id }) => {
   } = useQuery(["amrefEntities"], getAmrefEntities, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativeResultTypesData,
-    isLoading: isLoadingQualitativeResultTypes,
-    isError: isErrorQualitativeResultTypes,
-  } = useQuery(
-    ["qualitativeResultType", "QualitativeResultType"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
   );
-  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
-    const filterInnovation = QualitativeResultTypesData.data.find(
-      (obj) => obj.lookupItemName === "Innovation"
-    );
-    innovationQualitativeTypeId = filterInnovation.lookupItemId;
-  }
+
   const mutation = useMutation({ mutationFn: newInnovation });
 
   const innovationDonorsMutation = useMutation({
@@ -446,11 +383,6 @@ const EditInnovationForm = ({ id }) => {
 
   const innovationStaffMutation = useMutation({
     mutationFn: newInnovationStaff,
-  });
-
-  // eslint-disable-next-line no-unused-vars
-  const qualitativeThematicAreaMutation = useMutation({
-    mutationFn: newQualitativeThematicArea,
   });
 
   const formik = useFormik({
@@ -534,7 +466,8 @@ const EditInnovationForm = ({ id }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
+
+        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -556,16 +489,7 @@ const EditInnovationForm = ({ id }) => {
 
   useEffect(() => {
     function setCurrentFormValues() {
-      if (
-        !isLoadingInnovationData &&
-        !isErrorInnovationData &&
-        !isLoadingQualitativeThematicArea &&
-        !isErrorQualitativeThematicArea &&
-        !isErrorQualitativePeriod &&
-        !isLoadingQualitativePeriod &&
-        !isLoadingQualitativeCountry &&
-        !isErrorQualitativeCountry
-      ) {
+      if (!isLoadingInnovationData && !isErrorInnovationData) {
         let staffId;
         let staffEmail;
         if (!isLoadingStaffList) {
@@ -648,15 +572,6 @@ const EditInnovationForm = ({ id }) => {
     isLoadingStaffList,
     isErrorStaffList,
     staffListData,
-    isErrorQualitativePeriod,
-    isLoadingQualitativePeriod,
-    isErrorQualitativeThematicArea,
-    isLoadingQualitativeThematicArea,
-    QualitativePeriodData,
-    QualitativeThematicAreaData,
-    QualitativeCountryData,
-    isLoadingQualitativeCountry,
-    isErrorQualitativeCountry,
     amrefEntities,
   ]);
 
@@ -1139,7 +1054,7 @@ const EditInnovationForm = ({ id }) => {
           </Grid>
           <Grid container spacing={12} pt={10}>
             <Grid item md={12}>
-              <Typography variant="h3" gutterBottom display="inline">
+              <Typography variant="h5" gutterBottom display="inline">
                 Staff Details
               </Typography>
             </Grid>
@@ -1200,8 +1115,23 @@ const EditInnovationForm = ({ id }) => {
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -1238,19 +1168,21 @@ const EditInnovationForm = ({ id }) => {
   );
 };
 
-const Innovation = () => {
-  let { id } = useParams();
+const Innovation = (props) => {
   return (
     <React.Fragment>
-      <Typography variant="h3" gutterBottom display="inline">
-        Basic Information
+      <Typography variant="h5" gutterBottom display="inline">
+        Edit Innovation
       </Typography>
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditInnovationForm id={id} />
+              <EditInnovationForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

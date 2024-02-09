@@ -313,7 +313,7 @@ const InnovationForm = ({
 
   const handleActionChange = useCallback(
     (event) => {
-      onActionChange(true);
+      onActionChange({ id: 0, status: 1 });
     },
     [onActionChange]
   );
@@ -327,7 +327,7 @@ const InnovationForm = ({
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      /*title: Yup.string().required("Required"),
+      title: Yup.string().required("Required"),
       shortTitle: Yup.string().required("Required"),
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
@@ -344,11 +344,11 @@ const InnovationForm = ({
       currencyTypeId: Yup.string().required("Required"),
       costCenter: Yup.string().required("Required"),
       status: Yup.string().required("Required"),
-      donors: Yup.array().required("Required"),*/
+      donors: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
       try {
-        /*const guid = new Guid();
+        const guid = new Guid();
         const saveInnovation = {
           id: guid.toString(),
           createDate: new Date(),
@@ -381,14 +381,13 @@ const InnovationForm = ({
           innovationDonors.push(innovationDonor);
         }
         await innovationDonorsMutation.mutateAsync(innovationDonors);
-        */
 
         toast("Successfully Created an Innovation", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
 
-        handleActionChange();
+        handleActionChange(false, 0);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -895,8 +894,8 @@ const Innovation = ({ onActionChange }) => {
       <Typography variant="h5" gutterBottom display="inline">
         New Innovation
       </Typography>
-      <Divider my={6} />
-      <Card mb={12}>
+      <Divider my={2} />
+      <Card mb={2}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
