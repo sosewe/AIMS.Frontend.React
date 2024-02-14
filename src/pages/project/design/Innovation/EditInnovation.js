@@ -1175,7 +1175,7 @@ const Innovation = (props) => {
   return (
     <React.Fragment>
       <Typography variant="h5" gutterBottom display="inline">
-        Edit Innovation
+        Basic Information
       </Typography>
       <Divider my={2} />
       <Card mb={2}>

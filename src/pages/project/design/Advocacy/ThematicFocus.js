@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -29,7 +29,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getSubThemesByThematicAreaId } from "../../../../api/thematic-area-sub-theme";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { Guid } from "../../../../utils/guid";
 import { Helmet } from "react-helmet-async";
 
@@ -56,7 +56,9 @@ const initialValues = {
   thematicArea: "",
 };
 
-const ThematicFocus = ({ id }) => {
+const ThematicFocus = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
   const queryClient = useQueryClient();
   const [strategicObjectiveId, setStrategicObjectiveId] = useState();
   const [thematicAreaId, setThematicAreaId] = useState();
@@ -212,6 +214,13 @@ const ThematicFocus = ({ id }) => {
       "getInnovationThematicFocusByInnovationId",
     ]);
   };
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
 
   return (
     <React.Fragment>
@@ -440,6 +449,17 @@ const ThematicFocus = ({ id }) => {
                     </Grid>
                   </Grid>
                 </form>
+                <Grid item mt={5} md={12}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    mt={3}
+                    onClick={() => handleActionChange()}
+                  >
+                    <ChevronLeft /> Back
+                  </Button>
+                </Grid>
               </CardContent>
             </Grid>
           </Grid>

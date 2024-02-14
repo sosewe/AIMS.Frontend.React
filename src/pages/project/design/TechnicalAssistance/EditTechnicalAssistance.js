@@ -1298,12 +1298,11 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
 };
 
 const TechnicalAssistance = (props) => {
-  console.log("TechnicalAssistance props " + props);
   return (
     <React.Fragment>
       <Helmet title="Edit TechnicalAssistance" />
       <Typography variant="h3" gutterBottom display="inline">
-        Edit Technical Assistance
+        Basic Information
       </Typography>
       <Divider my={6} />
       <Card mb={12}>

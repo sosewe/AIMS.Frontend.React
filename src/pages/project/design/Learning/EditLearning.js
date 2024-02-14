@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -17,17 +17,10 @@ import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
-  Link,
   Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -43,7 +36,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -411,7 +404,7 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditLearningForm = ({ id }) => {
+const EditLearningForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const [openAddPartnerDetails, setOpenAddPartnerDetails] = useState(false);
@@ -520,6 +513,13 @@ const EditLearningForm = ({ id }) => {
     {
       refetchOnWindowFocus: false,
     }
+  );
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
   );
 
   const mutation = useMutation({ mutationFn: newLearning });
@@ -636,7 +636,8 @@ const EditLearningForm = ({ id }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getlearningBylearningId"]);
-        navigate(`/project/design/learning/learning-detail/${id}`);
+
+        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -1493,9 +1494,24 @@ const EditLearningForm = ({ id }) => {
             </DialogActions>
           </Dialog>
 
-          <Grid item md={12} mt={20}>
-            <Button type="submit" variant="contained" color="primary">
-              <Check /> Save changes
+          <Grid item mt={5} md={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -1504,7 +1520,7 @@ const EditLearningForm = ({ id }) => {
   );
 };
 
-const Learning = () => {
+const Learning = (props) => {
   let { id } = useParams();
   return (
     <React.Fragment>
@@ -1517,7 +1533,10 @@ const Learning = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditLearningForm id={id} />
+              <EditLearningForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -14,12 +14,6 @@ import {
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -74,7 +68,11 @@ const initialValues = {
   donors: [],
 };
 
-const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+const LearningForm = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -154,6 +152,13 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     }
   );
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
+
   const mutation = useMutation({ mutationFn: newLearning });
 
   const learningDonorsMutation = useMutation({
@@ -229,7 +234,7 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
 
         await queryClient.invalidateQueries(["getLearningByLearningId"]);
 
-        navigate(`/project/design/learning/learning-detail/${id}`);
+        handleActionChange(false, 0);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -768,8 +773,8 @@ const LearningForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   );
 };
 
-const Learning = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+const Learning = ({ onActionChange }) => {
+  let { id, processLevelTypeId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Learning" />
@@ -777,25 +782,15 @@ const Learning = () => {
         New Learning
       </Typography>
 
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Learning</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
               <LearningForm
-                processLevelItemId={processLevelItemId}
+                processLevelItemId={id}
                 processLevelTypeId={processLevelTypeId}
-                id={id}
+                onActionChange={onActionChange}
               />
             </Grid>
           </Grid>

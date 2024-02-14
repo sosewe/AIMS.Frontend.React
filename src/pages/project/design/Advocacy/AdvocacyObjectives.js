@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -19,7 +19,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash, Edit } from "react-feather";
+import { Trash, Edit, ChevronLeft } from "react-feather";
 import {
   getAdvocacyObjectiveByAdvocacyId,
   deleteAdvocacyObjectiveById,
@@ -32,7 +32,10 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const AdvocacyObjectiveGridData = ({ id }) => {
+const AdvocacyObjectiveGridData = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
+
   const [open, setOpen] = useState(false);
   const [advocacyObjectiveId, setAdvocacyObjectiveId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
@@ -72,22 +75,26 @@ const AdvocacyObjectiveGridData = ({ id }) => {
     await queryClient.invalidateQueries(["getAdvocacyObjectiveByAdvocacyId"]);
   };
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 3, status: 0 });
+    },
+    [onActionChange]
+  );
+
   return (
     <Card mb={6}>
-      <CardContent pb={1}>
+      <Paper>
         <Button
           mr={2}
+          mb={5}
           variant="contained"
           color="error"
-          onClick={() =>
-            navigate(`/project/design/advocacy/new-advocacy-objective/${id}`)
-          }
+          onClick={() => handleActionChange(3, false)}
         >
           <AddIcon /> New Advocacy Objective
         </Button>
-      </CardContent>
-      <br />
-      <Paper>
+        <br />
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
             rowsPerPageOptions={[5, 10, 25]}
@@ -134,6 +141,17 @@ const AdvocacyObjectiveGridData = ({ id }) => {
             getRowHeight={() => "auto"}
           />
         </div>
+
+        <br />
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          mt={3}
+          onClick={() => handleActionChange()}
+        >
+          <ChevronLeft /> Back
+        </Button>
       </Paper>
 
       <Dialog
@@ -163,16 +181,26 @@ const AdvocacyObjectiveGridData = ({ id }) => {
   );
 };
 
-const AdvocacyObjectives = ({ id }) => {
+const AdvocacyObjectives = ({
+  id,
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   return (
     <React.Fragment>
       <Helmet title="Advocacy Objective" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Advocacy Objective
       </Typography>
 
       <Divider my={6} />
-      <AdvocacyObjectiveGridData id={id} />
+      <AdvocacyObjectiveGridData
+        id={id}
+        processLevelItemId={processLevelItemId}
+        processLevelTypeId={processLevelTypeId}
+        onActionChange={onActionChange}
+      />
     </React.Fragment>
   );
 };

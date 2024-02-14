@@ -48,8 +48,6 @@ function a11yProps(index: number) {
 
 const AdvocacyDetail = (props) => {
   const [value, setValue] = React.useState(0);
-
-  const id = props.id;
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -76,16 +74,21 @@ const AdvocacyDetail = (props) => {
         <Tab label="Objective & Classification" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <EditAdvocacy id={id} />
+        <EditAdvocacy id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <ThematicFocus id={id} />
+        <ThematicFocus id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <GeoFocus id={id} />
+        <GeoFocus id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <AdvocacyObjectives id={id} />
+        <AdvocacyObjectives
+          id={props.id}
+          processLevelItemId={props.processLevelItemId}
+          processLevelTypeId={props.processLevelTypeId}
+          onActionChange={props.onActionChange}
+        />
       </TabPanel>
     </Box>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -48,7 +48,7 @@ const initialValues = {
   startStatusId: "",
 };
 
-const AdvocacyObjectiveForm = ({ id }) => {
+const AdvocacyObjectiveForm = (id, processLevelTypeId, onActionChange) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
@@ -103,6 +103,13 @@ const AdvocacyObjectiveForm = ({ id }) => {
       refetchOnWindowFocus: false,
     });
 
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: 4, status: 0 });
+    },
+    [onActionChange]
+  );
+
   const mutation = useMutation({ mutationFn: newAdvocacyObjective });
 
   const formik = useFormik({
@@ -137,7 +144,8 @@ const AdvocacyObjectiveForm = ({ id }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getAdvocacyObjectiveById"]);
-        navigate(`/project/design/advocacy/advocacy-detail/${id}`);
+
+        handleActionChange();
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -408,24 +416,16 @@ const AdvocacyObjectiveForm = ({ id }) => {
   );
 };
 
-const AdvocacyObjective = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+const NewAdvocacyObjective = ({ onActionChange }) => {
+  let { id, processLevelTypeId } = useParams();
+
+  console.log("Advocacy Id ... " + id);
   return (
     <React.Fragment>
       <Helmet title="New Advocacy Objective" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         New Advocacy Objective
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Advocacy Objective</Typography>
-      </Breadcrumbs>
 
       <Divider my={6} />
       <Card mb={12}>
@@ -433,9 +433,9 @@ const AdvocacyObjective = () => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <AdvocacyObjectiveForm
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
                 id={id}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={onActionChange}
               />
             </Grid>
           </Grid>
@@ -445,4 +445,4 @@ const AdvocacyObjective = () => {
   );
 };
 
-export default AdvocacyObjective;
+export default NewAdvocacyObjective;

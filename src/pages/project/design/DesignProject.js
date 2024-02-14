@@ -14,16 +14,21 @@ import Innovation from "./Innovation/NewInnovation";
 import NewInnovation from "./Innovation/NewInnovation";
 import EditInnovation from "./Innovation/EditInnovation";
 import InnovationData from "./Innovation/InnovationData";
+import InnovationDetail from "./Innovation/InnovationDetail";
 import NewTechnicalAssistance from "./TechnicalAssistance/NewTechnicalAssistance";
 import EditTechnicalAssistance from "./TechnicalAssistance/EditTechnicalAssistance";
+import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistanceDetail";
 import TechnicalAssistanceData from "./TechnicalAssistance/TechnicalAssistanceData";
+import NewAdvocacyObjective from "./Advocacy/NewAdvocacyObjective";
 import NewAdocacy from "./Advocacy/NewAdvocacy";
+import AdvocacyObjectives from "./Advocacy/AdvocacyObjectives";
 import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
 import AdvocacyData from "./Advocacy/AdvocacyData";
 import NewLearning from "./Learning/NewLearning";
 import EditLearning from "./Learning/EditLearning";
 import LearningData from "./Learning/LearningData";
-import InnovationDetail from "./Innovation/InnovationDetail";
+import LearningDetail from "./Learning/LearningDetail";
+import Learning from "./Learning/NewLearning";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -62,7 +67,7 @@ function a11yProps(index: number) {
 }
 
 const DesignProject = () => {
-  const [action, setAction] = React.useState({ id: 0, status: true });
+  const [action, setAction] = React.useState({ id: 0, status: true, data: {} });
   const [value, setValue] = React.useState(0);
   let { id, processLevelTypeId } = useParams();
   console.log("action@DesignProject ..." + JSON.stringify(action));
@@ -169,6 +174,28 @@ const DesignProject = () => {
                 />
               </>
             );
+          } else if (!action.status && action.id === 3) {
+            return (
+              <>
+                <NewAdvocacyObjective
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          } else if (!action.status && action.id === 4) {
+            return (
+              <>
+                <AdvocacyObjectives
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
           } else {
             return (
               <>
@@ -206,7 +233,7 @@ const DesignProject = () => {
           } else {
             return (
               <>
-                <EditTechnicalAssistance
+                <TechnicalAssistanceDetail
                   id={action.id}
                   processLevelItemId={id}
                   processLevelTypeId={processLevelTypeId}
@@ -240,7 +267,7 @@ const DesignProject = () => {
           } else {
             return (
               <>
-                <EditLearning
+                <LearningDetail
                   id={action.id}
                   processLevelItemId={id}
                   processLevelTypeId={processLevelTypeId}

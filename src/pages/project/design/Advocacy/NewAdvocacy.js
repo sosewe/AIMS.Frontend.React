@@ -81,8 +81,6 @@ const AdvocacyForm = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const navigate = useNavigate();
-
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,

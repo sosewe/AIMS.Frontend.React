@@ -1127,7 +1127,7 @@ const Advocacy = (props) => {
   return (
     <React.Fragment>
       <Typography variant="h3" gutterBottom display="inline">
-        Edit Advocacy
+        Basic Information
       </Typography>
       <Divider my={6} />
       <Card mb={12}>
