@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -32,7 +32,11 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyGridData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const [open, setOpen] = useState(false);
   const [advocacyId, setAdvocacyId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
@@ -70,6 +74,13 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
     await queryClient.invalidateQueries(["getAdvocacyByProcessLevelItemId"]);
   };
 
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
+    },
+    [onActionChange]
+  );
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -77,11 +88,7 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
           mr={2}
           variant="contained"
           color="error"
-          onClick={() =>
-            navigate(
-              `/project/design/advocacy/new-advocacy/${processLevelItemId}/${processLevelTypeId}`
-            )
-          }
+          onClick={() => handleActionChange(0, false)}
         >
           <AddIcon /> New Advocacy
         </Button>
@@ -132,11 +139,14 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/advocacy/advocacy-detail/${params.id}`}
-                    >
-                      <Button startIcon={<Edit />} size="small"></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleActionChange(params.id, false);
+                        setAdvocacyId(params.id);
+                      }}
+                    ></Button>
 
                     <Button
                       startIcon={<Trash />}
@@ -181,7 +191,11 @@ const AdvocacyGridData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   return (
     <React.Fragment>
       <Helmet title="Advocacy" />
@@ -193,6 +207,7 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
       <AdvocacyGridData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
+        onActionChange={onActionChange}
       />
     </React.Fragment>
   );

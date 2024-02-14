@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { MenuItem } from "@mui/material";
 import {
@@ -26,7 +26,7 @@ import {
   Link,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import styled from "@emotion/styled";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
@@ -292,7 +292,9 @@ const ObjectiveDetailsForm = ({ handleClick }) => {
   );
 };
 
-const InnvationObjectives = ({ id }) => {
+const InnvationObjectives = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
   const [openAddObjectives, setOpenAddObjectives] = useState(false);
   const [openAddMetrics, setOpenAddMetrics] = useState(false);
   const [objectivesList, setObjectivesList] = useState([]);
@@ -563,6 +565,13 @@ const InnvationObjectives = ({ id }) => {
     reportingFrequencyData,
     innovationObjectivesData,
   ]);
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -894,7 +903,22 @@ const InnvationObjectives = ({ id }) => {
               </Grid>
             </Grid>
             <br />
-            <Button type="submit" variant="contained" color="primary" mt={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
               <Check /> Save changes
             </Button>
           </CardContent>

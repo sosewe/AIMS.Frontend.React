@@ -294,7 +294,6 @@ const EditInnovationForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const {
     data: InnovationData,
@@ -492,7 +491,7 @@ const EditInnovationForm = ({ id, onActionChange }) => {
       if (!isLoadingInnovationData && !isErrorInnovationData) {
         let staffId;
         let staffEmail;
-        if (!isLoadingStaffList) {
+        if (!isLoadingStaffList && InnovationData.data.staffNameId) {
           staffId = staffListData.data.find(
             (obj) => obj.id === InnovationData.data.staffNameId
           );
@@ -502,7 +501,7 @@ const EditInnovationForm = ({ id, onActionChange }) => {
 
         let reviewerId;
         let reviewerEmail;
-        if (!isLoadingStaffList) {
+        if (!isLoadingStaffList && InnovationData.data.technicalReviewerId) {
           reviewerId = staffListData.data.find(
             (obj) => obj.id === InnovationData.data.technicalReviewerId
           );
@@ -511,10 +510,14 @@ const EditInnovationForm = ({ id, onActionChange }) => {
         }
 
         let donorsList = [];
-        for (const donor of InnovationData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
+        if (!isLoadingDonor && InnovationData.data.donors) {
+          for (const donor of InnovationData.data.donors) {
+            const result = donorData.data.find(
+              (obj) => obj.id === donor.donorId
+            );
+            if (result) {
+              donorsList.push(result);
+            }
           }
         }
 
@@ -1174,8 +1177,8 @@ const Innovation = (props) => {
       <Typography variant="h5" gutterBottom display="inline">
         Edit Innovation
       </Typography>
-      <Divider my={6} />
-      <Card mb={12}>
+      <Divider my={2} />
+      <Card mb={2}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>

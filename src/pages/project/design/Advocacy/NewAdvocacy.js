@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -27,7 +27,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { YEAR_RANGE } from "../../../../constants";
 import {
@@ -74,16 +74,15 @@ const initialValues = {
   administrativeProgrammeId: "",
 };
 
-const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
+const AdvocacyForm = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const queryClient = useQueryClient();
+
   const navigate = useNavigate();
-  const {
-    data: AdvocacyData,
-    isLoading: isLoadingAdvocacyData,
-    isError: isErrorAdvocacyData,
-  } = useQuery(["getAdvocacyById", id], getAdvocacyById, {
-    enabled: !!id,
-  });
+
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -157,6 +156,13 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     refetchOnWindowFocus: false,
   });
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
+
   const mutation = useMutation({ mutationFn: newAdvocacy });
 
   const advocacyDonorsMutation = useMutation({
@@ -194,7 +200,7 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     onSubmit: async (values) => {
       try {
         const saveAdvocacy = {
-          id: id ? id : new Guid(),
+          id: new Guid(),
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
@@ -241,10 +247,10 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
         toast("Successfully Created an Advocacy", {
           type: "success",
         });
+
         await queryClient.invalidateQueries(["getAdvocacyByAdvocacyId"]);
-        navigate(
-          `/project/design/advocacy/advocacy-detail/${advocacy.data.id}`
-        );
+
+        handleActionChange(false, 0);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -254,55 +260,7 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
     },
   });
 
-  useEffect(() => {
-    function setCurrentFormValues() {
-      if (!isLoadingAdvocacyData && !isErrorAdvocacyData) {
-        let staffId;
-        let staffEmail;
-        if (!isLoadingStaffList) {
-          staffId = staffListData.data.find(
-            (obj) => obj.id === AdvocacyData.data.staffNameId
-          );
-
-          if (staffId != null) {
-            staffEmail = AdvocacyData.data.staffName.emailAddress;
-          }
-        }
-
-        let enaSupportOffice;
-        if (!!isLoadingAmrefEntities) {
-          enaSupportOffice = amrefEntities.data.find(
-            (obj) => obj.id === AdvocacyData.data.office
-          );
-        }
-
-        let implementingOfficeId;
-        if (!!isLoadingOrgUnits) {
-          implementingOfficeId = orgUnitsData.data.find(
-            (obj) => obj.id === AdvocacyData.data.implementingOfficeId
-          );
-        }
-
-        let currencyType;
-        if (!!isLoadingCurrency) {
-          currencyType = currencyData.data.find(
-            (obj) => obj.id === AdvocacyData.data.currencyTypeId
-          );
-        }
-
-        let donorsList = [];
-        for (const donor of AdvocacyData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
-          }
-        }
-
-        formik.setValues({});
-      }
-    }
-    setCurrentFormValues();
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -797,9 +755,24 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
             </FormControl>
           </Grid>
 
-          <Grid item md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+          <Grid item mt={5} md={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -808,24 +781,14 @@ const AdvocacyForm = ({ processLevelItemId, processLevelTypeId, id }) => {
   );
 };
 
-const Advocacy = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+const Advocacy = ({ onActionChange }) => {
+  let { id, processLevelTypeId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Advocacy" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         New Advocacy
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Advocacy</Typography>
-      </Breadcrumbs>
 
       <Divider my={6} />
       <Card mb={12}>
@@ -833,9 +796,9 @@ const Advocacy = () => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <AdvocacyForm
-                processLevelItemId={processLevelItemId}
+                processLevelItemId={id}
                 processLevelTypeId={processLevelTypeId}
-                id={id}
+                onActionChange={onActionChange}
               />
             </Grid>
           </Grid>

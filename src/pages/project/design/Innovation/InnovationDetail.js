@@ -46,9 +46,9 @@ function a11yProps(index: number) {
   };
 }
 
-const InnovationDetail = () => {
+const InnovationDetail = (props) => {
   const [value, setValue] = React.useState(0);
-  let { id } = useParams();
+  const id = props.id;
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -75,16 +75,16 @@ const InnovationDetail = () => {
         <Tab label="Objective & Classification" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <EditInnovation id={id} />
+        <EditInnovation id={id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <ThematicFocus id={id} />
+        <ThematicFocus id={id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <GeoFocus id={id} />
+        <GeoFocus id={id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <InnovationObjectives id={id} />
+        <InnovationObjectives id={id} onActionChange={props.onActionChange} />
       </TabPanel>
     </Box>
   );

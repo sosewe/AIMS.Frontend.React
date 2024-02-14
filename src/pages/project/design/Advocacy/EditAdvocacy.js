@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -34,7 +34,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -299,12 +299,12 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditAdvocacyForm = ({ id }) => {
+const EditAdvocacyForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  let advocacyQualitativeTypeId;
+
   const {
     data: AdvocacyData,
     isLoading: isLoadingAdvocacyData,
@@ -340,24 +340,7 @@ const EditAdvocacyForm = ({ id }) => {
   } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativePeriodData,
-    isLoading: isLoadingQualitativePeriod,
-    isError: isErrorQualitativePeriod,
-  } = useQuery(
-    ["getQualitativePeriodByTypeItemId", id],
-    getQualitativePeriodByTypeItemId,
-    { enabled: !!id }
-  );
-  const {
-    data: QualitativeThematicAreaData,
-    isLoading: isLoadingQualitativeThematicArea,
-    isError: isErrorQualitativeThematicArea,
-  } = useQuery(
-    ["getQualitativeThematicAreaByTypeItemId", id],
-    getQualitativeThematicAreaByTypeItemId,
-    { enabled: !!id }
-  );
+
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -394,13 +377,7 @@ const EditAdvocacyForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  // const {
-  //   data: ThematicAreas,
-  //   isLoading: isLoadingThematicAreas,
-  //   isError: isErrorThematicAreas,
-  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-  //   refetchOnWindowFocus: false,
-  // });
+
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,
@@ -408,23 +385,14 @@ const EditAdvocacyForm = ({ id }) => {
   } = useQuery(["amrefEntities"], getAmrefEntities, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativeResultTypesData,
-    isLoading: isLoadingQualitativeResultTypes,
-    isError: isErrorQualitativeResultTypes,
-  } = useQuery(
-    ["qualitativeResultType", "QualitativeResultType"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
   );
-  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
-    const filterAdvocacy = QualitativeResultTypesData.data.find(
-      (obj) => obj.lookupItemName === "Advocacy"
-    );
-    advocacyQualitativeTypeId = filterAdvocacy.lookupItemId;
-  }
+
   const mutation = useMutation({ mutationFn: newAdvocacy });
 
   const advocacyDonorsMutation = useMutation({
@@ -518,7 +486,8 @@ const EditAdvocacyForm = ({ id }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getAdvocacys"]);
-        navigate(`/project/design/advocacy/advocacy-detail/${id}`);
+
+        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -543,16 +512,12 @@ const EditAdvocacyForm = ({ id }) => {
       if (
         !isLoadingAdvocacyData &&
         !isErrorAdvocacyData &&
-        !isLoadingQualitativeThematicArea &&
-        !isErrorQualitativeThematicArea &&
-        !isErrorQualitativePeriod &&
-        !isLoadingQualitativePeriod &&
         !isLoadingQualitativeCountry &&
         !isErrorQualitativeCountry
       ) {
         let staffId;
         let staffEmail;
-        if (!isLoadingStaffList) {
+        if (!isLoadingStaffList && AdvocacyData.data.staffNameId) {
           staffId = staffListData.data.find(
             (obj) => obj.id === AdvocacyData.data.staffNameId
           );
@@ -561,10 +526,14 @@ const EditAdvocacyForm = ({ id }) => {
         }
 
         let donorsList = [];
-        for (const donor of AdvocacyData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
+        if (!isLoadingDonor && AdvocacyData.data.donors) {
+          for (const donor of AdvocacyData.data.donors) {
+            const result = donorData.data.find(
+              (obj) => obj.id === donor.donorId
+            );
+            if (result) {
+              donorsList.push(result);
+            }
           }
         }
 
@@ -619,12 +588,6 @@ const EditAdvocacyForm = ({ id }) => {
     isLoadingStaffList,
     isErrorStaffList,
     staffListData,
-    isErrorQualitativePeriod,
-    isLoadingQualitativePeriod,
-    isErrorQualitativeThematicArea,
-    isLoadingQualitativeThematicArea,
-    QualitativePeriodData,
-    QualitativeThematicAreaData,
     QualitativeCountryData,
     isLoadingQualitativeCountry,
     isErrorQualitativeCountry,
@@ -1106,8 +1069,23 @@ const EditAdvocacyForm = ({ id }) => {
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -1144,19 +1122,22 @@ const EditAdvocacyForm = ({ id }) => {
   );
 };
 
-const Advocacy = () => {
+const Advocacy = (props) => {
   let { id } = useParams();
   return (
     <React.Fragment>
       <Typography variant="h3" gutterBottom display="inline">
-        Basic Information
+        Edit Advocacy
       </Typography>
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditAdvocacyForm id={id} />
+              <EditAdvocacyForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

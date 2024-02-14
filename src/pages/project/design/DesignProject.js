@@ -11,17 +11,19 @@ import ProjectObjectives from "./ProjectObjectives";
 import ThematicFocus from "./ThematicFocus";
 import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
 import Innovation from "./Innovation/NewInnovation";
+import NewInnovation from "./Innovation/NewInnovation";
 import EditInnovation from "./Innovation/EditInnovation";
 import InnovationData from "./Innovation/InnovationData";
 import NewTechnicalAssistance from "./TechnicalAssistance/NewTechnicalAssistance";
 import EditTechnicalAssistance from "./TechnicalAssistance/EditTechnicalAssistance";
 import TechnicalAssistanceData from "./TechnicalAssistance/TechnicalAssistanceData";
 import NewAdocacy from "./Advocacy/NewAdvocacy";
-import EditAdocacy from "./Advocacy/EditAdvocacy";
+import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
 import AdvocacyData from "./Advocacy/AdvocacyData";
 import NewLearning from "./Learning/NewLearning";
 import EditLearning from "./Learning/EditLearning";
 import LearningData from "./Learning/LearningData";
+import InnovationDetail from "./Innovation/InnovationDetail";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -63,8 +65,7 @@ const DesignProject = () => {
   const [action, setAction] = React.useState({ id: 0, status: true });
   const [value, setValue] = React.useState(0);
   let { id, processLevelTypeId } = useParams();
-
-  console.log("action ..." + JSON.stringify(action));
+  console.log("action@DesignProject ..." + JSON.stringify(action));
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -127,7 +128,7 @@ const DesignProject = () => {
           } else if (!action.status && action.id === 0) {
             return (
               <>
-                <Innovation
+                <NewInnovation
                   processLevelItemId={id}
                   processLevelTypeId={processLevelTypeId}
                   onActionChange={setAction}
@@ -137,7 +138,7 @@ const DesignProject = () => {
           } else {
             return (
               <>
-                <EditInnovation
+                <InnovationDetail
                   id={action.id}
                   processLevelItemId={id}
                   processLevelTypeId={processLevelTypeId}
@@ -171,7 +172,7 @@ const DesignProject = () => {
           } else {
             return (
               <>
-                <EditAdocacy
+                <AdvocacyDetail
                   id={action.id}
                   processLevelItemId={id}
                   processLevelTypeId={processLevelTypeId}

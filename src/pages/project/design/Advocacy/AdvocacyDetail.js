@@ -46,9 +46,10 @@ function a11yProps(index: number) {
   };
 }
 
-const AdvocacyDetail = () => {
+const AdvocacyDetail = (props) => {
   const [value, setValue] = React.useState(0);
-  let { id } = useParams();
+
+  const id = props.id;
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
