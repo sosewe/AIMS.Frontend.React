@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -43,7 +43,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -59,21 +59,9 @@ import {
   getTechnicalAssistanceByTechnicalAssistanceId,
   newTechnicalAssistance,
 } from "../../../../api/technical-assistance";
-import {
-  newTechnicalAssistanceDonor,
-  getTechnicalAssistanceDonorByTechnicalAssistanceId,
-  deleteTechnicalAssistanceDonorById,
-} from "../../../../api/technical-assistance-donor";
-import {
-  newTechnicalAssistancePartner,
-  getTechnicalAssistancePartnerByTechnicalAssistanceId,
-  deleteTechnicalAssistancePartnerById,
-} from "../../../../api/technical-assistance-partner";
-import {
-  newTechnicalAssistanceStaff,
-  getTechnicalAssistanceStaffByTechnicalAssistanceId,
-  deleteTechnicalAssistanceStaffById,
-} from "../../../../api/technical-assistance-staff";
+import { newTechnicalAssistanceDonor } from "../../../../api/technical-assistance-donor";
+import { newTechnicalAssistancePartner } from "../../../../api/technical-assistance-partner";
+import { newTechnicalAssistanceStaff } from "../../../../api/technical-assistance-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
 
@@ -314,7 +302,7 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditTechnicalAssistanceForm = ({ id }) => {
+const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
@@ -406,6 +394,13 @@ const EditTechnicalAssistanceForm = ({ id }) => {
     {
       refetchOnWindowFocus: false,
     }
+  );
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
   );
 
   const mutation = useMutation({ mutationFn: newTechnicalAssistance });
@@ -524,9 +519,8 @@ const EditTechnicalAssistanceForm = ({ id }) => {
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceByTechnicalAssistanceId",
         ]);
-        navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/${id}`
-        );
+
+        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -1250,8 +1244,23 @@ const EditTechnicalAssistanceForm = ({ id }) => {
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -1288,20 +1297,23 @@ const EditTechnicalAssistanceForm = ({ id }) => {
   );
 };
 
-const TechnicalAssistance = () => {
-  let { id } = useParams();
+const TechnicalAssistance = (props) => {
+  console.log("TechnicalAssistance props " + props);
   return (
     <React.Fragment>
       <Helmet title="Edit TechnicalAssistance" />
       <Typography variant="h3" gutterBottom display="inline">
-        Basic Information
+        Edit Technical Assistance
       </Typography>
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditTechnicalAssistanceForm id={id} />
+              <EditTechnicalAssistanceForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>
