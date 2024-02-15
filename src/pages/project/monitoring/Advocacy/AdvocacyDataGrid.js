@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Button,
@@ -26,7 +26,11 @@ const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const [pageSize, setPageSize] = useState(5);
   const {
     data: AdvocacyData,
@@ -46,6 +50,13 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
       type: "error",
     });
   }
+
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
+    },
+    [onActionChange]
+  );
 
   return (
     <Card mb={6}>
@@ -87,11 +98,13 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
                   flex: 1,
                   renderCell: (params) => (
                     <>
-                      <NavLink
-                        to={`/project/monitoring/advocacy-monitoring-detail/${params.id}`}
-                      >
-                        <Button startIcon={<Link2 />} size="small"></Button>
-                      </NavLink>
+                      <Button
+                        startIcon={<Link2 />}
+                        size="small"
+                        onClick={(e) => {
+                          handleActionChange(params.id, false);
+                        }}
+                      ></Button>
                     </>
                   ),
                 },
@@ -108,7 +121,7 @@ const AdvocacyData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const AdvocacyDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyDataGrid = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
@@ -117,8 +130,9 @@ const AdvocacyDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
       </Typography>
       <Divider my={6} />
       <AdvocacyData
-        processLevelItemId={processLevelItemId}
-        processLevelTypeId={processLevelTypeId}
+        processLevelItemId={props.processLevelItemId}
+        processLevelTypeId={props.processLevelTypeId}
+        onActionChange={props.onActionChange}
       />
     </React.Fragment>
   );

@@ -31,6 +31,7 @@ const TechnicalAssistanceData = ({
   processLevelTypeId,
   onActionChange,
 }) => {
+  console.log("***TechnicalAssistanceData***" + processLevelItemId);
   const [pageSize, setPageSize] = useState(5);
   const {
     data: InnovationsData,
@@ -128,7 +129,6 @@ const TechnicalAssistanceDataGrid = (props) => {
       <Typography variant="h5" gutterBottom display="inline">
         Technical Assistance Monitoring
       </Typography>
-
       <Divider my={3} />
       <TechnicalAssistanceData
         processLevelItemId={props.processLevelItemId}

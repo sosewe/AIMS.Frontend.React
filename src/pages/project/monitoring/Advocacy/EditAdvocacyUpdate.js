@@ -59,13 +59,7 @@ const initialValues = {
 };
 
 const AdvocacyUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onAdvocacyActionChange,
-  } = props;
+  const { id, onAdvocacyActionChange } = props;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
@@ -156,7 +150,7 @@ const AdvocacyUpdateForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveAdvocacyUpdate = {
-          id: new Guid(),
+          id: id,
           createDate: new Date(),
           implementationYearId: values.implementationYearId.lookupItemId,
           implementationYear: values.implementationYearId.lookupItemName,
@@ -197,6 +191,7 @@ const AdvocacyUpdateForm = (props) => {
         toast("Successfully Created an Advocacy Update", {
           type: "success",
         });
+
         await queryClient.invalidateQueries([
           "getAdvocacyProgressUpdateByProgressId",
         ]);
@@ -211,7 +206,81 @@ const AdvocacyUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingAdvocacyUpdateData &&
+        !isErrorAdvocacyUpdateData &&
+        AdvocacyUpdateData &&
+        AdvocacyUpdateData.data
+      ) {
+        let monitoringYear;
+        if (!isLoadingYears) {
+          monitoringYear = yearsData.data.find(
+            (obj) =>
+              obj.lookupItemId === AdvocacyUpdateData.data.implementationYearId
+          );
+        }
+
+        let monitoringQuarter;
+        if (!isLoadingQuarters) {
+          monitoringQuarter = quartersData.data.find(
+            (obj) => obj.lookupItemId === AdvocacyUpdateData.data.quarterId
+          );
+        }
+
+        let monitoringRAGStatusId;
+        if (!isLoadingBragStatuses) {
+          monitoringRAGStatusId = bragStatusesData.data.find(
+            (obj) => obj.lookupItemId === AdvocacyUpdateData.data.ragStatusId
+          );
+        }
+
+        let contributionsList = [];
+        if (!isLoadingAmrefContribution) {
+          for (const contribution of AdvocacyUpdateData.data.contributions) {
+            const result = amrefContributionData.data.find(
+              (obj) => obj.id === contribution.contributionId
+            );
+            if (result) {
+              contributionsList.push(result);
+            }
+          }
+        }
+
+        let partnersList = [];
+        if (!isLoadingPartner) {
+          for (const partner of AdvocacyUpdateData.data.partners) {
+            const result = partnerData.data.find(
+              (obj) => obj.id === partner.actorId
+            );
+            if (result) {
+              partnersList.push(result);
+            }
+          }
+        }
+
+        formik.setValues({
+          implementationYearId: monitoringYear ? monitoringYear : "",
+          quarterId: monitoringQuarter ? monitoringQuarter : "",
+          ragStatusId: monitoringRAGStatusId ? monitoringRAGStatusId : "",
+          actualChangeInStatusId:
+            AdvocacyUpdateData.data.actualChangeInStatusId,
+          amrefContribution: contributionsList,
+          actorsInvolved: partnersList,
+          progress: AdvocacyUpdateData.data.progress,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadingQuarters,
+    isLoadingYears,
+    isLoadingBragStatuses,
+    isErrorAdvocacyUpdateData,
+    isLoadingAdvocacyUpdateData,
+    AdvocacyUpdateData,
+  ]);
 
   const handleAdvocacyActionChange = useCallback(
     (id, status) => {
@@ -504,7 +573,7 @@ const AdvocacyUpdateForm = (props) => {
   );
 };
 
-const AdvocacyUpdate = (props) => {
+const EditAdvocacyUpdate = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Advocacy Update" />
@@ -519,8 +588,6 @@ const AdvocacyUpdate = (props) => {
             <Grid item md={12}>
               <AdvocacyUpdateForm
                 id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
                 onActionChange={props.onActionChange}
                 onAdvocacyActionChange={props.onAdvocacyActionChange}
               />
@@ -532,4 +599,4 @@ const AdvocacyUpdate = (props) => {
   );
 };
 
-export default AdvocacyUpdate;
+export default EditAdvocacyUpdate;

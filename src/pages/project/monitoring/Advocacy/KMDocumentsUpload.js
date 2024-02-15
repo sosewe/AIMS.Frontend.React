@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -354,7 +354,8 @@ const DocumentDetailsForm = ({ handleClick }) => {
   );
 };
 
-const KMDocumentsUploadForm = ({ id }) => {
+const KMDocumentsUploadForm = (props) => {
+  const { id, onAdvocacyActionChange } = props;
   const [openDocumentDialog, setOpenDocumentDialog] = useState();
   const [documentsList, setDocumentsList] = useState([]);
   const queryClient = useQueryClient();
@@ -414,7 +415,7 @@ const KMDocumentsUploadForm = ({ id }) => {
           "getAdvocacyDocumentByAdvocacyId",
         ]);
 
-        navigate(`/project/monitoring/advocacy-monitoring-detail/${id}`);
+        handleAdvocacyActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -449,6 +450,13 @@ const KMDocumentsUploadForm = ({ id }) => {
     }
     setCurrentFormValues();
   }, [AdvocacyDocumentData, isLoadingAdvocacyDocument]);
+
+  const handleAdvocacyActionChange = useCallback(
+    (id, status) => {
+      onAdvocacyActionChange({ id: id, status: status });
+    },
+    [onAdvocacyActionChange]
+  );
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -538,8 +546,7 @@ const KMDocumentsUploadForm = ({ id }) => {
   );
 };
 
-const KMDocumentsUpload = () => {
-  let { id } = useParams();
+const KMDocumentsUpload = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
@@ -554,7 +561,11 @@ const KMDocumentsUpload = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <KMDocumentsUploadForm id={id} />
+              <KMDocumentsUploadForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+                onAdvocacyActionChange={props.onAdvocacyActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

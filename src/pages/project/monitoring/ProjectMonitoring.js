@@ -30,6 +30,7 @@ import Tabs from "@mui/material/Tabs";
 import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
 import InnovationDetail from "./InnovationV2/InnovationDetail";
 import AdvocacyDataGrid from "./Advocacy/AdvocacyDataGrid";
+import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistanceDetail";
 import LearningDataGrid from "./Learning/LearningDataGrid";
@@ -317,11 +318,28 @@ const ProjectMonitoringAccordion = ({
         })()}
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <AdvocacyDataGrid
-          processLevelItemId={processLevelItemId}
-          processLevelTypeId={processLevelTypeId}
-          onActionChange={setAction}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <AdvocacyDataGrid
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else {
+            return (
+              <>
+                <AdvocacyDetail
+                  id={action.id}
+                  processLevelItemId={processLevelItemId}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel value={value} index={4}>
         <LearningDataGrid
