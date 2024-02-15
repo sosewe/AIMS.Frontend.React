@@ -35,6 +35,7 @@ const Button = styled(MuiButton)(spacing);
 const AdvocacyObjectiveGridData = (props) => {
   const id = props.id;
   const onActionChange = props.onActionChange;
+  const onAdvocacyActionChange = props.onAdvocacyActionChange;
 
   const [open, setOpen] = useState(false);
   const [advocacyObjectiveId, setAdvocacyObjectiveId] = useState(false);
@@ -77,9 +78,16 @@ const AdvocacyObjectiveGridData = (props) => {
 
   const handleActionChange = useCallback(
     (event) => {
-      onActionChange({ id: 3, status: 0 });
+      onActionChange({ id: 0, status: 0 });
     },
     [onActionChange]
+  );
+
+  const handleAdvocacyActionChange = useCallback(
+    (id, status) => {
+      onAdvocacyActionChange({ id: id, status: status });
+    },
+    [onAdvocacyActionChange]
   );
 
   return (
@@ -90,7 +98,7 @@ const AdvocacyObjectiveGridData = (props) => {
           mb={5}
           variant="contained"
           color="error"
-          onClick={() => handleActionChange(3, false)}
+          onClick={() => handleAdvocacyActionChange(0, false)}
         >
           <AddIcon /> New Advocacy Objective
         </Button>
@@ -119,12 +127,14 @@ const AdvocacyObjectiveGridData = (props) => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/advocacy/edit-advocacy-objective/${id}/${params.id}`}
-                    >
-                      <Button startIcon={<Edit />} size="small"></Button>
-                    </NavLink>
-
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleAdvocacyActionChange(params.id, false);
+                        setAdvocacyObjectiveId(params.id);
+                      }}
+                    ></Button>
                     <Button
                       startIcon={<Trash />}
                       size="small"
@@ -148,7 +158,7 @@ const AdvocacyObjectiveGridData = (props) => {
           variant="contained"
           color="primary"
           mt={3}
-          onClick={() => handleActionChange()}
+          onClick={() => handleActionChange({ id: 0, action: 1 })}
         >
           <ChevronLeft /> Back
         </Button>
@@ -186,6 +196,7 @@ const AdvocacyObjectives = ({
   processLevelItemId,
   processLevelTypeId,
   onActionChange,
+  onAdvocacyActionChange,
 }) => {
   return (
     <React.Fragment>
@@ -200,6 +211,7 @@ const AdvocacyObjectives = ({
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
         onActionChange={onActionChange}
+        onAdvocacyActionChange={onAdvocacyActionChange}
       />
     </React.Fragment>
   );

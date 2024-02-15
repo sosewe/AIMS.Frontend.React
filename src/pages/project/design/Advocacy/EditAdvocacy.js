@@ -303,8 +303,6 @@ const EditAdvocacyForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
   const {
     data: AdvocacyData,
     isLoading: isLoadingAdvocacyData,
@@ -487,7 +485,7 @@ const EditAdvocacyForm = ({ id, onActionChange }) => {
         });
         await queryClient.invalidateQueries(["getAdvocacys"]);
 
-        handleActionChange(0, true);
+        //handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -1123,7 +1121,6 @@ const EditAdvocacyForm = ({ id, onActionChange }) => {
 };
 
 const Advocacy = (props) => {
-  let { id } = useParams();
   return (
     <React.Fragment>
       <Typography variant="h3" gutterBottom display="inline">

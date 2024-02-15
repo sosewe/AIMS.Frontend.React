@@ -19,7 +19,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
@@ -48,9 +48,10 @@ const initialValues = {
   startStatusId: "",
 };
 
-const AdvocacyObjectiveForm = (id, processLevelTypeId, onActionChange) => {
+const AdvocacyObjectiveForm = (props) => {
+  const id = props.id;
+  const onAdvocacyActionChange = props.onAdvocacyActionChange;
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const {
     data: AdvocacyObjectiveData,
     isLoading: isLoadingAdvocacyObjectiveData,
@@ -103,11 +104,11 @@ const AdvocacyObjectiveForm = (id, processLevelTypeId, onActionChange) => {
       refetchOnWindowFocus: false,
     });
 
-  const handleActionChange = useCallback(
+  const handleAdvocacyActionChange = useCallback(
     (id, status) => {
-      onActionChange({ id: 4, status: 0 });
+      onAdvocacyActionChange({ id: 0, status: 1 });
     },
-    [onActionChange]
+    [onAdvocacyActionChange]
   );
 
   const mutation = useMutation({ mutationFn: newAdvocacyObjective });
@@ -145,7 +146,7 @@ const AdvocacyObjectiveForm = (id, processLevelTypeId, onActionChange) => {
         });
         await queryClient.invalidateQueries(["getAdvocacyObjectiveById"]);
 
-        handleActionChange();
+        handleAdvocacyActionChange();
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -405,9 +406,24 @@ const AdvocacyObjectiveForm = (id, processLevelTypeId, onActionChange) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+          <Grid item mt={5} md={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleAdvocacyActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -416,10 +432,7 @@ const AdvocacyObjectiveForm = (id, processLevelTypeId, onActionChange) => {
   );
 };
 
-const NewAdvocacyObjective = ({ onActionChange }) => {
-  let { id, processLevelTypeId } = useParams();
-
-  console.log("Advocacy Id ... " + id);
+const NewAdvocacyObjective = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Advocacy Objective" />
@@ -433,9 +446,10 @@ const NewAdvocacyObjective = ({ onActionChange }) => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <AdvocacyObjectiveForm
-                id={id}
-                processLevelTypeId={processLevelTypeId}
-                onActionChange={onActionChange}
+                id={props.id}
+                processLevelItemId={props.processLevelItemId}
+                processLevelTypeId={props.processLevelTypeId}
+                onAdvocacyActionChange={props.onAdvocacyActionChange}
               />
             </Grid>
           </Grid>

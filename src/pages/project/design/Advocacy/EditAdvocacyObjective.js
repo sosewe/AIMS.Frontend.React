@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -19,7 +19,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
@@ -48,17 +48,15 @@ const initialValues = {
   startStatusId: "",
 };
 
-const AdvocacyObjectiveForm = ({ id, editId }) => {
-  console.log("id .." + id);
-  console.log("editId .." + editId);
+const AdvocacyObjectiveForm = ({ id, onAdvocacyActionChange }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
     data: AdvocacyObjectiveData,
     isLoading: isLoadingAdvocacyObjectiveData,
     isError: isErrorAdvocacyObjectiveData,
-  } = useQuery(["getAdvocacyObjectiveById", editId], getAdvocacyObjectiveById, {
-    enabled: !!editId,
+  } = useQuery(["getAdvocacyObjectiveById", id], getAdvocacyObjectiveById, {
+    enabled: !!id,
   });
 
   const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
@@ -105,6 +103,13 @@ const AdvocacyObjectiveForm = ({ id, editId }) => {
       refetchOnWindowFocus: false,
     });
 
+  const handleAdvocacyActionChange = useCallback(
+    (event) => {
+      onAdvocacyActionChange({ id: 0, status: 1 });
+    },
+    [onAdvocacyActionChange]
+  );
+
   const mutation = useMutation({ mutationFn: newAdvocacyObjective });
 
   const formik = useFormik({
@@ -121,7 +126,7 @@ const AdvocacyObjectiveForm = ({ id, editId }) => {
     onSubmit: async (values) => {
       try {
         const saveAdvocacyObjective = {
-          id: editId,
+          id: id,
           typeOfInitiativeId: values.typeOfInitiativeId,
           kindOfInfluenceId: values.kindOfInfluenceId,
           typeOfPolicyAdvocacyId: values.typeOfPolicyAdvocacyId,
@@ -137,7 +142,8 @@ const AdvocacyObjectiveForm = ({ id, editId }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getAdvocacyObjectiveById"]);
-        navigate(`/project/design/advocacy/advocacy-detail/${id}`);
+
+        handleAdvocacyActionChange(0, false);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -399,9 +405,24 @@ const AdvocacyObjectiveForm = ({ id, editId }) => {
                 : []}
             </TextField>
           </Grid>
-          <Grid item md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+          <Grid item mt={5} md={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleAdvocacyActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -410,31 +431,23 @@ const AdvocacyObjectiveForm = ({ id, editId }) => {
   );
 };
 
-const AdvocacyObjective = () => {
-  let { id, editId } = useParams();
+const EditAdvocacyObjective = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Advocacy Objective" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Edit Advocacy Objective
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design/advocacy/advocacy-detail/${id}`}
-        >
-          Advocacy Design
-        </Link>
-        <Typography>Edit Advocacy Objective</Typography>
-      </Breadcrumbs>
 
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <AdvocacyObjectiveForm id={id} editId={editId} />
+              <AdvocacyObjectiveForm
+                id={props.id}
+                onAdvocacyActionChange={props.onAdvocacyActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>
@@ -443,4 +456,4 @@ const AdvocacyObjective = () => {
   );
 };
 
-export default AdvocacyObjective;
+export default EditAdvocacyObjective;

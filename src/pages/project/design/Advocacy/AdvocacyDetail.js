@@ -9,6 +9,8 @@ import EditAdvocacy from "./EditAdvocacy";
 import ThematicFocus from "./ThematicFocus";
 import GeoFocus from "./GeoFocus";
 import AdvocacyObjectives from "./AdvocacyObjectives";
+import NewAdvocacyObjective from "./NewAdvocacyObjective";
+import EditAdvocacyObjective from "./EditAdvocacyObjective";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -48,6 +50,11 @@ function a11yProps(index: number) {
 
 const AdvocacyDetail = (props) => {
   const [value, setValue] = React.useState(0);
+  const [advocacyAction, setAdvocacyAction] = React.useState({
+    id: 0,
+    status: true,
+    data: {},
+  });
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -83,12 +90,41 @@ const AdvocacyDetail = (props) => {
         <GeoFocus id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <AdvocacyObjectives
-          id={props.id}
-          processLevelItemId={props.processLevelItemId}
-          processLevelTypeId={props.processLevelTypeId}
-          onActionChange={props.onActionChange}
-        />
+        {(() => {
+          if (advocacyAction.status) {
+            return (
+              <AdvocacyObjectives
+                id={props.id}
+                processLevelItemId={props.processLevelItemId}
+                processLevelTypeId={props.processLevelTypeId}
+                onActionChange={props.onActionChange}
+                onAdvocacyActionChange={setAdvocacyAction}
+              />
+            );
+          } else if (!advocacyAction.status && advocacyAction.id === 0) {
+            return (
+              <>
+                <NewAdvocacyObjective
+                  id={props.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onAdvocacyActionChange={setAdvocacyAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <EditAdvocacyObjective
+                  id={advocacyAction.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onAdvocacyActionChange={setAdvocacyAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
     </Box>
   );

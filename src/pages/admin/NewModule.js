@@ -42,7 +42,6 @@ const NewModule = () => {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       values.createDate = new Date();
-      console.log(values);
       setSubmitting(true);
       // if (id) {
       //   values.id = id;

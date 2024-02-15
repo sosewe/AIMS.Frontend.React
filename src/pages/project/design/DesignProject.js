@@ -70,7 +70,6 @@ const DesignProject = () => {
   const [action, setAction] = React.useState({ id: 0, status: true, data: {} });
   const [value, setValue] = React.useState(0);
   let { id, processLevelTypeId } = useParams();
-  console.log("action@DesignProject ..." + JSON.stringify(action));
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -174,7 +173,7 @@ const DesignProject = () => {
                 />
               </>
             );
-          } else if (!action.status && action.id === 3) {
+          } /*else if (!action.status && action.id === 3) {
             return (
               <>
                 <NewAdvocacyObjective
@@ -185,7 +184,7 @@ const DesignProject = () => {
                 />
               </>
             );
-          } else if (!action.status && action.id === 4) {
+          }*/ else if (!action.status && action.id === 4) {
             return (
               <>
                 <AdvocacyObjectives

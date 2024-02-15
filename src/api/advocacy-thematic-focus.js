@@ -11,7 +11,6 @@ export const getAdvocacyThematicFocusByAdvocacyId = async ({ queryKey }) => {
 };
 
 export const deleteAdvocacyThematicFocus = async ({ queryKey }) => {
-  console.log("queryKey " + queryKey);
   const [, thematicFocusId] = queryKey;
   return await axios.delete(
     `${apiRoutes.advocacyThematicFocus}/${thematicFocusId}`

@@ -2,7 +2,6 @@ import { apiRoutes } from "../apiRoutes";
 import axios from "axios";
 
 export const newAdvocacyObjective = async (values) => {
-  console.log("values : " + JSON.stringify(values));
   return await axios.post(apiRoutes.advocacyObjective, values);
 };
 
