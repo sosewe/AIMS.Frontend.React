@@ -28,7 +28,6 @@ import { toast } from "react-toastify";
 import * as Yup from "yup";
 import {
   newTechnicalAssistanceQuarterlyUpdate,
-  getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId,
   getTechnicalAssistanceQuarterlyUpdateById,
 } from "../../../../api/technical-assistance-quarterly-update";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
@@ -55,14 +54,7 @@ const initialValues = {
 };
 
 const QuarterlyUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onTechnicalAssistanceActionChange,
-  } = props;
-
+  const { id, onTechnicalAssistanceActionChange } = props;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -112,7 +104,7 @@ const QuarterlyUpdateForm = (props) => {
       try {
         const saveQuarterlyUpdate = {
           createDate: new Date(),
-          id: new Guid().toString(),
+          id: id,
           technicalAssistanceId: id,
           yearId: values.year.lookupItemId,
           quarterId: values.quarter.lookupItemId,
@@ -130,7 +122,6 @@ const QuarterlyUpdateForm = (props) => {
         toast("Successfully Updated Quarterly Monitoring", {
           type: "success",
         });
-
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId",
         ]);
@@ -145,7 +136,48 @@ const QuarterlyUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingQuarterlyUpdate &&
+        !isErrorQuarterlyUpdate &&
+        QuarterlyUpdateData &&
+        QuarterlyUpdateData.data
+      ) {
+        let monitoringYear;
+        if (!isLoadingYears) {
+          monitoringYear = yearsData.data.find(
+            (obj) => obj.lookupItemId === QuarterlyUpdateData.data.yearId
+          );
+        }
+
+        let monitoringQuarter;
+        if (!isLoadingQuarters) {
+          monitoringQuarter = quartersData.data.find(
+            (obj) => obj.lookupItemId === QuarterlyUpdateData.data.quarterId
+          );
+        }
+
+        formik.setValues({
+          year: monitoringYear ? monitoringYear : "",
+          quarter: monitoringQuarter ? monitoringQuarter : "",
+          bestModelsApproaches: QuarterlyUpdateData.data.bestModelsApproaches,
+          resultOutcomeAnalysis: QuarterlyUpdateData.data.resultOutcomeAnalysis,
+          sharedSuccessInsights: QuarterlyUpdateData.data.sharedSuccessInsights,
+          sharedROIInsights: QuarterlyUpdateData.data.sharedROIInsights,
+          systemicChanges: QuarterlyUpdateData.data.systemicChanges,
+          revisionAdjustments: QuarterlyUpdateData.data.revisionAdjustments,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadingQuarterlyUpdate,
+    isErrorQuarterlyUpdate,
+    QuarterlyUpdateData,
+    isLoadingYears,
+    isLoadingQuarters,
+  ]);
 
   const handleTechnicalAssistanceActionChange = useCallback(
     (id, status) => {
@@ -157,7 +189,7 @@ const QuarterlyUpdateForm = (props) => {
   return (
     <form onSubmit={formik.handleSubmit}>
       {formik.isSubmitting ? (
-        <Box display="flex" justifyContent="center" my={2}>
+        <Box display="flex" justifyContent="center" my={6}>
           <CircularProgress />
         </Box>
       ) : (
@@ -370,7 +402,8 @@ const QuarterlyUpdateForm = (props) => {
   );
 };
 
-const QuarterlyUpdate = (props) => {
+const EditQuarterlyUpdate = (props) => {
+  let { id, editId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="Quarterly Update" />
@@ -380,12 +413,10 @@ const QuarterlyUpdate = (props) => {
       <Divider my={3} />
       <Card mb={12}>
         <CardContent>
-          <Grid container spacing={2}>
+          <Grid container spacing={12}>
             <Grid item md={12}>
               <QuarterlyUpdateForm
                 id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
                 onActionChange={props.onActionChange}
                 onTechnicalAssistanceActionChange={
                   props.onTechnicalAssistanceActionChange
@@ -399,4 +430,4 @@ const QuarterlyUpdate = (props) => {
   );
 };
 
-export default QuarterlyUpdate;
+export default EditQuarterlyUpdate;

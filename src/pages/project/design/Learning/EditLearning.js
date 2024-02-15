@@ -1521,7 +1521,6 @@ const EditLearningForm = ({ id, onActionChange }) => {
 };
 
 const Learning = (props) => {
-  let { id } = useParams();
   return (
     <React.Fragment>
       <Helmet title="Edit learning" />

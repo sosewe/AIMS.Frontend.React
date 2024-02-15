@@ -5,7 +5,9 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useParams } from "react-router-dom";
 import MonthlyUpdate from "./MonthlyUpdate";
+import EditMonthlyUpdate from "./EditMonthlyUpdate";
 import QuarterlyUpdate from "./QuarterlyUpdate";
+import EditQuarterlyUpdate from "./EditQuarterlyUpdate";
 import KMDocumentsUpload from "./KMDocumentsUpload";
 import MonthlyUpdateDataGrid from "./MonthlyUpdateDataGrid";
 import QuarterlyUpdateDataGrid from "./QuarterlyUpdateDataGrid";
@@ -46,7 +48,10 @@ function a11yProps(index: number) {
   };
 }
 
-const TechnicalAssistanceDetail = () => {
+const TechnicalAssistanceDetail = (props) => {
+  const [technicalAssistanceAction, setTechnicalAssistanceAction] =
+    React.useState({ id: 0, status: true, data: {} });
+
   const [value, setValue] = React.useState(0);
   let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -74,13 +79,100 @@ const TechnicalAssistanceDetail = () => {
         <Tab label="KM Documents Upload" {...a11yProps(2)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <MonthlyUpdateDataGrid id={id} />
+        {(() => {
+          if (technicalAssistanceAction.status) {
+            return (
+              <MonthlyUpdateDataGrid
+                id={props.id}
+                processLevelItemId={props.processLevelItemId}
+                processLevelTypeId={props.processLevelTypeId}
+                onActionChange={props.onActionChange}
+                onTechnicalAssistanceActionChange={setTechnicalAssistanceAction}
+              />
+            );
+          } else if (
+            !technicalAssistanceAction.status &&
+            technicalAssistanceAction.id === 0
+          ) {
+            return (
+              <>
+                <MonthlyUpdate
+                  id={props.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onTechnicalAssistanceActionChange={
+                    setTechnicalAssistanceAction
+                  }
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <EditMonthlyUpdate
+                  id={technicalAssistanceAction.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onTechnicalAssistanceActionChange={
+                    setTechnicalAssistanceAction
+                  }
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <QuarterlyUpdateDataGrid id={id} />
+        {(() => {
+          if (technicalAssistanceAction.status) {
+            return (
+              <QuarterlyUpdateDataGrid
+                id={props.id}
+                processLevelItemId={props.processLevelItemId}
+                processLevelTypeId={props.processLevelTypeId}
+                onActionChange={props.onActionChange}
+                onTechnicalAssistanceActionChange={setTechnicalAssistanceAction}
+              />
+            );
+          } else if (
+            !technicalAssistanceAction.status &&
+            technicalAssistanceAction.id === 0
+          ) {
+            return (
+              <>
+                <QuarterlyUpdate
+                  id={props.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onTechnicalAssistanceActionChange={
+                    setTechnicalAssistanceAction
+                  }
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <EditQuarterlyUpdate
+                  id={technicalAssistanceAction.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onTechnicalAssistanceActionChange={
+                    setTechnicalAssistanceAction
+                  }
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <KMDocumentsUpload id={id} />
+        <KMDocumentsUpload
+          id={technicalAssistanceAction.id}
+          processLevelItemId={props.processLevelItemId}
+          processLevelTypeId={props.processLevelTypeId}
+          onTechnicalAssistanceActionChange={setTechnicalAssistanceAction}
+        />
       </TabPanel>
     </Box>
   );

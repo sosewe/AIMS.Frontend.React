@@ -78,19 +78,23 @@ const initialValues = {
 };
 
 const MonthlyUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onTechnicalAssistanceActionChange,
-  } = props;
+  const { id, onTechnicalAssistanceActionChange } = props;
 
   const MAX_COUNT = 5;
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fileLimit, setFileLimit] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const {
+    data: MonthlyUpdateData,
+    isLoading: isLoadingMonthlyUpdate,
+    isError: isErrorMonthlyUpdate,
+  } = useQuery(
+    ["getTechnicalAssistanceMonthlyUpdateById", id],
+    getTechnicalAssistanceMonthlyUpdateById,
+    { enabled: !!id }
+  );
 
   const { isLoading: isLoadingLevelOfRelevance, data: levelOfRelevanceData } =
     useQuery(
@@ -144,9 +148,49 @@ const MonthlyUpdateForm = (props) => {
     }
   );
 
+  let technicalAssistanceId = new Guid();
+  if (MonthlyUpdateData && MonthlyUpdateData.data) {
+    technicalAssistanceId = MonthlyUpdateData.data.technicalAssistanceId;
+  }
   const { data: objectivesData, isLoading: isLoadingObjectives } = useQuery(
-    ["getTechnicalAssistanceObjectiveByTechnicalAssistanceId", id],
+    [
+      "getTechnicalAssistanceObjectiveByTechnicalAssistanceId",
+      technicalAssistanceId,
+    ],
     getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
+    {
+      enabled: !!technicalAssistanceId,
+    }
+  );
+
+  const {
+    data: objectivesMonthlyUpdateData,
+    isLoading: isLoadingObjectivesMonthlyUpdate,
+  } = useQuery(
+    ["getTechnicalAssistanceObjectiveLinkByTechnicalAssistanceId", id],
+    getTechnicalAssistanceObjectiveLinkByTechnicalAssistanceId,
+    {
+      enabled: !!id,
+    }
+  );
+
+  const {
+    data: agencyOfChangeActorsMonthlyUpdateData,
+    isLoading: isLoadingAgencyOfChangeActorsMonthlyUpdate,
+  } = useQuery(
+    ["getTechnicalAssistanceAgencyByTechnicalAssistanceId", id],
+    getTechnicalAssistanceAgencyByTechnicalAssistanceId,
+    {
+      enabled: !!id,
+    }
+  );
+
+  const {
+    data: modalitiesMonthlyUpdateData,
+    isLoading: isLoadingModalitiesMonthlyUpdate,
+  } = useQuery(
+    ["getTechnicalAssistanceModalityByTechnicalAssistanceId", id],
+    getTechnicalAssistanceModalityByTechnicalAssistanceId,
     {
       enabled: !!id,
     }
@@ -212,7 +256,7 @@ const MonthlyUpdateForm = (props) => {
       try {
         const saveMonthlyUpdate = {
           createDate: new Date(),
-          id: new Guid().toString(),
+          id: id,
           technicalAssistanceId: id,
           changeDescription: values.changeDescription,
           yearId: values.year.lookupItemId,
@@ -223,6 +267,8 @@ const MonthlyUpdateForm = (props) => {
           changeLevelOfRelevanceId: values.changeLevelOfRelevance,
           changeLevelOfContributionId: values.changeLevelOfContribution,
           titleOfChangeActors: values.titleOfChangeActors,
+          // agencyOfChangeActors: values.agencyOfChangeActors,
+          // modalities: values.modalities,
           changeContribution: values.changeContribution,
           changeContributionOther: values.changeContributionOther,
           changeCofollowUpntributionOther:
@@ -269,7 +315,7 @@ const MonthlyUpdateForm = (props) => {
         }
         await mutationModality.mutateAsync(modalitiesList);
 
-        toast("Successfully Created Monthly Monitoring", {
+        toast("Successfully Updated Monthly Monitoring", {
           type: "success",
         });
 
@@ -287,7 +333,107 @@ const MonthlyUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingMonthlyUpdate &&
+        !isErrorMonthlyUpdate &&
+        !isLoadingYears &&
+        !isLoadingMonths &&
+        MonthlyUpdateData &&
+        MonthlyUpdateData.data
+      ) {
+        let monitoringYear;
+        if (!isLoadingYears && MonthlyUpdateData.data) {
+          monitoringYear = yearsData.data.find(
+            (obj) => obj.lookupItemId === MonthlyUpdateData.data.yearId
+          );
+        }
+
+        let monitoringMonth;
+        if (!isLoadingMonths && MonthlyUpdateData.data) {
+          monitoringMonth = monthsData.data.find(
+            (obj) => obj.lookupItemId === MonthlyUpdateData.data.monthId
+          );
+        }
+
+        let departmentsList = [];
+        if (
+          !isLoadingDepartments &&
+          !isLoadingAgencyOfChangeActorsMonthlyUpdate &&
+          agencyOfChangeActorsMonthlyUpdateData.data
+        ) {
+          for (const item of agencyOfChangeActorsMonthlyUpdateData.data) {
+            const result = departmentsData.data.find(
+              (obj) => obj.id === item.agencyId
+            );
+            if (result) {
+              departmentsList.push(result);
+            }
+          }
+        }
+
+        let objectivesList = [];
+        if (!isLoadingObjectives && objectivesMonthlyUpdateData) {
+          for (const item of objectivesMonthlyUpdateData.data) {
+            const result = objectivesData.data.find(
+              (obj) => obj.id === item.objectiveId
+            );
+            if (result) {
+              objectivesList.push(result);
+            }
+          }
+        }
+
+        let modalitiesList = [];
+        if (
+          !isLoadingModalities &&
+          !isLoadingModalitiesMonthlyUpdate &&
+          modalitiesMonthlyUpdateData.data
+        ) {
+          for (const item of modalitiesMonthlyUpdateData.data) {
+            const result = modalitiesData.data.find(
+              (obj) => obj.id === item.modalityId
+            );
+            if (result) {
+              modalitiesList.push(result);
+            }
+          }
+        }
+
+        formik.setValues({
+          year: monitoringYear ? monitoringYear : "",
+          month: monitoringMonth ? monitoringMonth : "",
+          changeDescription: MonthlyUpdateData.data.changeDescription,
+          objectives: objectivesList,
+          changeRelevance: MonthlyUpdateData.data.changeRelevance,
+          changeLevelOfRelevance:
+            MonthlyUpdateData.data.changeLevelOfRelevanceId,
+          changeLevelOfContribution:
+            MonthlyUpdateData.data.changeLevelOfContributionId,
+          titleOfChangeActors: MonthlyUpdateData.data.titleOfChangeActors,
+          agencyOfChangeActors: departmentsList,
+          modalities: modalitiesList,
+          changeContribution: MonthlyUpdateData.data.changeContribution,
+          changeContributionOther:
+            MonthlyUpdateData.data.changeContributionOther,
+          followUp: MonthlyUpdateData.data.followUp,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    MonthlyUpdateData,
+    isErrorMonthlyUpdate,
+    isLoadingMonthlyUpdate,
+    isLoadingYears,
+    isLoadingMonths,
+    isLoadingObjectives,
+    isLoadingDepartments,
+    isLoadingAgencyOfChangeActorsMonthlyUpdate,
+    isLoadingModalities,
+    isLoadingModalitiesMonthlyUpdate,
+  ]);
 
   const handleTechnicalAssistanceActionChange = useCallback(
     (id, status) => {
@@ -730,7 +876,7 @@ const MonthlyUpdateForm = (props) => {
   );
 };
 
-const MonthlyUpdate = (props) => {
+const EditMonthlyUpdate = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Monthly Update" />
@@ -745,8 +891,6 @@ const MonthlyUpdate = (props) => {
             <Grid item md={12}>
               <MonthlyUpdateForm
                 id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
                 onActionChange={props.onActionChange}
                 onTechnicalAssistanceActionChange={
                   props.onTechnicalAssistanceActionChange
@@ -760,4 +904,4 @@ const MonthlyUpdate = (props) => {
   );
 };
 
-export default MonthlyUpdate;
+export default EditMonthlyUpdate;

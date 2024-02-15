@@ -1,25 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Button,
-  Link,
-  Breadcrumbs,
   Card as MuiCard,
   CardContent as MuiCardContent,
-  Box,
-  CircularProgress,
   Divider as MuiDivider,
   Paper as MuiPaper,
   Typography,
 } from "@mui/material";
-
-import { NavLink, useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Grid, Link2 } from "react-feather";
+import { Grid, Link2, Edit } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { getInnovationByProcessLevelItemId } from "../../../../api/innovation";
@@ -33,7 +27,11 @@ const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
+const InnovationData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const [pageSize, setPageSize] = useState(5);
   const {
     data: InnovationsData,
@@ -53,19 +51,14 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
       refetchOnWindowFocus: false,
     });
 
-  /*
-  const formik = useFormik({
-    validationSchema: Yup.object().shape({}),
-    onSubmit: async (values) => {
-      try {
-      } catch (error) {
-        console.log(error);
-        toast(error.response.data, {
-          type: "error",
-        });
-      }
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
     },
-  });*/
+    [onActionChange]
+  );
+
+  useEffect(() => {}, []);
 
   return (
     <Card mb={6}>
@@ -106,13 +99,13 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
                   sortable: false,
                   flex: 1,
                   renderCell: (params) => (
-                    <>
-                      <NavLink
-                        to={`/project/monitoring/innovation-monitoring-detail/${params.id}`}
-                      >
-                        <Button startIcon={<Link2 />} size="small"></Button>
-                      </NavLink>
-                    </>
+                    <Button
+                      startIcon={<Link2 />}
+                      size="small"
+                      onClick={(e) => {
+                        handleActionChange(params.id, false);
+                      }}
+                    ></Button>
                   ),
                 },
               ]}
@@ -128,27 +121,19 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const InnovationDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
+const InnovationDataGrid = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Innovation" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Innovation
+      <Typography variant="h5" gutterBottom display="inline">
+        Innovation Monitoring
       </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Monitoring
-        </Link>
-        <Typography>Innovation</Typography>
-      </Breadcrumbs>
 
-      <Divider my={6} />
+      <Divider my={3} />
       <InnovationData
-        processLevelItemId={processLevelItemId}
-        processLevelTypeId={processLevelTypeId}
+        processLevelItemId={props.processLevelItemId}
+        processLevelTypeId={props.processLevelTypeId}
+        onActionChange={props.onActionChange}
       />
     </React.Fragment>
   );

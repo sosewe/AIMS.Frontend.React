@@ -115,19 +115,9 @@ const LearningDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <React.Fragment>
       <Helmet title="Research (Learning)" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Research (Learning)
+      <Typography variant="h5" gutterBottom display="inline">
+        Research (Learning) Monitoring
       </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Monitoring
-        </Link>
-        <Typography>Research (Learning)</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <LearningData
         processLevelItemId={processLevelItemId}

@@ -48,7 +48,6 @@ function a11yProps(index: number) {
 
 const LearningDetail = (props) => {
   const [value, setValue] = React.useState(0);
-  let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };

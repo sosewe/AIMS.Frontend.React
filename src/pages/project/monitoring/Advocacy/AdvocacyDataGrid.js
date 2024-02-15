@@ -112,19 +112,9 @@ const AdvocacyDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Advocacy
+      <Typography variant="h5" gutterBottom display="inline">
+        Advocacy Monitoring
       </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Monitoring
-        </Link>
-        <Typography>Advocacy</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <AdvocacyData
         processLevelItemId={processLevelItemId}

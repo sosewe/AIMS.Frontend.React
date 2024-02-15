@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -26,7 +26,7 @@ import * as Yup from "yup";
 import { display, spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -55,7 +55,7 @@ const initialValues = {
   innovationClosingReason: "",
 };
 
-const ScaleUpForm = ({ id }) => {
+const ScaleUpForm = ({ id, onActionChange }) => {
   const MAX_COUNT = 5;
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -148,7 +148,6 @@ const ScaleUpForm = ({ id }) => {
         await queryClient.invalidateQueries([
           "getInnovationMonitoringScaleUpByInnovationId",
         ]);
-        navigate(`/project/monitoring/innovation-monitoring-detail/${id}`);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -196,7 +195,12 @@ const ScaleUpForm = ({ id }) => {
     TechnicalReviewData,
   ]);
 
-  // eslint-disable-next-line no-lone-blocks
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -400,6 +404,16 @@ const ScaleUpForm = ({ id }) => {
                     variant="contained"
                     color="primary"
                     mt={3}
+                    onClick={() => handleActionChange()}
+                  >
+                    <ChevronLeft /> Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    mt={3}
+                    ml={3}
                   >
                     <Check /> Save changes
                   </Button>
@@ -413,26 +427,22 @@ const ScaleUpForm = ({ id }) => {
   );
 };
 
-const ScaleUp = () => {
-  let { id } = useParams();
+const ScaleUp = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Scale Up
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link>Project Monitoring</Link>
-        <Typography>Scale Up</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <ScaleUpForm id={id} />
+              <ScaleUpForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>
