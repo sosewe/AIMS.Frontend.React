@@ -16,14 +16,13 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import CancelIcon from "@mui/icons-material/Cancel";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { YEAR_RANGE } from "../../../../constants";
 import {
@@ -36,7 +35,6 @@ import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
 import { newLearning } from "../../../../api/learning";
 import { newLearningDonor } from "../../../../api/learning-donor";
-import { newLearningPartner } from "../../../../api/learning-partner";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
@@ -763,7 +761,22 @@ const LearningForm = ({
           </Grid>
 
           <Grid item md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
               <Check /> Save changes
             </Button>
           </Grid>
@@ -778,7 +791,7 @@ const Learning = ({ onActionChange }) => {
   return (
     <React.Fragment>
       <Helmet title="New Learning" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         New Learning
       </Typography>
 

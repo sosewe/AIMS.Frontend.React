@@ -39,7 +39,7 @@ const LearningGridData = ({
   onActionChange,
 }) => {
   const [open, setOpen] = useState(false);
-  const [learningId, setlearningId] = useState(false);
+  const [learningId, setLearningId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ const LearningGridData = ({
   );
 
   function handleClickOpen(learningId) {
-    setlearningId(learningId);
+    setLearningId(learningId);
     setOpen(true);
   }
 
@@ -140,11 +140,14 @@ const LearningGridData = ({
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/learning/learning-detail/${params.id}`}
-                    >
-                      <Button startIcon={<Edit />} size="small"></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleActionChange(params.id, false);
+                        setLearningId(params.id);
+                      }}
+                    ></Button>
 
                     <Button
                       startIcon={<Trash />}
