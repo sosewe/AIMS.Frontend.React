@@ -647,7 +647,6 @@ const NewProjectForm = ({ id }) => {
     );
   }
 
-  // console.log(processLevelRolesData);
   useEffect(() => {
     function setCurrentFormValues() {
       if (ProjectData) {
@@ -732,7 +731,6 @@ const NewProjectForm = ({ id }) => {
             allStaff.push(staff);
           }
           setStaffDetailsArray(allStaff);
-          console.log(allStaff);
         }
         if (
           processLevelCostCentreData &&

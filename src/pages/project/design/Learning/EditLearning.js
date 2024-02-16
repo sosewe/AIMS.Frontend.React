@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -17,17 +17,10 @@ import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
-  Link,
   Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -43,7 +36,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -102,6 +95,7 @@ const initialValues = {
 };
 
 const staffDetailsInitial = {
+  staffId: "",
   staffDetailsName: "",
   staffDetailsAIMSRole: "",
   staffDetailsWorkFlowTask: "",
@@ -227,6 +221,7 @@ const StaffDetailsForm = ({
   const formik = useFormik({
     initialValues: staffDetailsInitial,
     validationSchema: Yup.object().shape({
+      staffId: Yup.object().required("Required"),
       staffDetailsName: Yup.string().required("Required"),
       staffDetailsAIMSRole: Yup.object().required("Required"),
       staffDetailsWorkFlowTask: Yup.object().required("Required"),
@@ -253,46 +248,63 @@ const StaffDetailsForm = ({
           <Grid container spacing={3}>
             <Grid item md={3}>
               <Autocomplete
-                id="staffDetailsName"
+                id="staffId"
                 options={!isLoadingStaffList ? staffListData.data : []}
                 getOptionLabel={(option) => {
                   if (!option) {
                     return ""; // Return an empty string for null or undefined values
                   }
-                  return `${option}`;
+                  return `${option.emailAddress}`;
                 }}
                 renderOption={(props, option) => {
                   return (
                     <li {...props} key={option.id}>
-                      {option ? `${option.firstName} ${option.lastName}` : ""}
+                      {option ? `${option.emailAddress}` : ""}
                     </li>
                   );
                 }}
                 onChange={(e, val) => {
+                  formik.setFieldValue("staffId", val);
                   formik.setFieldValue(
                     "staffDetailsName",
                     `${val.firstName} ${val.lastName}`
                   );
                 }}
-                value={formik.values.staffDetailsName}
+                value={formik.values.staffId}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     error={Boolean(
-                      formik.touched.staffDetailsName &&
-                        formik.errors.staffDetailsName
+                      formik.touched.staffId && formik.errors.staffId
                     )}
                     fullWidth
-                    helperText={
-                      formik.touched.staffDetailsName &&
-                      formik.errors.staffDetailsName
-                    }
-                    label="Staff Name"
-                    name="staffDetailsName"
+                    helperText={formik.touched.staffId && formik.errors.staffId}
+                    label="Staff Email"
+                    name="staffId"
                     variant="outlined"
                     my={2}
                   />
                 )}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsName"
+                value={formik.values.staffDetailsName}
+                error={Boolean(
+                  formik.touched.staffDetailsName &&
+                    formik.errors.staffDetailsName
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsName &&
+                  formik.errors.staffDetailsName
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                label="Staff Name"
+                variant="outlined"
+                my={2}
               />
             </Grid>
             <Grid item md={3}>
@@ -352,7 +364,7 @@ const StaffDetailsForm = ({
                 <MenuItem disabled value="">
                   Select DQA Work Flow Role
                 </MenuItem>
-                {!isLoadingAdministrativeRoles && !isErrorAdministrativeRoles
+                {!isLoadingAdministrativeRoles
                   ? administrativeRoles.data.map((option) => (
                       <MenuItem key={option.roleId} value={option}>
                         {option.roleName}
@@ -392,7 +404,7 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditLearningForm = ({ id }) => {
+const EditLearningForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const [openAddPartnerDetails, setOpenAddPartnerDetails] = useState(false);
@@ -501,6 +513,13 @@ const EditLearningForm = ({ id }) => {
     {
       refetchOnWindowFocus: false,
     }
+  );
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
   );
 
   const mutation = useMutation({ mutationFn: newLearning });
@@ -617,7 +636,8 @@ const EditLearningForm = ({ id }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getlearningBylearningId"]);
-        navigate(`/project/design/learning/learning-detail/${id}`);
+
+        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -1474,9 +1494,24 @@ const EditLearningForm = ({ id }) => {
             </DialogActions>
           </Dialog>
 
-          <Grid item md={12} mt={20}>
-            <Button type="submit" variant="contained" color="primary">
-              <Check /> Save changes
+          <Grid item mt={5} md={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -1485,8 +1520,7 @@ const EditLearningForm = ({ id }) => {
   );
 };
 
-const Learning = () => {
-  let { id } = useParams();
+const Learning = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Edit learning" />
@@ -1498,7 +1532,10 @@ const Learning = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditLearningForm id={id} />
+              <EditLearningForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

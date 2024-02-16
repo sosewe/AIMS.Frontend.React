@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -36,6 +36,7 @@ const Button = styled(MuiButton)(spacing);
 const TechnicalAssistanceGridData = ({
   processLevelItemId,
   processLevelTypeId,
+  onActionChange,
 }) => {
   const [open, setOpen] = useState(false);
   const [technicalAssistanceId, setTechnicalAssistanceId] = useState(false);
@@ -76,6 +77,13 @@ const TechnicalAssistanceGridData = ({
     ]);
   };
 
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
+    },
+    [onActionChange]
+  );
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -83,11 +91,7 @@ const TechnicalAssistanceGridData = ({
           mr={2}
           variant="contained"
           color="error"
-          onClick={() =>
-            navigate(
-              `/project/design/technical-assistance/new-technical-assistance/${processLevelItemId}/${processLevelTypeId}`
-            )
-          }
+          onClick={() => handleActionChange(0, false)}
         >
           <AddIcon /> New Technical Assistance
         </Button>
@@ -145,11 +149,14 @@ const TechnicalAssistanceGridData = ({
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/technical-assistance/technical-assistance-detail/${params.id}`}
-                    >
-                      <Button startIcon={<Edit />} size="small"></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleActionChange(params.id, false);
+                        setTechnicalAssistanceId(params.id);
+                      }}
+                    ></Button>
 
                     <Button
                       startIcon={<Trash />}
@@ -199,6 +206,7 @@ const TechnicalAssistanceGridData = ({
 const TechnicalAssistanceData = ({
   processLevelItemId,
   processLevelTypeId,
+  onActionChange,
 }) => {
   return (
     <React.Fragment>
@@ -211,6 +219,7 @@ const TechnicalAssistanceData = ({
       <TechnicalAssistanceGridData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
+        onActionChange={onActionChange}
       />
     </React.Fragment>
   );

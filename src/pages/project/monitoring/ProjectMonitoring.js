@@ -28,8 +28,13 @@ import { green, purple } from "@mui/material/colors";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
+import InnovationDetail from "./InnovationV2/InnovationDetail";
 import AdvocacyDataGrid from "./Advocacy/AdvocacyDataGrid";
+import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
+import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistanceDetail";
+import LearningDataGrid from "./Learning/LearningDataGrid";
+import LearningDetail from "./Learning/LearningDetail";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -94,6 +99,7 @@ const ProjectMonitoringAccordion = ({
   processLevelItemId,
   processLevelTypeId,
 }) => {
+  const [action, setAction] = React.useState({ id: 0, status: true, data: {} });
   const [value, setValue] = React.useState(0);
   const navigate = useNavigate();
   const {
@@ -159,53 +165,218 @@ const ProjectMonitoringAccordion = ({
         aria-label="Vertical tabs example"
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
-        <Tab label="Innovation" {...a11yProps(0)} />
-        <Tab label="Technical Assistance" {...a11yProps(1)} />
-        <Tab label="Advocacy" {...a11yProps(2)} />
+        <Tab label="Quantitative" {...a11yProps(0)} />
+        <Tab label="Innovation" {...a11yProps(1)} />
+        <Tab label="Technical Assistance" {...a11yProps(2)} />
+        <Tab label="Advocacy" {...a11yProps(3)} />
+        <Tab label="Reasearch (Learning)" {...a11yProps(4)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <InnovationDataGrid
-          processLevelItemId={processLevelItemId}
-          processLevelTypeId={processLevelTypeId}
-        />
+        <Typography variant="h5" gutterBottom display="inline">
+          Quantitative Monitoring
+        </Typography>
+        <form onSubmit={formik.handleSubmit}>
+          <Card mb={12}>
+            <CardContent>
+              {formik.isSubmitting ? (
+                <Box display="flex" justifyContent="center" my={6}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <Grid container spacing={6}>
+                  <Grid item md={4}>
+                    <TextField
+                      name="implementationYear"
+                      label="Implementation Year"
+                      select
+                      required
+                      value={formik.values.implementationYear}
+                      error={Boolean(
+                        formik.touched.implementationYear &&
+                          formik.errors.implementationYear
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.implementationYear &&
+                        formik.errors.implementationYear
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={formik.handleChange}
+                      variant="outlined"
+                      my={2}
+                    >
+                      <MenuItem disabled value="">
+                        Select Implementation Year
+                      </MenuItem>
+                      {!isLoading && !isError
+                        ? implementationYears.data.map((option) => (
+                            <MenuItem
+                              key={option.lookupItemId}
+                              value={option.lookupItemId}
+                            >
+                              {option.lookupItemName}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+                  <Grid item md={4}>
+                    <TextField
+                      name="location"
+                      label="Location"
+                      select
+                      required
+                      value={formik.values.location}
+                      error={Boolean(
+                        formik.touched.location && formik.errors.location
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.location && formik.errors.location
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={formik.handleChange}
+                      variant="outlined"
+                      my={2}
+                    >
+                      <MenuItem disabled value="">
+                        Select Location
+                      </MenuItem>
+                      {!isLoadingGeoFocus && !isErrorGeoFocus
+                        ? projectGeographicalFocus.data.map((option) => (
+                            <MenuItem key={option.id} value={option.id}>
+                              {option.administrativeUnitName}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+
+                  <Grid item md={4}>
+                    <ThemeProvider theme={theme}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        mt={2}
+                      >
+                        Continue
+                      </Button>
+                    </ThemeProvider>
+                  </Grid>
+                </Grid>
+              )}
+            </CardContent>
+          </Card>
+        </form>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <TechnicalAssistanceDataGrid
-          processLevelItemId={processLevelItemId}
-          processLevelTypeId={processLevelTypeId}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <InnovationDataGrid
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else {
+            return (
+              <>
+                <InnovationDetail
+                  id={action.id}
+                  processLevelItemId={processLevelItemId}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <AdvocacyDataGrid
-          processLevelItemId={processLevelItemId}
-          processLevelTypeId={processLevelTypeId}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <TechnicalAssistanceDataGrid
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else {
+            return (
+              <>
+                <TechnicalAssistanceDetail
+                  id={action.id}
+                  processLevelItemId={processLevelItemId}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        {(() => {
+          if (action.status) {
+            return (
+              <AdvocacyDataGrid
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else {
+            return (
+              <>
+                <AdvocacyDetail
+                  id={action.id}
+                  processLevelItemId={processLevelItemId}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
+      </TabPanel>
+      <TabPanel value={value} index={4}>
+        {(() => {
+          if (action.status) {
+            return (
+              <LearningDataGrid
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else {
+            return (
+              <>
+                <LearningDetail
+                  id={action.id}
+                  processLevelItemId={processLevelItemId}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
     </Box>
   );
 };
 
 const ProjectMonitoring = () => {
-  let { processLevelItemId, processLevelTypeId } = useParams();
+  let { id, processLevelTypeId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="Project Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Project Monitoring
-      </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/project-detail/${processLevelItemId}`}
-        >
-          Projects Detail
-        </Link>
-        <Typography>Project Monitoring</Typography>
-      </Breadcrumbs>
-
-      <Divider my={6} />
       <ProjectMonitoringAccordion
-        processLevelItemId={processLevelItemId}
+        processLevelItemId={id}
         processLevelTypeId={processLevelTypeId}
       />
     </React.Fragment>

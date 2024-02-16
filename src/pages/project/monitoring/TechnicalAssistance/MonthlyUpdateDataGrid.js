@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Button,
@@ -16,7 +16,7 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Link2 } from "react-feather";
+import { Edit, Link2, ChevronLeft } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId } from "../../../../api/technical-assistance-monthly-update";
@@ -26,7 +26,13 @@ const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const MonthlyUpdateDataGridData = ({ id }) => {
+const MonthlyUpdateDataGridData = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
+  const onTechnicalAssistanceActionChange =
+    props.onTechnicalAssistanceActionChange;
+
+  const [technicalAssistanceId, setTechnicalAssistanceId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
   const {
@@ -48,18 +54,33 @@ const MonthlyUpdateDataGridData = ({ id }) => {
     });
   }
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: true });
+    },
+    [onActionChange]
+  );
+
+  const handleTechnicalAssistanceActionChange = useCallback(
+    (id, status) => {
+      onTechnicalAssistanceActionChange({
+        id: id,
+        status: status,
+      });
+    },
+    [onTechnicalAssistanceActionChange]
+  );
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
         <Paper>
           <Button
+            mr={2}
+            mb={5}
             variant="contained"
             color="error"
-            onClick={() =>
-              navigate(
-                `/project/monitoring/technical-assistance-monitoring-monthly-update/${id}`
-              )
-            }
+            onClick={() => handleTechnicalAssistanceActionChange(0, false)}
           >
             <AddIcon /> New Monthly Update
           </Button>
@@ -106,11 +127,17 @@ const MonthlyUpdateDataGridData = ({ id }) => {
                     params.row.technicalAssistances.title,
                   renderCell: (params) => (
                     <>
-                      <NavLink
-                        to={`/project/monitoring/technical-assistance-monitoring-monthly-update/${id}/${params.id}`}
-                      >
-                        <Button startIcon={<Link2 />} size="small"></Button>
-                      </NavLink>
+                      <Button
+                        startIcon={<Edit />}
+                        size="small"
+                        onClick={(e) => {
+                          handleTechnicalAssistanceActionChange(
+                            params.id,
+                            false
+                          );
+                          setTechnicalAssistanceId(params.id);
+                        }}
+                      ></Button>
                     </>
                   ),
                 },
@@ -121,21 +148,40 @@ const MonthlyUpdateDataGridData = ({ id }) => {
               getRowHeight={() => "auto"}
             />
           </div>
+
+          <br />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            mt={3}
+            onClick={() => handleActionChange({ id: 0, action: 1 })}
+          >
+            <ChevronLeft /> Back
+          </Button>
         </Paper>
       </CardContent>
     </Card>
   );
 };
 
-const MonthlyUpdateDataGrid = ({ id }) => {
+const MonthlyUpdateDataGrid = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Monthly Update
       </Typography>
       <Divider my={6} />
-      <MonthlyUpdateDataGridData id={id} />
+      <MonthlyUpdateDataGridData
+        id={props.id}
+        processLevelItemId={props.processLevelItemId}
+        processLevelTypeId={props.processLevelTypeId}
+        onActionChange={props.onActionChange}
+        onTechnicalAssistanceActionChange={
+          props.onTechnicalAssistanceActionChange
+        }
+      />
     </React.Fragment>
   );
 };

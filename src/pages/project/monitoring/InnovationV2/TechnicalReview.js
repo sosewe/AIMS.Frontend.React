@@ -1,49 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  FormControlLabel,
-  FormGroup,
   Grid,
   MenuItem,
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
-  Link,
   Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import CancelIcon from "@mui/icons-material/Cancel";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -51,7 +27,6 @@ import { Guid } from "../../../../utils/guid";
 import {
   newInnovationMonitoringTechnicalReview,
   getInnovationMonitoringTechnicalReviewByInnovationId,
-  deleteInnovationMonitoringTechnicalReview,
 } from "../../../../api/innovation-monitoring-technical-review";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 
@@ -68,7 +43,7 @@ const initialValues = {
   innovationScalabiity: "",
 };
 
-const TechnicalReviewForm = ({ id }) => {
+const TechnicalReviewForm = ({ id, onActionChange }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -114,7 +89,6 @@ const TechnicalReviewForm = ({ id }) => {
         await queryClient.invalidateQueries([
           "getInnovationMonitoringTechnicalReviewByInnovationId",
         ]);
-        navigate(`/project/monitoring/innovation-monitoring-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -137,6 +111,13 @@ const TechnicalReviewForm = ({ id }) => {
     }
     setCurrentFormValues();
   }, [isLoadingTechnicalReviewData, isLoadingBoolean, TechnicalReviewData]);
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -221,7 +202,22 @@ const TechnicalReviewForm = ({ id }) => {
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
               <Check /> Save changes
             </Button>
           </Grid>
@@ -231,26 +227,23 @@ const TechnicalReviewForm = ({ id }) => {
   );
 };
 
-const TechnicalReview = () => {
-  let { id } = useParams();
+const TechnicalReview = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Technical Review
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link>Project Monitoring</Link>
-        <Typography>Technical Review</Typography>
-      </Breadcrumbs>
 
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <TechnicalReviewForm id={id} />
+              <TechnicalReviewForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

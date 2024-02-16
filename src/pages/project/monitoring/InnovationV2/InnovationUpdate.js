@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
@@ -36,7 +36,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Link2 } from "react-feather";
@@ -402,7 +402,7 @@ const initialValues = {
   reportingPeriod: "",
   implementationYear: "",
 };
-const InnovationUpdateForm = ({ id }) => {
+const InnovationUpdateForm = ({ id, onActionChange }) => {
   const [metric, setMetric] = useState();
   const [pageSize, setPageSize] = useState(5);
   const [openMetricDialog, setOpenMetricDialog] = useState();
@@ -563,7 +563,6 @@ const InnovationUpdateForm = ({ id }) => {
         await queryClient.invalidateQueries([
           "getInnovationMonitoringTargetMetricsByInnovationId",
         ]);
-        navigate(`/project/monitoring/innovation-monitoring-detail/${id}`);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -651,6 +650,13 @@ const InnovationUpdateForm = ({ id }) => {
     }
     setCurrentFormValues();
   }, [InnovationMetricsData, InnovationMetricReportData, InnovationRiskData]);
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -788,7 +794,7 @@ const InnovationUpdateForm = ({ id }) => {
           </Grid>
           <Grid container item spacing={2} mt={3}>
             <Grid item md={12}>
-              <Typography variant="h3" gutterBottom display="inline">
+              <Typography variant="h5" gutterBottom display="inline">
                 Actual Metrics By Reporting
               </Typography>
             </Grid>
@@ -844,7 +850,7 @@ const InnovationUpdateForm = ({ id }) => {
 
           <Grid container spacing={12} pt={10}>
             <Grid item md={12} my={2}>
-              <Typography variant="h3" gutterBottom display="inline">
+              <Typography variant="h5" gutterBottom display="inline">
                 Risks Observed
               </Typography>
             </Grid>
@@ -890,7 +896,22 @@ const InnovationUpdateForm = ({ id }) => {
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
               <Check /> Save changes
             </Button>
           </Grid>
@@ -943,26 +964,22 @@ const InnovationUpdateForm = ({ id }) => {
   );
 };
 
-const InnovationUpdate = () => {
-  let { id } = useParams();
+const InnovationUpdate = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Innovation Update
+      <Typography variant="h5" gutterBottom display="inline">
+        Update
       </Typography>
-
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link>Project Monitoring</Link>
-        <Typography>Innovation Update</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <Card mb={12}>
         <CardContent>
-          <Grid container spacing={12}>
+          <Grid container spacing={3}>
             <Grid item md={12}>
-              <InnovationUpdateForm id={id} />
+              <InnovationUpdateForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

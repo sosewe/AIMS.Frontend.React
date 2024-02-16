@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Button,
@@ -21,7 +21,7 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Trash, Edit, Link2 } from "react-feather";
+import { Trash, Edit, Link2, ChevronLeft } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import {
@@ -34,7 +34,10 @@ const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const AdvocacyProgressUpdateDataGridData = ({ id }) => {
+const AdvocacyProgressUpdateDataGridData = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
+  const onAdvocacyActionChange = props.onAdvocacyActionChange;
   const [pageSize, setPageSize] = useState(5);
   const [open, setOpen] = useState(false);
   const [advocacyProgressId, setAdvocacyProgressId] = useState(false);
@@ -83,6 +86,23 @@ const AdvocacyProgressUpdateDataGridData = ({ id }) => {
     });
   }
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: true });
+    },
+    [onActionChange]
+  );
+
+  const handleAdvocacyActionChange = useCallback(
+    (id, status) => {
+      onAdvocacyActionChange({
+        id: id,
+        status: status,
+      });
+    },
+    [onAdvocacyActionChange]
+  );
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -90,9 +110,7 @@ const AdvocacyProgressUpdateDataGridData = ({ id }) => {
           <Button
             variant="contained"
             color="error"
-            onClick={() =>
-              navigate(`/project/monitoring/advocacy-monitoring-update/${id}`)
-            }
+            onClick={() => handleAdvocacyActionChange(0, false)}
           >
             <AddIcon /> New Advocacy Update
           </Button>
@@ -142,11 +160,14 @@ const AdvocacyProgressUpdateDataGridData = ({ id }) => {
                   flex: 1,
                   renderCell: (params) => (
                     <>
-                      <NavLink
-                        to={`/project/monitoring/advocacy-monitoring-update/${id}/${params.id}`}
-                      >
-                        <Button startIcon={<Edit />} size="small"></Button>
-                      </NavLink>
+                      <Button
+                        startIcon={<Edit />}
+                        size="small"
+                        onClick={(e) => {
+                          handleAdvocacyActionChange(params.id, false);
+                          setAdvocacyProgressId(params.id);
+                        }}
+                      ></Button>
 
                       <Button
                         startIcon={<Trash />}
@@ -163,6 +184,17 @@ const AdvocacyProgressUpdateDataGridData = ({ id }) => {
               getRowHeight={() => "auto"}
             />
           </div>
+
+          <br />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            mt={3}
+            onClick={() => handleActionChange({ id: 0, action: 1 })}
+          >
+            <ChevronLeft /> Back
+          </Button>
         </Paper>
       </CardContent>
 
@@ -193,15 +225,21 @@ const AdvocacyProgressUpdateDataGridData = ({ id }) => {
   );
 };
 
-const AdvocacyProgressUpdateDataGrid = ({ id }) => {
+const AdvocacyProgressUpdateDataGrid = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Advocacy Update
       </Typography>
-      <Divider my={6} />
-      <AdvocacyProgressUpdateDataGridData id={id} />
+      <Divider my={3} />
+      <AdvocacyProgressUpdateDataGridData
+        id={props.id}
+        processLevelItemId={props.processLevelItemId}
+        processLevelTypeId={props.processLevelTypeId}
+        onActionChange={props.onActionChange}
+        onAdvocacyActionChange={props.onAdvocacyActionChange}
+      />
     </React.Fragment>
   );
 };

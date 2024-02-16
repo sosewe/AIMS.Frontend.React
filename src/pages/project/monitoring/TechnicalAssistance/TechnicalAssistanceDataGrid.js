@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Button,
@@ -29,7 +29,9 @@ const CardContent = styled(MuiCardContent)(spacing);
 const TechnicalAssistanceData = ({
   processLevelItemId,
   processLevelTypeId,
+  onActionChange,
 }) => {
+  console.log("***TechnicalAssistanceData***" + processLevelItemId);
   const [pageSize, setPageSize] = useState(5);
   const {
     data: InnovationsData,
@@ -49,6 +51,13 @@ const TechnicalAssistanceData = ({
       type: "error",
     });
   }
+
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
+    },
+    [onActionChange]
+  );
 
   return (
     <Card mb={6}>
@@ -90,11 +99,13 @@ const TechnicalAssistanceData = ({
                   flex: 1,
                   renderCell: (params) => (
                     <>
-                      <NavLink
-                        to={`/project/monitoring/technical-assistance-monitoring-detail/${params.id}`}
-                      >
-                        <Button startIcon={<Link2 />} size="small"></Button>
-                      </NavLink>
+                      <Button
+                        startIcon={<Link2 />}
+                        size="small"
+                        onClick={(e) => {
+                          handleActionChange(params.id, false);
+                        }}
+                      ></Button>
                     </>
                   ),
                 },
@@ -111,30 +122,18 @@ const TechnicalAssistanceData = ({
   );
 };
 
-const TechnicalAssistanceDataGrid = ({
-  processLevelItemId,
-  processLevelTypeId,
-}) => {
+const TechnicalAssistanceDataGrid = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Technical Assistance
+      <Typography variant="h5" gutterBottom display="inline">
+        Technical Assistance Monitoring
       </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Monitoring
-        </Link>
-        <Typography>Technical Assistance</Typography>
-      </Breadcrumbs>
-
-      <Divider my={6} />
+      <Divider my={3} />
       <TechnicalAssistanceData
-        processLevelItemId={processLevelItemId}
-        processLevelTypeId={processLevelTypeId}
+        processLevelItemId={props.processLevelItemId}
+        processLevelTypeId={props.processLevelTypeId}
+        onActionChange={props.onActionChange}
       />
     </React.Fragment>
   );

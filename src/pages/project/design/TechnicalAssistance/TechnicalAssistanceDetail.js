@@ -46,7 +46,7 @@ function a11yProps(index: number) {
   };
 }
 
-const TechnicalAssistanceDetail = () => {
+const TechnicalAssistanceDetail = (props) => {
   const [value, setValue] = React.useState(0);
   let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -75,16 +75,22 @@ const TechnicalAssistanceDetail = () => {
         <Tab label="Objectives" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <EditTechnicalAssistance id={id} />
+        <EditTechnicalAssistance
+          id={props.id}
+          onActionChange={props.onActionChange}
+        />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <ThematicFocus id={id} />
+        <ThematicFocus id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <GeoFocus id={id} />
+        <GeoFocus id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <TechnicalAssistanceObjectives id={id} />
+        <TechnicalAssistanceObjectives
+          id={props.id}
+          onActionChange={props.onActionChange}
+        />
       </TabPanel>
     </Box>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -33,9 +33,13 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
+const LearningGridData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const [open, setOpen] = useState(false);
-  const [learningId, setlearningId] = useState(false);
+  const [learningId, setLearningId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -51,7 +55,7 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 
   function handleClickOpen(learningId) {
-    setlearningId(learningId);
+    setLearningId(learningId);
     setOpen(true);
   }
 
@@ -71,6 +75,13 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
     await queryClient.invalidateQueries(["getLearningByProcessLevelItemId"]);
   };
 
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
+    },
+    [onActionChange]
+  );
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -78,11 +89,7 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
           mr={2}
           variant="contained"
           color="error"
-          onClick={() =>
-            navigate(
-              `/project/design/learning/new-learning/${processLevelItemId}/${processLevelTypeId}`
-            )
-          }
+          onClick={() => handleActionChange(0, false)}
         >
           <AddIcon /> New Research
         </Button>
@@ -133,11 +140,14 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/learning/learning-detail/${params.id}`}
-                    >
-                      <Button startIcon={<Edit />} size="small"></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleActionChange(params.id, false);
+                        setLearningId(params.id);
+                      }}
+                    ></Button>
 
                     <Button
                       startIcon={<Trash />}
@@ -182,7 +192,11 @@ const LearningGridData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const LearningData = ({ processLevelItemId, processLevelTypeId }) => {
+const LearningData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   return (
     <React.Fragment>
       <Helmet title="Learning" />
@@ -194,6 +208,7 @@ const LearningData = ({ processLevelItemId, processLevelTypeId }) => {
       <LearningGridData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
+        onActionChange={onActionChange}
       />
     </React.Fragment>
   );

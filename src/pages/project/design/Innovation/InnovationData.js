@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -33,7 +33,11 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
+const InnovationGridData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const [open, setOpen] = useState(false);
   const [innovationId, setInnovationId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
@@ -80,6 +84,13 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
     ]);
   };
 
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
+    },
+    [onActionChange]
+  );
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -87,11 +98,7 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
           mr={2}
           variant="contained"
           color="error"
-          onClick={() =>
-            navigate(
-              `/project/design/innovation/new-innovation/${processLevelItemId}/${processLevelTypeId}`
-            )
-          }
+          onClick={() => handleActionChange(0, false)}
         >
           <AddIcon /> New Innovation
         </Button>
@@ -142,11 +149,14 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/innovation/innovation-detail/${params.id}`}
-                    >
-                      <Button startIcon={<Edit />} size="small"></Button>
-                    </NavLink>
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleActionChange(params.id, false);
+                        setInnovationId(params.id);
+                      }}
+                    ></Button>
 
                     <Button
                       startIcon={<Trash />}
@@ -191,7 +201,11 @@ const InnovationGridData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
+const InnovationData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   return (
     <React.Fragment>
       <Helmet title="Innovation" />
@@ -203,6 +217,7 @@ const InnovationData = ({ processLevelItemId, processLevelTypeId }) => {
       <InnovationGridData
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
+        onActionChange={onActionChange}
       />
     </React.Fragment>
   );

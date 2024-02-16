@@ -46,7 +46,7 @@ function a11yProps(index: number) {
   };
 }
 
-const InnovationDetail = () => {
+const InnovationDetail = (props) => {
   const [value, setValue] = React.useState(0);
   let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -69,22 +69,25 @@ const InnovationDetail = () => {
         aria-label="Vertical tabs example"
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
-        <Tab label="Innovation Update" {...a11yProps(0)} />
+        <Tab label="Update" {...a11yProps(0)} />
         <Tab label="Technical Review" {...a11yProps(1)} />
         <Tab label="Scale Up" {...a11yProps(2)} />
         <Tab label="KM Documents Upload" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <InnovationUpdate id={id} />
+        <InnovationUpdate id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <TechnicalReview id={id} />
+        <TechnicalReview id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <ScaleUp id={id} />
+        <ScaleUp id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <KMDocumentsUpload id={id} />
+        <KMDocumentsUpload
+          id={props.id}
+          onActionChange={props.onActionChange}
+        />
       </TabPanel>
     </Box>
   );

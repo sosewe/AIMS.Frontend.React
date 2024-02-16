@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -32,7 +32,7 @@ import { NavLink, useNavigate, useParams } from "react-router-dom";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { getSubThemesByThematicAreaId } from "../../../../api/thematic-area-sub-theme";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { Guid } from "../../../../utils/guid";
 import { Helmet } from "react-helmet-async";
 import {
@@ -58,7 +58,9 @@ const initialValues = {
   thematicArea: "",
 };
 
-const ThematicFocus = ({ id }) => {
+const ThematicFocus = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
   const queryClient = useQueryClient();
   const [strategicObjectiveId, setStrategicObjectiveId] = useState();
   const [thematicAreaId, setThematicAreaId] = useState();
@@ -158,6 +160,22 @@ const ThematicFocus = ({ id }) => {
     setThematicAreaId(thematicAreaId);
   }
 
+  function GetStrategicObjective(params) {
+    const thematicAreaId = params.row.thematicAreaId;
+    const resultProgrammeThematicAreaSubTheme = useQuery(
+      ["getUniqueProgrammesByThematicAreaId", thematicAreaId],
+      getUniqueProgrammesByThematicAreaId
+    );
+
+    if (
+      resultProgrammeThematicAreaSubTheme &&
+      resultProgrammeThematicAreaSubTheme.data
+    ) {
+      let returnVal = `${resultProgrammeThematicAreaSubTheme.data.data[0].name}`;
+      return returnVal;
+    }
+  }
+
   function GetSubTheme(params) {
     const subThemeId = params.row.subThemeId;
     const thematicAreaId = params.row.thematicAreaId;
@@ -170,18 +188,8 @@ const ThematicFocus = ({ id }) => {
       ["getUniqueProgrammesByThematicAreaId", thematicAreaId],
       getUniqueProgrammesByThematicAreaId
     );
-    if (
-      result &&
-      result.data &&
-      resultThematic &&
-      resultThematic.data &&
-      resultProgrammeThematicAreaSubTheme &&
-      resultProgrammeThematicAreaSubTheme.data
-    ) {
-      let returnVal = `${result.data.data.name}(${resultThematic.data.data.name})`;
-      if (resultProgrammeThematicAreaSubTheme.data.data.length > 0) {
-        returnVal += `(${resultProgrammeThematicAreaSubTheme.data.data[0].name})`;
-      }
+    if (result && result.data && resultThematic && resultThematic.data) {
+      let returnVal = `${result.data.data.name} [${resultThematic.data.data.name}]`;
       return returnVal;
     }
   }
@@ -208,6 +216,13 @@ const ThematicFocus = ({ id }) => {
       "getInnovationThematicFocusByInnovationId",
     ]);
   };
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
 
   return (
     <React.Fragment>
@@ -367,16 +382,24 @@ const ThematicFocus = ({ id }) => {
                           }
                           columns={[
                             {
+                              field: "thematicAreaId",
+                              colId: "subThemeId&thematicAreaId",
+                              headerName: "STRATEGIC OBJECTIVE",
+                              editable: false,
+                              flex: 1,
+                              valueGetter: GetStrategicObjective,
+                            },
+                            {
                               field: "subThemeId",
                               colId: "subThemeId&thematicAreaId",
-                              headerName: "SUB-THEME(THEMATIC AREA)",
+                              headerName: "SUB-THEME [THEMATIC AREA]",
                               editable: false,
                               flex: 1,
                               valueGetter: GetSubTheme,
                             },
                             {
                               field: "action",
-                              headerName: "Action",
+                              headerName: "ACTION",
                               sortable: false,
                               flex: 1,
                               renderCell: (params) => (
@@ -428,6 +451,18 @@ const ThematicFocus = ({ id }) => {
                     </Grid>
                   </Grid>
                 </form>
+
+                <Grid item mt={5} md={12}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    mt={3}
+                    onClick={() => handleActionChange()}
+                  >
+                    <ChevronLeft /> Back
+                  </Button>
+                </Grid>
               </CardContent>
             </Grid>
           </Grid>

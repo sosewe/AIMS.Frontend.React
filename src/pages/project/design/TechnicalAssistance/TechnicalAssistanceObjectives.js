@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { MenuItem } from "@mui/material";
 import {
@@ -26,7 +26,7 @@ import {
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import styled from "@emotion/styled";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
@@ -117,7 +117,9 @@ const ObjectiveDetailsForm = ({ handleClick }) => {
   );
 };
 
-const TechnicalAssistanceObjectives = ({ id }) => {
+const TechnicalAssistanceObjectives = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
   const [openAddObjectives, setOpenAddObjectives] = useState(false);
   const [objectivesList, setObjectivesList] = useState([]);
   const queryClient = useQueryClient();
@@ -203,6 +205,13 @@ const TechnicalAssistanceObjectives = ({ id }) => {
     setCurrentFormValues();
   }, [technicalAssistanceObjectivesData]);
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card mb={12}>
@@ -259,7 +268,22 @@ const TechnicalAssistanceObjectives = ({ id }) => {
             </Grid>
 
             <br />
-            <Button type="submit" variant="contained" color="primary" mt={15}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
               <Check /> Save changes
             </Button>
           </Grid>

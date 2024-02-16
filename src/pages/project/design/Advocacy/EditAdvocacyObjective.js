@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -48,10 +48,9 @@ const initialValues = {
   startStatusId: "",
 };
 
-const AdvocacyObjectiveForm = (props) => {
-  const id = props.id;
-  const onAdvocacyActionChange = props.onAdvocacyActionChange;
+const AdvocacyObjectiveForm = ({ id, onAdvocacyActionChange }) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const {
     data: AdvocacyObjectiveData,
     isLoading: isLoadingAdvocacyObjectiveData,
@@ -105,7 +104,7 @@ const AdvocacyObjectiveForm = (props) => {
     });
 
   const handleAdvocacyActionChange = useCallback(
-    (id, status) => {
+    (event) => {
       onAdvocacyActionChange({ id: 0, status: 1 });
     },
     [onAdvocacyActionChange]
@@ -127,9 +126,7 @@ const AdvocacyObjectiveForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveAdvocacyObjective = {
-          id: new Guid(),
-          createDate: new Date(),
-          advocacyId: id,
+          id: id,
           typeOfInitiativeId: values.typeOfInitiativeId,
           kindOfInfluenceId: values.kindOfInfluenceId,
           typeOfPolicyAdvocacyId: values.typeOfPolicyAdvocacyId,
@@ -141,12 +138,12 @@ const AdvocacyObjectiveForm = (props) => {
 
         await mutation.mutateAsync(saveAdvocacyObjective);
 
-        toast("Successfully Created an Advocacy Objective", {
+        toast("Successfully Updated an Advocacy Objective", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getAdvocacyObjectiveById"]);
 
-        handleAdvocacyActionChange();
+        handleAdvocacyActionChange(0, false);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -159,18 +156,20 @@ const AdvocacyObjectiveForm = (props) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (!isLoadingAdvocacyObjectiveData && !isErrorAdvocacyObjectiveData) {
-        let status;
-        if (!!isLoadingStatuses) {
-          status = status.data.find(
-            (obj) => obj.id === AdvocacyObjectiveData.data.status
-          );
-        }
-
-        formik.setValues({});
+        formik.setValues({
+          typeOfInitiativeId: AdvocacyObjectiveData.data.typeOfInitiativeId,
+          kindOfInfluenceId: AdvocacyObjectiveData.data.kindOfInfluenceId,
+          typeOfPolicyAdvocacyId:
+            AdvocacyObjectiveData.data.typeOfPolicyAdvocacyId,
+          nameOfTopic: AdvocacyObjectiveData.data.nameOfTopic,
+          reportingFrequencyId: AdvocacyObjectiveData.data.reportingFrequencyId,
+          targetStatusId: AdvocacyObjectiveData.data.targetStatusId,
+          startStatusId: AdvocacyObjectiveData.data.startStatusId,
+        });
       }
     }
     setCurrentFormValues();
-  }, []);
+  }, [isErrorAdvocacyObjectiveData, isLoadingAdvocacyObjectiveData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -432,12 +431,12 @@ const AdvocacyObjectiveForm = (props) => {
   );
 };
 
-const NewAdvocacyObjective = (props) => {
+const EditAdvocacyObjective = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Advocacy Objective" />
       <Typography variant="h5" gutterBottom display="inline">
-        New Advocacy Objective
+        Edit Advocacy Objective
       </Typography>
 
       <Divider my={6} />
@@ -447,8 +446,6 @@ const NewAdvocacyObjective = (props) => {
             <Grid item md={12}>
               <AdvocacyObjectiveForm
                 id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
                 onAdvocacyActionChange={props.onAdvocacyActionChange}
               />
             </Grid>
@@ -459,4 +456,4 @@ const NewAdvocacyObjective = (props) => {
   );
 };
 
-export default NewAdvocacyObjective;
+export default EditAdvocacyObjective;

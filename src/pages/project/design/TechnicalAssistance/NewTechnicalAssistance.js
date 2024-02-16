@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -27,7 +27,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { YEAR_RANGE } from "../../../../constants";
 import {
@@ -80,21 +80,10 @@ const initialValues = {
 const TechnicalAssistanceForm = ({
   processLevelItemId,
   processLevelTypeId,
-  id,
+  onActionChange,
 }) => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const {
-    data: TechnicalAssistanceData,
-    isLoading: isLoadingTechnicalAssistanceData,
-    isError: isErrorTechnicalAssistanceData,
-  } = useQuery(
-    ["getTechnicalAssistanceByTechnicalAssistanceId", id],
-    getTechnicalAssistanceByTechnicalAssistanceId,
-    {
-      enabled: !!id,
-    }
-  );
+
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -168,6 +157,13 @@ const TechnicalAssistanceForm = ({
     refetchOnWindowFocus: false,
   });
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
+
   const mutation = useMutation({ mutationFn: newTechnicalAssistance });
 
   const technicalAssistanceDonorsMutation = useMutation({
@@ -206,7 +202,7 @@ const TechnicalAssistanceForm = ({
     onSubmit: async (values) => {
       try {
         const saveTechnicalAssistance = {
-          id: id ? id : new Guid(),
+          id: new Guid(),
           createDate: new Date(),
           title: values.title,
           shortTitle: values.shortTitle,
@@ -263,9 +259,8 @@ const TechnicalAssistanceForm = ({
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceByTechnicalAssistanceId",
         ]);
-        navigate(
-          `/project/design/technical-assistance/technical-assistance-detail/${technicalAssistance.data.id}`
-        );
+
+        handleActionChange(false, 0);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -275,59 +270,7 @@ const TechnicalAssistanceForm = ({
     },
   });
 
-  useEffect(() => {
-    function setCurrentFormValues() {
-      if (
-        !isLoadingTechnicalAssistanceData &&
-        !isErrorTechnicalAssistanceData
-      ) {
-        let staffId;
-        let staffEmail;
-        if (!isLoadingStaffList) {
-          staffId = staffListData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.staffNameId
-          );
-
-          if (staffId != null) {
-            staffEmail = TechnicalAssistanceData.data.staffName.emailAddress;
-          }
-        }
-
-        let enaSupportOffice;
-        if (!!isLoadingAmrefEntities) {
-          enaSupportOffice = amrefEntities.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.office
-          );
-        }
-
-        let implementingOfficeId;
-        if (!!isLoadingOrgUnits) {
-          implementingOfficeId = orgUnitsData.data.find(
-            (obj) =>
-              obj.id === TechnicalAssistanceData.data.implementingOfficeId
-          );
-        }
-
-        let currencyType;
-        if (!!isLoadingCurrency) {
-          currencyType = currencyData.data.find(
-            (obj) => obj.id === TechnicalAssistanceData.data.currencyTypeId
-          );
-        }
-
-        let donorsList = [];
-        for (const donor of TechnicalAssistanceData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
-          }
-        }
-
-        formik.setValues({});
-      }
-    }
-    setCurrentFormValues();
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -838,9 +781,24 @@ const TechnicalAssistanceForm = ({
             </FormControl>
           </Grid>
 
-          <Grid item md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+          <Grid item mt={5} md={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -849,34 +807,24 @@ const TechnicalAssistanceForm = ({
   );
 };
 
-const TechnicalAssistance = () => {
-  let { processLevelItemId, processLevelTypeId, id } = useParams();
+const NewTechnicalAssistance = ({ onActionChange }) => {
+  let { id, processLevelTypeId } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Technical Assistance" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         New Technical Assistance
       </Typography>
 
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>New Technical Assistance</Typography>
-      </Breadcrumbs>
-
-      <Divider my={6} />
-      <Card mb={12}>
+      <Divider my={2} />
+      <Card mb={2}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
               <TechnicalAssistanceForm
-                processLevelItemId={processLevelItemId}
+                processLevelItemId={id}
                 processLevelTypeId={processLevelTypeId}
-                id={id}
+                onActionChange={onActionChange}
               />
             </Grid>
           </Grid>
@@ -886,4 +834,4 @@ const TechnicalAssistance = () => {
   );
 };
 
-export default TechnicalAssistance;
+export default NewTechnicalAssistance;

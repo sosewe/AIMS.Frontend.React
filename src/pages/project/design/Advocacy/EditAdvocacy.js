@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -34,7 +34,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -95,6 +95,7 @@ const initialValues = {
 };
 
 const staffDetailsInitial = {
+  staffId: "",
   staffDetailsName: "",
   staffDetailsAIMSRole: "",
   staffDetailsWorkFlowTask: "",
@@ -115,6 +116,7 @@ const StaffDetailsForm = ({
   const formik = useFormik({
     initialValues: staffDetailsInitial,
     validationSchema: Yup.object().shape({
+      staffId: Yup.object().required("Required"),
       staffDetailsName: Yup.string().required("Required"),
       staffDetailsAIMSRole: Yup.object().required("Required"),
       staffDetailsWorkFlowTask: Yup.object().required("Required"),
@@ -141,46 +143,63 @@ const StaffDetailsForm = ({
           <Grid container spacing={3}>
             <Grid item md={3}>
               <Autocomplete
-                id="staffDetailsName"
+                id="staffId"
                 options={!isLoadingStaffList ? staffListData.data : []}
                 getOptionLabel={(option) => {
                   if (!option) {
                     return ""; // Return an empty string for null or undefined values
                   }
-                  return `${option}`;
+                  return `${option.emailAddress}`;
                 }}
                 renderOption={(props, option) => {
                   return (
                     <li {...props} key={option.id}>
-                      {option ? `${option.firstName} ${option.lastName}` : ""}
+                      {option ? `${option.emailAddress}` : ""}
                     </li>
                   );
                 }}
                 onChange={(e, val) => {
+                  formik.setFieldValue("staffId", val);
                   formik.setFieldValue(
                     "staffDetailsName",
                     `${val.firstName} ${val.lastName}`
                   );
                 }}
-                value={formik.values.staffDetailsName}
+                value={formik.values.staffId}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     error={Boolean(
-                      formik.touched.staffDetailsName &&
-                        formik.errors.staffDetailsName
+                      formik.touched.staffId && formik.errors.staffId
                     )}
                     fullWidth
-                    helperText={
-                      formik.touched.staffDetailsName &&
-                      formik.errors.staffDetailsName
-                    }
-                    label="Staff Name"
-                    name="staffDetailsName"
+                    helperText={formik.touched.staffId && formik.errors.staffId}
+                    label="Staff Email"
+                    name="staffId"
                     variant="outlined"
                     my={2}
                   />
                 )}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsName"
+                value={formik.values.staffDetailsName}
+                error={Boolean(
+                  formik.touched.staffDetailsName &&
+                    formik.errors.staffDetailsName
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsName &&
+                  formik.errors.staffDetailsName
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                label="Staff Name"
+                variant="outlined"
+                my={2}
               />
             </Grid>
             <Grid item md={3}>
@@ -280,12 +299,10 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditAdvocacyForm = ({ id }) => {
+const EditAdvocacyForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  let advocacyQualitativeTypeId;
   const {
     data: AdvocacyData,
     isLoading: isLoadingAdvocacyData,
@@ -321,24 +338,7 @@ const EditAdvocacyForm = ({ id }) => {
   } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativePeriodData,
-    isLoading: isLoadingQualitativePeriod,
-    isError: isErrorQualitativePeriod,
-  } = useQuery(
-    ["getQualitativePeriodByTypeItemId", id],
-    getQualitativePeriodByTypeItemId,
-    { enabled: !!id }
-  );
-  const {
-    data: QualitativeThematicAreaData,
-    isLoading: isLoadingQualitativeThematicArea,
-    isError: isErrorQualitativeThematicArea,
-  } = useQuery(
-    ["getQualitativeThematicAreaByTypeItemId", id],
-    getQualitativeThematicAreaByTypeItemId,
-    { enabled: !!id }
-  );
+
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -375,13 +375,7 @@ const EditAdvocacyForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  // const {
-  //   data: ThematicAreas,
-  //   isLoading: isLoadingThematicAreas,
-  //   isError: isErrorThematicAreas,
-  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-  //   refetchOnWindowFocus: false,
-  // });
+
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,
@@ -389,23 +383,14 @@ const EditAdvocacyForm = ({ id }) => {
   } = useQuery(["amrefEntities"], getAmrefEntities, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativeResultTypesData,
-    isLoading: isLoadingQualitativeResultTypes,
-    isError: isErrorQualitativeResultTypes,
-  } = useQuery(
-    ["qualitativeResultType", "QualitativeResultType"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
   );
-  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
-    const filterAdvocacy = QualitativeResultTypesData.data.find(
-      (obj) => obj.lookupItemName === "Advocacy"
-    );
-    advocacyQualitativeTypeId = filterAdvocacy.lookupItemId;
-  }
+
   const mutation = useMutation({ mutationFn: newAdvocacy });
 
   const advocacyDonorsMutation = useMutation({
@@ -488,6 +473,7 @@ const EditAdvocacyForm = ({ id }) => {
             isPrimary:
               staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
             staffNames: staffDetail.staffDetailsName,
+            staffId: staffDetail.staffId.personId,
             void: false,
           };
           projectRoles.push(projectRole);
@@ -498,7 +484,8 @@ const EditAdvocacyForm = ({ id }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getAdvocacys"]);
-        navigate(`/project/design/advocacy/advocacy-detail/${id}`);
+
+        //handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -523,16 +510,12 @@ const EditAdvocacyForm = ({ id }) => {
       if (
         !isLoadingAdvocacyData &&
         !isErrorAdvocacyData &&
-        !isLoadingQualitativeThematicArea &&
-        !isErrorQualitativeThematicArea &&
-        !isErrorQualitativePeriod &&
-        !isLoadingQualitativePeriod &&
         !isLoadingQualitativeCountry &&
         !isErrorQualitativeCountry
       ) {
         let staffId;
         let staffEmail;
-        if (!isLoadingStaffList) {
+        if (!isLoadingStaffList && AdvocacyData.data.staffNameId) {
           staffId = staffListData.data.find(
             (obj) => obj.id === AdvocacyData.data.staffNameId
           );
@@ -541,10 +524,14 @@ const EditAdvocacyForm = ({ id }) => {
         }
 
         let donorsList = [];
-        for (const donor of AdvocacyData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
+        if (!isLoadingDonor && AdvocacyData.data.donors) {
+          for (const donor of AdvocacyData.data.donors) {
+            const result = donorData.data.find(
+              (obj) => obj.id === donor.donorId
+            );
+            if (result) {
+              donorsList.push(result);
+            }
           }
         }
 
@@ -599,12 +586,6 @@ const EditAdvocacyForm = ({ id }) => {
     isLoadingStaffList,
     isErrorStaffList,
     staffListData,
-    isErrorQualitativePeriod,
-    isLoadingQualitativePeriod,
-    isErrorQualitativeThematicArea,
-    isLoadingQualitativeThematicArea,
-    QualitativePeriodData,
-    QualitativeThematicAreaData,
     QualitativeCountryData,
     isLoadingQualitativeCountry,
     isErrorQualitativeCountry,
@@ -1086,8 +1067,23 @@ const EditAdvocacyForm = ({ id }) => {
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -1124,8 +1120,7 @@ const EditAdvocacyForm = ({ id }) => {
   );
 };
 
-const Advocacy = () => {
-  let { id } = useParams();
+const Advocacy = (props) => {
   return (
     <React.Fragment>
       <Typography variant="h3" gutterBottom display="inline">
@@ -1136,7 +1131,10 @@ const Advocacy = () => {
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditAdvocacyForm id={id} />
+              <EditAdvocacyForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

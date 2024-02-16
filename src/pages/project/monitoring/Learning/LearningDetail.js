@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useParams } from "react-router-dom";
 import LearningUpdate from "./LearningUpdate";
+import EditLearningUpdate from "./EditLearningUpdate";
 import KMDocumentsUpload from "./KMDocumentsUpload";
 import LearningUpdateDataGrid from "./LearningUpdateDataGrid";
 
@@ -44,7 +45,12 @@ function a11yProps(index: number) {
   };
 }
 
-const LearningDetail = () => {
+const LearningDetail = (props) => {
+  const [learningAction, setLearningAction] = React.useState({
+    id: 0,
+    status: true,
+    data: {},
+  });
   const [value, setValue] = React.useState(0);
   let { id, processLevelItemId } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -71,13 +77,49 @@ const LearningDetail = () => {
         <Tab label="KM Documents Upload" {...a11yProps(1)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <LearningUpdateDataGrid
-          id={id}
-          processLevelItemId={processLevelItemId}
-        />
+        {(() => {
+          if (learningAction.status) {
+            return (
+              <LearningUpdateDataGrid
+                id={props.id}
+                processLevelItemId={props.processLevelItemId}
+                processLevelTypeId={props.processLevelTypeId}
+                onActionChange={props.onActionChange}
+                onLearningActionChange={setLearningAction}
+              />
+            );
+          } else if (!learningAction.status && learningAction.id === 0) {
+            return (
+              <>
+                <LearningUpdate
+                  id={props.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onLearningActionChange={setLearningAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <EditLearningUpdate
+                  id={learningAction.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onLearningActionChange={setLearningAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <KMDocumentsUpload id={id} processLevelItemId={processLevelItemId} />
+        <KMDocumentsUpload
+          id={learningAction.id}
+          processLevelItemId={props.processLevelItemId}
+          processLevelTypeId={props.processLevelTypeId}
+          onLearningActionChange={setLearningAction}
+        />
       </TabPanel>
     </Box>
   );

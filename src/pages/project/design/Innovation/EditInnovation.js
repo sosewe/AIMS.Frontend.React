@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -17,17 +17,10 @@ import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
-  Link,
   Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
-  InputLabel,
-  FormControl,
-  Select,
-  OutlinedInput,
-  Stack,
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -43,7 +36,7 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeRoles,
@@ -63,21 +56,6 @@ import {
 } from "../../../../api/innovation-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
-
-import { Helmet } from "react-helmet-async";
-import {
-  getQualitativeCountryByTypeItemId,
-  newQualitativeCountry,
-} from "../../../../api/qualitative-country";
-import {
-  getQualitativePeriodByTypeItemId,
-  newQualitativePeriod,
-} from "../../../../api/qualitative-period";
-import {
-  getQualitativeThematicAreaByTypeItemId,
-  newQualitativeThematicArea,
-} from "../../../../api/qualitative-thematic-area";
-import { Guid } from "../../../../utils/guid";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -108,6 +86,7 @@ const initialValues = {
 };
 
 const staffDetailsInitial = {
+  staffId: "",
   staffDetailsName: "",
   staffDetailsAIMSRole: "",
   staffDetailsWorkFlowTask: "",
@@ -128,6 +107,7 @@ const StaffDetailsForm = ({
   const formik = useFormik({
     initialValues: staffDetailsInitial,
     validationSchema: Yup.object().shape({
+      staffId: Yup.object().required("Required"),
       staffDetailsName: Yup.string().required("Required"),
       staffDetailsAIMSRole: Yup.object().required("Required"),
       staffDetailsWorkFlowTask: Yup.object().required("Required"),
@@ -154,46 +134,63 @@ const StaffDetailsForm = ({
           <Grid container spacing={3}>
             <Grid item md={3}>
               <Autocomplete
-                id="staffDetailsName"
+                id="staffId"
                 options={!isLoadingStaffList ? staffListData.data : []}
                 getOptionLabel={(option) => {
                   if (!option) {
                     return ""; // Return an empty string for null or undefined values
                   }
-                  return `${option}`;
+                  return `${option.emailAddress}`;
                 }}
                 renderOption={(props, option) => {
                   return (
                     <li {...props} key={option.id}>
-                      {option ? `${option.firstName} ${option.lastName}` : ""}
+                      {option ? `${option.emailAddress}` : ""}
                     </li>
                   );
                 }}
                 onChange={(e, val) => {
+                  formik.setFieldValue("staffId", val);
                   formik.setFieldValue(
                     "staffDetailsName",
                     `${val.firstName} ${val.lastName}`
                   );
                 }}
-                value={formik.values.staffDetailsName}
+                value={formik.values.staffId}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     error={Boolean(
-                      formik.touched.staffDetailsName &&
-                        formik.errors.staffDetailsName
+                      formik.touched.staffId && formik.errors.staffId
                     )}
                     fullWidth
-                    helperText={
-                      formik.touched.staffDetailsName &&
-                      formik.errors.staffDetailsName
-                    }
-                    label="Staff Name"
-                    name="staffDetailsName"
+                    helperText={formik.touched.staffId && formik.errors.staffId}
+                    label="Staff Email"
+                    name="staffId"
                     variant="outlined"
                     my={2}
                   />
                 )}
+              />
+            </Grid>
+            <Grid item md={3}>
+              <TextField
+                name="staffDetailsName"
+                value={formik.values.staffDetailsName}
+                error={Boolean(
+                  formik.touched.staffDetailsName &&
+                    formik.errors.staffDetailsName
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.staffDetailsName &&
+                  formik.errors.staffDetailsName
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                label="Staff Name"
+                variant="outlined"
+                my={2}
               />
             </Grid>
             <Grid item md={3}>
@@ -293,26 +290,17 @@ const StaffDetailsForm = ({
   );
 };
 
-const EditInnovationForm = ({ id }) => {
+const EditInnovationForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  let innovationQualitativeTypeId;
+
   const {
     data: InnovationData,
     isLoading: isLoadingInnovationData,
     isError: isErrorInnovationData,
   } = useQuery(["getInnovationById", id], getInnovationById, { enabled: !!id });
-  const {
-    data: QualitativeCountryData,
-    isLoading: isLoadingQualitativeCountry,
-    isError: isErrorQualitativeCountry,
-  } = useQuery(
-    ["getQualitativeCountryByTypeItemId", id],
-    getQualitativeCountryByTypeItemId,
-    { enabled: !!id }
-  );
+
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -334,24 +322,6 @@ const EditInnovationForm = ({ id }) => {
   } = useQuery(["administrativeRoles"], getAdministrativeRoles, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativePeriodData,
-    isLoading: isLoadingQualitativePeriod,
-    isError: isErrorQualitativePeriod,
-  } = useQuery(
-    ["getQualitativePeriodByTypeItemId", id],
-    getQualitativePeriodByTypeItemId,
-    { enabled: !!id }
-  );
-  const {
-    data: QualitativeThematicAreaData,
-    isLoading: isLoadingQualitativeThematicArea,
-    isError: isErrorQualitativeThematicArea,
-  } = useQuery(
-    ["getQualitativeThematicAreaByTypeItemId", id],
-    getQualitativeThematicAreaByTypeItemId,
-    { enabled: !!id }
-  );
   const {
     isLoading: isLoadingStaffList,
     isError: isErrorStaffList,
@@ -388,13 +358,7 @@ const EditInnovationForm = ({ id }) => {
       refetchOnWindowFocus: false,
     }
   );
-  // const {
-  //   data: ThematicAreas,
-  //   isLoading: isLoadingThematicAreas,
-  //   isError: isErrorThematicAreas,
-  // } = useQuery(["getAllThematicAreas"], getAllThematicAreas, {
-  //   refetchOnWindowFocus: false,
-  // });
+
   const {
     isLoading: isLoadingAmrefEntities,
     data: amrefEntities,
@@ -402,23 +366,14 @@ const EditInnovationForm = ({ id }) => {
   } = useQuery(["amrefEntities"], getAmrefEntities, {
     refetchOnWindowFocus: false,
   });
-  const {
-    data: QualitativeResultTypesData,
-    isLoading: isLoadingQualitativeResultTypes,
-    isError: isErrorQualitativeResultTypes,
-  } = useQuery(
-    ["qualitativeResultType", "QualitativeResultType"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
   );
-  if (!isLoadingQualitativeResultTypes && !isErrorQualitativeResultTypes) {
-    const filterInnovation = QualitativeResultTypesData.data.find(
-      (obj) => obj.lookupItemName === "Innovation"
-    );
-    innovationQualitativeTypeId = filterInnovation.lookupItemId;
-  }
+
   const mutation = useMutation({ mutationFn: newInnovation });
 
   const innovationDonorsMutation = useMutation({
@@ -427,11 +382,6 @@ const EditInnovationForm = ({ id }) => {
 
   const innovationStaffMutation = useMutation({
     mutationFn: newInnovationStaff,
-  });
-
-  // eslint-disable-next-line no-unused-vars
-  const qualitativeThematicAreaMutation = useMutation({
-    mutationFn: newQualitativeThematicArea,
   });
 
   const formik = useFormik({
@@ -503,17 +453,20 @@ const EditInnovationForm = ({ id }) => {
             isPrimary:
               staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
             staffNames: staffDetail.staffDetailsName,
+            staffId: staffDetail.staffId.personId,
             void: false,
           };
           projectRoles.push(projectRole);
         }
+
         await innovationStaffMutation.mutateAsync(projectRoles);
 
         toast("Successfully Updated an Innovation", {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
+
+        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -535,19 +488,10 @@ const EditInnovationForm = ({ id }) => {
 
   useEffect(() => {
     function setCurrentFormValues() {
-      if (
-        !isLoadingInnovationData &&
-        !isErrorInnovationData &&
-        !isLoadingQualitativeThematicArea &&
-        !isErrorQualitativeThematicArea &&
-        !isErrorQualitativePeriod &&
-        !isLoadingQualitativePeriod &&
-        !isLoadingQualitativeCountry &&
-        !isErrorQualitativeCountry
-      ) {
+      if (!isLoadingInnovationData && !isErrorInnovationData) {
         let staffId;
         let staffEmail;
-        if (!isLoadingStaffList) {
+        if (!isLoadingStaffList && InnovationData.data.staffNameId) {
           staffId = staffListData.data.find(
             (obj) => obj.id === InnovationData.data.staffNameId
           );
@@ -557,7 +501,7 @@ const EditInnovationForm = ({ id }) => {
 
         let reviewerId;
         let reviewerEmail;
-        if (!isLoadingStaffList) {
+        if (!isLoadingStaffList && InnovationData.data.technicalReviewerId) {
           reviewerId = staffListData.data.find(
             (obj) => obj.id === InnovationData.data.technicalReviewerId
           );
@@ -566,10 +510,14 @@ const EditInnovationForm = ({ id }) => {
         }
 
         let donorsList = [];
-        for (const donor of InnovationData.data.donors) {
-          const result = donorData.data.find((obj) => obj.id === donor.donorId);
-          if (result) {
-            donorsList.push(result);
+        if (!isLoadingDonor && InnovationData.data.donors) {
+          for (const donor of InnovationData.data.donors) {
+            const result = donorData.data.find(
+              (obj) => obj.id === donor.donorId
+            );
+            if (result) {
+              donorsList.push(result);
+            }
           }
         }
 
@@ -603,6 +551,7 @@ const EditInnovationForm = ({ id }) => {
               );
             const staff = {
               id: staffData.id,
+              staffId: staffData.staffId,
               staffDetailsName: staffData.staffNames,
               staffDetailsAIMSRole:
                 lookupRole && lookupRole.length > 0 ? lookupRole[0] : "",
@@ -626,15 +575,6 @@ const EditInnovationForm = ({ id }) => {
     isLoadingStaffList,
     isErrorStaffList,
     staffListData,
-    isErrorQualitativePeriod,
-    isLoadingQualitativePeriod,
-    isErrorQualitativeThematicArea,
-    isLoadingQualitativeThematicArea,
-    QualitativePeriodData,
-    QualitativeThematicAreaData,
-    QualitativeCountryData,
-    isLoadingQualitativeCountry,
-    isErrorQualitativeCountry,
     amrefEntities,
   ]);
 
@@ -1117,7 +1057,7 @@ const EditInnovationForm = ({ id }) => {
           </Grid>
           <Grid container spacing={12} pt={10}>
             <Grid item md={12}>
-              <Typography variant="h3" gutterBottom display="inline">
+              <Typography variant="h5" gutterBottom display="inline">
                 Staff Details
               </Typography>
             </Grid>
@@ -1178,8 +1118,23 @@ const EditInnovationForm = ({ id }) => {
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
-              <Check /> Save changes
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              onClick={() => handleActionChange()}
+            >
+              <ChevronLeft /> Back
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
+              <Check /> Save Changes
             </Button>
           </Grid>
         </Grid>
@@ -1216,19 +1171,21 @@ const EditInnovationForm = ({ id }) => {
   );
 };
 
-const Innovation = () => {
-  let { id } = useParams();
+const Innovation = (props) => {
   return (
     <React.Fragment>
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Basic Information
       </Typography>
-      <Divider my={6} />
-      <Card mb={12}>
+      <Divider my={2} />
+      <Card mb={2}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <EditInnovationForm id={id} />
+              <EditInnovationForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+              />
             </Grid>
           </Grid>
         </CardContent>

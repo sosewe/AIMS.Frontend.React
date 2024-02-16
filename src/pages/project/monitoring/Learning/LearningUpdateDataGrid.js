@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Button,
@@ -30,21 +30,25 @@ import {
   getLearningProgressUpdateByLearningId,
   deleteLearningProgressUpdateById,
 } from "../../../../api/learning-progress-update";
+import { blue } from "@mui/material/colors";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const LearningUpdateDataGridData = ({ id, processLevelItemId }) => {
+const LearningUpdateDataGridData = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
+  const onLearningActionChange = props.onLearningActionChange;
   const [pageSize, setPageSize] = useState(5);
   const [open, setOpen] = useState(false);
-  const [learningProgressId, setlearningProgressId] = useState(false);
+  const [learningProgressId, setLearningProgressId] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   function handleClickOpen(learningId) {
-    setlearningProgressId(learningId);
+    setLearningProgressId(learningId);
     setOpen(true);
   }
 
@@ -83,6 +87,16 @@ const LearningUpdateDataGridData = ({ id, processLevelItemId }) => {
     });
   }
 
+  const handleLearningActionChange = useCallback(
+    (id, status) => {
+      onLearningActionChange({
+        id: id,
+        status: status,
+      });
+    },
+    [onLearningActionChange]
+  );
+
   return (
     <Card mb={6}>
       <CardContent pb={1}>
@@ -90,11 +104,7 @@ const LearningUpdateDataGridData = ({ id, processLevelItemId }) => {
           <Button
             variant="contained"
             color="error"
-            onClick={() =>
-              navigate(
-                `/project/monitoring/learning-monitoring-update/${processLevelItemId}/${id}`
-              )
-            }
+            onClick={() => handleLearningActionChange(0, false)}
           >
             <AddIcon /> New Learning Update
           </Button>
@@ -147,11 +157,14 @@ const LearningUpdateDataGridData = ({ id, processLevelItemId }) => {
                   flex: 1,
                   renderCell: (params) => (
                     <>
-                      <NavLink
-                        to={`/project/monitoring/learning-monitoring-update/${processLevelItemId}/${id}/${params.id}`}
-                      >
-                        <Button startIcon={<Edit />} size="small"></Button>
-                      </NavLink>
+                      <Button
+                        startIcon={<Edit />}
+                        size="small"
+                        onClick={(e) => {
+                          handleLearningActionChange(params.id, false);
+                          setLearningProgressId(params.id);
+                        }}
+                      ></Button>
 
                       <Button
                         startIcon={<Trash />}
@@ -198,25 +211,26 @@ const LearningUpdateDataGridData = ({ id, processLevelItemId }) => {
   );
 };
 
-const LearningUpdateDataGrid = ({ id, processLevelItemId }) => {
+const LearningUpdateDataGrid = (props) => {
   const {
     data: LearningData,
     isLoading: isLoadingLearning,
     isError: isErrorLearning,
-  } = useQuery(["getLearningByLearningId", id], getLearningByLearningId, {
-    enabled: !!id,
+  } = useQuery(["getLearningByLearningId", props.id], getLearningByLearningId, {
+    enabled: !!props.id,
   });
 
   return (
     <React.Fragment>
       <Helmet title="Technical Assistance" />
-      <Typography variant="h3" gutterBottom>
+      <Typography variant="h5" gutterBottom>
         Learning Update
       </Typography>
 
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Typography variant="h5" gutterBottom>
-          {isLoadingLearning
+      <Breadcrumbs aria-label="Breadcrumb" mt={3}>
+        <Typography variant="h5" gutterBottom color={blue}>
+          Question:{" "}
+          {isLoadingLearning && !isErrorLearning
             ? ""
             : LearningData
             ? LearningData.data.learningQuestion
@@ -226,8 +240,11 @@ const LearningUpdateDataGrid = ({ id, processLevelItemId }) => {
 
       <Divider my={2} />
       <LearningUpdateDataGridData
-        id={id}
-        processLevelItemId={processLevelItemId}
+        id={props.id}
+        processLevelItemId={props.processLevelItemId}
+        processLevelTypeId={props.processLevelTypeId}
+        onActionChange={props.onActionChange}
+        onLearningActionChange={props.onLearningActionChange}
       />
     </React.Fragment>
   );

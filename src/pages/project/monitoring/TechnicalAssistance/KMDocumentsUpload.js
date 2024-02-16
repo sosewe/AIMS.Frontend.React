@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -31,7 +31,12 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon, Eye as ViewIcon } from "react-feather";
+import {
+  Check,
+  Trash as TrashIcon,
+  Eye as ViewIcon,
+  ChevronLeft,
+} from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -354,7 +359,8 @@ const DocumentDetailsForm = ({ handleClick }) => {
   );
 };
 
-const KMDocumentsUploadForm = ({ id }) => {
+const KMDocumentsUploadForm = (props) => {
+  const { id, onTechnicalAssistanceActionChange } = props;
   const [openDocumentDialog, setOpenDocumentDialog] = useState();
   const [documentsList, setDocumentsList] = useState([]);
   const queryClient = useQueryClient();
@@ -413,9 +419,8 @@ const KMDocumentsUploadForm = ({ id }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
-        navigate(
-          `/project/monitoring/technical-assistance-monitoring-detail/${id}`
-        );
+
+        handleTechnicalAssistanceActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -450,6 +455,13 @@ const KMDocumentsUploadForm = ({ id }) => {
     }
     setCurrentFormValues();
   }, [TechnicalAssistanceDocumentData, isLoadingTechnicalAssistanceDocument]);
+
+  const handleTechnicalAssistanceActionChange = useCallback(
+    (id, status) => {
+      onTechnicalAssistanceActionChange({ id: id, status: status });
+    },
+    [onTechnicalAssistanceActionChange]
+  );
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -506,7 +518,13 @@ const KMDocumentsUploadForm = ({ id }) => {
             </Paper>
           </Grid>
           <Grid item mt={5} md={12}>
-            <Button type="submit" variant="contained" color="primary" mt={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              mt={3}
+              ml={3}
+            >
               <Check /> Save changes
             </Button>
           </Grid>
@@ -539,23 +557,28 @@ const KMDocumentsUploadForm = ({ id }) => {
   );
 };
 
-const KMDocumentsUpload = () => {
-  let { id } = useParams();
+const KMDocumentsUpload = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         <Grid item md={12}>
           KM Documents Upload
         </Grid>
       </Typography>
 
-      <Divider my={6} />
+      <Divider my={3} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
-              <KMDocumentsUploadForm id={id} />
+              <KMDocumentsUploadForm
+                id={props.id}
+                onActionChange={props.onActionChange}
+                onTechnicalAssistanceActionChange={
+                  props.onTechnicalAssistanceActionChange
+                }
+              />
             </Grid>
           </Grid>
         </CardContent>

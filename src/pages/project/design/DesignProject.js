@@ -10,10 +10,25 @@ import GeoFocus from "./GeoFocus";
 import ProjectObjectives from "./ProjectObjectives";
 import ThematicFocus from "./ThematicFocus";
 import EnterTargetQuantitativeResultsFramework from "./EnterTargetQuantitativeResultsFramework";
+import Innovation from "./Innovation/NewInnovation";
+import NewInnovation from "./Innovation/NewInnovation";
+import EditInnovation from "./Innovation/EditInnovation";
 import InnovationData from "./Innovation/InnovationData";
-import AdvocacyData from "./Advocacy/AdvocacyData";
+import InnovationDetail from "./Innovation/InnovationDetail";
+import NewTechnicalAssistance from "./TechnicalAssistance/NewTechnicalAssistance";
+import EditTechnicalAssistance from "./TechnicalAssistance/EditTechnicalAssistance";
+import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistanceDetail";
 import TechnicalAssistanceData from "./TechnicalAssistance/TechnicalAssistanceData";
+import NewAdvocacyObjective from "./Advocacy/NewAdvocacyObjective";
+import NewAdocacy from "./Advocacy/NewAdvocacy";
+import AdvocacyObjectives from "./Advocacy/AdvocacyObjectives";
+import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
+import AdvocacyData from "./Advocacy/AdvocacyData";
+import NewLearning from "./Learning/NewLearning";
+import EditLearning from "./Learning/EditLearning";
 import LearningData from "./Learning/LearningData";
+import LearningDetail from "./Learning/LearningDetail";
+import Learning from "./Learning/NewLearning";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -52,8 +67,10 @@ function a11yProps(index: number) {
 }
 
 const DesignProject = () => {
+  const [action, setAction] = React.useState({ id: 0, status: true, data: {} });
   const [value, setValue] = React.useState(0);
   let { id, processLevelTypeId } = useParams();
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -103,28 +120,162 @@ const DesignProject = () => {
         />
       </TabPanel>
       <TabPanel index={5} value={value}>
-        <InnovationData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <InnovationData
+                processLevelItemId={id}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else if (!action.status && action.id === 0) {
+            return (
+              <>
+                <NewInnovation
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <InnovationDetail
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel index={6} value={value}>
-        <AdvocacyData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <AdvocacyData
+                processLevelItemId={id}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else if (!action.status && action.id === 0) {
+            return (
+              <>
+                <NewAdocacy
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          } /*else if (!action.status && action.id === 3) {
+            return (
+              <>
+                <NewAdvocacyObjective
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }*/ else if (!action.status && action.id === 4) {
+            return (
+              <>
+                <AdvocacyObjectives
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <AdvocacyDetail
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel index={7} value={value}>
-        <TechnicalAssistanceData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <TechnicalAssistanceData
+                processLevelItemId={id}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else if (!action.status && action.id === 0) {
+            return (
+              <>
+                <NewTechnicalAssistance
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <TechnicalAssistanceDetail
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel index={8} value={value}>
-        <LearningData
-          processLevelItemId={id}
-          processLevelTypeId={processLevelTypeId}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <LearningData
+                processLevelItemId={id}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else if (!action.status && action.id === 0) {
+            return (
+              <>
+                <NewLearning
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <LearningDetail
+                  id={action.id}
+                  processLevelItemId={id}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
     </Box>
   );

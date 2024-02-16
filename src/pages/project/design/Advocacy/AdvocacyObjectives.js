@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
@@ -19,9 +19,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash, Edit } from "react-feather";
+import { Trash, Edit, ChevronLeft } from "react-feather";
 import {
-  getAdvocacyObjectiveById,
+  getAdvocacyObjectiveByAdvocacyId,
   deleteAdvocacyObjectiveById,
 } from "../../../../api/advocacy-objective";
 import { format } from "date-fns";
@@ -32,10 +32,11 @@ const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const Button = styled(MuiButton)(spacing);
 
-const AdvocacyObjectiveGridData = ({
-  processLevelItemId,
-  processLevelTypeId,
-}) => {
+const AdvocacyObjectiveGridData = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
+  const onAdvocacyActionChange = props.onAdvocacyActionChange;
+
   const [open, setOpen] = useState(false);
   const [advocacyObjectiveId, setAdvocacyObjectiveId] = useState(false);
   const [pageSize, setPageSize] = useState(5);
@@ -47,9 +48,11 @@ const AdvocacyObjectiveGridData = ({
     isLoading: isLoadingAdvocacyObjective,
     isError: isErrorAdvocacyObjective,
   } = useQuery(
-    ["getAdvocacyObjectiveById", processLevelItemId],
-    getAdvocacyObjectiveById,
-    { enabled: !!processLevelItemId }
+    ["getAdvocacyObjectiveByAdvocacyId", id],
+    getAdvocacyObjectiveByAdvocacyId,
+    {
+      enabled: !!id,
+    }
   );
 
   function handleClickOpen(advocacyObjectiveId) {
@@ -70,27 +73,36 @@ const AdvocacyObjectiveGridData = ({
   const handleDeleteAdvocacyObjective = async () => {
     await refetch();
     setOpen(false);
-    await queryClient.invalidateQueries(["getAdvocacyObjectiveById"]);
+    await queryClient.invalidateQueries(["getAdvocacyObjectiveByAdvocacyId"]);
   };
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 0 });
+    },
+    [onActionChange]
+  );
+
+  const handleAdvocacyActionChange = useCallback(
+    (id, status) => {
+      onAdvocacyActionChange({ id: id, status: status });
+    },
+    [onAdvocacyActionChange]
+  );
 
   return (
     <Card mb={6}>
-      <CardContent pb={1}>
+      <Paper>
         <Button
           mr={2}
+          mb={5}
           variant="contained"
           color="error"
-          onClick={() =>
-            navigate(
-              `/project/design/advocacy/new-advocacy-objective/${processLevelItemId}/${processLevelTypeId}`
-            )
-          }
+          onClick={() => handleAdvocacyActionChange(0, false)}
         >
           <AddIcon /> New Advocacy Objective
         </Button>
-      </CardContent>
-      <br />
-      <Paper>
+        <br />
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
             rowsPerPageOptions={[5, 10, 25]}
@@ -103,30 +115,10 @@ const AdvocacyObjectiveGridData = ({
             }
             columns={[
               {
-                field: "title",
-                headerName: "Title",
+                field: "nameOfTopic",
+                headerName: "Name Of Topic",
                 editable: false,
                 flex: 1,
-              },
-              {
-                field: "startDate",
-                headerName: "Start Date",
-                editable: false,
-                flex: 1,
-                valueFormatter: (params) =>
-                  params?.value
-                    ? format(new Date(params.value), "dd-MMM-yyyy")
-                    : "",
-              },
-              {
-                field: "endDate",
-                headerName: "End Date",
-                editable: false,
-                flex: 1,
-                valueFormatter: (params) =>
-                  params?.value
-                    ? format(new Date(params.value), "dd-MMM-yyyy")
-                    : "",
               },
               {
                 field: "action",
@@ -135,12 +127,14 @@ const AdvocacyObjectiveGridData = ({
                 flex: 1,
                 renderCell: (params) => (
                   <>
-                    <NavLink
-                      to={`/project/design/advocacy/advocacy-detail/${params.id}`}
-                    >
-                      <Button startIcon={<Edit />} size="small"></Button>
-                    </NavLink>
-
+                    <Button
+                      startIcon={<Edit />}
+                      size="small"
+                      onClick={(e) => {
+                        handleAdvocacyActionChange(params.id, false);
+                        setAdvocacyObjectiveId(params.id);
+                      }}
+                    ></Button>
                     <Button
                       startIcon={<Trash />}
                       size="small"
@@ -157,6 +151,17 @@ const AdvocacyObjectiveGridData = ({
             getRowHeight={() => "auto"}
           />
         </div>
+
+        <br />
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          mt={3}
+          onClick={() => handleActionChange({ id: 0, action: 1 })}
+        >
+          <ChevronLeft /> Back
+        </Button>
       </Paper>
 
       <Dialog
@@ -186,20 +191,29 @@ const AdvocacyObjectiveGridData = ({
   );
 };
 
-const AdvocacyObjectiveData = ({ processLevelItemId, processLevelTypeId }) => {
+const AdvocacyObjectives = ({
+  id,
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+  onAdvocacyActionChange,
+}) => {
   return (
     <React.Fragment>
       <Helmet title="Advocacy Objective" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         Advocacy Objective
       </Typography>
 
       <Divider my={6} />
       <AdvocacyObjectiveGridData
+        id={id}
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
+        onActionChange={onActionChange}
+        onAdvocacyActionChange={onAdvocacyActionChange}
       />
     </React.Fragment>
   );
 };
-export default AdvocacyObjectiveData;
+export default AdvocacyObjectives;

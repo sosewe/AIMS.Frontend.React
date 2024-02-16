@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -26,7 +26,7 @@ import {
   getAdministrativeUnitByParentName,
   getAdministrativeUnitTopLevel,
 } from "../../../../api/administrative-unit";
-import { Check, Trash as TrashIcon } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import {
   newAdvocacyGeographicalFocus,
   deleteAdvocacyGeographicalFocus,
@@ -48,7 +48,9 @@ const getFocusInitial = {
   fourthLevel: "",
 };
 
-const GeoFocus = ({ id }) => {
+const GeoFocus = (props) => {
+  const id = props.id;
+  const onActionChange = props.onActionChange;
   const queryClient = useQueryClient();
   const [parentTopLevel, setParentTopLevel] = useState();
   const [firstLevel, setFirstLevel] = useState();
@@ -121,8 +123,13 @@ const GeoFocus = ({ id }) => {
       try {
         let administrativeUnitId = "";
         let administrativeUnitName = "";
+        let administrativeUnitCountryId = "";
+        let administrativeUnitCountryName = "";
+        if (values.selectedCountry) {
+          administrativeUnitCountryId = values.selectedCountry.id;
+          administrativeUnitCountryName = values.selectedCountry.adminUnit;
+        }
 
-        // const innovationId = innovationId.id;
         if (
           values.selectedCountry &&
           !values.firstLevel &&
@@ -160,6 +167,8 @@ const GeoFocus = ({ id }) => {
           createDate: new Date(),
           administrativeUnitId,
           administrativeUnitName,
+          administrativeUnitCountryId,
+          administrativeUnitCountryName,
         };
 
         console.log("advocacyLocation ..." + JSON.stringify(advocacyLocation));
@@ -311,6 +320,13 @@ const GeoFocus = ({ id }) => {
     await queryClient.invalidateQueries(["getAdvocacyGeographicalFocus"]);
   };
 
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: 1 });
+    },
+    [onActionChange]
+  );
+
   return (
     <React.Fragment>
       <Grid item md={12}>
@@ -336,6 +352,13 @@ const GeoFocus = ({ id }) => {
                       : []
                   }
                   columns={[
+                    {
+                      field: "administrativeUnitCountryId",
+                      headerName: "Administrative Country",
+                      editable: false,
+                      flex: 1,
+                      valueGetter: GetAdministrativeUnit,
+                    },
                     {
                       field: "administrativeUnitId",
                       headerName: "Administrative Unit",
@@ -570,6 +593,16 @@ const GeoFocus = ({ id }) => {
                   variant="contained"
                   color="primary"
                   mt={3}
+                  onClick={() => handleActionChange()}
+                >
+                  <ChevronLeft /> Back
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  mt={3}
+                  ml={3}
                 >
                   <Check /> Save Location
                 </Button>

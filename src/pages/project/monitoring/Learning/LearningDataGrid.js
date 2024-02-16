@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Button,
@@ -29,7 +29,11 @@ const Paper = styled(MuiPaper)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 
-const LearningData = ({ processLevelItemId, processLevelTypeId }) => {
+const LearningData = ({
+  processLevelItemId,
+  processLevelTypeId,
+  onActionChange,
+}) => {
   const [pageSize, setPageSize] = useState(5);
   const {
     data: LearningData,
@@ -49,6 +53,13 @@ const LearningData = ({ processLevelItemId, processLevelTypeId }) => {
       type: "error",
     });
   }
+
+  const handleActionChange = useCallback(
+    (id, status) => {
+      onActionChange({ id: id, status: status });
+    },
+    [onActionChange]
+  );
 
   return (
     <Card mb={6}>
@@ -90,11 +101,13 @@ const LearningData = ({ processLevelItemId, processLevelTypeId }) => {
                   flex: 1,
                   renderCell: (params) => (
                     <>
-                      <NavLink
-                        to={`/project/monitoring/learning-monitoring-detail/${processLevelItemId}/${params.id}`}
-                      >
-                        <Button startIcon={<Link2 />} size="small"></Button>
-                      </NavLink>
+                      <Button
+                        startIcon={<Link2 />}
+                        size="small"
+                        onClick={(e) => {
+                          handleActionChange(params.id, false);
+                        }}
+                      ></Button>
                     </>
                   ),
                 },
@@ -111,27 +124,18 @@ const LearningData = ({ processLevelItemId, processLevelTypeId }) => {
   );
 };
 
-const LearningDataGrid = ({ processLevelItemId, processLevelTypeId }) => {
+const LearningDataGrid = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Research (Learning)" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Research (Learning)
+      <Typography variant="h5" gutterBottom display="inline">
+        Research (Learning) Monitoring
       </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Monitoring
-        </Link>
-        <Typography>Research (Learning)</Typography>
-      </Breadcrumbs>
-
       <Divider my={6} />
       <LearningData
-        processLevelItemId={processLevelItemId}
-        processLevelTypeId={processLevelTypeId}
+        processLevelItemId={props.processLevelItemId}
+        processLevelTypeId={props.processLevelTypeId}
+        onActionChange={props.onActionChange}
       />
     </React.Fragment>
   );
