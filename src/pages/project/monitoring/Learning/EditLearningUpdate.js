@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import React, { useEffect, useState, useCallback } from "react";
+
 import {
   Box,
   CircularProgress,
@@ -47,17 +48,7 @@ const initialValues = {
 };
 
 const LearningUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onLearningActionChange,
-  } = props;
-  const MAX_COUNT = 5;
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [fileLimit, setFileLimit] = useState(false);
-  const queryClient = useQueryClient();
+  const { id, onLearningActionChange } = props;
   const navigate = useNavigate();
 
   const {
@@ -120,7 +111,7 @@ const LearningUpdateForm = (props) => {
       try {
         const saveLearningUpdate = {
           createDate: new Date(),
-          id: new Guid().toString(),
+          id: id,
           researchId: id,
           implementationYearId: values.year.lookupItemId,
           implementationYear: values.year.lookupItemName,
@@ -136,7 +127,7 @@ const LearningUpdateForm = (props) => {
 
         await mutation.mutateAsync(saveLearningUpdate);
 
-        toast("Successfully Created Learning/Research", {
+        toast("Successfully Updated Learning/Research", {
           type: "success",
         });
 
@@ -150,7 +141,64 @@ const LearningUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingLearningUpdate &&
+        !isErrorLearningUpdate &&
+        LearningUpdateData &&
+        LearningUpdateData.data
+      ) {
+        let monitoringYear;
+        if (!isLoadingYears) {
+          monitoringYear = yearsData.data.find(
+            (obj) =>
+              obj.lookupItemId === LearningUpdateData.data.implementationYearId
+          );
+        }
+
+        let monitoringQuarter;
+        if (!isLoadingQuartersData) {
+          monitoringQuarter = quartersData.data.find(
+            (obj) => obj.lookupItemId === LearningUpdateData.data.quarterId
+          );
+        }
+
+        let monitoringResearchStage;
+        if (!isLoadingResearchStageData) {
+          monitoringResearchStage = researchStageData.data.find(
+            (obj) =>
+              obj.lookupItemId === LearningUpdateData.data.researchStageId
+          );
+        }
+
+        let monitoringRAGStatusId;
+        if (!isLoadingStatuses) {
+          monitoringRAGStatusId = statusesData.data.find(
+            (obj) => obj.lookupItemId === LearningUpdateData.data.ragStatusId
+          );
+        }
+
+        formik.setValues({
+          year: monitoringYear ? monitoringYear : "",
+          reportingFrequencyId: monitoringQuarter ? monitoringQuarter : "",
+          researchStageId: monitoringResearchStage
+            ? monitoringResearchStage
+            : "",
+          ragStatusId: monitoringRAGStatusId ? monitoringRAGStatusId : "",
+          progress: LearningUpdateData.data.progress,
+          challenges: LearningUpdateData.data.challenges,
+        });
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    LearningUpdateData,
+    isErrorLearningUpdate,
+    isLoadingLearningUpdate,
+    isLoadingQuartersData,
+    isLoadingYears,
+  ]);
 
   const handleLearningActionChange = useCallback(
     (id, status) => {
@@ -348,7 +396,7 @@ const LearningUpdateForm = (props) => {
   );
 };
 
-const LearningUpdate = (props) => {
+const EditLearningUpdate = (props) => {
   return (
     <React.Fragment>
       <Helmet title="Monthly Update" />
@@ -363,8 +411,6 @@ const LearningUpdate = (props) => {
             <Grid item md={12}>
               <LearningUpdateForm
                 id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
                 onActionChange={props.onActionChange}
                 onLearningActionChange={props.onLearningActionChange}
               />
@@ -376,4 +422,4 @@ const LearningUpdate = (props) => {
   );
 };
 
-export default LearningUpdate;
+export default EditLearningUpdate;

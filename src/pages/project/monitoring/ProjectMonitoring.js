@@ -34,6 +34,7 @@ import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistanceDetail";
 import LearningDataGrid from "./Learning/LearningDataGrid";
+import LearningDetail from "./Learning/LearningDetail";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -342,11 +343,28 @@ const ProjectMonitoringAccordion = ({
         })()}
       </TabPanel>
       <TabPanel value={value} index={4}>
-        <LearningDataGrid
-          processLevelItemId={processLevelItemId}
-          processLevelTypeId={processLevelTypeId}
-          onActionChange={setAction}
-        />
+        {(() => {
+          if (action.status) {
+            return (
+              <LearningDataGrid
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                onActionChange={setAction}
+              />
+            );
+          } else {
+            return (
+              <>
+                <LearningDetail
+                  id={action.id}
+                  processLevelItemId={processLevelItemId}
+                  processLevelTypeId={processLevelTypeId}
+                  onActionChange={setAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
     </Box>
   );

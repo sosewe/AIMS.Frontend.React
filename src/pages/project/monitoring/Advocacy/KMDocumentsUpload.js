@@ -550,13 +550,13 @@ const KMDocumentsUpload = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         <Grid item md={12}>
           KM Documents Upload
         </Grid>
       </Typography>
 
-      <Divider my={6} />
+      <Divider my={3} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>

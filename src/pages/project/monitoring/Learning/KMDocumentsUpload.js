@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -354,7 +354,8 @@ const DocumentDetailsForm = ({ handleClick }) => {
   );
 };
 
-const KMDocumentsUploadForm = ({ id, processLevelItemId }) => {
+const KMDocumentsUploadForm = (props) => {
+  const { id, onLearningActionChange } = props;
   const [openDocumentDialog, setOpenDocumentDialog] = useState();
   const [documentsList, setDocumentsList] = useState([]);
   const queryClient = useQueryClient();
@@ -411,9 +412,7 @@ const KMDocumentsUploadForm = ({ id, processLevelItemId }) => {
           type: "success",
         });
 
-        navigate(
-          `/project/monitoring/learning-monitoring-detail/${processLevelItemId}/${id}`
-        );
+        handleLearningActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -448,6 +447,13 @@ const KMDocumentsUploadForm = ({ id, processLevelItemId }) => {
     }
     setCurrentFormValues();
   }, [LearningDocumentData, isLoadingLearningDocument]);
+
+  const handleLearningActionChange = useCallback(
+    (id, status) => {
+      onLearningActionChange({ id: id, status: status });
+    },
+    [onLearningActionChange]
+  );
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -537,12 +543,11 @@ const KMDocumentsUploadForm = ({ id, processLevelItemId }) => {
   );
 };
 
-const KMDocumentsUpload = () => {
-  let { id, processLevelItemId } = useParams();
+const KMDocumentsUpload = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
-      <Typography variant="h3" gutterBottom display="inline">
+      <Typography variant="h5" gutterBottom display="inline">
         <Grid item md={12}>
           KM Documents Upload
         </Grid>
@@ -554,8 +559,9 @@ const KMDocumentsUpload = () => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <KMDocumentsUploadForm
-                id={id}
-                processLevelItemId={processLevelItemId}
+                id={props.id}
+                onActionChange={props.onActionChange}
+                onLearningActionChange={props.onLearningActionChange}
               />
             </Grid>
           </Grid>
