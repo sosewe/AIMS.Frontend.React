@@ -83,7 +83,7 @@ const DisAggregateForm = () => {
           name: data.data.name,
           initials: data.data.initials,
           description: data.data.description,
-          level: data.data.level,
+          level: data.data.level ? data.data.level : "",
         });
       }
     }

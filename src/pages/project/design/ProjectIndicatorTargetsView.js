@@ -1,19 +1,22 @@
 import React, { useCallback, useEffect } from "react";
 import styled from "@emotion/styled";
 import {
+  AppBar,
   Box,
   Breadcrumbs as MuiBreadcrumbs,
+  Button,
   Card as MuiCard,
   CardContent as MuiCardContent,
   CircularProgress,
   Divider as MuiDivider,
   Grid,
   TextField as MuiTextField,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getProjectLocation } from "../../../api/location";
 import {
@@ -30,6 +33,8 @@ import axios from "axios";
 import { apiRoutes } from "../../../apiRoutes";
 import { toast } from "react-toastify";
 import ResultIndicatorHeader from "./ResultIndicatorHeader";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -646,20 +651,53 @@ const ProjectIndicatorTargetsViewTable = () => {
 };
 
 const ProjectIndicatorTargetsView = () => {
+  let { processLevelItemId, processLevelTypeId } = useParams();
+  const navigate = useNavigate();
+  const darkTheme = createTheme({
+    palette: {
+      mode: "dark",
+    },
+  });
   return (
     <React.Fragment>
       <Helmet title="Results Framework: Indicator Targets" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Results Framework: Indicator Targets
-      </Typography>
+      <ThemeProvider theme={darkTheme} enableColorOnDark>
+        <AppBar position="static" color="secondary">
+          <Toolbar>
+            <Button
+              color={"inherit"}
+              onClick={() => navigate("/")}
+              style={{ marginRight: "16px" }}
+            >
+              <HomeOutlinedIcon />
+            </Button>
 
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Typography>
-          Project Quantitative Result Framework: Indicator Targets
+            <Button
+              color={"primary"}
+              onClick={() =>
+                navigate(
+                  `/project-access/${processLevelItemId}/${processLevelTypeId}`
+                )
+              }
+            >
+              Design
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </ThemeProvider>
+      <Box my={6}>
+        <Typography variant="h3" gutterBottom display="inline">
+          Results Framework: Indicator Targets
         </Typography>
-      </Breadcrumbs>
-      <Divider my={6} />
-      <ProjectIndicatorTargetsViewTable />
+
+        <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+          <Typography>
+            Project Quantitative Result Framework: Indicator Targets
+          </Typography>
+        </Breadcrumbs>
+        <Divider my={6} />
+        <ProjectIndicatorTargetsViewTable />
+      </Box>
     </React.Fragment>
   );
 };

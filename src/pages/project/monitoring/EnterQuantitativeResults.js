@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import styled from "@emotion/styled";
 import {
+  AppBar,
   Box,
   Breadcrumbs as MuiBreadcrumbs,
   Button as MuiButton,
@@ -13,10 +14,11 @@ import {
   Link,
   MenuItem,
   TextField as MuiTextField,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +26,8 @@ import { getLookupMasterItemsByName, lookupItem } from "../../../api/lookup";
 import { getProjectLocation, getProjectLocations } from "../../../api/location";
 import { getResultChainIndicatorByProjectId } from "../../../api/result-chain-indicator";
 import EnterQuantitativeResultsForm from "./EnterQuantitativeResultsForm";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -305,35 +309,67 @@ const EnterQuantitativeResults = () => {
     monthId,
     year,
   } = useParams();
+  const navigate = useNavigate();
+  const darkTheme = createTheme({
+    palette: {
+      mode: "dark",
+    },
+  });
   return (
     <React.Fragment>
       <Helmet title="Enter Data" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Results Framework
-      </Typography>
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/project-detail/${processLevelItemId}`}
-        >
-          Project Detail
-        </Link>
-        <Link
-          component={NavLink}
-          to={`/project/monitoring/table-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${year}`}
-        >
-          Reporting Period
-        </Link>
-        <Typography>Enter Data</Typography>
-      </Breadcrumbs>
-      <Divider my={6} />
-      <EnterQuantitativeResultsFormContainer
-        processLevelItemId={processLevelItemId}
-        processLevelTypeId={processLevelTypeId}
-        projectLocationId={projectLocationId}
-        monthId={monthId}
-        year={year}
-      />
+      <ThemeProvider theme={darkTheme} enableColorOnDark>
+        <AppBar position="static" color="secondary">
+          <Toolbar>
+            <Button
+              color={"inherit"}
+              onClick={() => navigate("/")}
+              style={{ marginRight: "16px" }}
+            >
+              <HomeOutlinedIcon />
+            </Button>
+
+            <Button
+              color={"primary"}
+              onClick={() =>
+                navigate(
+                  `/project-access/${processLevelItemId}/${processLevelTypeId}`
+                )
+              }
+            >
+              Design
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </ThemeProvider>
+      <Box my={6}>
+        <Typography variant="h3" gutterBottom display="inline">
+          Results Framework
+        </Typography>
+        <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+          <Link
+            component={NavLink}
+            to={`/project-access/${processLevelItemId}/${processLevelTypeId}`}
+          >
+            Project Detail
+          </Link>
+          <Link
+            component={NavLink}
+            to={`/project-access/monitoring/table-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${year}`}
+          >
+            Reporting Period
+          </Link>
+          <Typography>Enter Data</Typography>
+        </Breadcrumbs>
+        <Divider my={6} />
+        <EnterQuantitativeResultsFormContainer
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+          projectLocationId={projectLocationId}
+          monthId={monthId}
+          year={year}
+        />
+      </Box>
     </React.Fragment>
   );
 };

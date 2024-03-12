@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import {
+  AppBar,
   Box,
   Breadcrumbs as MuiBreadcrumbs,
   Button as MuiButton,
@@ -19,11 +20,12 @@ import {
   TableHead,
   TableRow,
   TextField as MuiTextField,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import styled from "@emotion/styled";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   getLookupItemByAlias,
@@ -35,6 +37,8 @@ import { getProjectResults } from "../../../api/achieved-result";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { getProjectLocation, getProjectLocations } from "../../../api/location";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -117,7 +121,7 @@ const TableRowReturned = ({
       {hasResults ? (
         <TableCell align="center">
           <NavLink
-            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}/${year}`}
+            to={`/project-access/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}/${year}`}
           >
             Edit Actual
           </NavLink>
@@ -125,7 +129,7 @@ const TableRowReturned = ({
       ) : (
         <TableCell align="center">
           <NavLink
-            to={`/project/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}/${year}`}
+            to={`/project-access/monitoring/enter-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${monthId}/${year}`}
           >
             Create Actual
           </NavLink>
@@ -379,25 +383,56 @@ const TableQuantitativeResultsGrid = () => {
 };
 const TableQuantitativeResults = () => {
   let { processLevelItemId, processLevelTypeId } = useParams();
-
+  const navigate = useNavigate();
+  const darkTheme = createTheme({
+    palette: {
+      mode: "dark",
+    },
+  });
   return (
     <React.Fragment>
       <Helmet title="Reporting Period" />
-      <Typography variant="h3" gutterBottom display="inline">
-        Results Framework
-      </Typography>
+      <ThemeProvider theme={darkTheme} enableColorOnDark>
+        <AppBar position="static" color="secondary">
+          <Toolbar>
+            <Button
+              color={"inherit"}
+              onClick={() => navigate("/")}
+              style={{ marginRight: "16px" }}
+            >
+              <HomeOutlinedIcon />
+            </Button>
 
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>Project Quantitative Result Framework</Typography>
-      </Breadcrumbs>
-      <Divider my={6} />
-      <TableQuantitativeResultsGrid />
+            <Button
+              color={"primary"}
+              onClick={() =>
+                navigate(
+                  `/project-access/${processLevelItemId}/${processLevelTypeId}`
+                )
+              }
+            >
+              Design
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </ThemeProvider>
+      <Box my={6}>
+        <Typography variant="h3" gutterBottom display="inline">
+          Results Framework
+        </Typography>
+
+        <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+          <Link
+            component={NavLink}
+            to={`/project-access/${processLevelItemId}/${processLevelTypeId}`}
+          >
+            Project Design
+          </Link>
+          <Typography>Project Quantitative Result Framework</Typography>
+        </Breadcrumbs>
+        <Divider my={6} />
+        <TableQuantitativeResultsGrid />
+      </Box>
     </React.Fragment>
   );
 };
