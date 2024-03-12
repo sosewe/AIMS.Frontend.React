@@ -135,7 +135,7 @@ const ProjectMonitoringAccordion = ({
     onSubmit: async (values) => {
       try {
         navigate(
-          `/project/monitoring/table-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
+          `/project-access/monitoring/table-quantitative-results/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
         );
       } catch (error) {
         toast(error.response.data, {

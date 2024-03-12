@@ -838,11 +838,11 @@ const EnterTargetByLocationForm = ({
       try {
         if (values.operation === "edit") {
           navigate(
-            `/project/project-indicator-targets/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
+            `/project-access/project-indicator-targets/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
           );
         } else if (values.operation === "view") {
           navigate(
-            `/project/project-indicator-targets-view/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
+            `/project-access/project-indicator-targets-view/${processLevelItemId}/${processLevelTypeId}/${values.location}/${values.implementationYear}`
           );
         }
       } catch (error) {
@@ -1125,7 +1125,7 @@ const EnterTargetQuantitativeResultsFrameworkForm = ({
                   </ThemeProvider>
                   <br />
                   <Grid container spacing={2}>
-                    <Grid item md={12}>
+                    <Grid item md={12} sx={{ marginLeft: 5 }}>
                       <Card>
                         <CardHeader title={"Outcome(s)"}></CardHeader>
                         <Divider />
@@ -1217,15 +1217,15 @@ const EnterTargetQuantitativeResultsFramework = ({
         Results Framework
       </Typography>
 
-      <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link
-          component={NavLink}
-          to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}
-        >
-          Project Design
-        </Link>
-        <Typography>Project Quantitative Result Framework</Typography>
-      </Breadcrumbs>
+      {/*<Breadcrumbs aria-label="Breadcrumb" mt={2}>*/}
+      {/*  <Link*/}
+      {/*    component={NavLink}*/}
+      {/*    to={`/project/design-project/${processLevelItemId}/${processLevelTypeId}`}*/}
+      {/*  >*/}
+      {/*    Project Design*/}
+      {/*  </Link>*/}
+      {/*  <Typography>Project Quantitative Result Framework</Typography>*/}
+      {/*</Breadcrumbs>*/}
       <Divider my={6} />
       <EnterTargetQuantitativeResultsFrameworkForm
         processLevelItemId={processLevelItemId}

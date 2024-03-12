@@ -272,6 +272,26 @@ const routes = [
         path: ":id/:processLevelTypeId",
         element: <ProjectAccess />,
       },
+      {
+        path: "project-indicator-targets/:processLevelItemId/:processLevelTypeId/:projectLocationId/:year",
+        element: <ProjectIndicatorTargets />,
+      },
+      {
+        path: "project-indicator-targets-view/:processLevelItemId/:processLevelTypeId/:projectLocationId/:year",
+        element: <ProjectIndicatorTargetsView />,
+      },
+      {
+        path: "monitoring/table-quantitative-results/:processLevelItemId/:processLevelTypeId/:projectLocationId/:year",
+        element: <TableQuantitativeResults />,
+      },
+      {
+        path: "monitoring/enter-quantitative-results/:processLevelItemId/:processLevelTypeId/:projectLocationId/:monthId/:year",
+        element: <EnterQuantitativeResults />,
+      },
+      {
+        path: "project-detail/:id",
+        element: <ProjectDetail />,
+      },
     ],
   },
   {
