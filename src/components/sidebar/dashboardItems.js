@@ -161,10 +161,10 @@ const navItems = [
     title: "Programmes",
     pages: programmeSection,
   },
-  {
+  /*{
     title: "Projects",
     pages: projectSection,
-  },
+  },*/
   {
     title: "Configuration",
     pages: configurationSection,

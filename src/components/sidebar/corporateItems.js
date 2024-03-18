@@ -1,4 +1,4 @@
-import { Home } from "react-feather";
+import { Home, Tag } from "react-feather";
 import YardIcon from "@mui/icons-material/Yard";
 import PublicIcon from "@mui/icons-material/Public";
 import BarChartIcon from "@mui/icons-material/BarChart";
@@ -20,8 +20,18 @@ const navItems = [
     title: "",
     pages: [
       {
+        title: "Corporate Projects",
+        href: "/project-home",
+        icon: Tag,
+      },
+    ],
+  },
+  {
+    title: "",
+    pages: [
+      {
         title: "Corporate Strategy",
-        href: "",
+        href: "/corporate-strategy",
         icon: YardIcon,
       },
     ],
@@ -31,7 +41,7 @@ const navItems = [
     pages: [
       {
         title: "Global Narrative Reports",
-        href: "",
+        href: "/global-reports",
         icon: PublicIcon,
       },
     ],
@@ -41,7 +51,7 @@ const navItems = [
     pages: [
       {
         title: "Country Performance YTD",
-        href: "",
+        href: "/country-performance",
         icon: BarChartIcon,
       },
     ],
@@ -51,7 +61,7 @@ const navItems = [
     pages: [
       {
         title: "Global DCA Summary",
-        href: "",
+        href: "/global-summary",
         icon: SummarizeIcon,
       },
     ],

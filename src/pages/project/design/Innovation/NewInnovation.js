@@ -42,6 +42,8 @@ import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
 
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
+
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
@@ -397,7 +399,10 @@ const InnovationForm = ({
     },
   });
 
-  useEffect(() => {}, []);
+  const loggedUser = useKeyCloakAuth();
+  useEffect(() => {
+    console.log("userId .... " + JSON.stringify(loggedUser.sub));
+  }, [loggedUser]);
 
   return (
     <form onSubmit={formik.handleSubmit}>

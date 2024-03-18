@@ -9,6 +9,7 @@ import async from "./components/Async";
 import AuthLayout from "./layouts/Auth";
 import DashboardLayout from "./layouts/Dashboard";
 import ProjectLayout from "./layouts/ProjectLayout";
+
 // import PresentationLayout from "./layouts/Presentation";
 import DynamicLayout from "./layouts/DynamicLayout";
 
@@ -26,6 +27,7 @@ import Page500 from "./pages/auth/Page500";
 import Home from "./pages/home";
 import ProjectAccess from "./pages/home/ProjectAccess";
 import NewAttributeResponseOption from "./pages/attributes/NewAttributeResponseOption";
+import ProjectHome from "./pages/home/ProjectHome";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
@@ -261,6 +263,14 @@ const routes = [
       {
         path: "",
         element: <Home />,
+      },
+      {
+        path: "project-home",
+        element: <ProjectHome />,
+      },
+      {
+        path: "new-project",
+        element: <NewProject />,
       },
     ],
   },

@@ -42,7 +42,7 @@ const SidebarFooter = ({ ...rest }) => {
   const userLevel = user?.tokenParsed.UserLevel;
 
   let roleString = "";
-  if (userRoles.length > 0) {
+  if (userRoles && userRoles.length > 0) {
     roleString = userRoles.join(",");
   }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import styled from "@emotion/styled";
 import {
+  Autocomplete,
   Box,
   Button as MuiButton,
   Card as MuiCard,
@@ -150,39 +151,45 @@ const StaffDetailsForm = ({
         <CardContent>
           <Grid container spacing={3}>
             <Grid item md={3}>
-              <TextField
-                name="staffDetailsName"
-                label="Name"
-                select
+              <Autocomplete
+                id="staffDetailsName"
+                options={!isLoadingStaffList ? staffListData.data : []}
+                getOptionLabel={(option) => {
+                  if (!option) {
+                    return ""; // Return an empty string for null or undefined values
+                  }
+                  return `${option.emailAddress}`;
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.id}>
+                      {option ? `${option.emailAddress}` : ""}
+                    </li>
+                  );
+                }}
+                onChange={(e, val) => {
+                  formik.setFieldValue("staffDetailsName", val);
+                }}
                 value={formik.values.staffDetailsName}
-                error={Boolean(
-                  formik.touched.staffDetailsName &&
-                    formik.errors.staffDetailsName
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={Boolean(
+                      formik.touched.staffDetailsName &&
+                        formik.errors.staffDetailsName
+                    )}
+                    fullWidth
+                    helperText={
+                      formik.touched.staffDetailsName &&
+                      formik.errors.staffDetailsName
+                    }
+                    label="Staff Email"
+                    name="staffDetailsName"
+                    variant="outlined"
+                    my={2}
+                  />
                 )}
-                fullWidth
-                helperText={
-                  formik.touched.staffDetailsName &&
-                  formik.errors.staffDetailsName
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-              >
-                <MenuItem disabled value="">
-                  Select Name
-                </MenuItem>
-                {!isLoadingStaffList &&
-                !isErrorStaffList &&
-                staffListData.data &&
-                staffListData.data.length > 0
-                  ? staffListData.data.map((option) => (
-                      <MenuItem key={option.id} value={option}>
-                        {option.firstName} {option.lastName}
-                      </MenuItem>
-                    ))
-                  : []}
-              </TextField>
+              />
             </Grid>
             <Grid item md={3}>
               <TextField
@@ -603,10 +610,11 @@ const NewProjectForm = ({ id }) => {
         await processLevelCostCentreMutation.mutateAsync(
           processLevelCostCentres
         );
-        toast("Successfully Created an Project", {
+        toast("Successfully Updated a Project", {
           type: "success",
         });
-        navigate("/project/projects");
+
+        navigate(`/project-access/${project.data.id}/${processLevelTypeId}`);
       } catch (error) {
         if (error.response !== undefined) {
           toast(error.response.data, {

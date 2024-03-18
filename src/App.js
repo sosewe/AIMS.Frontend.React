@@ -36,14 +36,23 @@ function App({ emotionCache = clientSideEmotionCache }) {
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [selectedUserLevel, setSelectedUserLevel] = useState(null);
 
+  const token = localStorage.getItem("kc_token");
+  const refreshToken = localStorage.getItem("kc_refreshToken");
   useEffect(() => {
     kc.init({
+      /*
       onLoad: "login-required",
+      checkLoginIframe: false,
+      */
+      onLoad: "login-required",
+      token,
+      refreshToken,
       checkLoginIframe: false,
     }).then((auth) => {
       try {
         if (auth) {
           const user = {
+            id: kc.sub,
             name: kc.tokenParsed.name,
             token: kc.token,
             roles: kc.tokenParsed?.resource_access?.["aims_frontend"]?.roles,
@@ -57,6 +66,9 @@ function App({ emotionCache = clientSideEmotionCache }) {
           SetUserInformation(user);
           setSelectedUserLevel(kc.tokenParsed?.UserLevel);
           setSelectedOffice(office);
+
+          localStorage.setItem("kc_token", kc.token);
+          localStorage.setItem("kc_refreshToken", kc.refreshToken);
           console.log(user);
         } else {
           SetUserInformation(null);

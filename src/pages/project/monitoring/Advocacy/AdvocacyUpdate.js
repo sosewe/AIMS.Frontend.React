@@ -66,6 +66,8 @@ const AdvocacyUpdateForm = (props) => {
     onActionChange,
     onAdvocacyActionChange,
   } = props;
+
+  console.log("Advocacy ID ..." + id);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {

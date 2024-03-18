@@ -12,6 +12,7 @@ import Navbar from "../components/navbar/Navbar";
 import projectDashboardItems from "../components/sidebar/projectLayoutItems";
 import countryDashboardItems from "../components/sidebar/countryLayoutItems";
 import corporateDashboardItems from "../components/sidebar/corporateItems";
+import programmeDashboardItems from "../components/sidebar/programmeItems";
 import Sidebar from "../components/sidebar/Sidebar";
 import Footer from "../components/Footer";
 import Settings from "../components/Settings";
@@ -76,6 +77,9 @@ const DynamicLayout = ({ children }) => {
           break;
         case "Country":
           setDashboardItems(countryDashboardItems);
+          break;
+        case "Programme":
+          setDashboardItems(programmeDashboardItems);
           break;
         default:
           setDashboardItems(projectDashboardItems);
