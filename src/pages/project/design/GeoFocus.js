@@ -164,6 +164,8 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
           processLevelTypeId: processLevelTypeId,
           createDate: new Date(),
         };
+
+        console.log("projectLocation " + JSON.stringify(projectLocation));
         await mutation.mutateAsync(projectLocation);
         await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
       } catch (error) {

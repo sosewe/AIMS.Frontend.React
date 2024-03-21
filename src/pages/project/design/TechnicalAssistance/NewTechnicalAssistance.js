@@ -38,15 +38,13 @@ import { getDonors } from "../../../../api/donor";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
-import {
-  newTechnicalAssistance,
-  getTechnicalAssistanceByTechnicalAssistanceId,
-} from "../../../../api/technical-assistance";
+import { newTechnicalAssistance } from "../../../../api/technical-assistance";
 import { newTechnicalAssistanceDonor } from "../../../../api/technical-assistance-donor";
 import { newTechnicalAssistancePartner } from "../../../../api/technical-assistance-partner";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -83,7 +81,7 @@ const TechnicalAssistanceForm = ({
   onActionChange,
 }) => {
   const queryClient = useQueryClient();
-
+  const user = useKeyCloakAuth();
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -218,9 +216,10 @@ const TechnicalAssistanceForm = ({
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          statusId: values.status,
+          status: values.status,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
+          userId: user.sub,
         };
 
         const technicalAssistance = await mutation.mutateAsync(

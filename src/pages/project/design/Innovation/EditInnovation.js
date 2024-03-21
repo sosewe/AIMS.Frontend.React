@@ -45,17 +45,13 @@ import {
 } from "../../../../api/lookup";
 import { YEAR_RANGE } from "../../../../constants";
 import { getDonors } from "../../../../api/donor";
-import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getInnovationById, newInnovation } from "../../../../api/innovation";
 import { newInnovationDonor } from "../../../../api/innovation-donor";
-import {
-  newInnovationStaff,
-  getInnovationStaff,
-} from "../../../../api/innovation-staff";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { newInnovationStaff } from "../../../../api/innovation-staff";
 import { getProjectRoles } from "../../../../api/project-role";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -294,6 +290,7 @@ const EditInnovationForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
+  const user = useKeyCloakAuth();
 
   const {
     data: InnovationData,
@@ -426,7 +423,8 @@ const EditInnovationForm = ({ id, onActionChange }) => {
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          statusId: values.status,
+          status: values.status,
+          userId: user.sub,
         };
         await mutation.mutateAsync(saveInnovation);
 
@@ -465,8 +463,6 @@ const EditInnovationForm = ({ id, onActionChange }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getInnovations"]);
-
-        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -537,7 +533,7 @@ const EditInnovationForm = ({ id, onActionChange }) => {
           totalBudget: InnovationData.data.totalBudget,
           costCenter: InnovationData.data.costCenter,
           currencyTypeId: InnovationData.data.currencyTypeId,
-          status: InnovationData.data.statusId,
+          status: InnovationData.data.status,
           donors: donorsList,
         });
 

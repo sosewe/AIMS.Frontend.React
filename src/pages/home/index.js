@@ -126,6 +126,36 @@ const ProjectDashboard = () => {
   );
 };
 
+const GuestDashboard = () => {
+  return (
+    <React.Fragment>
+      <Helmet title="Corporate Dashboard" />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Typography variant="h3" gutterBottom display="inline">
+          Guest Dashboard
+        </Typography>
+        <Breadcrumbs aria-label="Breadcrumb" mt={2}>
+          <Link component={NavLink} to="/">
+            QLIK Boards
+          </Link>
+          <Typography>Data Streams</Typography>
+        </Breadcrumbs>
+        <Divider my={6} />
+
+        <iframe
+          title="Project Summary"
+          width="100%"
+          height="100%"
+          mt="5"
+          src="https://qlik.amref.org:8443/single/?appid=14a1e3eb-8df8-4d3f-a1ed-8a608d45ef75&sheet=6931ed03-c2d1-4ea6-aa74-1b801a0aa2f8&theme=breeze&opt=ctxmenu,currsel"
+          frameBorder="0"
+          allowFullScreen="true"
+        ></iframe>
+      </LocalizationProvider>
+    </React.Fragment>
+  );
+};
+
 const DashboardDataByUserType = () => {
   const userLevelContext = useContext(UserLevelContext);
 
@@ -139,7 +169,7 @@ const DashboardDataByUserType = () => {
     case "Programme":
       return <ProgrammeDashboard />;
     default:
-      return <ProjectDashboard />;
+      return <GuestDashboard />;
   }
 };
 

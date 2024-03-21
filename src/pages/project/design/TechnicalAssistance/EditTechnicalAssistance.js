@@ -52,7 +52,6 @@ import {
 } from "../../../../api/lookup";
 import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
 import { getDonors } from "../../../../api/donor";
-import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import {
@@ -67,6 +66,7 @@ import { getProjectRoles } from "../../../../api/project-role";
 
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -306,7 +306,7 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
   const [openAddStaffDetails, setOpenAddStaffDetails] = useState(false);
   const [staffDetailsList, setStaffDetailsList] = useState([]);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const user = useKeyCloakAuth();
   const {
     data: TechnicalAssistanceData,
     isLoading: isLoadingTechnicalAssistanceData,
@@ -462,7 +462,8 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          statusId: values.status,
+          status: values.status,
+          userId: user.sub,
         };
         await mutation.mutateAsync(saveTechnicalAssistance);
 
@@ -519,8 +520,6 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceByTechnicalAssistanceId",
         ]);
-
-        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -612,7 +611,7 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
           startDate: TechnicalAssistanceData.data.startDate,
           endDate: TechnicalAssistanceData.data.endDate,
           extensionDate: TechnicalAssistanceData.data.extensionDate,
-          status: TechnicalAssistanceData.data.statusId,
+          status: TechnicalAssistanceData.data.status,
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",
           implementingOfficeId: implementingOffice ? implementingOffice.id : "",

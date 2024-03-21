@@ -9,6 +9,7 @@ import { spacing } from "@mui/system";
 
 import GlobalStyle from "../components/GlobalStyle";
 import Navbar from "../components/navbar/Navbar";
+import guestDashboardItems from "../components/sidebar/guestLayoutItems";
 import projectDashboardItems from "../components/sidebar/projectLayoutItems";
 import countryDashboardItems from "../components/sidebar/countryLayoutItems";
 import corporateDashboardItems from "../components/sidebar/corporateItems";
@@ -82,7 +83,7 @@ const DynamicLayout = ({ children }) => {
           setDashboardItems(programmeDashboardItems);
           break;
         default:
-          setDashboardItems(projectDashboardItems);
+          setDashboardItems(guestDashboardItems);
           break;
       }
     }
