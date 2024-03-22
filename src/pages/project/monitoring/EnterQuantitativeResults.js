@@ -268,35 +268,37 @@ const EnterQuantitativeResultsFormContainer = ({
         </Card>
       </form>
       <Card mb={6}>
-        <Grid
-          container
-          direction="row"
-          justifyContent="left"
-          alignItems="left"
-          spacing={6}
-        >
-          <Grid item md={1}>
-            #
+        <CardContent>
+          <Grid
+            container
+            direction="row"
+            justifyContent="left"
+            alignItems="left"
+            spacing={6}
+          >
+            <Grid item md={1}>
+              #
+            </Grid>
+            <Grid item md={11}>
+              &nbsp;
+            </Grid>
+            <Grid item md={12}>
+              {!isLoadingResultChainIndicators &&
+              !isErrorResultChainIndicators ? (
+                <EnterQuantitativeResultsForm
+                  resultChainIndicators={resultChainIndicators.data}
+                  processLevelItemId={processLevelItemId}
+                  processLevelTypeId={processLevelTypeId}
+                  projectLocationId={projectLocationId}
+                  monthId={implementingMonth}
+                  year={implementingYear}
+                />
+              ) : (
+                ""
+              )}
+            </Grid>
           </Grid>
-          <Grid item md={11}>
-            &nbsp;
-          </Grid>
-          <Grid item md={12}>
-            {!isLoadingResultChainIndicators &&
-            !isErrorResultChainIndicators ? (
-              <EnterQuantitativeResultsForm
-                resultChainIndicators={resultChainIndicators.data}
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                projectLocationId={projectLocationId}
-                monthId={implementingMonth}
-                year={implementingYear}
-              />
-            ) : (
-              ""
-            )}
-          </Grid>
-        </Grid>
+        </CardContent>
       </Card>
     </React.Fragment>
   );
@@ -318,7 +320,7 @@ const EnterQuantitativeResults = () => {
   return (
     <React.Fragment>
       <Helmet title="Enter Data" />
-      <ThemeProvider theme={darkTheme} enableColorOnDark>
+      <ThemeProvider theme={darkTheme}>
         <AppBar position="static" color="secondary">
           <Toolbar>
             <Button

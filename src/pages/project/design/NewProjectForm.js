@@ -1416,11 +1416,19 @@ const NewProjectForm = ({ id }) => {
                     <Table>
                       <TableHead>
                         <TableRow>
-                          <TableCell>Staff Name</TableCell>
-                          <TableCell align="right">Project Role</TableCell>
-                          <TableCell align="right">DQA Workflow Role</TableCell>
-                          <TableCell align="right">Primary Role</TableCell>
-                          <TableCell align="right">Action</TableCell>
+                          <TableCell key="staffName">Staff Name</TableCell>
+                          <TableCell key="projectRole" align="right">
+                            Project Role
+                          </TableCell>
+                          <TableCell key="DQAWorkflow" align="right">
+                            DQA Workflow Role
+                          </TableCell>
+                          <TableCell key="PrimaryRole" align="right">
+                            Primary Role
+                          </TableCell>
+                          <TableCell key="action" align="right">
+                            Action
+                          </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
