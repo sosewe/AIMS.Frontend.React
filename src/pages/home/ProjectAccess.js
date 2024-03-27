@@ -5,6 +5,8 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useNavigate } from "react-router-dom";
 import DesignProject from "../project/design/DesignProject";
 import ProjectMonitoring from "../project/monitoring/ProjectMonitoring";
+import ProjectReports from "../project/reports/ProjectReports";
+
 const ProjectAccess = () => {
   const navigate = useNavigate();
   const darkTheme = createTheme({
@@ -28,7 +30,7 @@ const ProjectAccess = () => {
       case "monitoring":
         return <ProjectMonitoring />;
       case "reports":
-        return null;
+        return <ProjectReports />;
       default:
         return null;
     }
@@ -36,7 +38,7 @@ const ProjectAccess = () => {
 
   return (
     <React.Fragment>
-      <ThemeProvider theme={darkTheme} enableColorOnDark>
+      <ThemeProvider theme={darkTheme}>
         <AppBar position="static" color="secondary">
           <Toolbar>
             <Button
