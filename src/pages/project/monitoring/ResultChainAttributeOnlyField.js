@@ -36,7 +36,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const SecondaryAttributeField = ({
+export const SecondaryAttributeField = ({
   resultChainAttribute,
   register,
   setValue,
@@ -194,7 +194,7 @@ const SecondaryAttributeField = ({
   );
 };
 
-const AttributeField = ({
+export const AttributeField = ({
   resultChainAttribute,
   register,
   setValue,

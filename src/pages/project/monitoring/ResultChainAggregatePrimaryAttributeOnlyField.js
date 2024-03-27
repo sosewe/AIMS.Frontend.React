@@ -17,6 +17,7 @@ const ResultChainAggregatePrimaryAttributeOnlyField = ({
   year,
   monthId,
   primaryResultChainAttribute,
+  errors,
 }) => {
   const {
     data: attributeOptionData,
@@ -90,15 +91,6 @@ const ResultChainAggregatePrimaryAttributeOnlyField = ({
             val.achievedValue
           );
         }
-      } else {
-        setValue(
-          resultChainAggregate.id +
-            "/" +
-            resultChainAttribute.id +
-            "/" +
-            primaryResultChainAttribute.id,
-          ""
-        );
       }
     }
     setCurrentFormValues();
@@ -133,15 +125,28 @@ const ResultChainAggregatePrimaryAttributeOnlyField = ({
               attributeOptionData.data.responseOption
             : ""
         }
+        error={Boolean(
+          errors[
+            resultChainAggregate.id +
+              "/" +
+              resultChainAttribute.id +
+              "/" +
+              primaryResultChainAttribute.id
+          ]?.type === "required"
+        )}
         variant="outlined"
         fullWidth
+        type="number"
         my={2}
         {...register(
           resultChainAggregate.id +
             "/" +
             resultChainAttribute.id +
             "/" +
-            primaryResultChainAttribute.id
+            primaryResultChainAttribute.id,
+          {
+            required: "Field is required",
+          }
         )}
       />
     </React.Fragment>

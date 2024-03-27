@@ -8,7 +8,7 @@ import { getAchievedResultsByResultChainIndicatorIdAndAggregateId } from "../../
 
 const TextField = styled(MuiTextField)(spacing);
 
-const AggregateField = ({
+export const AggregateField = ({
   resultChainAggregate,
   register,
   setValue,
@@ -116,7 +116,10 @@ const AggregateField = ({
           {...register(
             resultChainAggregate.disaggregateId1 +
               "/" +
-              resultChainAggregate.disaggregateId2
+              resultChainAggregate.disaggregateId2,
+            {
+              required: "Field is required",
+            }
           )}
           type="number"
           sx={{ marginBottom: 5 }}

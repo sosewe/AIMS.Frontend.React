@@ -28,6 +28,7 @@ import { getResultChainIndicatorByProjectId } from "../../../api/result-chain-in
 import EnterQuantitativeResultsForm from "./EnterQuantitativeResultsForm";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import QuantitativeResultsView from "./EnterQuantitativeResults/QuantitativeResultsView";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -123,6 +124,7 @@ const EnterQuantitativeResultsFormContainer = ({
     formik.setFieldValue("implementationYear", implementingYear);
     formik.setFieldValue("monthId", implementingMonth);
   }, [projectLocationId, implementingYear, implementingMonth]);
+
   return (
     <React.Fragment>
       <form onSubmit={formik.handleSubmit}>
@@ -285,7 +287,7 @@ const EnterQuantitativeResultsFormContainer = ({
             <Grid item md={12}>
               {!isLoadingResultChainIndicators &&
               !isErrorResultChainIndicators ? (
-                <EnterQuantitativeResultsForm
+                <QuantitativeResultsView
                   resultChainIndicators={resultChainIndicators.data}
                   processLevelItemId={processLevelItemId}
                   processLevelTypeId={processLevelTypeId}
@@ -303,6 +305,7 @@ const EnterQuantitativeResultsFormContainer = ({
     </React.Fragment>
   );
 };
+
 const EnterQuantitativeResults = () => {
   let {
     processLevelItemId,
