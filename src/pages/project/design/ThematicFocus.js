@@ -37,7 +37,11 @@ import {
 } from "../../../api/thematic-focus";
 import { DataGrid } from "@mui/x-data-grid";
 import { getSubTheme } from "../../../api/sub-theme";
-import { getUniqueProgrammesByThematicAreaId } from "../../../api/programme-thematic-area-sub-theme";
+import {
+  getUniqueProgrammesByThematicAreaId,
+  getUniqueThematicAreasByProgrammeId,
+} from "../../../api/programme-thematic-area-sub-theme";
+import { getProgrammes } from "../../../api/programmes";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -51,10 +55,21 @@ const initialValues = {
 
 const ThematicFocus = ({ id, processLevelTypeId }) => {
   const queryClient = useQueryClient();
+  const [strategicObjectiveId, setStrategicObjectiveId] = useState();
   const [thematicAreaId, setThematicAreaId] = useState();
   const [open, setOpen] = React.useState(false);
   const [thematicFocusId, setThematicFocusId] = React.useState();
   const [pageSize, setPageSize] = useState(5);
+
+  const {
+    isLoading: isLoadingStrategicObjectives,
+    isError: isErrorStrategicObjectives,
+    data: strategicObjectivesData,
+  } = useQuery(["objectivesList"], getProgrammes, {
+    refetchOnWindowFocus: false,
+    retry: 0,
+  });
+
   const { data, isLoading } = useQuery(
     ["getAllThematicAreas"],
     getAllThematicAreas,
@@ -62,6 +77,13 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
       refetchOnWindowFocus: false,
     }
   );
+
+  const { data: themesData, isLoading: isLoadingThemes } = useQuery(
+    ["getUniqueThematicAreasByProgrammeId", strategicObjectiveId],
+    getUniqueThematicAreasByProgrammeId,
+    { enabled: !!strategicObjectiveId }
+  );
+
   const { data: subThemesData, isLoading: isLoadingSubThemes } = useQuery(
     ["getSubThemesByThematicAreaId", thematicAreaId],
     getSubThemesByThematicAreaId,
@@ -121,9 +143,31 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
     },
   });
 
+  function HandleStrategicObjectiveChange(e) {
+    const strategicObjectiveId = e.target.value.id;
+    setStrategicObjectiveId(strategicObjectiveId);
+    HandleThematicAreaChange(e);
+  }
+
   function HandleThematicAreaChange(e) {
     const thematicAreaId = e.target.value.id;
     setThematicAreaId(thematicAreaId);
+  }
+
+  function GetStrategicObjective(params) {
+    const thematicAreaId = params.row.thematicAreaId;
+    const resultProgrammeThematicAreaSubTheme = useQuery(
+      ["getUniqueProgrammesByThematicAreaId", thematicAreaId],
+      getUniqueProgrammesByThematicAreaId
+    );
+
+    if (
+      resultProgrammeThematicAreaSubTheme &&
+      resultProgrammeThematicAreaSubTheme.data
+    ) {
+      let returnVal = `${resultProgrammeThematicAreaSubTheme.data.data[0].name}`;
+      return returnVal;
+    }
   }
 
   function GetSubTheme(params) {
@@ -190,7 +234,43 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
             <CardContent pb={1}>
               <form onSubmit={formik.handleSubmit}>
                 <Grid container item spacing={2}>
-                  <Grid item md={4}>
+                  <Grid item md={12} mb={5}>
+                    <TextField
+                      name="strategicObjective"
+                      label="Strategic Objective"
+                      required
+                      select
+                      value={formik.values.strategicObjective}
+                      error={Boolean(
+                        formik.touched.strategicObjective &&
+                          formik.errors.strategicObjective
+                      )}
+                      fullWidth
+                      helperText={
+                        formik.touched.strategicObjective &&
+                        formik.errors.strategicObjective
+                      }
+                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        HandleStrategicObjectiveChange(e);
+                      }}
+                      variant="outlined"
+                    >
+                      <MenuItem disabled value="">
+                        Select Strategic Objective
+                      </MenuItem>
+                      {!isLoadingStrategicObjectives
+                        ? strategicObjectivesData.data.map((option) => (
+                            <MenuItem key={option.id} value={option}>
+                              {option.name}
+                            </MenuItem>
+                          ))
+                        : []}
+                    </TextField>
+                  </Grid>
+
+                  <Grid item md={12}>
                     <TextField
                       name="thematicArea"
                       label="Thematic Area"
@@ -217,8 +297,8 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                       <MenuItem disabled value="">
                         Select Thematic Area
                       </MenuItem>
-                      {!isLoading
-                        ? data.data.map((option) => (
+                      {!isLoadingThemes
+                        ? themesData.data.map((option) => (
                             <MenuItem key={option.id} value={option}>
                               {option.name}
                             </MenuItem>
@@ -296,16 +376,24 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                         }
                         columns={[
                           {
+                            field: "thematicAreaId",
+                            colId: "subThemeId&thematicAreaId",
+                            headerName: "STRATEGIC OBJECTIVE",
+                            editable: false,
+                            flex: 1,
+                            valueGetter: GetStrategicObjective,
+                          },
+                          {
                             field: "subThemeId",
                             colId: "subThemeId&thematicAreaId",
-                            headerName: "SUB-THEME(THEMATIC AREA)",
+                            headerName: "SUB-THEME [THEMATIC AREA]",
                             editable: false,
                             flex: 1,
                             valueGetter: GetSubTheme,
                           },
                           {
                             field: "action",
-                            headerName: "Action",
+                            headerName: "ACTION",
                             sortable: false,
                             flex: 1,
                             renderCell: (params) => (

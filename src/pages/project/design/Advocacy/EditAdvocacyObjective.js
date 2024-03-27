@@ -24,7 +24,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
   newAdvocacyObjective,
-  getAdvocacyObjectiveById,
+  getAdvocacyObjectiveByObjectiveId,
 } from "../../../../api/advocacy-objective";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -55,9 +55,13 @@ const AdvocacyObjectiveForm = ({ id, onAdvocacyActionChange }) => {
     data: AdvocacyObjectiveData,
     isLoading: isLoadingAdvocacyObjectiveData,
     isError: isErrorAdvocacyObjectiveData,
-  } = useQuery(["getAdvocacyObjectiveById", id], getAdvocacyObjectiveById, {
-    enabled: !!id,
-  });
+  } = useQuery(
+    ["getAdvocacyObjectiveByObjectiveId", id],
+    getAdvocacyObjectiveByObjectiveId,
+    {
+      enabled: !!id,
+    }
+  );
 
   const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
     ["status", "status"],

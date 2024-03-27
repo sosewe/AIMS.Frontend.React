@@ -38,9 +38,9 @@ import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getInnovationById, newInnovation } from "../../../../api/innovation";
 import { newInnovationDonor } from "../../../../api/innovation-donor";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -257,8 +257,8 @@ const InnovationForm = ({
   processLevelTypeId,
   onActionChange,
 }) => {
+  const user = useKeyCloakAuth();
   const queryClient = useQueryClient();
-
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
     getLookupMasterItemsByName,
@@ -347,6 +347,7 @@ const InnovationForm = ({
       donors: Yup.array().required("Required"),
     }),
     onSubmit: async (values) => {
+      console.log("values - " + JSON.stringify(values));
       try {
         const guid = new Guid();
         const saveInnovation = {
@@ -365,10 +366,12 @@ const InnovationForm = ({
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
-          statusId: values.status,
+          status: values.status,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
+          userId: user.sub,
         };
+        console.log("saveInnovation - " + JSON.stringify(saveInnovation));
         const innovation = await mutation.mutateAsync(saveInnovation);
 
         let innovationDonors = [];

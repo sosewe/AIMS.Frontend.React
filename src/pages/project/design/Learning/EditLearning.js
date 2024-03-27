@@ -636,8 +636,6 @@ const EditLearningForm = ({ id, onActionChange }) => {
           type: "success",
         });
         await queryClient.invalidateQueries(["getlearningBylearningId"]);
-
-        handleActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {

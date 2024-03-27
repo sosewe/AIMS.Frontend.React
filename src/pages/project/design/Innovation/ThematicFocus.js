@@ -126,6 +126,7 @@ const ThematicFocus = (props) => {
               thematicAreaId: subThemesDatum.thematicAreaId,
               id: new Guid().toString(),
             };
+
             await mutation.mutateAsync(innovationThematicFocus);
           }
         }
@@ -277,7 +278,7 @@ const ThematicFocus = (props) => {
                       </TextField>
                     </Grid>
 
-                    <Grid item md={12}>
+                    <Grid item md={12} mb={5}>
                       <TextField
                         name="thematicArea"
                         label="Thematic Area"

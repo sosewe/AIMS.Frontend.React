@@ -116,6 +116,14 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
       try {
         let administrativeUnitId = "";
         let administrativeUnitName = "";
+        let administrativeUnitCountryId = "";
+        let administrativeUnitCountryName = "";
+
+        if (values.selectedCountry) {
+          administrativeUnitCountryId = values.selectedCountry.id;
+          administrativeUnitCountryName = values.selectedCountry.adminUnit;
+        }
+
         if (
           values.selectedCountry &&
           !values.firstLevel &&
@@ -150,10 +158,14 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
         const projectLocation = {
           administrativeUnitId,
           administrativeUnitName,
+          administrativeUnitCountryId,
+          administrativeUnitCountryName,
           processLevelItemId: id,
           processLevelTypeId: processLevelTypeId,
           createDate: new Date(),
         };
+
+        console.log("projectLocation " + JSON.stringify(projectLocation));
         await mutation.mutateAsync(projectLocation);
         await queryClient.invalidateQueries(["getProjectLocationsQuery"]);
       } catch (error) {
@@ -338,6 +350,13 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
                     : []
                 }
                 columns={[
+                  {
+                    field: "administrativeUnitCountryId",
+                    headerName: "Administrative Country",
+                    editable: false,
+                    flex: 1,
+                    valueGetter: GetAdministrativeUnit,
+                  },
                   {
                     field: "administrativeUnitId",
                     headerName: "Administrative Unit",
