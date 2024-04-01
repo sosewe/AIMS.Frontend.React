@@ -3,12 +3,10 @@ import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
 import {
   Box,
-  Breadcrumbs as MuiBreadcrumbs,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
   CircularProgress,
-  Divider as MuiDivider,
   Grid,
   MenuItem,
   TextField as MuiTextField,
@@ -22,10 +20,13 @@ import { useFormik } from "formik";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import * as Yup from "yup";
+import { useQuery } from "@tanstack/react-query";
+import { getLookupMasterItemsByName } from "../../../api/lookup";
+import { toast } from "react-toastify";
+import { apiRoutes } from "../../../apiRoutes";
+import DoubleCountingAdjustment from "./DoubleCountingAdjustment";
 
 const Card = styled(MuiCard)(spacing);
-const Divider = styled(MuiDivider)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
@@ -86,15 +87,42 @@ const ProjectReportsAccordion = ({
   processLevelTypeId,
 }) => {
   const [value, setValue] = React.useState(0);
+  const [canDownload, setCanDownload] = React.useState(false);
+  const [implementingYearId, setImplementingYearId] = React.useState(undefined);
+  const [year, setYear] = React.useState(undefined);
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
+  const {
+    data: implementationYears,
+    isLoading,
+    isError,
+  } = useQuery(
+    ["ImplementationYear", "ImplementationYear"],
+    getLookupMasterItemsByName,
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      implementationYear: Yup.string().required("Required"),
+      implementationYear: Yup.object().required("Required"),
     }),
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        setImplementingYearId(values.implementationYear.lookupItemId);
+        setYear(values.implementationYear.lookupItemName);
+        setCanDownload(true);
+        setSubmitting(false);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
+    },
   });
 
   return (
@@ -135,7 +163,6 @@ const ProjectReportsAccordion = ({
                       name="implementationYear"
                       label="Implementation Year"
                       select
-                      required
                       value={formik.values.implementationYear}
                       error={Boolean(
                         formik.touched.implementationYear &&
@@ -147,13 +174,23 @@ const ProjectReportsAccordion = ({
                         formik.errors.implementationYear
                       }
                       onBlur={formik.handleBlur}
-                      onChange={formik.handleChange}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        setCanDownload(false);
+                      }}
                       variant="outlined"
                       my={2}
                     >
                       <MenuItem disabled value="">
                         Select Implementation Year
                       </MenuItem>
+                      {!isLoading && !isError
+                        ? implementationYears.data.map((option) => (
+                            <MenuItem key={option.lookupItemId} value={option}>
+                              {option.lookupItemName}
+                            </MenuItem>
+                          ))
+                        : []}
                     </TextField>
                   </Grid>
                   <Grid item md={4}>
@@ -170,9 +207,41 @@ const ProjectReportsAccordion = ({
                   </Grid>
                 </Grid>
               )}
+              {canDownload && (
+                <Grid container spacing={6}>
+                  <Grid item md={12}>
+                    <Box
+                      sx={{
+                        "& > *:not(style)": {
+                          display: "block",
+                          mb: 2, // Add margin between each link
+                        },
+                      }}
+                    >
+                      <a
+                        href={`${apiRoutes.projectAchievedResult}/Results/${implementingYearId}/${processLevelItemId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download: Indicator raw dataset
+                      </a>
+                      <a
+                        href={`${apiRoutes.projectAchievedResult}/YTD/${year}/${processLevelItemId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download: Indicator YTD summary dataset
+                      </a>
+                    </Box>
+                  </Grid>
+                </Grid>
+              )}
             </CardContent>
           </Card>
         </form>
+      </TabPanel>
+      <TabPanel index={1} value={value}>
+        <DoubleCountingAdjustment />
       </TabPanel>
     </Box>
   );

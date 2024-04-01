@@ -92,7 +92,13 @@ const ProjectsDataByUserType = () => {
         `${pagination.pageIndex * pagination.pageSize}`
       );
       fetchURL.searchParams.set("size", `${pagination.pageSize}`);
-      fetchURL.searchParams.set("filters", JSON.stringify(columnFilters ?? []));
+      console.log(columnFilters);
+      fetchURL.searchParams.set(
+        "filters",
+        columnFilters && columnFilters.length > 0
+          ? JSON.stringify(columnFilters)
+          : []
+      );
       fetchURL.searchParams.set("globalFilter", globalFilter ?? "");
       fetchURL.searchParams.set("sorting", JSON.stringify(sorting ?? []));
 

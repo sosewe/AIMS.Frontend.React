@@ -638,7 +638,7 @@ const ProjectIndicatorTargetsDataEntry = ({
           type: "success",
         });
         navigate(
-          `/project/project-indicator-targets-view/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${year}`
+          `/project-access/project-indicator-targets-view/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${year}`
         );
       } catch (error) {
         toast(error.response.data, {

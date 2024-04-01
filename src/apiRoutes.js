@@ -110,6 +110,8 @@ export const apiRoutes = {
   primaryResultChainAttribute: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/PrimaryResultChainAttribute`,
   secondaryResultChainAttribute: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/SecondaryResultChainAttribute`,
   programmeThematicArea: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ProgrammeThematicArea`,
+  // internal reporting
+  projectAchievedResult: `${path}${process.env.REACT_APP_INTERNAL_REPORTING}/api/ProjectAchievedResult`,
   // external
   ERPStaffList: `https://monitoringapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://monitoringapi.amref.org/api/activeRoles`,
