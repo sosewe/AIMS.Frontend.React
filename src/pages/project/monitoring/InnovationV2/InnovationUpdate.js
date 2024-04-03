@@ -598,9 +598,8 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
     function setCurrentFormValues() {
       if (
         !isLoadingInnovationMetricReport &&
-        !isLoadingInnovationRisks &&
-        InnovationRiskData.data &&
-        InnovationRiskData.data.length > 0
+        InnovationMetricReportData.data &&
+        InnovationMetricReportData.data.length > 0
       ) {
         formik.setValues({
           reportingPeriod:

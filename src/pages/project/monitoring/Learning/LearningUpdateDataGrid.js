@@ -22,7 +22,7 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Trash, Edit, Link2 } from "react-feather";
+import { Trash, Edit, Link2, ChevronLeft } from "react-feather";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { getLearningByLearningId } from "../../../../api/learning";
@@ -86,6 +86,13 @@ const LearningUpdateDataGridData = (props) => {
       type: "error",
     });
   }
+
+  const handleActionChange = useCallback(
+    (event) => {
+      onActionChange({ id: 0, status: true });
+    },
+    [onActionChange]
+  );
 
   const handleLearningActionChange = useCallback(
     (id, status) => {
@@ -181,6 +188,17 @@ const LearningUpdateDataGridData = (props) => {
               getRowHeight={() => "auto"}
             />
           </div>
+
+          <br />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            mt={3}
+            onClick={() => handleActionChange({ id: 0, action: 1 })}
+          >
+            <ChevronLeft /> Back
+          </Button>
         </Paper>
       </CardContent>
 

@@ -46,6 +46,7 @@ const ProjectsDataByUserType = () => {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [total, setTotal] = useState(0);
   const { isLoading: isLoadingProcessLevelType, data: processLevelData } =
     useQuery(
       ["processLevelType", "ProcessLevelType"],
@@ -92,7 +93,7 @@ const ProjectsDataByUserType = () => {
         `${pagination.pageIndex * pagination.pageSize}`
       );
       fetchURL.searchParams.set("size", `${pagination.pageSize}`);
-      console.log(columnFilters);
+
       fetchURL.searchParams.set(
         "filters",
         columnFilters && columnFilters.length > 0
@@ -105,6 +106,7 @@ const ProjectsDataByUserType = () => {
       //use whatever fetch library you want, fetch, axios, etc
       const response = await fetch(fetchURL.href);
       const json = await response.json();
+      setTotal(json.pageInfo.totalItems);
       return json;
     },
   });
@@ -139,8 +141,11 @@ const ProjectsDataByUserType = () => {
     columns,
     data,
     enableRowActions: true,
+    enablePagination: true,
     positionActionsColumn: "last",
-    initialState: { showColumnFilters: true },
+    initialState: {
+      showColumnFilters: true,
+    },
     manualFiltering: true, //turn off built-in client-side filtering
     manualPagination: true, //turn off built-in client-side pagination
     manualSorting: true, //turn off built-in client-side sorting
@@ -173,7 +178,8 @@ const ProjectsDataByUserType = () => {
         </IconButton>
       </Tooltip>
     ),
-    rowCount: meta?.totalRowCount ?? 0,
+    //rowCount: meta?.totalRowCount ?? 0,
+    rowCount: total,
     state: {
       columnFilters,
       globalFilter,
@@ -187,8 +193,14 @@ const ProjectsDataByUserType = () => {
   return (
     <Card mb={6}>
       <Paper>
-        <div style={{ height: 400, width: "100%" }}>
-          <MaterialReactTable table={table} />
+        <div style={{ height: "100%", width: "100%" }}>
+          <MaterialReactTable
+            table={table}
+            manualPagination
+            enablePagination
+            manualSorting
+            enableRowActions
+          />
         </div>
       </Paper>
     </Card>
@@ -209,7 +221,7 @@ const ProjectHome = () => {
           <AddIcon /> New Project
         </Button>
         <Divider my={3} />
-        <ProjectsDataByUserType />
+        <ProjectsDataByUserType height={1000} />
       </LocalizationProvider>
     </React.Fragment>
   );

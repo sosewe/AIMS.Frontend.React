@@ -95,7 +95,7 @@ const LearningUpdateForm = (props) => {
   });
 
   const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
-    ["ragStatus", "RAGStatus"],
+    ["bragStatus", "BRAGStatus"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
