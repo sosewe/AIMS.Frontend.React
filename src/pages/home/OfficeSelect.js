@@ -27,12 +27,23 @@ const OfficeSelect = () => {
   };
   const handleOfficeChange = (office) => {
     officeContext.setSelectedOffice(office);
+    localStorage.setItem("office_setting", office);
     handleClose();
+    handleRefresh();
+  };
+
+  const handleRefresh = (event) => {
+    window.location.reload();
   };
 
   React.useEffect(() => {
-    if (!selectedOffice && data.length > 0) {
-      officeContext.setSelectedOffice(data[0]);
+    const office_setting = localStorage.getItem("office_setting");
+    if (office_setting) {
+      officeContext.setSelectedOffice(office_setting);
+    } else {
+      if (!selectedOffice && data.length > 0) {
+        officeContext.setSelectedOffice(data[0]);
+      }
     }
   }, [data, officeContext]);
 
