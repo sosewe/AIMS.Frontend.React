@@ -91,8 +91,8 @@ const ProjectsDataByUserType = () => {
         JSON.stringify(user?.tokenParsed?.Office)
       );*/
 
-      const implementingOffice = localStorage.getItem("office_setting");
-      console.log("implementingOffice : " + implementingOffice);
+      const implementingOffice =
+        localStorage.getItem("office_setting") ?? user?.tokenParsed?.Office;
       fetchURL.searchParams.set(
         "implementingOffices",
         JSON.stringify(["" + implementingOffice + ""])

@@ -29,6 +29,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
 import InnovationDetail from "./InnovationV2/InnovationDetail";
+import InnovationMonitoring from "./InnovationV2/InnovationMonitoring";
 import AdvocacyDataGrid from "./Advocacy/AdvocacyDataGrid";
 import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
@@ -170,6 +171,7 @@ const ProjectMonitoringAccordion = ({
         <Tab label="Technical Assistance" {...a11yProps(2)} />
         <Tab label="Advocacy" {...a11yProps(3)} />
         <Tab label="Reasearch (Learning)" {...a11yProps(4)} />
+        <Tab label="Innovation V2" {...a11yProps(5)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <Typography variant="h5" gutterBottom display="inline">
@@ -365,6 +367,9 @@ const ProjectMonitoringAccordion = ({
             );
           }
         })()}
+      </TabPanel>
+      <TabPanel value={value} index={5}>
+        <InnovationMonitoring />
       </TabPanel>
     </Box>
   );

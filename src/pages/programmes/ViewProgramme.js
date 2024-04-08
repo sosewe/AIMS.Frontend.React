@@ -178,14 +178,14 @@ const ViewProgramme = () => {
     <React.Fragment>
       <Helmet title="View Programme" />
       <Typography variant="h3" gutterBottom display="inline">
-        View Programme
+        View Strategic Objectives
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} to="/programme/programmes">
-          View Programme
+          View Strategic Objectives
         </Link>
-        <Typography>Programme List</Typography>
+        <Typography>Strategic Objectives List</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />

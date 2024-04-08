@@ -30,7 +30,7 @@ const programmeSection = [
     children: [
       {
         href: "/programme/programmes",
-        title: "Programmes",
+        title: "Strategic Objectives",
       },
       {
         href: "/programme/thematic-areas",

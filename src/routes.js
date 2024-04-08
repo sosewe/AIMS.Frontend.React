@@ -130,6 +130,9 @@ const InnovationDetail = async(() =>
 );
 
 // Innovation Monitoring
+const InnovationResults = async(() =>
+  import("./pages/project/monitoring/InnovationV2/InnovationResults")
+);
 
 const InnovationMonitoring = async(() =>
   import("./pages/project/monitoring/Innovation/InnovationMonitoring")
@@ -301,6 +304,10 @@ const routes = [
       {
         path: "project-detail/:id",
         element: <ProjectDetail />,
+      },
+      {
+        path: "monitoring/innovation-results/:processLevelItemId/:processLevelTypeId/:innovationId/:projectLocationId/:reportingPeriod/:year",
+        element: <InnovationResults />,
       },
     ],
   },
