@@ -7,6 +7,10 @@ import {
   CircularProgress,
   Grid,
   MenuItem,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
@@ -21,6 +25,7 @@ import { green, purple } from "@mui/material/colors";
 import { toast } from "react-toastify";
 import { getDCAResults } from "../../../api/internal-reporting";
 import GroupedTable from "./GroupedTable";
+import ProjectLevelDCASummary from "./ProjectLevelDCASummary";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -39,6 +44,20 @@ const theme = createTheme({
 });
 
 const DoubleCountingAdjustment = ({ processLevelItemId }) => {
+  const [activeStep, setActiveStep] = React.useState(0);
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleReset = () => {
+    setActiveStep(0);
+  };
+
   const [implementationYear, setImplementationYear] = useState();
   const [implementationYearId, setImplementationYearId] = useState();
   const {
@@ -146,21 +165,48 @@ const DoubleCountingAdjustment = ({ processLevelItemId }) => {
               </Grid>
             )}
 
-            {!isLoadingDCAResults && !isErrorDCAResults ? (
-              <React.Fragment>
-                {DCAResults.data.length > 0 ? (
-                  <GroupedTable
-                    DCAResults={DCAResults.data}
+            <Stepper activeStep={activeStep} orientation="vertical">
+              <Step key={0}>
+                <StepLabel>Location based DCA table</StepLabel>
+                <StepContent>
+                  {!isLoadingDCAResults && !isErrorDCAResults ? (
+                    <React.Fragment>
+                      {DCAResults.data.length > 0 ? (
+                        <GroupedTable
+                          DCAResults={DCAResults.data}
+                          processLevelItemId={processLevelItemId}
+                          implementationYearId={implementationYearId}
+                        />
+                      ) : (
+                        "Year does not have any results"
+                      )}
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>&nbsp;</React.Fragment>
+                  )}
+                  <Grid container spacing={6}>
+                    <Grid item md={4}>
+                      <Button
+                        variant="contained"
+                        onClick={handleNext}
+                        sx={{ mt: 1, mr: 1 }}
+                      >
+                        Continue
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </StepContent>
+              </Step>
+              <Step key={1}>
+                <StepLabel>Project level DCA summary</StepLabel>
+                <StepContent>
+                  <ProjectLevelDCASummary
                     processLevelItemId={processLevelItemId}
                     implementationYearId={implementationYearId}
                   />
-                ) : (
-                  "Year does not have any results"
-                )}
-              </React.Fragment>
-            ) : (
-              <React.Fragment>&nbsp;</React.Fragment>
-            )}
+                </StepContent>
+              </Step>
+            </Stepper>
           </CardContent>
         </Card>
       </form>
