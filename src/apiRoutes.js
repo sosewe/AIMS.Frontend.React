@@ -112,6 +112,7 @@ export const apiRoutes = {
   programmeThematicArea: `${path}${process.env.REACT_APP_INDICATOR_PORT}/api/ProgrammeThematicArea`,
   // internal reporting
   projectAchievedResult: `${path}${process.env.REACT_APP_INTERNAL_REPORTING}/api/ProjectAchievedResult`,
+  doubleCountingAdjustment: `${path}${process.env.REACT_APP_INTERNAL_REPORTING}/api/DoubleCountingAdjustment`,
   // external
   ERPStaffList: `https://monitoringapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://monitoringapi.amref.org/api/activeRoles`,

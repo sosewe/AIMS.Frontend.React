@@ -92,7 +92,6 @@ const ProjectsDataByUserType = () => {
         `${pagination.pageIndex * pagination.pageSize}`
       );
       fetchURL.searchParams.set("size", `${pagination.pageSize}`);
-      console.log(columnFilters);
       fetchURL.searchParams.set(
         "filters",
         columnFilters && columnFilters.length > 0
