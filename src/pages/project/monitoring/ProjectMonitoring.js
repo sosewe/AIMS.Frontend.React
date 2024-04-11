@@ -34,6 +34,7 @@ import AdvocacyDataGrid from "./Advocacy/AdvocacyDataGrid";
 import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistanceDetail";
+import TechnicalAssistanceMonitoring from "./TechnicalAssistance/TechnicalAssistanceMonitoring";
 import LearningDataGrid from "./Learning/LearningDataGrid";
 import LearningDetail from "./Learning/LearningDetail";
 
@@ -172,6 +173,7 @@ const ProjectMonitoringAccordion = ({
         <Tab label="Advocacy" {...a11yProps(3)} />
         <Tab label="Reasearch (Learning)" {...a11yProps(4)} />
         <Tab label="Innovation V2" {...a11yProps(5)} />
+        <Tab label="Technical Assistance V2" {...a11yProps(6)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <Typography variant="h5" gutterBottom display="inline">
@@ -370,6 +372,9 @@ const ProjectMonitoringAccordion = ({
       </TabPanel>
       <TabPanel value={value} index={5}>
         <InnovationMonitoring />
+      </TabPanel>
+      <TabPanel value={value} index={6}>
+        <TechnicalAssistanceMonitoring />
       </TabPanel>
     </Box>
   );

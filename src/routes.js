@@ -159,10 +159,15 @@ const AdvocacyMonitoringUpdate = async(() =>
 );
 
 // Technical Assistance Monitoring
+const TechnicalAssistanceResults = async(() =>
+  import(
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceResults"
+  )
+);
 
 const TechnicalAssistanceMonitoring = async(() =>
   import(
-    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceDetail"
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceMonitoring"
   )
 );
 
@@ -308,6 +313,10 @@ const routes = [
       {
         path: "monitoring/innovation-results/:processLevelItemId/:processLevelTypeId/:innovationId/:projectLocationId/:reportingPeriod/:year",
         element: <InnovationResults />,
+      },
+      {
+        path: "monitoring/technicalassistance-results/:processLevelItemId/:processLevelTypeId/:technicalAssistanceId/:projectLocationId/:reportingPeriod/:year",
+        element: <TechnicalAssistanceResults />,
       },
     ],
   },

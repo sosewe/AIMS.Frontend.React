@@ -31,7 +31,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import InnovationDetail from "./InnovationDetail";
+import TechnicalAssistanceDetail from "./TechnicalAssistanceDetail";
 import { getInnovationByMonitoringPeriod } from "../../../../api/innovation";
 
 const Card = styled(MuiCard)(spacing);
@@ -42,21 +42,21 @@ const Button = styled(MuiButton)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 const Paper = styled(MuiPaper)(spacing);
 
-const InnovationResultsGrid = () => {
+const TechnicalAssistanceResultsGrid = () => {
   let {
     processLevelItemId,
     processLevelTypeId,
-    innovationId,
+    technicalAssistanceId,
     projectLocationId,
     reportingPeriod,
     year,
   } = useParams();
   return (
     <React.Fragment>
-      <InnovationDetail
+      <TechnicalAssistanceDetail
         processLevelItemId={processLevelItemId}
         processLevelTypeId={processLevelTypeId}
-        innovationId={innovationId}
+        technicalAssistanceId={technicalAssistanceId}
         projectLocationId={projectLocationId}
         reportingPeriod={reportingPeriod}
         year={year}
@@ -64,16 +64,17 @@ const InnovationResultsGrid = () => {
     </React.Fragment>
   );
 };
-
-const InnovationResults = () => {
+const TechnicalAssistanceResults = () => {
   let {
     processLevelItemId,
     processLevelTypeId,
-    innovationId,
+    technicalAssistanceId,
     projectLocationId,
     reportingPeriod,
     year,
   } = useParams();
+
+  console.log("useParams()  ...  " + JSON.stringify(useParams()));
 
   const navigate = useNavigate();
   const darkTheme = createTheme({
@@ -109,7 +110,7 @@ const InnovationResults = () => {
       </ThemeProvider>
       <Box my={6}>
         <Typography variant="h3" gutterBottom display="inline">
-          Innovation Monitoring
+          Technical Assistance Monitoring
         </Typography>
 
         <Breadcrumbs aria-label="Breadcrumb" mt={2}>
@@ -122,10 +123,10 @@ const InnovationResults = () => {
           <Typography>Monitoring</Typography>
         </Breadcrumbs>
         <Divider my={2} />
-        <InnovationResultsGrid
+        <TechnicalAssistanceResultsGrid
           processLevelItemId={processLevelItemId}
           processLevelTypeId={processLevelTypeId}
-          innovationId={innovationId}
+          technicalAssistanceId={technicalAssistanceId}
           projectLocationId={projectLocationId}
           reportingPeriod={reportingPeriod}
           year={year}
@@ -134,4 +135,4 @@ const InnovationResults = () => {
     </React.Fragment>
   );
 };
-export default InnovationResults;
+export default TechnicalAssistanceResults;
