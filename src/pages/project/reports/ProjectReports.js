@@ -241,7 +241,7 @@ const ProjectReportsAccordion = ({
         </form>
       </TabPanel>
       <TabPanel index={1} value={value}>
-        <DoubleCountingAdjustment />
+        <DoubleCountingAdjustment processLevelItemId={processLevelItemId} />
       </TabPanel>
     </Box>
   );

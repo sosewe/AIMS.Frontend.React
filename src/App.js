@@ -52,7 +52,7 @@ function App({ emotionCache = clientSideEmotionCache }) {
       try {
         if (auth) {
           const user = {
-            id: kc.sub,
+            id: kc.tokenParsed.sub,
             name: kc.tokenParsed.name,
             token: kc.token,
             roles: kc.tokenParsed?.resource_access?.["aims_frontend"]?.roles,
