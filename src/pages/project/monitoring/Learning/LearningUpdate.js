@@ -24,7 +24,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 import {
-  getLearningProgressUpdateByProgressId,
+  getLearningProgressUpdateByMonitoringPeriod,
   newLearningProgressUpdate,
 } from "../../../../api/learning-progress-update";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
@@ -38,8 +38,6 @@ const Button = styled(MuiButton)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  year: "",
-  reportingFrequencyId: "",
   researchStageId: "",
   ragStatusId: "",
   progress: "",
@@ -47,52 +45,32 @@ const initialValues = {
 };
 
 const LearningUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onLearningActionChange,
-  } = props;
-  const MAX_COUNT = 5;
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [fileLimit, setFileLimit] = useState(false);
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [editId, setEditId] = useState();
+  const id = props.learningId;
+  const geoFocusId = props.projectLocationId;
+  const reportingFrequencyId = props.reportingPeriod;
+  const reportingYearId = props.year;
 
   const {
-    data: LearningUpdateData,
+    data: learningUpdateData,
     isLoading: isLoadingLearningUpdate,
     isError: isErrorLearningUpdate,
   } = useQuery(
-    ["getLearningProgressUpdateByProgressId", id],
-    getLearningProgressUpdateByProgressId,
+    [
+      "getLearningProgressUpdateByMonitoringPeriod",
+      id,
+      geoFocusId,
+      reportingFrequencyId,
+      reportingYearId,
+    ],
+    getLearningProgressUpdateByMonitoringPeriod,
     { enabled: !!id }
   );
 
-  const { isLoading: isLoadingYears, data: yearsData } = useQuery(
-    ["years", "Years"],
-    getLookupMasterItemsByName,
-    {
+  const { isLoading: isLoadingResearchStageData, data: researchStageData } =
+    useQuery(["researchStage", "ResearchStage"], getLookupMasterItemsByName, {
       refetchOnWindowFocus: false,
-    }
-  );
-
-  const {
-    isLoading: isLoadingQuartersData,
-    isError: isErrorQuartersData,
-    data: quartersData,
-  } = useQuery(["quarters", "Quarters"], getLookupMasterItemsByName, {
-    refetchOnWindowFocus: false,
-  });
-
-  const {
-    isLoading: isLoadingResearchStageData,
-    isError: isErrorResearchStageData,
-    data: researchStageData,
-  } = useQuery(["researchStage", "ResearchStage"], getLookupMasterItemsByName, {
-    refetchOnWindowFocus: false,
-  });
+    });
 
   const { isLoading: isLoadingStatuses, data: statusesData } = useQuery(
     ["bragStatus", "BRAGStatus"],
@@ -109,8 +87,6 @@ const LearningUpdateForm = (props) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      year: Yup.object().required("Required"),
-      reportingFrequencyId: Yup.object().required("Required"),
       researchStageId: Yup.object().required("Required"),
       ragStatusId: Yup.object().required("Required"),
       progress: Yup.string().required("Required"),
@@ -119,28 +95,27 @@ const LearningUpdateForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveLearningUpdate = {
-          createDate: new Date(),
-          id: new Guid().toString(),
+          id: editId ?? new Guid().toString(),
           researchId: id,
-          implementationYearId: values.year.lookupItemId,
-          implementationYear: values.year.lookupItemName,
-          quarterId: values.reportingFrequencyId.lookupItemId,
-          quarter: values.reportingFrequencyId.lookupItemName,
           researchStageId: values.researchStageId.lookupItemId,
           researchStage: values.researchStageId.lookupItemName,
           ragStatusId: values.ragStatusId.lookupItemId,
           ragStatus: values.ragStatusId.lookupItemName,
           progress: values.progress,
           challenges: values.challenges,
+          reportingFrequencyId: reportingFrequencyId,
+          reportingFrequency: "",
+          implementationYearId: reportingYearId,
+          implementationYear: "",
+          administrativeUnitId: geoFocusId,
+          createDate: new Date(),
         };
 
         await mutation.mutateAsync(saveLearningUpdate);
 
-        toast("Successfully Created Learning/Research", {
+        toast("Successfully Updated Learning Monitoring", {
           type: "success",
         });
-
-        handleLearningActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -150,14 +125,44 @@ const LearningUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingLearningUpdate &&
+        !isErrorLearningUpdate &&
+        learningUpdateData &&
+        learningUpdateData.data
+      ) {
+        let monitoringResearchStage;
+        if (!isLoadingResearchStageData) {
+          monitoringResearchStage = researchStageData.data.find(
+            (obj) =>
+              obj.lookupItemId === learningUpdateData.data.researchStageId
+          );
+        }
 
-  const handleLearningActionChange = useCallback(
-    (id, status) => {
-      onLearningActionChange({ id: id, status: status });
-    },
-    [onLearningActionChange]
-  );
+        let monitoringRAGStatusId;
+        if (!isLoadingStatuses) {
+          monitoringRAGStatusId = statusesData.data.find(
+            (obj) => obj.lookupItemId === learningUpdateData.data.ragStatusId
+          );
+        }
+
+        formik.setValues({
+          researchStageId: learningUpdateData.data.researchStageId,
+          researchStageId: monitoringResearchStage
+            ? monitoringResearchStage
+            : "",
+          ragStatusId: monitoringRAGStatusId ? monitoringRAGStatusId : "",
+          progress: learningUpdateData.data.progress,
+          challenges: learningUpdateData.data.challenges,
+        });
+
+        setEditId(learningUpdateData.data.id);
+      }
+    }
+    setCurrentFormValues();
+  }, [isLoadingLearningUpdate, learningUpdateData]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -167,64 +172,6 @@ const LearningUpdateForm = (props) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
-          <Grid item md={6}>
-            <TextField
-              name="year"
-              label="Implementing Year"
-              select
-              value={formik.values.year}
-              error={Boolean(formik.touched.year && formik.errors.year)}
-              fullWidth
-              helperText={formik.touched.year && formik.errors.year}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Year
-              </MenuItem>
-              {!isLoadingYears
-                ? yearsData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={6}>
-            <TextField
-              name="reportingFrequencyId"
-              label="Quarter"
-              select
-              value={formik.values.reportingFrequencyId}
-              error={Boolean(
-                formik.touched.reportingFrequencyId &&
-                  formik.errors.reportingFrequencyId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.reportingFrequencyId &&
-                formik.errors.reportingFrequencyId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Quarter
-              </MenuItem>
-              {!isLoadingQuartersData
-                ? quartersData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
           <Grid item md={6}>
             <TextField
               name="researchStageId"
@@ -328,15 +275,6 @@ const LearningUpdateForm = (props) => {
               variant="contained"
               color="primary"
               mt={3}
-              onClick={() => handleLearningActionChange(0, true)}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
               ml={3}
             >
               <Check /> Save changes
@@ -349,6 +287,15 @@ const LearningUpdateForm = (props) => {
 };
 
 const LearningUpdate = (props) => {
+  let {
+    processLevelItemId,
+    processLevelTypeId,
+    learningId,
+    projectLocationId,
+    reportingPeriod,
+    year,
+  } = useParams();
+
   return (
     <React.Fragment>
       <Helmet title="Monthly Update" />
@@ -362,11 +309,12 @@ const LearningUpdate = (props) => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <LearningUpdateForm
-                id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
-                onActionChange={props.onActionChange}
-                onLearningActionChange={props.onLearningActionChange}
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                learningId={learningId}
+                projectLocationId={projectLocationId}
+                reportingPeriod={reportingPeriod}
+                year={year}
               />
             </Grid>
           </Grid>

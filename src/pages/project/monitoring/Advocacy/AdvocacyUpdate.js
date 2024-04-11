@@ -58,6 +58,7 @@ const initialValues = {
 };
 
 const AdvocacyUpdateForm = (props) => {
+  const [editId, setEditId] = useState();
   const id = props.advocacyId;
   const geoFocusId = props.projectLocationId;
   const reportingFrequencyId = props.reportingPeriod;
@@ -141,7 +142,7 @@ const AdvocacyUpdateForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveAdvocacyUpdate = {
-          id: new Guid(),
+          id: editId ?? new Guid().toString(),
           ragStatusId: values.ragStatusId.lookupItemId,
           ragStatus: values.ragStatusId.lookupItemName,
           progress: values.progress,
@@ -154,7 +155,6 @@ const AdvocacyUpdateForm = (props) => {
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
         };
-        console.log("saveAdvocacyUpdate");
         const advocacyUpdate = await mutation.mutateAsync(saveAdvocacyUpdate);
 
         let amrefContributions = [];
@@ -238,6 +238,8 @@ const AdvocacyUpdateForm = (props) => {
           actorsInvolved: actorsInvolved,
           progress: advocacyUpdate.data.progress,
         });
+
+        setEditId(advocacyUpdate.data.id);
       }
     }
 

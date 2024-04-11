@@ -38,6 +38,7 @@ import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistance
 import TechnicalAssistanceMonitoring from "./TechnicalAssistance/TechnicalAssistanceMonitoring";
 import LearningDataGrid from "./Learning/LearningDataGrid";
 import LearningDetail from "./Learning/LearningDetail";
+import LearningMonitoring from "./Learning/LearningMonitoring";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -176,6 +177,7 @@ const ProjectMonitoringAccordion = ({
         <Tab label="Innovation V2" {...a11yProps(5)} />
         <Tab label="Technical Assistance V2" {...a11yProps(6)} />
         <Tab label="Advocacy V2" {...a11yProps(7)} />
+        <Tab label="Reasearch (Learning) V2" {...a11yProps(8)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <Typography variant="h5" gutterBottom display="inline">
@@ -380,6 +382,9 @@ const ProjectMonitoringAccordion = ({
       </TabPanel>
       <TabPanel value={value} index={7}>
         <AdvocacyMonitoring />
+      </TabPanel>
+      <TabPanel value={value} index={8}>
+        <LearningMonitoring />
       </TabPanel>
     </Box>
   );

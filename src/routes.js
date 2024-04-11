@@ -203,13 +203,14 @@ const NewLearning = async(() =>
 const LearningDetail = async(() =>
   import("./pages/project/design/Learning/LearningDetail")
 );
-// Advocacy Design
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
+const LearningResults = async(() =>
+  import("./pages/project/monitoring/Learning/LearningResults")
+);
+
+const LearningMonitoring = async(() =>
+  import("./pages/project/monitoring/Learning/LearningMonitoring")
+);
+
 const NewAdvocacy = async(() =>
   import("./pages/project/design/Advocacy/NewAdvocacy")
 );
@@ -325,6 +326,10 @@ const routes = [
       {
         path: "monitoring/advocacy-results/:processLevelItemId/:processLevelTypeId/:advocacyId/:projectLocationId/:reportingPeriod/:year",
         element: <AdvocacyResults />,
+      },
+      {
+        path: "monitoring/learning-results/:processLevelItemId/:processLevelTypeId/:learningId/:projectLocationId/:reportingPeriod/:year",
+        element: <LearningResults />,
       },
     ],
   },

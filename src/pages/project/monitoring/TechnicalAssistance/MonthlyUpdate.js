@@ -62,6 +62,7 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const MonthlyUpdateForm = (props) => {
+  const [editId, setEditId] = useState();
   const id = props.technicalAssistanceId;
   const geoFocusId = props.projectLocationId;
   const reportingFrequencyId = props.reportingPeriod;
@@ -204,7 +205,7 @@ const MonthlyUpdateForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveMonthlyUpdate = {
-          id: new Guid().toString(),
+          id: editId ?? new Guid().toString(),
           technicalAssistanceId: id,
           changeDescription: values.changeDescription,
           changeRelevance: values.changeRelevance,
@@ -351,6 +352,8 @@ const MonthlyUpdateForm = (props) => {
             technicalAssistanceMonthlyUpdate.data.changeContributionOther,
           followUp: technicalAssistanceMonthlyUpdate.data.followUp,
         });
+
+        setEditId(technicalAssistanceMonthlyUpdate.data.id);
       }
     }
 
