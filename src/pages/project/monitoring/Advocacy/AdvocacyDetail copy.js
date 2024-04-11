@@ -47,15 +47,13 @@ function a11yProps(index: number) {
 }
 
 const AdvocacyDetail = (props) => {
-  let {
-    processLevelItemId,
-    processLevelTypeId,
-    advocacyId,
-    projectLocationId,
-    reportingPeriod,
-    year,
-  } = useParams();
+  const [advocacyAction, setAdvocacyAction] = React.useState({
+    id: 0,
+    status: true,
+    data: {},
+  });
   const [value, setValue] = React.useState(0);
+  let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -80,17 +78,49 @@ const AdvocacyDetail = (props) => {
         <Tab label="KM Documents Upload" {...a11yProps(1)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <AdvocacyUpdate
-          processLevelItemId={processLevelItemId}
-          processLevelTypeId={processLevelTypeId}
-          advocacyId={advocacyId}
-          projectLocationId={projectLocationId}
-          reportingPeriod={reportingPeriod}
-          year={year}
-        />
+        {(() => {
+          if (advocacyAction.status) {
+            return (
+              <AdvocacyProgressUpdateDataGrid
+                id={props.id}
+                processLevelItemId={props.processLevelItemId}
+                processLevelTypeId={props.processLevelTypeId}
+                onActionChange={props.onActionChange}
+                onAdvocacyActionChange={setAdvocacyAction}
+              />
+            );
+          } else if (!advocacyAction.status && advocacyAction.id === 0) {
+            return (
+              <>
+                <AdvocacyUpdate
+                  id={props.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onAdvocacyActionChange={setAdvocacyAction}
+                />
+              </>
+            );
+          } else {
+            return (
+              <>
+                <EditAdvocacyUpdate
+                  id={advocacyAction.id}
+                  processLevelItemId={props.processLevelItemId}
+                  processLevelTypeId={props.processLevelTypeId}
+                  onAdvocacyActionChange={setAdvocacyAction}
+                />
+              </>
+            );
+          }
+        })()}
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <KMDocumentsUpload />
+        <KMDocumentsUpload
+          id={advocacyAction.id}
+          processLevelItemId={props.processLevelItemId}
+          processLevelTypeId={props.processLevelTypeId}
+          onAdvocacyActionChange={setAdvocacyAction}
+        />
       </TabPanel>
     </Box>
   );

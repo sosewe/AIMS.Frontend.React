@@ -143,8 +143,12 @@ const InnovationMonitoringDetail = async(() =>
 );
 
 //Advocacy Monitoring
+const AdvocacyResults = async(() =>
+  import("./pages/project/monitoring/Advocacy/AdvocacyResults")
+);
+
 const AdvocacyMonitoring = async(() =>
-  import("./pages/project/monitoring/Advocacy/AdvocacyDetail")
+  import("./pages/project/monitoring/Advocacy/AdvocacyMonitoring")
 );
 
 const AdvocacyMonitoringDetail = async(() =>
@@ -317,6 +321,10 @@ const routes = [
       {
         path: "monitoring/technicalassistance-results/:processLevelItemId/:processLevelTypeId/:technicalAssistanceId/:projectLocationId/:reportingPeriod/:year",
         element: <TechnicalAssistanceResults />,
+      },
+      {
+        path: "monitoring/advocacy-results/:processLevelItemId/:processLevelTypeId/:advocacyId/:projectLocationId/:reportingPeriod/:year",
+        element: <AdvocacyResults />,
       },
     ],
   },
