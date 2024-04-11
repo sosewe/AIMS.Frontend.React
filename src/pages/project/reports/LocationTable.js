@@ -24,6 +24,7 @@ import {
 } from "../../../api/internal-reporting";
 import { useParams } from "react-router-dom";
 import { Guid } from "../../../utils/guid";
+import useKeyCloakAuth from "../../../hooks/useKeyCloakAuth";
 
 const TextField = styled(MuiTextField)(spacing);
 
@@ -33,8 +34,10 @@ const LocationTable = ({
   implementationYearId,
 }) => {
   let { id } = useParams();
+  const user = useKeyCloakAuth();
   const [filePath, setFilePath] = useState();
   const [fileName, setFileName] = useState();
+
   const mutation = useMutation({ mutationFn: uploadDCAReportingFile });
   const mutationSaveDCA = useMutation({ mutationFn: locationBasedDCA });
   const formik = useFormik({
@@ -85,6 +88,8 @@ const LocationTable = ({
           OriginalChildM: calculateTotal("child_M"),
           OriginalYouthF: calculateTotal("youth_F"),
           OriginalYouthM: calculateTotal("youth_M"),
+          CreateDate: new Date(),
+          UserId: user.sub,
         };
         InData.id = new Guid().toString();
         await mutationSaveDCA.mutateAsync(InData);

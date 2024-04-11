@@ -30,3 +30,10 @@ export const uploadDCAReportingFile = async (values) => {
 export const locationBasedDCA = async (values) => {
   return await axios.post(`${apiRoutes.doubleCountingAdjustment}`, values);
 };
+
+export const getLocationBasedDCA = async ({ queryKey }) => {
+  const [_, processLevelItemId, implementingYearId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/${processLevelItemId}/${implementingYearId}`
+  );
+};
