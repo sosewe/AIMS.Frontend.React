@@ -244,7 +244,13 @@ const AdvocacyUpdateForm = (props) => {
     }
 
     setCurrentFormValues();
-  }, [advocacyUpdate, isLoadingAdvocacyUpdate]);
+  }, [
+    advocacyUpdate,
+    isLoadingAdvocacyUpdate,
+    isLoadingAmrefContribution,
+    isLoadingPartner,
+    isLoadingBragStatuses,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
