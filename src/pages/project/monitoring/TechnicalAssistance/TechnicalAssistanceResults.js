@@ -74,8 +74,6 @@ const TechnicalAssistanceResults = () => {
     year,
   } = useParams();
 
-  console.log("useParams()  ...  " + JSON.stringify(useParams()));
-
   const navigate = useNavigate();
   const darkTheme = createTheme({
     palette: {

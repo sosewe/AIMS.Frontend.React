@@ -9,41 +9,29 @@ import {
   TextField as MuiTextField,
   Autocomplete as MuiAutocomplete,
   Typography,
-  InputLabel,
-  Link,
   Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Label,
-} from "@mui/icons-material";
-import CancelIcon from "@mui/icons-material/Cancel";
 import * as Yup from "yup";
 import { display, spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
+import { Check, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
-import {
-  newInnovationMonitoringScaleUp,
-  getInnovationMonitoringScaleUpByInnovationId,
-} from "../../../../api/innovation-monitoring-scaleup";
+import { getInnovationByMonitoringPeriod } from "../../../../api/innovation";
+import { newInnovationMonitoringScaleUp } from "../../../../api/innovation-monitoring-scaleup";
 import { getInnovationMonitoringTechnicalReviewByInnovationId } from "../../../../api/innovation-monitoring-technical-review";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
@@ -55,7 +43,12 @@ const initialValues = {
   innovationClosingReason: "",
 };
 
-const ScaleUpForm = ({ id, onActionChange }) => {
+const ScaleUpForm = (props) => {
+  const [editId, setEditId] = useState();
+  const id = props.innovationId;
+  const geoFocusId = props.projectLocationId;
+  const reportingFrequencyId = props.reportingPeriod;
+  const reportingYearId = props.year;
   const MAX_COUNT = 5;
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -64,12 +57,18 @@ const ScaleUpForm = ({ id, onActionChange }) => {
   const navigate = useNavigate();
 
   const {
-    data: ScaleUpData,
-    isLoading: isLoadingScaleUpData,
-    isError: isErrorScaleUpData,
+    data: innovationMonitoring,
+    isLoading: isLoadingInnovationMonitoring,
+    isError: isErrorInnovationMonitoring,
   } = useQuery(
-    ["getInnovationMonitoringScaleUpByInnovationId", id],
-    getInnovationMonitoringScaleUpByInnovationId,
+    [
+      "getInnovationByMonitoringPeriod",
+      id,
+      geoFocusId,
+      reportingFrequencyId,
+      reportingYearId,
+    ],
+    getInnovationByMonitoringPeriod,
     { enabled: !!id }
   );
 
@@ -104,6 +103,7 @@ const ScaleUpForm = ({ id, onActionChange }) => {
 
   const handleStatusChange = (e) => {
     const status = e.target.value;
+    console.log("e.target.value " + JSON.stringify(e.target));
     if (status === "4803db33-d778-4530-5172-08dc11e4499b") {
       setIsOpen(true);
     }
@@ -125,13 +125,12 @@ const ScaleUpForm = ({ id, onActionChange }) => {
       newTargetGroups: Yup.number().required("Required"),
       newProportionScaledUp: Yup.number().required("Required"),
       innovationClosingStatus: Yup.string().required("Required"),
-      innovationClosingReason: Yup.string().required("Required"),
+      innovationClosingReason: Yup.string().nullable(true),
     }),
     onSubmit: async (values) => {
       try {
         const saveScaleUp = {
-          id: new Guid().toString(),
-          createDate: new Date(),
+          id: editId ?? new Guid().toString(),
           innovationId: id,
           newCountriesScaledUp: values.newCountriesScaledUp,
           newRegionsWithinCountries: values.newRegionsWithinCountries,
@@ -139,12 +138,17 @@ const ScaleUpForm = ({ id, onActionChange }) => {
           newProportionScaledUp: values.newProportionScaledUp,
           innovationClosingStatus: values.innovationClosingStatus,
           innovationClosingReason: values.innovationClosingReason,
+          reportingFrequencyId: reportingFrequencyId,
+          reportingFrequency: "",
+          implementationYearId: reportingYearId,
+          implementationYear: "",
+          administrativeUnitId: geoFocusId,
+          createDate: new Date(),
         };
 
-        //console.log("saveScaleUp ..." + JSON.stringify(saveScaleUp));
         await mutation.mutateAsync(saveScaleUp);
 
-        toast("Successfully Updated Scale Up", {
+        toast("Successfully Updated Scale Up Monitoring", {
           type: "success",
         });
         await queryClient.invalidateQueries([
@@ -161,14 +165,15 @@ const ScaleUpForm = ({ id, onActionChange }) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (
-        !isLoadingInnovationClosingReasons &&
-        !isLoadingInnovationClosingStatus &&
-        !isLoadingScaleUpData &&
-        !isLoadingTechnicalReviewData
+        !isLoadingInnovationMonitoring &&
+        !isErrorInnovationMonitoring &&
+        innovationMonitoring &&
+        innovationMonitoring.data
       ) {
-        const effectiveness =
-          TechnicalReviewData.data.hasInnovationMetEffectivenessCriteria;
-        const scalable = TechnicalReviewData.data.canInnovationBeScaledUp;
+        let data =
+          innovationMonitoring.data.innovationTechnicalReviewAtClosures[0];
+        const effectiveness = data?.hasInnovationMetEffectivenessCriteria;
+        const scalable = data?.canInnovationBeScaledUp;
         if (
           effectiveness === "e00518ba-7cc9-11eb-9439-0242ac130002" &&
           scalable === "e00518ba-7cc9-11eb-9439-0242ac130002"
@@ -176,33 +181,28 @@ const ScaleUpForm = ({ id, onActionChange }) => {
           setIsScalable(false);
         }
 
+        data = innovationMonitoring.data.innovationScaleUps[0];
         formik.setValues({
           innovationId: id,
-          newCountriesScaledUp: ScaleUpData.data.newCountriesScaledUp,
-          newRegionsWithinCountries: ScaleUpData.data.newRegionsWithinCountries,
-          newTargetGroups: ScaleUpData.data.newTargetGroups,
-          newProportionScaledUp: ScaleUpData.data.newProportionScaledUp,
-          innovationClosingStatus: ScaleUpData.data.innovationClosingStatus,
-          innovationClosingReason: ScaleUpData.data.innovationClosingReason,
+          newCountriesScaledUp: data?.newCountriesScaledUp,
+          newRegionsWithinCountries: data?.newRegionsWithinCountries,
+          newTargetGroups: data?.newTargetGroups,
+          newProportionScaledUp: data?.newProportionScaledUp,
+          innovationClosingStatus: data?.innovationClosingStatus,
+          innovationClosingReason: data?.innovationClosingReason,
         });
+
+        setEditId(data.id);
       }
     }
     setCurrentFormValues();
   }, [
-    isLoadingInnovationClosingReasons,
-    isLoadingInnovationClosingStatus,
-    isLoadingScaleUpData,
-    isLoadingTechnicalReviewData,
-    ScaleUpData,
-    TechnicalReviewData,
+    innovationMonitoring,
+    isErrorInnovationMonitoring,
+    isLoadingInnovationMonitoring,
   ]);
 
-  const handleActionChange = useCallback(
-    (event) => {
-      onActionChange({ id: 0, status: 1 });
-    },
-    [onActionChange]
-  );
+  const handleActionChange = useCallback();
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -406,15 +406,6 @@ const ScaleUpForm = ({ id, onActionChange }) => {
                     variant="contained"
                     color="primary"
                     mt={3}
-                    onClick={() => handleActionChange()}
-                  >
-                    <ChevronLeft /> Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    mt={3}
                     ml={3}
                   >
                     <Check /> Save changes
@@ -430,20 +421,32 @@ const ScaleUpForm = ({ id, onActionChange }) => {
 };
 
 const ScaleUp = (props) => {
+  let {
+    processLevelItemId,
+    processLevelTypeId,
+    innovationId,
+    projectLocationId,
+    reportingPeriod,
+    year,
+  } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
       <Typography variant="h5" gutterBottom display="inline">
         Scale Up
       </Typography>
-      <Divider my={6} />
+      <Divider my={2} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
               <ScaleUpForm
-                id={props.id}
-                onActionChange={props.onActionChange}
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                innovationId={innovationId}
+                projectLocationId={projectLocationId}
+                reportingPeriod={reportingPeriod}
+                year={year}
               />
             </Grid>
           </Grid>

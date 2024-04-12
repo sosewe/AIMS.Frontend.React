@@ -56,14 +56,12 @@ const InnovationMonitoringForm = ({
   processLevelTypeId,
 }) => {
   const [innovationId, setInnovationId] = useState();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const {
     data: innovations,
     isLoading: isLoadingInnovations,
     isError: isErrorInnovations,
-    error,
   } = useQuery(
     ["getInnovationByProcessLevelItemId", processLevelItemId],
     getInnovationByProcessLevelItemId,
@@ -331,7 +329,8 @@ const InnovationMonitoringForm = ({
                 {!isLoadingObjectivesClassification &&
                 !isLoadingYears &&
                 !isLoadingQuarters &&
-                !isLoadingMonths
+                !isLoadingMonths &&
+                reportingPeriodData
                   ? reportingPeriodData.data.map((option) => (
                       <MenuItem
                         key={option.lookupItemId}

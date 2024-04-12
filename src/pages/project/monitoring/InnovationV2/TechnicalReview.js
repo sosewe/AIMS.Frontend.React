@@ -7,35 +7,28 @@ import {
   Grid,
   MenuItem,
   TextField as MuiTextField,
-  Autocomplete as MuiAutocomplete,
   Typography,
-  Breadcrumbs as MuiBreadcrumbs,
   Divider as MuiDivider,
   Box,
   CircularProgress,
 } from "@mui/material";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
+import { Check, ChevronLeft } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
-import {
-  newInnovationMonitoringTechnicalReview,
-  getInnovationMonitoringTechnicalReviewByInnovationId,
-} from "../../../../api/innovation-monitoring-technical-review";
+import { getInnovationByMonitoringPeriod } from "../../../../api/innovation";
+import { newInnovationMonitoringTechnicalReview } from "../../../../api/innovation-monitoring-technical-review";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
@@ -43,16 +36,30 @@ const initialValues = {
   innovationScalabiity: "",
 };
 
-const TechnicalReviewForm = ({ id, onActionChange }) => {
+const TechnicalReviewForm = (props) => {
+  const [editId, setEditId] = useState();
+  const id = props.innovationId;
+  const geoFocusId = props.projectLocationId;
+  const reportingFrequencyId = props.reportingPeriod;
+  const reportingYearId = props.year;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: TechnicalReviewData, isLoading: isLoadingTechnicalReviewData } =
-    useQuery(
-      ["getInnovationMonitoringTechnicalReviewByInnovationId", id],
-      getInnovationMonitoringTechnicalReviewByInnovationId,
-      { enabled: !!id }
-    );
+  const {
+    data: innovationMonitoring,
+    isLoading: isLoadingInnovationMonitoring,
+    isError: isErrorInnovationMonitoring,
+  } = useQuery(
+    [
+      "getInnovationByMonitoringPeriod",
+      id,
+      geoFocusId,
+      reportingFrequencyId,
+      reportingYearId,
+    ],
+    getInnovationByMonitoringPeriod,
+    { enabled: !!id }
+  );
 
   const { isLoading: isLoadingBoolean, data: booleanData } = useQuery(
     ["yesNo", "YesNo"],
@@ -75,15 +82,20 @@ const TechnicalReviewForm = ({ id, onActionChange }) => {
     onSubmit: async (values) => {
       try {
         const saveTechnicalReview = {
-          id: id ? id : new Guid().toString(),
-          createDate: new Date(),
+          id: editId ?? new Guid().toString(),
           innovationId: id,
           hasInnovationMetEffectivenessCriteria: values.innovationEffectiveness,
           canInnovationBeScaledUp: values.innovationScalabiity,
+          reportingFrequencyId: reportingFrequencyId,
+          reportingFrequency: "",
+          implementationYearId: reportingYearId,
+          implementationYear: "",
+          administrativeUnitId: geoFocusId,
+          createDate: new Date(),
         };
         await mutation.mutateAsync(saveTechnicalReview);
 
-        toast("Successfully Updated Technical Review", {
+        toast("Successfully Updated Technical Review Monitoring", {
           type: "success",
         });
         await queryClient.invalidateQueries([
@@ -100,24 +112,25 @@ const TechnicalReviewForm = ({ id, onActionChange }) => {
 
   useEffect(() => {
     function setCurrentFormValues() {
-      if (!isLoadingBoolean && !isLoadingTechnicalReviewData) {
+      if (
+        !isLoadingInnovationMonitoring &&
+        innovationMonitoring &&
+        innovationMonitoring.data
+      ) {
+        let data =
+          innovationMonitoring.data.innovationTechnicalReviewAtClosures[0];
         formik.setValues({
-          innovationEffectiveness:
-            TechnicalReviewData.data.hasInnovationMetEffectivenessCriteria,
-          innovationScalabiity:
-            TechnicalReviewData.data.canInnovationBeScaledUp,
+          innovationEffectiveness: data.hasInnovationMetEffectivenessCriteria,
+          innovationScalabiity: data.canInnovationBeScaledUp,
         });
+
+        setEditId(data.id);
       }
     }
     setCurrentFormValues();
-  }, [isLoadingTechnicalReviewData, isLoadingBoolean, TechnicalReviewData]);
+  }, [isLoadingInnovationMonitoring, innovationMonitoring]);
 
-  const handleActionChange = useCallback(
-    (event) => {
-      onActionChange({ id: 0, status: 1 });
-    },
-    [onActionChange]
-  );
+  const handleActionChange = useCallback();
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -207,15 +220,6 @@ const TechnicalReviewForm = ({ id, onActionChange }) => {
               variant="contained"
               color="primary"
               mt={3}
-              onClick={() => handleActionChange()}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
               ml={3}
             >
               <Check /> Save changes
@@ -227,7 +231,15 @@ const TechnicalReviewForm = ({ id, onActionChange }) => {
   );
 };
 
-const TechnicalReview = (props) => {
+const TechnicalReview = () => {
+  let {
+    processLevelItemId,
+    processLevelTypeId,
+    innovationId,
+    projectLocationId,
+    reportingPeriod,
+    year,
+  } = useParams();
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
@@ -235,14 +247,18 @@ const TechnicalReview = (props) => {
         Technical Review
       </Typography>
 
-      <Divider my={6} />
+      <Divider my={2} />
       <Card mb={12}>
         <CardContent>
           <Grid container spacing={12}>
             <Grid item md={12}>
               <TechnicalReviewForm
-                id={props.id}
-                onActionChange={props.onActionChange}
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                innovationId={innovationId}
+                projectLocationId={projectLocationId}
+                reportingPeriod={reportingPeriod}
+                year={year}
               />
             </Grid>
           </Grid>

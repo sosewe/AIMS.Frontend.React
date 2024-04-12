@@ -162,7 +162,12 @@ const LearningUpdateForm = (props) => {
       }
     }
     setCurrentFormValues();
-  }, [isLoadingLearningUpdate, learningUpdateData]);
+  }, [
+    isLoadingLearningUpdate,
+    isLoadingResearchStageData,
+    isLoadingStatuses,
+    learningUpdateData,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>

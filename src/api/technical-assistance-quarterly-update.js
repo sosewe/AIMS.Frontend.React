@@ -22,6 +22,15 @@ export const getTechnicalAssistanceQuarterlyUpdateById = async ({
   );
 };
 
+export const getTechnicalAssistanceQuarterlyUpdateByMonitoringPeriod = async ({
+  queryKey,
+}) => {
+  const [, id, locationId, reportingPeriod, implementationYear] = queryKey;
+  return await axios.get(
+    `${apiRoutes.technicalAssistanceQuarterlyUpdate}/GetTechnicalAssistanceQuarterlyUpdateByMonitoringPeriod/${id}/${locationId}/${reportingPeriod}/${implementationYear}`
+  );
+};
+
 export const getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId =
   async ({ queryKey }) => {
     const [, id] = queryKey;

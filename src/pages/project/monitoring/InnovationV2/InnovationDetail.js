@@ -92,13 +92,34 @@ const InnovationDetail = (props) => {
         />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <TechnicalReview />
+        <TechnicalReview
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+          innovationId={innovationId}
+          projectLocationId={projectLocationId}
+          reportingPeriod={reportingPeriod}
+          year={year}
+        />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <ScaleUp />
+        <ScaleUp
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+          innovationId={innovationId}
+          projectLocationId={projectLocationId}
+          reportingPeriod={reportingPeriod}
+          year={year}
+        />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <KMDocumentsUpload />
+        <KMDocumentsUpload
+          processLevelItemId={processLevelItemId}
+          processLevelTypeId={processLevelTypeId}
+          innovationId={innovationId}
+          projectLocationId={projectLocationId}
+          reportingPeriod={reportingPeriod}
+          year={year}
+        />
       </TabPanel>
     </Box>
   );

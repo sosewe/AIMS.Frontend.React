@@ -28,46 +28,29 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import CancelIcon from "@mui/icons-material/Cancel";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Add as AddIcon } from "@mui/icons-material";
 import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon, ChevronLeft, Edit2 } from "react-feather";
+import { Check, Trash as TrashIcon, Edit2 } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { Link2 } from "react-feather";
+import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
-import {
-  getInnovations,
-  getInnovationByMonitoringPeriod,
-} from "../../../../api/innovation";
-import {
-  newInnovationMonitoringUpdateRisk,
-  getInnovationMonitoringUpdateRiskByInnovationId,
-  deleteInnovationMonitoringUpdateRisk,
-} from "../../../../api/innovation-monitoring-risk";
+import { getInnovationByMonitoringPeriod } from "../../../../api/innovation";
+import { newInnovationMonitoringUpdateRisk } from "../../../../api/innovation-monitoring-risk";
 import {
   newInnovationMonitoringUpdateMetric,
-  getInnovationMonitoringTargetMetricsByMetricId,
   getInnovationMonitoringTargetMetricsByReportId,
 } from "../../../../api/innovation-monitoring-metric";
 import { getInnovationMonitoringTargetMetricsByInnovationId } from "../../../../api/innovation-monitoring";
-import { getInnovationObjectiveClassificationByInnovationId } from "../../../../api/innovation-objectivesclassification";
-import { getLookupMasterItemsByName } from "../../../../api/lookup";
-import { REPORT_FREQUENCY } from "../../../../constants";
 
 const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const RiskDetailsForm = ({
@@ -356,8 +339,6 @@ const InnovationUpdateForm = (props) => {
   const [openRiskDialog, setOpenRiskDialog] = useState();
   const [innovationRisksList, setInnovationRisksList] = useState([]);
   const [innovationMetricsList, setInnovationMetricsList] = useState([]);
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const {
     data: innovationMetrics,
