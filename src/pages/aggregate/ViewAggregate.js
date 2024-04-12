@@ -20,6 +20,7 @@ import {
 import { spacing } from "@mui/system";
 import { NavLink, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import { Edit2, Trash as TrashIcon } from "react-feather";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import {
@@ -87,6 +88,9 @@ const ViewAggregateContainer = () => {
   const handleDeleteAggregateDisaggregate = async () => {
     await refetch();
     setOpen(false);
+    toast("Successfully Deleted a Aggregate-Disaggregate", {
+      type: "success",
+    });
     await queryClient.invalidateQueries(["getAggregateDisaggregates"]);
   };
 

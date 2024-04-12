@@ -33,7 +33,7 @@ import {
   newInnovationGeographicalFocus,
   deleteInnovationGeographicalFocus,
   getInnovationGeographicalFocus,
-} from "../../../../api/innovatonGeographicalFocus";
+} from "../../../../api/innovation-geographical-focus";
 import { DataGrid } from "@mui/x-data-grid";
 
 const Card = styled(MuiCard)(spacing);

@@ -79,12 +79,12 @@ const AdvocacyObjectiveForm = (props) => {
   );
 
   const { isLoading: isLoadingInitiativeType, data: initiativeTypeData } =
-    useQuery(["initiativetype", "initiativeType"], getLookupMasterItemsByName, {
+    useQuery(["initiativetype", "InitiativeType"], getLookupMasterItemsByName, {
       refetchOnWindowFocus: false,
     });
 
   const { isLoading: isLoadingPolicyType, data: policyTypeData } = useQuery(
-    ["policytype", "policyType"],
+    ["policytype", "PolicyType"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
@@ -92,7 +92,7 @@ const AdvocacyObjectiveForm = (props) => {
   );
 
   const { isLoading: isLoadingInfluence, data: influenceData } = useQuery(
-    ["influence", "influence"],
+    ["influence", "Influence"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
@@ -100,7 +100,7 @@ const AdvocacyObjectiveForm = (props) => {
   );
 
   const { isLoading: isLoadingIntendedChange, data: intendedChangeData } =
-    useQuery(["intendedchange", "intendedChange"], getLookupMasterItemsByName, {
+    useQuery(["intendedchange", "IntendedChange"], getLookupMasterItemsByName, {
       refetchOnWindowFocus: false,
     });
 

@@ -130,6 +130,9 @@ const InnovationDetail = async(() =>
 );
 
 // Innovation Monitoring
+const InnovationResults = async(() =>
+  import("./pages/project/monitoring/InnovationV2/InnovationResults")
+);
 
 const InnovationMonitoring = async(() =>
   import("./pages/project/monitoring/Innovation/InnovationMonitoring")
@@ -140,8 +143,12 @@ const InnovationMonitoringDetail = async(() =>
 );
 
 //Advocacy Monitoring
+const AdvocacyResults = async(() =>
+  import("./pages/project/monitoring/Advocacy/AdvocacyResults")
+);
+
 const AdvocacyMonitoring = async(() =>
-  import("./pages/project/monitoring/Advocacy/AdvocacyDetail")
+  import("./pages/project/monitoring/Advocacy/AdvocacyMonitoring")
 );
 
 const AdvocacyMonitoringDetail = async(() =>
@@ -156,10 +163,15 @@ const AdvocacyMonitoringUpdate = async(() =>
 );
 
 // Technical Assistance Monitoring
+const TechnicalAssistanceResults = async(() =>
+  import(
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceResults"
+  )
+);
 
 const TechnicalAssistanceMonitoring = async(() =>
   import(
-    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceDetail"
+    "./pages/project/monitoring/TechnicalAssistance/TechnicalAssistanceMonitoring"
   )
 );
 
@@ -191,13 +203,14 @@ const NewLearning = async(() =>
 const LearningDetail = async(() =>
   import("./pages/project/design/Learning/LearningDetail")
 );
-// Advocacy Design
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
-// const Advocacy = async(() =>
-//   import("./pages/project/design/Advocacy/Advocacy")
-// );
+const LearningResults = async(() =>
+  import("./pages/project/monitoring/Learning/LearningResults")
+);
+
+const LearningMonitoring = async(() =>
+  import("./pages/project/monitoring/Learning/LearningMonitoring")
+);
+
 const NewAdvocacy = async(() =>
   import("./pages/project/design/Advocacy/NewAdvocacy")
 );
@@ -301,6 +314,22 @@ const routes = [
       {
         path: "project-detail/:id",
         element: <ProjectDetail />,
+      },
+      {
+        path: "monitoring/innovation-results/:processLevelItemId/:processLevelTypeId/:innovationId/:projectLocationId/:reportingPeriod/:year",
+        element: <InnovationResults />,
+      },
+      {
+        path: "monitoring/technicalassistance-results/:processLevelItemId/:processLevelTypeId/:technicalAssistanceId/:projectLocationId/:reportingPeriod/:year",
+        element: <TechnicalAssistanceResults />,
+      },
+      {
+        path: "monitoring/advocacy-results/:processLevelItemId/:processLevelTypeId/:advocacyId/:projectLocationId/:reportingPeriod/:year",
+        element: <AdvocacyResults />,
+      },
+      {
+        path: "monitoring/learning-results/:processLevelItemId/:processLevelTypeId/:learningId/:projectLocationId/:reportingPeriod/:year",
+        element: <LearningResults />,
       },
     ],
   },

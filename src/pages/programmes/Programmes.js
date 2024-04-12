@@ -293,7 +293,7 @@ const ProgrammesData = () => {
           color="error"
           onClick={() => navigate("/programme/new-programme")}
         >
-          <AddIcon /> New Programme
+          <AddIcon /> New Strategic Objective
         </Button>
       </CardContent>
       <br />
@@ -374,10 +374,12 @@ const ProgrammesData = () => {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">Delete Programme</DialogTitle>
+          <DialogTitle id="alert-dialog-title">
+            Delete Strategic Objective
+          </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete Programme?
+              Are you sure you want to delete Strategic Objective?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -417,14 +419,14 @@ const Programmes = () => {
     <React.Fragment>
       <Helmet title="Programmes" />
       <Typography variant="h3" gutterBottom display="inline">
-        Programmes
+        Strategic Objectives
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} to="/programme/administrative-programmes">
-          Programmes
+          Strategic Objectives
         </Link>
-        <Typography>Programmes List</Typography>
+        <Typography>Strategic Objectives List</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />

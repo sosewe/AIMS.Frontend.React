@@ -124,7 +124,7 @@ const AdvocacyUpdateForm = (props) => {
   );
 
   const { isLoading: isLoadingBragStatuses, data: bragStatusesData } = useQuery(
-    ["bragstatus", "bragStatus"],
+    ["bragStatus", "BRAGStatus"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,

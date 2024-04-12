@@ -140,6 +140,8 @@ const ScaleUpForm = ({ id, onActionChange }) => {
           innovationClosingStatus: values.innovationClosingStatus,
           innovationClosingReason: values.innovationClosingReason,
         };
+
+        //console.log("saveScaleUp ..." + JSON.stringify(saveScaleUp));
         await mutation.mutateAsync(saveScaleUp);
 
         toast("Successfully Updated Scale Up", {

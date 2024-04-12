@@ -105,7 +105,7 @@ const NewProgrammeForm = () => {
               <Grid container spacing={12}>
                 <Grid item md={12}>
                   <Typography variant="h3" gutterBottom display="inline">
-                    PROGRAMME BASIC INFORMATION
+                    STRATEGIC OBJECTIVE BASIC INFORMATION
                   </Typography>
                 </Grid>
               </Grid>
@@ -194,14 +194,14 @@ const NewProgramme = () => {
     <React.Fragment>
       <Helmet title="New Programme" />
       <Typography variant="h3" gutterBottom display="inline">
-        New Programme
+        New Strategic Objective
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} to="/programme/programmes">
-          Programme
+          Strategic Objective
         </Link>
-        <Typography>New Programme</Typography>
+        <Typography>New Strategic Objective</Typography>
       </Breadcrumbs>
 
       <Divider my={6} />
