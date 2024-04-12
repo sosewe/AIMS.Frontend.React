@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableHead,
@@ -17,13 +17,15 @@ import SaveIcon from "@mui/icons-material/Save";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  getLocationBasedDCA,
   locationBasedDCA,
   uploadDCAReportingFile,
 } from "../../../api/internal-reporting";
 import { useParams } from "react-router-dom";
 import { Guid } from "../../../utils/guid";
+import useKeyCloakAuth from "../../../hooks/useKeyCloakAuth";
 
 const TextField = styled(MuiTextField)(spacing);
 
@@ -33,8 +35,16 @@ const LocationTable = ({
   implementationYearId,
 }) => {
   let { id } = useParams();
+  const user = useKeyCloakAuth();
   const [filePath, setFilePath] = useState();
   const [fileName, setFileName] = useState();
+  const [disableEdit, setDisableEdit] = useState(false);
+
+  const { isLoading, isError, data } = useQuery(
+    ["getLocationBasedDCA", processLevelItemId, implementationYearId],
+    getLocationBasedDCA
+  );
+
   const mutation = useMutation({ mutationFn: uploadDCAReportingFile });
   const mutationSaveDCA = useMutation({ mutationFn: locationBasedDCA });
   const formik = useFormik({
@@ -85,6 +95,8 @@ const LocationTable = ({
           OriginalChildM: calculateTotal("child_M"),
           OriginalYouthF: calculateTotal("youth_F"),
           OriginalYouthM: calculateTotal("youth_M"),
+          CreateDate: new Date(),
+          UserId: user.sub,
         };
         InData.id = new Guid().toString();
         await mutationSaveDCA.mutateAsync(InData);
@@ -144,6 +156,25 @@ const LocationTable = ({
       });
     }
   };
+
+  useEffect(() => {
+    if (!isLoading && !isError) {
+      console.log(data);
+      const locationDCAData = data.data.filter(
+        (obj) => obj.administrativeUnit === locationData[0].location
+      );
+      if (locationDCAData.length > 0) {
+        formik.setFieldValue("child_M", locationDCAData[0].childM);
+        formik.setFieldValue("child_F", locationDCAData[0].childF);
+        formik.setFieldValue("youth_F", locationDCAData[0].youthF);
+        formik.setFieldValue("youth_M", locationDCAData[0].youthM);
+        formik.setFieldValue("adults_M", locationDCAData[0].adultsM);
+        formik.setFieldValue("adults_F", locationDCAData[0].adultsF);
+        formik.setFieldValue("comments", locationDCAData[0].comments);
+        setDisableEdit(true);
+      }
+    }
+  }, [isLoading, isLoading]);
 
   return (
     <React.Fragment>
@@ -365,6 +396,7 @@ const LocationTable = ({
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     variant="outlined"
+                    disabled={disableEdit}
                   />
                 </TableCell>
                 <TableCell
@@ -382,6 +414,7 @@ const LocationTable = ({
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     variant="outlined"
+                    disabled={disableEdit}
                   />
                 </TableCell>
                 <TableCell
@@ -399,6 +432,7 @@ const LocationTable = ({
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     variant="outlined"
+                    disabled={disableEdit}
                   />
                 </TableCell>
                 <TableCell
@@ -416,6 +450,7 @@ const LocationTable = ({
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     variant="outlined"
+                    disabled={disableEdit}
                   />
                 </TableCell>
                 <TableCell
@@ -435,6 +470,7 @@ const LocationTable = ({
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     variant="outlined"
+                    disabled={disableEdit}
                   />
                 </TableCell>
                 <TableCell
@@ -454,6 +490,7 @@ const LocationTable = ({
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     variant="outlined"
+                    disabled={disableEdit}
                   />
                 </TableCell>
               </TableRow>
@@ -531,6 +568,7 @@ const LocationTable = ({
                     variant="outlined"
                     rows={3}
                     my={2}
+                    disabled={disableEdit}
                   />
                 </TableCell>
               </TableRow>
@@ -552,6 +590,7 @@ const LocationTable = ({
                     }}
                     variant="outlined"
                     type="file"
+                    disabled={disableEdit}
                   />
                 </TableCell>
                 <TableCell
@@ -570,6 +609,7 @@ const LocationTable = ({
                       },
                     }}
                     onClick={uploadFile}
+                    disabled={disableEdit}
                   >
                     <CloudUploadIcon /> &nbsp; Upload
                   </Button>
@@ -590,6 +630,7 @@ const LocationTable = ({
                         color: "white",
                       },
                     }}
+                    disabled={disableEdit}
                   >
                     <SaveIcon /> &nbsp; Save
                   </Button>

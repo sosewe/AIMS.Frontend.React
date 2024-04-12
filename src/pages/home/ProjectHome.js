@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useContext, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Box,
@@ -29,6 +29,7 @@ import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import { useNavigate } from "react-router-dom";
 import { getLookupMasterItemsByName } from "../../api/lookup";
+import { OfficeContext } from "../../App";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -36,6 +37,7 @@ const Button = styled(MuiButton)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const ProjectsDataByUserType = () => {
+  const { selectedOffice, setSelectedOffice } = useContext(OfficeContext);
   const user = useKeyCloakAuth();
   const navigate = useNavigate();
   let processLevelTypeId;
@@ -46,6 +48,7 @@ const ProjectsDataByUserType = () => {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [totalRowCount, setTotalRowCount] = useState(0);
   const { isLoading: isLoadingProcessLevelType, data: processLevelData } =
     useQuery(
       ["processLevelType", "ProcessLevelType"],
@@ -83,15 +86,24 @@ const ProjectsDataByUserType = () => {
       );
 
       //read our state and pass it to the API as query params
-      fetchURL.searchParams.set(
+      /*fetchURL.searchParams.set(
         "implementingOffices",
         JSON.stringify(user?.tokenParsed?.Office)
+      );*/
+
+      const implementingOffice =
+        localStorage.getItem("office_setting") ?? user?.tokenParsed?.Office;
+      fetchURL.searchParams.set(
+        "implementingOffices",
+        JSON.stringify(["" + implementingOffice + ""])
       );
+
       fetchURL.searchParams.set(
         "start",
         `${pagination.pageIndex * pagination.pageSize}`
       );
       fetchURL.searchParams.set("size", `${pagination.pageSize}`);
+
       fetchURL.searchParams.set(
         "filters",
         columnFilters && columnFilters.length > 0
@@ -104,6 +116,8 @@ const ProjectsDataByUserType = () => {
       //use whatever fetch library you want, fetch, axios, etc
       const response = await fetch(fetchURL.href);
       const json = await response.json();
+      setTotalRowCount(json.pageInfo.totalItems);
+
       return json;
     },
   });
@@ -138,8 +152,11 @@ const ProjectsDataByUserType = () => {
     columns,
     data,
     enableRowActions: true,
+    enablePagination: true,
     positionActionsColumn: "last",
-    initialState: { showColumnFilters: true },
+    initialState: {
+      showColumnFilters: true,
+    },
     manualFiltering: true, //turn off built-in client-side filtering
     manualPagination: true, //turn off built-in client-side pagination
     manualSorting: true, //turn off built-in client-side sorting
@@ -172,7 +189,8 @@ const ProjectsDataByUserType = () => {
         </IconButton>
       </Tooltip>
     ),
-    rowCount: meta?.totalRowCount ?? 0,
+    //rowCount: meta?.totalRowCount ?? 0,
+    rowCount: totalRowCount,
     state: {
       columnFilters,
       globalFilter,
@@ -186,7 +204,7 @@ const ProjectsDataByUserType = () => {
   return (
     <Card mb={6}>
       <Paper>
-        <div style={{ height: 400, width: "100%" }}>
+        <div style={{ height: "100%", width: "100%" }}>
           <MaterialReactTable table={table} />
         </div>
       </Paper>
@@ -208,7 +226,7 @@ const ProjectHome = () => {
           <AddIcon /> New Project
         </Button>
         <Divider my={3} />
-        <ProjectsDataByUserType />
+        <ProjectsDataByUserType height={1000} />
       </LocalizationProvider>
     </React.Fragment>
   );

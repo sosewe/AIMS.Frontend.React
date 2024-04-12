@@ -155,7 +155,7 @@ const TechnicalAssistanceObjectives = (props) => {
         }
         await mutation.mutateAsync(technicalAssistanceObjectives);
 
-        toast("Successfully Created an Innovation Objective", {
+        toast("Successfully Created an Technical Assistance Objective", {
           type: "success",
         });
 

@@ -47,15 +47,8 @@ function a11yProps(index: number) {
 }
 
 const InnovationDetail = (props) => {
-  let {
-    processLevelItemId,
-    processLevelTypeId,
-    innovationId,
-    projectLocationId,
-    reportingPeriod,
-    year,
-  } = useParams();
   const [value, setValue] = React.useState(0);
+  let { id } = useParams();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -82,23 +75,19 @@ const InnovationDetail = (props) => {
         <Tab label="KM Documents Upload" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <InnovationUpdate
-          processLevelItemId={processLevelItemId}
-          processLevelTypeId={processLevelTypeId}
-          innovationId={innovationId}
-          projectLocationId={projectLocationId}
-          reportingPeriod={reportingPeriod}
-          year={year}
-        />
+        <InnovationUpdate id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <TechnicalReview />
+        <TechnicalReview id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <ScaleUp />
+        <ScaleUp id={props.id} onActionChange={props.onActionChange} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <KMDocumentsUpload />
+        <KMDocumentsUpload
+          id={props.id}
+          onActionChange={props.onActionChange}
+        />
       </TabPanel>
     </Box>
   );

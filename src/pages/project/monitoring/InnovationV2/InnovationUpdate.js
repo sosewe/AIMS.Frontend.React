@@ -36,14 +36,16 @@ import * as Yup from "yup";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
+import { Check, Trash as TrashIcon, ChevronLeft, Edit2 } from "react-feather";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Link2 } from "react-feather";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
-import { getInnovations } from "../../../../api/innovation";
-import { getInnovationMonitoringTargetMetricsByInnovationId } from "../../../../api/innovation-monitoring";
+import {
+  getInnovations,
+  getInnovationByMonitoringPeriod,
+} from "../../../../api/innovation";
 import {
   newInnovationMonitoringUpdateRisk,
   getInnovationMonitoringUpdateRiskByInnovationId,
@@ -51,9 +53,10 @@ import {
 } from "../../../../api/innovation-monitoring-risk";
 import {
   newInnovationMonitoringUpdateMetric,
-  getInnovationMonitoringUpdateMetricByInnovationId,
   getInnovationMonitoringTargetMetricsByMetricId,
+  getInnovationMonitoringTargetMetricsByReportId,
 } from "../../../../api/innovation-monitoring-metric";
+import { getInnovationMonitoringTargetMetricsByInnovationId } from "../../../../api/innovation-monitoring";
 import { getInnovationObjectiveClassificationByInnovationId } from "../../../../api/innovation-objectivesclassification";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { REPORT_FREQUENCY } from "../../../../constants";
@@ -67,250 +70,22 @@ const Button = styled(MuiButton)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
-const MetricDetailsForm = ({ handleMetricClick, metric }) => {
-  const [pageSize, setPageSize] = useState(5);
-  const initialMetricValues = {
-    innovationMetricId: "",
-    actualByReportingPeriod: "",
-    innovationMetricDescription: "",
-    innovationTargetGroupName: metric.innovationTargetGroupName,
-    innovationMetricName: metric.innovationMetricName,
-    innovationTarget: metric.innovationTarget,
-    innovationPercentageChange: "",
+const RiskDetailsForm = ({
+  innovationId,
+  locationId,
+  reportPeriod,
+  year,
+  handleRiskClick,
+}) => {
+  const initialRiskValues = {
+    innovationId: innovationId,
+    administrativeUnitId: locationId,
+    reportingFrequencyId: reportPeriod,
+    implementationYear: year,
+    riskDescription: "",
+    riskMitigation: "",
   };
 
-  const {
-    data: InnovationMetricsData,
-    isLoading: isLoadingInnovationMetrics,
-    isError: isErrorInnovationMetrics,
-  } = useQuery(
-    ["getInnovationMonitoringTargetMetricsByMetricId", metric.id],
-    getInnovationMonitoringTargetMetricsByMetricId,
-    {
-      enabled: !!metric.id,
-    }
-  );
-
-  const mutation = useMutation({
-    mutationFn: newInnovationMonitoringUpdateMetric,
-  });
-
-  const formik = useFormik({
-    initialValues: initialMetricValues,
-    validationSchema: Yup.object().shape({
-      actualByReportingPeriod: Yup.number().required("Required"),
-      innovationMetricDescription: Yup.string().required("Required"),
-    }),
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
-      try {
-        values.innovationMetricId = metric.id;
-        values.innovationPercentageChange =
-          (values.actualByReportingPeriod / values.innovationTarget) * 100;
-        handleMetricClick(values);
-      } catch (error) {
-        toast(error.response.data, {
-          type: "error",
-        });
-      } finally {
-        resetForm();
-        setSubmitting(false);
-      }
-    },
-  });
-
-  return (
-    <form onSubmit={formik.handleSubmit}>
-      <Card mb={12}>
-        <CardContent>
-          <Grid item md={12}>
-            <Paper>
-              <div style={{ height: 400, width: "100%" }}>
-                <DataGrid
-                  rowsPerPageOptions={[5, 10, 25]}
-                  rows={
-                    isLoadingInnovationMetrics || isErrorInnovationMetrics
-                      ? []
-                      : InnovationMetricsData
-                      ? InnovationMetricsData.data
-                      : []
-                  }
-                  columns={[
-                    {
-                      field: "innovationMetricName",
-                      headerName: "Metric",
-                      editable: false,
-                      flex: 1,
-                      valueGetter: (params) =>
-                        params.row.innovationMetric.innovationMetricName,
-                    },
-                    {
-                      field: "innovationActual",
-                      headerName: "Actual By Reporting",
-                      editable: false,
-                      flex: 1,
-                    },
-                    {
-                      field: "implementationYear",
-                      headerName: "Implementation Year",
-                      sortable: false,
-                      flex: 1,
-                    },
-                    {
-                      field: "reportingFrequency",
-                      headerName: "Reporting Period",
-                      sortable: false,
-                      flex: 1,
-                    },
-                  ]}
-                  pageSize={pageSize}
-                  onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                  loading={isLoadingInnovationMetrics}
-                  components={{ Toolbar: GridToolbar }}
-                  getRowHeight={() => "auto"}
-                />
-              </div>
-            </Paper>
-          </Grid>
-
-          <Grid container spacing={3}>
-            <Grid item md={12}>
-              <TextField
-                name="innovationMetricName"
-                label="Metric"
-                value={formik.values.innovationMetricName}
-                error={Boolean(
-                  formik.touched.innovationMetricName &&
-                    formik.errors.innovationMetricName
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationMetricName &&
-                  formik.errors.innovationMetricName
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-                rows={3}
-                disabled
-              />
-            </Grid>
-
-            <Grid item md={12}>
-              <TextField
-                name="innovationTargetGroupName"
-                label="Target Group"
-                value={formik.values.innovationTargetGroupName}
-                error={Boolean(
-                  formik.touched.innovationTargetGroupName &&
-                    formik.errors.innovationTargetGroupName
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationTargetGroupName &&
-                  formik.errors.innovationTargetGroupName
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-                rows={3}
-                disabled
-              />
-            </Grid>
-
-            <Grid item md={12}>
-              <TextField
-                name="innovationTarget"
-                label="Target Number"
-                value={formik.values.innovationTarget}
-                error={Boolean(
-                  formik.touched.innovationTarget &&
-                    formik.errors.innovationTarget
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationTarget &&
-                  formik.errors.innovationTarget
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-                rows={3}
-                disabled
-              />
-            </Grid>
-
-            <Grid item md={12}>
-              <TextField
-                name="actualByReportingPeriod"
-                label="Actual By Reporting Period"
-                value={formik.values.actualByReportingPeriod}
-                type="number"
-                error={Boolean(
-                  formik.touched.actualByReportingPeriod &&
-                    formik.errors.actualByReportingPeriod
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.actualByReportingPeriod &&
-                  formik.errors.actualByReportingPeriod
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-                rows={3}
-              />
-            </Grid>
-
-            <Grid item md={12}>
-              <TextField
-                name="innovationMetricDescription"
-                label="Description"
-                value={formik.values.innovationMetricDescription}
-                error={Boolean(
-                  formik.touched.innovationMetricDescription &&
-                    formik.errors.innovationMetricDescription
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.innovationMetricDescription &&
-                  formik.errors.innovationMetricDescription
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                multiline
-                variant="outlined"
-                my={2}
-                rows={3}
-              />
-            </Grid>
-
-            <Grid item md={1}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="secondary"
-                mt={3}
-              >
-                Update
-              </Button>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-    </form>
-  );
-};
-
-const initialRiskValues = {
-  riskDescription: "",
-  riskMitigation: "",
-};
-
-const RiskDetailsForm = ({ handleRiskClick }) => {
   const formik = useFormik({
     initialValues: initialRiskValues,
     validationSchema: Yup.object().shape({
@@ -319,6 +94,10 @@ const RiskDetailsForm = ({ handleRiskClick }) => {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
+        values.innovationId = innovationId;
+        values.administrativeUnitId = locationId;
+        values.reportingFrequencyId = reportPeriod;
+        values.implementationYear = year;
         handleRiskClick(values);
       } catch (error) {
         toast(error.response.data, {
@@ -398,12 +177,180 @@ const RiskDetailsForm = ({ handleRiskClick }) => {
   );
 };
 
-const initialValues = {
-  reportingPeriod: "",
-  implementationYear: "",
+const MetricDetailsForm = ({
+  innovationId,
+  locationId,
+  reportPeriod,
+  year,
+  handleMetricClick,
+  metric,
+  metricReportId,
+}) => {
+  const queryClient = useQueryClient();
+  const initialMetricValues = {
+    innovationId: innovationId,
+    administrativeUnitId: locationId,
+    reportingFrequencyId: reportPeriod,
+    implementationYear: year,
+    innovationMetricId: metric.id,
+    actualByReportingPeriod: "",
+    innovationMetricDescription: "",
+    innovationTargetGroupName: metric.innovationTargetGroupName,
+    innovationMetricName: metric.innovationMetricName,
+    innovationTarget: metric.innovationTarget,
+    innovationPercentageChange: "",
+  };
+
+  const {
+    data: innovationMetricsReport,
+    isLoading: isLoadingInnovationMetricsReport,
+    isError: isErrorInnovationMetricsReport,
+  } = useQuery(
+    ["getInnovationMonitoringTargetMetricsByReportId", metricReportId],
+    getInnovationMonitoringTargetMetricsByReportId,
+    {
+      enabled: !!metricReportId,
+    }
+  );
+
+  const mutation = useMutation({
+    mutationFn: newInnovationMonitoringUpdateMetric,
+  });
+
+  const formik = useFormik({
+    initialValues: initialMetricValues,
+    validationSchema: Yup.object().shape({
+      actualByReportingPeriod: Yup.number().required("Required"),
+      innovationMetricDescription: Yup.string().required("Required"),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        const innovationMetrics = [];
+        const metric = {
+          id: metricReportId ?? new Guid().toString(),
+          innovationId: initialMetricValues.innovationId,
+          innovationMetricId: initialMetricValues.innovationMetricId,
+          innovationActual: values.actualByReportingPeriod,
+          innovationMetricDescription: values.innovationMetricDescription,
+          reportingFrequencyId: initialMetricValues.reportingFrequencyId,
+          reportingFrequency: "",
+          implementationYearId: initialMetricValues.implementationYear,
+          implementationYear: "",
+          administrativeUnitId: initialMetricValues.administrativeUnitId,
+          createDate: new Date(),
+        };
+        innovationMetrics.push(metric);
+        await mutation.mutateAsync(innovationMetrics);
+
+        toast("Successfully Updated Innovation Monitoring", {
+          type: "success",
+        });
+        await queryClient.invalidateQueries([
+          "getInnovationMonitoringTargetMetricsByInnovationId",
+        ]);
+        // handleMetricClick(values);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      } finally {
+        resetForm();
+        setSubmitting(false);
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (!isLoadingInnovationMetricsReport && innovationMetricsReport) {
+      formik.setValues({
+        actualByReportingPeriod: innovationMetricsReport.data.innovationActual,
+        innovationMetricDescription:
+          innovationMetricsReport.data.innovationMetricDescription,
+      });
+    }
+  }, [innovationMetricsReport, isLoadingInnovationMetricsReport]);
+
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <Card mb={12}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item md={12}>
+              <TextField
+                name="actualByReportingPeriod"
+                label="Actual"
+                value={formik.values.actualByReportingPeriod}
+                type="number"
+                error={Boolean(
+                  formik.touched.actualByReportingPeriod &&
+                    formik.errors.actualByReportingPeriod
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.actualByReportingPeriod &&
+                  formik.errors.actualByReportingPeriod
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                variant="outlined"
+                my={2}
+                rows={3}
+              />
+            </Grid>
+
+            <Grid item md={12}>
+              <TextField
+                name="innovationMetricDescription"
+                label="Description"
+                value={formik.values.innovationMetricDescription}
+                error={Boolean(
+                  formik.touched.innovationMetricDescription &&
+                    formik.errors.innovationMetricDescription
+                )}
+                fullWidth
+                helperText={
+                  formik.touched.innovationMetricDescription &&
+                  formik.errors.innovationMetricDescription
+                }
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                multiline
+                variant="outlined"
+                my={2}
+                rows={3}
+              />
+            </Grid>
+
+            <Grid item md={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                mt={3}
+              >
+                Update
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </form>
+  );
 };
-const InnovationUpdateForm = ({ id, onActionChange }) => {
+
+const initialValues = {};
+const InnovationUpdateForm = (props) => {
+  const id = props.innovationId;
+  const geoFocusId = props.projectLocationId;
+  const reportingFrequencyId = props.reportingPeriod;
+  const reportingYearId = props.year;
+
   const [metric, setMetric] = useState();
+  const [metricReportId, setMetricReportId] = useState();
+  const [innovationId, setInnovationId] = useState();
+  const [locationId, setLocationId] = useState();
+  const [reportPeriod, setReportPeriod] = useState();
+  const [year, setYear] = useState();
   const [pageSize, setPageSize] = useState(5);
   const [openMetricDialog, setOpenMetricDialog] = useState();
   const [openRiskDialog, setOpenRiskDialog] = useState();
@@ -412,36 +359,8 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const mutationMetric = useMutation({
-    mutationFn: newInnovationMonitoringUpdateMetric,
-  });
-
-  const mutationRisk = useMutation({
-    mutationFn: newInnovationMonitoringUpdateRisk,
-  });
-
-  const { data: InnovationRiskData, isLoading: isLoadingInnovationRisks } =
-    useQuery(
-      ["getInnovationMonitoringUpdateRiskByInnovationId", id],
-      getInnovationMonitoringUpdateRiskByInnovationId,
-      {
-        enabled: !!id,
-      }
-    );
-
   const {
-    data: InnovationMetricReportData,
-    isLoading: isLoadingInnovationMetricReport,
-  } = useQuery(
-    ["getInnovationMonitoringUpdateMetricByInnovationId", id],
-    getInnovationMonitoringUpdateMetricByInnovationId,
-    {
-      enabled: !!id,
-    }
-  );
-
-  const {
-    data: InnovationMetricsData,
+    data: innovationMetrics,
     isLoading: isLoadingInnovationMetrics,
     isError: isErrorInnovationMetrics,
   } = useQuery(
@@ -453,116 +372,50 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
   );
 
   const {
-    data: InnovationObjectivesClassificationData,
-    isLoading: isLoadingObjectivesClassification,
-    isError: isErrorObjectivesClassification,
+    data: innovationMonitoring,
+    isLoading: isLoadingInnovationMonitoring,
+    isError: isErrorInnovationMonitoring,
   } = useQuery(
-    ["getInnovationObjectiveClassificationByInnovationId", id],
-    getInnovationObjectiveClassificationByInnovationId,
-    {
-      enabled: !!id,
-    }
+    [
+      "getInnovationByMonitoringPeriod",
+      id,
+      geoFocusId,
+      reportingFrequencyId,
+      reportingYearId,
+    ],
+    getInnovationByMonitoringPeriod,
+    { enabled: !!id }
   );
 
-  const { isLoading: isLoadingMonths, data: monthsData } = useQuery(
-    ["months", "Months"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
+  const mutationRisk = useMutation({
+    mutationFn: newInnovationMonitoringUpdateRisk,
+  });
 
-  const { isLoading: isLoadingYears, data: yearsData } = useQuery(
-    ["years", "Years"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingQuarters, data: quartersData } = useQuery(
-    ["quarters", "Quarters"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  let reportingFrequencyData;
-  let reportingFrequencyId;
-  if (
-    !isLoadingObjectivesClassification &&
-    !isErrorObjectivesClassification &&
-    InnovationObjectivesClassificationData &&
-    InnovationObjectivesClassificationData.data
-  ) {
-    reportingFrequencyId =
-      InnovationObjectivesClassificationData.data.reportingFrequencyId;
-    if (
-      reportingFrequencyId.toLowerCase() ===
-      REPORT_FREQUENCY.MONTHLY.toLowerCase()
-    ) {
-      reportingFrequencyData = monthsData;
-    } else if (
-      reportingFrequencyId.toLowerCase() ===
-      REPORT_FREQUENCY.ANNUALLY.toLowerCase()
-    ) {
-      reportingFrequencyData = yearsData;
-    } else if (
-      reportingFrequencyId.toLowerCase() ===
-      REPORT_FREQUENCY.QUARTERLY.toLowerCase()
-    ) {
-      reportingFrequencyData = quartersData;
-    }
-  }
   const formik = useFormik({
     initialValues: initialValues,
-    validationSchema: Yup.object().shape({
-      reportingPeriod: Yup.object().required("Required"),
-      implementationYear: Yup.object().required("Required"),
-    }),
+    validationSchema: Yup.object().shape({}),
     onSubmit: async (values) => {
       try {
-        const innovationMetrics = [];
-        for (const innovationMetric of innovationMetricsList) {
-          const metric = {
-            innovationId: id,
-            innovationMetricId: innovationMetric.innovationMetricId,
-            innovationActual: innovationMetric.actualByReportingPeriod,
-            innovationMetricDescription:
-              innovationMetric.innovationMetricDescription,
-            reportingFrequencyId: values.reportingPeriod.lookupItemId,
-            reportingFrequency: values.reportingPeriod.lookupItemName,
-            implementationYearId: values.implementationYear.lookupItemId,
-            implementationYear: values.implementationYear.lookupItemName,
-            createDate: new Date(),
-          };
-          innovationMetrics.push(metric);
-        }
-        await mutationMetric.mutateAsync(innovationMetrics);
-
         const innovationRisks = [];
         for (const innovationRisk of innovationRisksList) {
           const risk = {
             innovationId: id,
             risk: innovationRisk.riskDescription,
             mitigation: innovationRisk.riskMitigation,
-            reportingFrequencyId: values.reportingPeriod.lookupItemId,
-            reportingFrequency: values.reportingPeriod.lookupItemName,
-            implementationYearId: values.implementationYear.lookupItemId,
-            implementationYear: values.implementationYear.lookupItemName,
+            reportingFrequencyId: innovationRisk.reportingFrequencyId,
+            reportingFrequency: "",
+            implementationYearId: innovationRisk.implementationYear,
+            implementationYear: "",
+            administrativeUnitId: innovationRisk.administrativeUnitId,
             createDate: new Date(),
           };
           innovationRisks.push(risk);
         }
         await mutationRisk.mutateAsync(innovationRisks);
 
-        toast("Successfully Updated an Innovation", {
+        toast("Successfully Updated Innovation Monitoring", {
           type: "success",
         });
-        await queryClient.invalidateQueries([
-          "getInnovationMonitoringTargetMetricsByInnovationId",
-        ]);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -597,66 +450,30 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (
-        !isLoadingInnovationMetricReport &&
-        !isLoadingInnovationRisks &&
-        InnovationRiskData.data &&
-        InnovationRiskData.data.length > 0
+        !isLoadingInnovationMonitoring &&
+        !isErrorInnovationMonitoring &&
+        innovationMonitoring.data
       ) {
-        formik.setValues({
-          reportingPeriod:
-            InnovationMetricReportData.data[0].reportingFrequencyId,
-          implementationYear:
-            InnovationMetricReportData.data[0].implementationYearId,
-        });
-
-        if (InnovationRiskData.data && InnovationRiskData.data.length > 0) {
-          const allRisks = [];
-          for (const item of InnovationRiskData.data) {
-            const risk = {
-              innovationId: item.innovationId,
-              riskDescription: item.risk,
-              riskMitigation: item.mitigation,
-              createDate: new Date(),
-            };
-            allRisks.push(risk);
-          }
-          setInnovationRisksList(allRisks);
+        const allRisks = [];
+        for (const item of innovationMonitoring.data.innovationRisks) {
+          const risk = {
+            innovationId: item.innovationId,
+            riskDescription: item.risk,
+            riskMitigation: item.mitigation,
+            reportingFrequencyId: item.reportingFrequencyId,
+            reportingFrequency: "",
+            implementationYearId: item.implementationYear,
+            implementationYear: "",
+            administrativeUnitId: item.administrativeUnitId,
+            createDate: new Date(),
+          };
+          allRisks.push(risk);
         }
-
-        if (
-          InnovationMetricReportData.data &&
-          InnovationMetricReportData.data.length > 0
-        ) {
-          const allMetrics = [];
-          for (const item of InnovationMetricReportData.data) {
-            const metric = {
-              createDate: new Date(),
-              innovationMetricId: item.innovationMetricId,
-              actualByReportingPeriod: item.innovationActual,
-              innovationTargetGroupName:
-                item.innovationMetric.innovationTargetGroupName,
-              innovationMetricName: item.innovationMetric.innovationMetricName,
-              innovationTarget: item.innovationMetric.innovationTarget,
-              innovationPercentageChange:
-                (item.innovationActual /
-                  item.innovationMetric.innovationTarget) *
-                100,
-            };
-            allMetrics.push(metric);
-          }
-          setInnovationMetricsList(allMetrics);
-        }
+        setInnovationRisksList(allRisks);
       }
     }
     setCurrentFormValues();
-  }, [InnovationMetricsData, InnovationMetricReportData, InnovationRiskData]);
-
-  const handleActionChange = useCallback(
-    (event) => {
-      onActionChange({ id: 0, status: 1 });
-    },
-    [onActionChange]
-  );
+  }, [innovationMonitoring, isLoadingInnovationMonitoring]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -667,254 +484,143 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
       ) : (
         <Grid container>
           <Grid container spacing={2} md={12} mb={2}>
-            <Grid item md={6}>
-              <TextField
-                name="implementationYear"
-                label="Implementation Year"
-                select
-                value={formik.values.implementationYear}
-                error={Boolean(
-                  formik.touched.implementationYear &&
-                    formik.errors.implementationYear
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.implementationYear &&
-                  formik.errors.implementationYear
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-              >
-                <MenuItem disabled value="">
-                  Select Implementation Year
-                </MenuItem>
-                {!isLoadingYears
-                  ? yearsData.data.map((option) => (
-                      <MenuItem key={option.lookupItemId} value={option}>
-                        {option.lookupItemName}
-                      </MenuItem>
-                    ))
-                  : []}
-              </TextField>
-            </Grid>
-            <Grid item md={6}>
-              <TextField
-                name="reportingPeriod"
-                label="Reporting Period"
-                select
-                value={formik.values.reportingPeriod}
-                error={Boolean(
-                  formik.touched.reportingPeriod &&
-                    formik.errors.reportingPeriod
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.reportingPeriod &&
-                  formik.errors.reportingPeriod
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                variant="outlined"
-                my={2}
-              >
-                <MenuItem disabled value="">
-                  Select Reporting Period
-                </MenuItem>
-                {reportingFrequencyData
-                  ? reportingFrequencyData.data.map((option) => (
-                      <MenuItem key={option.lookupItemId} value={option}>
-                        {option.lookupItemName}
-                      </MenuItem>
-                    ))
-                  : []}
-              </TextField>
-            </Grid>
-          </Grid>
-
-          <Grid item md={12}>
-            <Paper>
-              <div style={{ height: 400, width: "100%" }}>
-                <DataGrid
-                  rowsPerPageOptions={[5, 10, 25]}
-                  rows={
-                    isLoadingInnovationMetrics || isErrorInnovationMetrics
-                      ? []
-                      : InnovationMetricsData
-                      ? InnovationMetricsData.data
-                      : []
-                  }
-                  columns={[
-                    {
-                      field: "innovationMetricName",
-                      headerName: "Metric",
-                      editable: false,
-                      flex: 1,
-                    },
-                    {
-                      field: "innovationTargetGroupName",
-                      headerName: "Target Group",
-                      editable: false,
-                      flex: 1,
-                    },
-                    {
-                      field: "innovationTarget",
-                      headerName: "Target Number",
-                      editable: false,
-                      flex: 1,
-                    },
-                    {
-                      field: "action",
-                      headerName: "Action",
-                      sortable: false,
-                      flex: 1,
-                      renderCell: (params) => (
-                        <>
-                          <Button
-                            startIcon={<Link2 />}
-                            size="small"
-                            onClick={() => {
-                              setOpenMetricDialog(true);
-                              setMetric(params.row);
-                            }}
-                          ></Button>
-                        </>
-                      ),
-                    },
-                  ]}
-                  pageSize={pageSize}
-                  onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                  loading={isLoadingInnovationMetrics}
-                  components={{ Toolbar: GridToolbar }}
-                  getRowHeight={() => "auto"}
-                />
-              </div>
-            </Paper>
-          </Grid>
-          <Grid container item spacing={2} mt={3}>
-            <Grid item md={12}>
-              <Typography variant="h5" gutterBottom display="inline">
-                Actual Metrics By Reporting
-              </Typography>
-            </Grid>
             <Grid item md={12}>
               <Paper>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell align="left">Metric</TableCell>
-                      <TableCell align="left">Target Group</TableCell>
-                      <TableCell align="left">Target Number</TableCell>
-                      <TableCell align="left">Actual By Reporting</TableCell>
-                      <TableCell align="left">Percentage Change</TableCell>
-                      <TableCell align="left">Description</TableCell>
-                      <TableCell align="left">Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {innovationMetricsList.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell align="left">
-                          {row.innovationMetricName}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.innovationTargetGroupName}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.innovationTarget}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.actualByReportingPeriod}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.innovationPercentageChange}%
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.innovationMetricDescription}
-                        </TableCell>
-                        <TableCell align="left">
-                          <Button
-                            startIcon={<TrashIcon />}
-                            size="small"
-                            onClick={() => handleRemoveMetric(row)}
-                          ></Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div style={{ height: 400, width: "100%" }}>
+                  <DataGrid
+                    rowsPerPageOptions={[5, 10, 25]}
+                    rows={
+                      isLoadingInnovationMetrics || isErrorInnovationMetrics
+                        ? []
+                        : innovationMetrics
+                        ? innovationMetrics.data
+                        : []
+                    }
+                    columns={[
+                      {
+                        field: "innovationMetricName",
+                        headerName: "Metric",
+                        editable: false,
+                        flex: 1,
+                      },
+                      {
+                        field: "innovationTargetGroupName",
+                        headerName: "Target Group",
+                        editable: false,
+                        flex: 1,
+                      },
+                      {
+                        field: "innovationTarget",
+                        headerName: "Target Number",
+                        editable: false,
+                        flex: 1,
+                      },
+                      {
+                        field: "innovationTarget1",
+                        headerName: "Actuals",
+                        editable: false,
+                        flex: 1,
+                        valueGetter: (params) =>
+                          params.row.innovationMetricByReports
+                            ?.innovationActual ?? "UNK",
+                      },
+                      {
+                        field: "action",
+                        headerName: "Update Actuals",
+                        sortable: false,
+                        flex: 1,
+                        renderCell: (params) => (
+                          <>
+                            <Button
+                              startIcon={<Edit2 />}
+                              size="small"
+                              onClick={() => {
+                                setMetric(params.row);
+                                setMetricReportId(
+                                  params.row.innovationMetricByReports?.id
+                                );
+                                setInnovationId(id);
+                                setLocationId(geoFocusId);
+                                setReportPeriod(reportingFrequencyId);
+                                setYear(reportingFrequencyId);
+                                setOpenMetricDialog(true);
+                              }}
+                            ></Button>
+                          </>
+                        ),
+                      },
+                    ]}
+                    pageSize={pageSize}
+                    onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                    loading={isLoadingInnovationMetrics}
+                    getRowHeight={() => "auto"}
+                  />
+                </div>
               </Paper>
             </Grid>
-          </Grid>
 
-          <Grid container spacing={12} pt={10}>
-            <Grid item md={12} my={2}>
-              <Typography variant="h5" gutterBottom display="inline">
-                Risks Observed
-              </Typography>
+            <Grid container spacing={3} pt={10}>
+              <Grid item md={12} my={2}>
+                <Typography variant="h5" gutterBottom display="inline">
+                  Risks Observed
+                </Typography>
+              </Grid>
+              <Grid item md={12}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setOpenRiskDialog(true)}
+                >
+                  <AddIcon /> Add Risk
+                </Button>
+              </Grid>
+              <Grid item md={12}>
+                <Paper>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="left">Risk</TableCell>
+                        <TableCell align="left">Mitigation</TableCell>
+                        <TableCell align="left">Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {innovationRisksList.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell align="left">
+                            {row.riskDescription}
+                          </TableCell>
+                          <TableCell align="left">
+                            {row.riskMitigation}
+                          </TableCell>
+                          <TableCell align="left">
+                            <Button
+                              startIcon={<TrashIcon />}
+                              size="small"
+                              onClick={() => handleRemoveRisk(row)}
+                            ></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
-          <Grid container spacing={12}>
-            <Grid item md={12}>
+
+            <Grid item mt={5} md={12}>
               <Button
+                type="submit"
                 variant="contained"
                 color="primary"
-                onClick={() => setOpenRiskDialog(true)}
+                mt={3}
+                ml={3}
               >
-                <AddIcon /> Add Risk
+                <Check /> Save changes
               </Button>
             </Grid>
           </Grid>
-          <Grid item md={12}>
-            <Paper>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="left">Risk</TableCell>
-                    <TableCell align="left">Mitigation</TableCell>
-                    <TableCell align="left">Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {innovationRisksList.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell align="left">{row.riskDescription}</TableCell>
-                      <TableCell align="left">{row.riskMitigation}</TableCell>
-                      <TableCell align="left">
-                        <Button
-                          startIcon={<TrashIcon />}
-                          size="small"
-                          onClick={() => handleRemoveRisk(row)}
-                        ></Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Paper>
-          </Grid>
 
-          <Grid item mt={5} md={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
-              onClick={() => handleActionChange()}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
-              ml={3}
-            >
-              <Check /> Save changes
-            </Button>
-          </Grid>
           <Dialog
             fullWidth={true}
             maxWidth="md"
@@ -922,13 +628,16 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
             onClose={() => setOpenMetricDialog(false)}
             aria-labelledby="form-dialog-title"
           >
-            <DialogTitle id="form-dialog-title">
-              Add Innovation Metric Details
-            </DialogTitle>
+            <DialogTitle id="form-dialog-title">Enter Actuals</DialogTitle>
             <DialogContent>
               <MetricDetailsForm
+                innovationId={innovationId}
+                locationId={geoFocusId}
+                reportPeriod={reportingFrequencyId}
+                year={reportingYearId}
                 handleMetricClick={handleAddMetric}
                 metric={metric}
+                metricReportId={metricReportId}
               />
             </DialogContent>
             <DialogActions>
@@ -948,9 +657,15 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
             onClose={() => setOpenRiskDialog(false)}
             aria-labelledby="form-dialog-title"
           >
-            <DialogTitle id="form-dialog-title">Add Risk Details</DialogTitle>
+            <DialogTitle id="form-dialog-title">Add Risk</DialogTitle>
             <DialogContent>
-              <RiskDetailsForm handleRiskClick={handleAddRisk} />
+              <RiskDetailsForm
+                innovationId={innovationId}
+                locationId={geoFocusId}
+                reportPeriod={reportingFrequencyId}
+                year={reportingYearId}
+                handleRiskClick={handleAddRisk}
+              />
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setOpenRiskDialog(false)} color="primary">
@@ -963,22 +678,34 @@ const InnovationUpdateForm = ({ id, onActionChange }) => {
     </form>
   );
 };
+const InnovationUpdate = () => {
+  let {
+    processLevelItemId,
+    processLevelTypeId,
+    innovationId,
+    projectLocationId,
+    reportingPeriod,
+    year,
+  } = useParams();
 
-const InnovationUpdate = (props) => {
   return (
     <React.Fragment>
       <Helmet title="New Innovation Monitoring" />
       <Typography variant="h5" gutterBottom display="inline">
         Update
       </Typography>
-      <Divider my={6} />
+      <Divider my={3} />
       <Card mb={12}>
         <CardContent>
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             <Grid item md={12}>
               <InnovationUpdateForm
-                id={props.id}
-                onActionChange={props.onActionChange}
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                innovationId={innovationId}
+                projectLocationId={projectLocationId}
+                reportingPeriod={reportingPeriod}
+                year={year}
               />
             </Grid>
           </Grid>

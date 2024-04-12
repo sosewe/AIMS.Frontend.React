@@ -7,3 +7,17 @@ export const getInnovationMonitoringTargetMetricsByInnovationId = async ({
   const [, id] = queryKey;
   return await axios.get(`${apiRoutes.innovationMetric}/${id}`);
 };
+
+export const getInnovationMonitoringTargetMetricsByMonitoringPeriod = async ({
+  queryKey,
+}) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.innovationMetric}/${id}`);
+};
+
+export const getInnovationLocations = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.innovationMetric}/${id}`);
+};
+
+// GetInnovationMetricByReportId

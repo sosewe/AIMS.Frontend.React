@@ -29,16 +29,12 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import InnovationDataGrid from "./InnovationV2/InnovationDataGrid";
 import InnovationDetail from "./InnovationV2/InnovationDetail";
-import InnovationMonitoring from "./InnovationV2/InnovationMonitoring";
 import AdvocacyDataGrid from "./Advocacy/AdvocacyDataGrid";
 import AdvocacyDetail from "./Advocacy/AdvocacyDetail";
-import AdvocacyMonitoring from "./Advocacy/AdvocacyMonitoring";
 import TechnicalAssistanceDataGrid from "./TechnicalAssistance/TechnicalAssistanceDataGrid";
 import TechnicalAssistanceDetail from "./TechnicalAssistance/TechnicalAssistanceDetail";
-import TechnicalAssistanceMonitoring from "./TechnicalAssistance/TechnicalAssistanceMonitoring";
 import LearningDataGrid from "./Learning/LearningDataGrid";
 import LearningDetail from "./Learning/LearningDetail";
-import LearningMonitoring from "./Learning/LearningMonitoring";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -174,10 +170,6 @@ const ProjectMonitoringAccordion = ({
         <Tab label="Technical Assistance" {...a11yProps(2)} />
         <Tab label="Advocacy" {...a11yProps(3)} />
         <Tab label="Reasearch (Learning)" {...a11yProps(4)} />
-        <Tab label="Innovation V2" {...a11yProps(5)} />
-        <Tab label="Technical Assistance V2" {...a11yProps(6)} />
-        <Tab label="Advocacy V2" {...a11yProps(7)} />
-        <Tab label="Reasearch (Learning) V2" {...a11yProps(8)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <Typography variant="h5" gutterBottom display="inline">
@@ -373,18 +365,6 @@ const ProjectMonitoringAccordion = ({
             );
           }
         })()}
-      </TabPanel>
-      <TabPanel value={value} index={5}>
-        <InnovationMonitoring />
-      </TabPanel>
-      <TabPanel value={value} index={6}>
-        <TechnicalAssistanceMonitoring />
-      </TabPanel>
-      <TabPanel value={value} index={7}>
-        <AdvocacyMonitoring />
-      </TabPanel>
-      <TabPanel value={value} index={8}>
-        <LearningMonitoring />
       </TabPanel>
     </Box>
   );

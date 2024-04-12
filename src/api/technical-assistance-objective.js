@@ -8,8 +8,9 @@ export const newTechnicalAssistanceObjective = async (values) => {
 export const getTechnicalAssistanceObjectiveByTechnicalAssistanceId = async ({
   queryKey,
 }) => {
-  const [, editId] = queryKey;
-  return await axios.get(`${apiRoutes.technicalAssistanceObjective}/${editId}`);
+  console.log("***********");
+  const [, id] = queryKey;
+  return await axios.get(`${apiRoutes.technicalAssistanceObjective}/${id}`);
 };
 
 export const deleteTechnicalAssistanceObjectiveById = async ({ queryKey }) => {

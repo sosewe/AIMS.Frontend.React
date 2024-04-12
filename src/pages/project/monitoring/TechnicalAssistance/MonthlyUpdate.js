@@ -35,7 +35,7 @@ import * as Yup from "yup";
 import { getTechnicalAssistanceObjectiveByTechnicalAssistanceId } from "../../../../api/technical-assistance-objective";
 import {
   newTechnicalAssistanceMonthlyUpdate,
-  getTechnicalAssistanceMonthlyUpdateById,
+  getTechnicalAssistanceMonthlyUpdateByMonitoringPeriod,
 } from "../../../../api/technical-assistance-monthly-update";
 import {
   newTechnicalAssistanceObjectiveLink,
@@ -61,30 +61,25 @@ const Button = styled(MuiButton)(spacing);
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
-const initialValues = {
-  year: "",
-  month: "",
-  changeDescription: "",
-  objectives: [],
-  changeRelevance: "",
-  changeLevelOfRelevance: "",
-  changeLevelOfContribution: "",
-  titleOfChangeActors: "",
-  agencyOfChangeActors: [],
-  modalities: [],
-  changeContribution: "",
-  changeContributionOther: "",
-  followUp: "",
-};
-
 const MonthlyUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onTechnicalAssistanceActionChange,
-  } = props;
+  const [editId, setEditId] = useState();
+  const id = props.technicalAssistanceId;
+  const geoFocusId = props.projectLocationId;
+  const reportingFrequencyId = props.reportingPeriod;
+  const reportingYearId = props.year;
+  const initialValues = {
+    changeDescription: "",
+    objectives: [],
+    changeRelevance: "",
+    changeLevelOfRelevance: "",
+    changeLevelOfContribution: "",
+    titleOfChangeActors: "",
+    agencyOfChangeActors: [],
+    modalities: [],
+    changeContribution: "",
+    changeContributionOther: "",
+    followUp: "",
+  };
 
   const MAX_COUNT = 5;
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -128,25 +123,26 @@ const MonthlyUpdateForm = (props) => {
     }
   );
 
-  const { isLoading: isLoadingMonths, data: monthsData } = useQuery(
-    ["months", "Months"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingYears, data: yearsData } = useQuery(
-    ["years", "Years"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
   const { data: objectivesData, isLoading: isLoadingObjectives } = useQuery(
     ["getTechnicalAssistanceObjectiveByTechnicalAssistanceId", id],
     getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
+    {
+      enabled: !!id,
+    }
+  );
+
+  const {
+    data: technicalAssistanceMonthlyUpdate,
+    isLoading: isLoadingTechnicalAssistanceMonthlyUpdate,
+  } = useQuery(
+    [
+      "getTechnicalAssistanceMonthlyUpdateByMonitoringPeriod",
+      id,
+      geoFocusId,
+      reportingFrequencyId,
+      reportingYearId,
+    ],
+    getTechnicalAssistanceMonthlyUpdateByMonitoringPeriod,
     {
       enabled: !!id,
     }
@@ -194,8 +190,6 @@ const MonthlyUpdateForm = (props) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      year: Yup.object().required("Required"),
-      month: Yup.object().required("Required"),
       changeDescription: Yup.string().required("Required"),
       objectives: Yup.array().required("Required"),
       changeRelevance: Yup.string().required("Required"),
@@ -211,14 +205,9 @@ const MonthlyUpdateForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveMonthlyUpdate = {
-          createDate: new Date(),
-          id: new Guid().toString(),
+          id: editId ?? new Guid().toString(),
           technicalAssistanceId: id,
           changeDescription: values.changeDescription,
-          yearId: values.year.lookupItemId,
-          monthId: values.month.lookupItemId,
-          year: values.year.lookupItemName,
-          month: values.month.lookupItemName,
           changeRelevance: values.changeRelevance,
           changeLevelOfRelevanceId: values.changeLevelOfRelevance,
           changeLevelOfContributionId: values.changeLevelOfContribution,
@@ -228,6 +217,12 @@ const MonthlyUpdateForm = (props) => {
           changeCofollowUpntributionOther:
             values.changeCofollowUpntributionOther,
           followUp: values.followUp,
+          reportingFrequencyId: reportingFrequencyId,
+          reportingFrequency: "",
+          implementationYearId: reportingYearId,
+          implementationYear: "",
+          administrativeUnitId: geoFocusId,
+          createDate: new Date(),
         };
         const monthlyUpdate = await mutationMonthlyUpdate.mutateAsync(
           saveMonthlyUpdate
@@ -269,15 +264,13 @@ const MonthlyUpdateForm = (props) => {
         }
         await mutationModality.mutateAsync(modalitiesList);
 
-        toast("Successfully Created Monthly Monitoring", {
+        toast("Successfully Created TA Monthly Monitoring", {
           type: "success",
         });
 
         await queryClient.invalidateQueries([
           "getTechnicalAssistanceMonthlyUpdateByTechnicalAssistanceId",
         ]);
-
-        handleTechnicalAssistanceActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -287,14 +280,88 @@ const MonthlyUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingTechnicalAssistanceMonthlyUpdate &&
+        technicalAssistanceMonthlyUpdate &&
+        technicalAssistanceMonthlyUpdate.data
+      ) {
+        let objectivesMonthlyUpdateData =
+          technicalAssistanceMonthlyUpdate.data
+            .technicalAssistanceMonthlyUpdateObjectives;
+        let objectivesList = [];
+        if (objectivesMonthlyUpdateData) {
+          for (const item of objectivesMonthlyUpdateData) {
+            const result = objectivesData.data.find(
+              (obj) => obj.id === item.objectiveId
+            );
+            if (result) {
+              objectivesList.push(result);
+            }
+          }
+        }
 
-  const handleTechnicalAssistanceActionChange = useCallback(
-    (id, status) => {
-      onTechnicalAssistanceActionChange({ id: id, status: status });
-    },
-    [onTechnicalAssistanceActionChange]
-  );
+        let agencyOfChangeActorsMonthlyUpdateData =
+          technicalAssistanceMonthlyUpdate.data
+            .technicalAssistanceMonthlyUpdateAgencies;
+        let agencyOfChangeActorsList = [];
+        if (agencyOfChangeActorsMonthlyUpdateData) {
+          for (const item of agencyOfChangeActorsMonthlyUpdateData) {
+            const result = departmentsData.data.find(
+              (obj) => obj.id === item.agencyId
+            );
+            if (result) {
+              agencyOfChangeActorsList.push(result);
+            }
+          }
+        }
+
+        let modalitiesMonthlyUpdateData =
+          technicalAssistanceMonthlyUpdate.data
+            .technicalAssistanceMonthlyUpdateModalities;
+        let modalitiesList = [];
+        if (modalitiesMonthlyUpdateData) {
+          for (const item of modalitiesMonthlyUpdateData) {
+            const result = modalitiesData.data.find(
+              (obj) => obj.id === item.modalityId
+            );
+            if (result) {
+              modalitiesList.push(result);
+            }
+          }
+        }
+
+        formik.setValues({
+          changeDescription:
+            technicalAssistanceMonthlyUpdate.data.changeDescription,
+          objectives: objectivesList,
+          changeRelevance:
+            technicalAssistanceMonthlyUpdate.data.changeRelevance,
+          changeLevelOfRelevance:
+            technicalAssistanceMonthlyUpdate.data.changeLevelOfRelevanceId,
+          changeLevelOfContribution:
+            technicalAssistanceMonthlyUpdate.data.changeLevelOfContributionId,
+          titleOfChangeActors:
+            technicalAssistanceMonthlyUpdate.data.titleOfChangeActors,
+          agencyOfChangeActors: agencyOfChangeActorsList,
+          modalities: modalitiesList,
+          changeContribution:
+            technicalAssistanceMonthlyUpdate.data.changeContribution,
+          changeContributionOther:
+            technicalAssistanceMonthlyUpdate.data.changeContributionOther,
+          followUp: technicalAssistanceMonthlyUpdate.data.followUp,
+        });
+
+        setEditId(technicalAssistanceMonthlyUpdate.data.id);
+      }
+    }
+
+    setCurrentFormValues();
+  }, [
+    isLoadingTechnicalAssistanceMonthlyUpdate,
+    technicalAssistanceMonthlyUpdate,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -304,58 +371,6 @@ const MonthlyUpdateForm = (props) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
-          <Grid item md={6}>
-            <TextField
-              name="year"
-              label="Year"
-              select
-              value={formik.values.year}
-              error={Boolean(formik.touched.year && formik.errors.year)}
-              fullWidth
-              helperText={formik.touched.year && formik.errors.year}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Year
-              </MenuItem>
-              {!isLoadingYears
-                ? yearsData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={6}>
-            <TextField
-              name="month"
-              label="Month"
-              select
-              value={formik.values.month}
-              error={Boolean(formik.touched.month && formik.errors.month)}
-              fullWidth
-              helperText={formik.touched.month && formik.errors.month}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Month
-              </MenuItem>
-              {!isLoadingMonths
-                ? monthsData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
           <Grid item md={12}>
             <TextField
               name="changeDescription"
@@ -710,15 +725,6 @@ const MonthlyUpdateForm = (props) => {
               variant="contained"
               color="primary"
               mt={3}
-              onClick={() => handleTechnicalAssistanceActionChange(0, true)}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
               ml={3}
             >
               <Check /> Save changes
@@ -730,7 +736,16 @@ const MonthlyUpdateForm = (props) => {
   );
 };
 
-const MonthlyUpdate = (props) => {
+const MonthlyUpdate = () => {
+  let {
+    processLevelItemId,
+    processLevelTypeId,
+    technicalAssistanceId,
+    projectLocationId,
+    reportingPeriod,
+    year,
+  } = useParams();
+
   return (
     <React.Fragment>
       <Helmet title="Monthly Update" />
@@ -744,13 +759,12 @@ const MonthlyUpdate = (props) => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <MonthlyUpdateForm
-                id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
-                onActionChange={props.onActionChange}
-                onTechnicalAssistanceActionChange={
-                  props.onTechnicalAssistanceActionChange
-                }
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                technicalAssistanceId={technicalAssistanceId}
+                projectLocationId={projectLocationId}
+                reportingPeriod={reportingPeriod}
+                year={year}
               />
             </Grid>
           </Grid>

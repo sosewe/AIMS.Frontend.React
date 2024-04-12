@@ -445,7 +445,6 @@ const InnvationObjectives = (props) => {
         await queryClient.invalidateQueries([
           "getInnovationObjectiveClassificationByInnovationId",
         ]);
-        navigate(`/project/design/innovation/innovation-detail/${id}`);
       } catch (error) {
         toast(error.response.data, {
           type: "error",

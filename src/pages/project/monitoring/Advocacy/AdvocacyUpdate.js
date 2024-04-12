@@ -32,6 +32,7 @@ import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
   newAdvocacyProgressUpdate,
   getAdvocacyProgressUpdateByProgressId,
+  getAdvocacyProgressUpdateByMonitoringPeriod,
 } from "../../../../api/advocacy-progress";
 import { newAdvocacyPartner } from "../../../../api/advocacy-partner";
 import { newAdvocacyContribution } from "../../../../api/advocacy-contribution";
@@ -49,8 +50,6 @@ const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
-  implementationYearId: "",
-  quarterId: "",
   ragStatusId: "",
   progress: "",
   actualChangeInStatusId: "",
@@ -59,42 +58,29 @@ const initialValues = {
 };
 
 const AdvocacyUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onAdvocacyActionChange,
-  } = props;
+  const [editId, setEditId] = useState();
+  const id = props.advocacyId;
+  const geoFocusId = props.projectLocationId;
+  const reportingFrequencyId = props.reportingPeriod;
+  const reportingYearId = props.year;
 
-  console.log("Advocacy ID ..." + id);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
-    data: AdvocacyUpdateData,
-    isLoading: isLoadingAdvocacyUpdateData,
-    isError: isErrorAdvocacyUpdateData,
+    data: advocacyUpdate,
+    isLoading: isLoadingAdvocacyUpdate,
+    isError: isErrorAdvocacyUpdate,
   } = useQuery(
-    ["getAdvocacyProgressUpdateByProgressId", id],
-    getAdvocacyProgressUpdateByProgressId,
+    [
+      "getAdvocacyProgressUpdateByMonitoringPeriod",
+      id,
+      geoFocusId,
+      reportingFrequencyId,
+      reportingYearId,
+    ],
+    getAdvocacyProgressUpdateByMonitoringPeriod,
     {
       enabled: !!id,
-    }
-  );
-
-  const { isLoading: isLoadingYears, data: yearsData } = useQuery(
-    ["years", "Years"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingQuarters, data: quartersData } = useQuery(
-    ["quarters", "quarters"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
     }
   );
 
@@ -132,7 +118,7 @@ const AdvocacyUpdateForm = (props) => {
   );
 
   const { isLoading: isLoadingBragStatuses, data: bragStatusesData } = useQuery(
-    ["ragStatus", "RAGStatus"],
+    ["bragStatus", "BRAGStatus"],
     getLookupMasterItemsByName,
     {
       refetchOnWindowFocus: false,
@@ -147,8 +133,6 @@ const AdvocacyUpdateForm = (props) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      implementationYearId: Yup.object().required("Required"),
-      quarterId: Yup.object().required("Required"),
       ragStatusId: Yup.object().required("Required"),
       progress: Yup.string().required("Required"),
       actualChangeInStatusId: Yup.string().required("Required"),
@@ -158,17 +142,18 @@ const AdvocacyUpdateForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveAdvocacyUpdate = {
-          id: new Guid(),
-          createDate: new Date(),
-          implementationYearId: values.implementationYearId.lookupItemId,
-          implementationYear: values.implementationYearId.lookupItemName,
-          quarterId: values.quarterId.lookupItemId,
-          quarter: values.quarterId.lookupItemName,
+          id: editId ?? new Guid().toString(),
           ragStatusId: values.ragStatusId.lookupItemId,
           ragStatus: values.ragStatusId.lookupItemName,
           progress: values.progress,
           actualChangeInStatusId: values.actualChangeInStatusId,
           advocacyId: id,
+          reportingFrequencyId: reportingFrequencyId,
+          reportingFrequency: "",
+          implementationYearId: reportingYearId,
+          implementationYear: "",
+          administrativeUnitId: geoFocusId,
+          createDate: new Date(),
         };
         const advocacyUpdate = await mutation.mutateAsync(saveAdvocacyUpdate);
 
@@ -202,8 +187,6 @@ const AdvocacyUpdateForm = (props) => {
         await queryClient.invalidateQueries([
           "getAdvocacyProgressUpdateByProgressId",
         ]);
-
-        handleAdvocacyActionChange(0, true);
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -213,14 +196,55 @@ const AdvocacyUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (!isLoadingAdvocacyUpdate && advocacyUpdate && advocacyUpdate.data) {
+        let amrefContributions = [];
+        if (!isLoadingAmrefContribution) {
+          for (const contribution of advocacyUpdate.data
+            .advocacyContributions) {
+            const result = amrefContributionData.data.find(
+              (obj) => obj.id === contribution.contributionId
+            );
+            if (result) {
+              amrefContributions.push(result);
+            }
+          }
+        }
 
-  const handleAdvocacyActionChange = useCallback(
-    (id, status) => {
-      onAdvocacyActionChange({ id: id, status: status });
-    },
-    [onAdvocacyActionChange]
-  );
+        let actorsInvolved = [];
+        if (!isLoadingPartner) {
+          for (const partner of advocacyUpdate.data.advocacyActors) {
+            const result = partnerData.data.find(
+              (obj) => obj.id === partner.actorId
+            );
+            if (result) {
+              actorsInvolved.push(result);
+            }
+          }
+        }
+
+        let monitoringRAGStatusId;
+        if (!isLoadingBragStatuses) {
+          monitoringRAGStatusId = bragStatusesData.data.find(
+            (obj) => obj.lookupItemId === advocacyUpdate.data.ragStatusId
+          );
+        }
+
+        formik.setValues({
+          ragStatusId: monitoringRAGStatusId ?? "",
+          actualChangeInStatusId: advocacyUpdate.data.actualChangeInStatusId,
+          amrefContribution: amrefContributions,
+          actorsInvolved: actorsInvolved,
+          progress: advocacyUpdate.data.progress,
+        });
+
+        setEditId(advocacyUpdate.data.id);
+      }
+    }
+
+    setCurrentFormValues();
+  }, [advocacyUpdate, isLoadingAdvocacyUpdate]);
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -230,66 +254,6 @@ const AdvocacyUpdateForm = (props) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
-          <Grid item md={6}>
-            <TextField
-              name="implementationYearId"
-              label="Implimentation Year"
-              select
-              value={formik.values.implementationYearId}
-              error={Boolean(
-                formik.touched.implementationYearId &&
-                  formik.errors.implementationYearId
-              )}
-              fullWidth
-              helperText={
-                formik.touched.implementationYearId &&
-                formik.errors.implementationYearId
-              }
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Implimentation Year
-              </MenuItem>
-              {!isLoadingYears
-                ? yearsData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={6}>
-            <TextField
-              name="quarterId"
-              label="Quarter"
-              select
-              value={formik.values.quarterId}
-              error={Boolean(
-                formik.touched.quarterId && formik.errors.quarterId
-              )}
-              fullWidth
-              helperText={formik.touched.quarterId && formik.errors.quarterId}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Quarter
-              </MenuItem>
-              {!isLoadingQuarters
-                ? quartersData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
           <Grid item md={6}>
             <TextField
               name="actualChangeInStatusId"
@@ -486,15 +450,6 @@ const AdvocacyUpdateForm = (props) => {
               variant="contained"
               color="primary"
               mt={3}
-              onClick={() => handleAdvocacyActionChange(0, true)}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
               ml={3}
             >
               <Check /> Save changes
@@ -506,7 +461,16 @@ const AdvocacyUpdateForm = (props) => {
   );
 };
 
-const AdvocacyUpdate = (props) => {
+const AdvocacyUpdate = () => {
+  let {
+    processLevelItemId,
+    processLevelTypeId,
+    advocacyId,
+    projectLocationId,
+    reportingPeriod,
+    year,
+  } = useParams();
+
   return (
     <React.Fragment>
       <Helmet title="Advocacy Update" />
@@ -520,11 +484,12 @@ const AdvocacyUpdate = (props) => {
           <Grid container spacing={12}>
             <Grid item md={12}>
               <AdvocacyUpdateForm
-                id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
-                onActionChange={props.onActionChange}
-                onAdvocacyActionChange={props.onAdvocacyActionChange}
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                advocacyId={advocacyId}
+                projectLocationId={projectLocationId}
+                reportingPeriod={reportingPeriod}
+                year={year}
               />
             </Grid>
           </Grid>

@@ -12,6 +12,20 @@ export const getInnovationMonitoringUpdateMetricByInnovationId = async ({
   return await axios.get(`${apiRoutes.innovationMetricByReport}/${id}`);
 };
 
+export const getInnovationMonitoringTargetMetricsByReportId = async ({
+  queryKey,
+}) => {
+  const [, id] = queryKey;
+  return await axios.get(
+    `${apiRoutes.innovationMetricByReport}/GetInnovationMetricByReportId/${id}`
+  );
+};
+
+export const deleteInnovationMonitoringUpdateMetric = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.innovationMetricByReport}/${id}`);
+};
+
 export const getInnovationMonitoringTargetMetricsByMetricId = async ({
   queryKey,
 }) => {
@@ -19,9 +33,4 @@ export const getInnovationMonitoringTargetMetricsByMetricId = async ({
   return await axios.get(
     `${apiRoutes.innovationMetricByReport}/GetByMetricId/${id}`
   );
-};
-
-export const deleteInnovationMonitoringUpdateMetric = async ({ queryKey }) => {
-  const [, id] = queryKey;
-  return await axios.delete(`${apiRoutes.innovationMetricByReport}/${id}`);
 };

@@ -6,7 +6,7 @@ import {
   MenuItem,
   TextField as MuiTextField,
 } from "@mui/material";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -25,6 +25,7 @@ const TextField = styled(MuiTextField)(spacing);
 const NewAggregateDisaggregateForm = ({ aggregateId }) => {
   const user = useKeyCloakAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { isLoading, isError, data } = useQuery(
     ["getAllDisaggregatesByLevel", 2],
     getAllDisaggregatesByLevel
@@ -45,10 +46,13 @@ const NewAggregateDisaggregateForm = ({ aggregateId }) => {
     validationSchema: Yup.object().shape({
       aggregateId: Yup.string().required("Required"),
       disaggregateId: Yup.object().required("Required"),
+      /*
       disaggregateId2: Yup.array().min(
         1,
         "Please select at least one disaggregate"
       ),
+      */
+      disaggregateId2: Yup.array().nullable(),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       setSubmitting(true);
@@ -66,7 +70,8 @@ const NewAggregateDisaggregateForm = ({ aggregateId }) => {
         toast("Successfully Created a Aggregate-Disaggregate", {
           type: "success",
         });
-        navigate("/indicator/dis-aggregates");
+        await queryClient.invalidateQueries(["getAggregateDisaggregates"]);
+        navigate("/indicator/view-aggregate/" + aggregateId);
       } catch (error) {
         toast(error.response.data, {
           type: "error",
