@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Grid,
@@ -19,6 +19,18 @@ const ProjectLevelDCASummary = ({
   processLevelItemId,
   implementationYearId,
 }) => {
+  const [finalChildReach, setFinalChildReach] = useState(0);
+  const [finalYouthReach, setFinalYouthReach] = useState(0);
+  const [finalAdultReach, setFinalAdultReach] = useState(0);
+  const [finalTotalReach, setFinalTotalReach] = useState(0);
+  const [adjustedChildReach, setAdjustedChildReach] = useState(0);
+  const [adjustedYouthReach, setAdjustedYouthReach] = useState(0);
+  const [adjustedAdultReach, setAdjustedAdultReach] = useState(0);
+  const [adjustedTotalReach, setAdjustedTotalReach] = useState(0);
+  const [finalChild, setFinalChild] = useState(0);
+  const [finalYouth, setFinalYouth] = useState(0);
+  const [finalAdult, setFinalAdult] = useState(0);
+  const [finalTotal, setFinalTotal] = useState(0);
   const { isLoading, isError, data } = useQuery(
     ["getLocationBasedDCA", processLevelItemId, implementationYearId],
     getLocationBasedDCA
@@ -31,6 +43,50 @@ const ProjectLevelDCASummary = ({
   const difference = (val, val2) => {
     return Number(val) - Number(val2);
   };
+
+  useEffect(() => {
+    if (!isLoading && !isError && data) {
+      let childNewValue = 0;
+      let youthNewValue = 0;
+      let adultNewValue = 0;
+      let totalReach = 0;
+      let adjustedChildReachVal = 0;
+      let adjustedYouthReachVal = 0;
+      let adjustedAdultReachVal = 0;
+      let adjustedTotalReachVal = 0;
+      let finalChildVal = 0;
+      let finalYouthVal = 0;
+      let finalAdultVal = 0;
+      let finalTotalVal = 0;
+      for (const dataVal of data.data) {
+        childNewValue += dataVal.originalChildF + dataVal.originalChildM;
+        youthNewValue += dataVal.originalYouthF + dataVal.originalYouthM;
+        adultNewValue += dataVal.originalAdultsF + dataVal.originalAdultsM;
+        totalReach += childNewValue + youthNewValue + adultNewValue;
+        adjustedChildReachVal += dataVal.childF + dataVal.childM;
+        adjustedYouthReachVal += dataVal.youthF + dataVal.youthM;
+        adjustedAdultReachVal += dataVal.adultsF + dataVal.adultsM;
+        adjustedTotalReachVal +=
+          adjustedChildReachVal + adjustedYouthReachVal + adjustedAdultReachVal;
+        finalChildVal += childNewValue - adjustedChildReachVal;
+        finalYouthVal += youthNewValue - adjustedYouthReachVal;
+        finalAdultVal += adultNewValue - adjustedAdultReachVal;
+        finalTotalVal += totalReach - adjustedTotalReachVal;
+        setFinalChildReach(childNewValue);
+        setFinalYouthReach(youthNewValue);
+        setFinalAdultReach(adultNewValue);
+        setFinalTotalReach(totalReach);
+        setAdjustedChildReach(adjustedChildReachVal);
+        setAdjustedYouthReach(adjustedYouthReachVal);
+        setAdjustedAdultReach(adjustedAdultReachVal);
+        setAdjustedTotalReach(adjustedTotalReachVal);
+        setFinalChild(finalChildVal);
+        setFinalYouth(finalYouthVal);
+        setFinalAdult(finalAdultVal);
+        setFinalTotal(finalTotalVal);
+      }
+    }
+  }, [isLoading, isError]);
 
   return (
     <React.Fragment>
@@ -234,40 +290,40 @@ const ProjectLevelDCASummary = ({
                 Final project reach
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalChildReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalYouthReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalAdultReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalTotalReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {adjustedChildReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {adjustedYouthReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {adjustedAdultReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {adjustedTotalReach}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalChild}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalYouth}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalAdult}
               </TableCell>
               <TableCell sx={{ border: "1px solid #000", textAlign: "center" }}>
-                0
+                {finalTotal}
               </TableCell>
             </TableRow>
           </TableBody>
