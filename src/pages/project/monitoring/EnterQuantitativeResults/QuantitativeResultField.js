@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Button, Dialog, DialogContent, Grid } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  Typography,
+} from "@mui/material";
 import ResultChainAggregateAttributeModal from "./ResultChainAggregateAttributeModal";
 import ResultChainAggregateOnlyModal from "./ResultChainAggregateOnlyModal";
 import ResultChainAttributeOnlyModal from "./ResultChainAttributeOnlyModal";
@@ -102,6 +110,12 @@ const QuantitativeResultField = ({
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
+          <DialogTitle id="alert-dialog-title">
+            <Typography variant="h2" gutterBottom display="inline">
+              {resultChainIndicator.indicator.name}
+            </Typography>
+            <Divider />
+          </DialogTitle>
           <DialogContent>
             {modalType === "aggregateAttribute" && (
               <ResultChainAggregateAttributeModal
