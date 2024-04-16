@@ -37,3 +37,17 @@ export const getLocationBasedDCA = async ({ queryKey }) => {
     `${apiRoutes.doubleCountingAdjustment}/${processLevelItemId}/${implementingYearId}`
   );
 };
+
+export const projectLevelDCA = async (values) => {
+  return await axios.post(
+    `${apiRoutes.doubleCountingAdjustment}/AddProjectLevelDCA`,
+    values
+  );
+};
+
+export const getProjectLevelDCA = async ({ queryKey }) => {
+  const [_, processLevelItemId, implementingYearId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetProjectLevelDCA/${processLevelItemId}/${implementingYearId}`
+  );
+};
