@@ -113,6 +113,7 @@ export const apiRoutes = {
   // internal reporting
   projectAchievedResult: `${path}${process.env.REACT_APP_INTERNAL_REPORTING}/api/ProjectAchievedResult`,
   doubleCountingAdjustment: `${path}${process.env.REACT_APP_INTERNAL_REPORTING}/api/DoubleCountingAdjustment`,
+  endOfProjectBrief: `${path}${process.env.REACT_APP_INTERNAL_REPORTING}/api/EndOfProjectBrief`,
   // external
   ERPStaffList: `https://monitoringapi.amref.org/api/erpStaffList?unit=HQ`,
   administrativeRoles: `https://monitoringapi.amref.org/api/activeRoles`,
