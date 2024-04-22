@@ -232,6 +232,7 @@ const TechnicalAssistanceForm = ({
             donorId: donor.id,
             technicalAssistanceId: technicalAssistance.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           technicalAssistanceDonors.push(technicalAssistanceDonor);
         }
@@ -245,6 +246,7 @@ const TechnicalAssistanceForm = ({
             partnerId: partner.id,
             technicalAssistanceId: technicalAssistance.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           technicalAssistancePartners.push(technicalAssistancePartner);
         }

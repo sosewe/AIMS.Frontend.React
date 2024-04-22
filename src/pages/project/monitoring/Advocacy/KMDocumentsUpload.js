@@ -41,6 +41,7 @@ import {
   newAdvocacyDocument,
   getAdvocacyDocumentByAdvocacyId,
 } from "../../../../api/advocacy-document";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 import { SHARED_DIRECTORY } from "../../../../constants";
 
 const Card = styled(MuiCard)(spacing);
@@ -360,6 +361,7 @@ const KMDocumentsUploadForm = (props) => {
   const [documentsList, setDocumentsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const { data: AdvocacyDocumentData, isLoading: isLoadingAdvocacyDocument } =
     useQuery(
@@ -402,7 +404,8 @@ const KMDocumentsUploadForm = (props) => {
             documentCategoryId: item.documentCategoryId,
             documentAccessId: item.documentAccessId,
             documentYearId: item.documentYearId,
-            documentUrl: SHARED_DIRECTORY.INNOVATION,
+            documentUrl: SHARED_DIRECTORY.ADVOCACY,
+            userId: user.sub,
           };
           innovationDocuments.push(document);
         }

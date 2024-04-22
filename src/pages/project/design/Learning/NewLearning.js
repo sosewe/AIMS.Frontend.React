@@ -38,6 +38,7 @@ import { newLearningDonor } from "../../../../api/learning-donor";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -73,6 +74,7 @@ const LearningForm = ({
 }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     isLoading: isLoadingLearningMethodology,
@@ -211,6 +213,7 @@ const LearningForm = ({
           costCenter: values.costCenter,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
+          userId: user.sub,
         };
 
         const learning = await mutation.mutateAsync(saveLearning);
@@ -221,6 +224,7 @@ const LearningForm = ({
             donorId: donor.id,
             researchId: learning.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           learningDonors.push(learningDonor);
         }

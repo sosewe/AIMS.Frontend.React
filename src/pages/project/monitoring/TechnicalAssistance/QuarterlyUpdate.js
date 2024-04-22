@@ -32,6 +32,7 @@ import {
 } from "../../../../api/technical-assistance-quarterly-update";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
@@ -61,6 +62,7 @@ const QuarterlyUpdateForm = (props) => {
   const reportingYearId = props.year;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     data: technicalAssistanceQuarterlyUpdate,
@@ -111,10 +113,11 @@ const QuarterlyUpdateForm = (props) => {
           implementationYear: "",
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
+          userId: user.sub,
         };
         await mutationQuarterlyUpdate.mutateAsync(saveQuarterlyUpdate);
 
-        toast("Successfully Updated Quarterly Monitoring", {
+        toast("Successfully Updated TA Quarterly Monitoring", {
           type: "success",
         });
 
@@ -143,20 +146,20 @@ const QuarterlyUpdateForm = (props) => {
       ) {
         formik.setValues({
           bestModelsApproaches:
-            technicalAssistanceQuarterlyUpdate.data.bestModelsApproaches,
+            technicalAssistanceQuarterlyUpdate?.data?.bestModelsApproaches,
           resultOutcomeAnalysis:
-            technicalAssistanceQuarterlyUpdate.data.resultOutcomeAnalysis,
+            technicalAssistanceQuarterlyUpdate?.data?.resultOutcomeAnalysis,
           sharedSuccessInsights:
-            technicalAssistanceQuarterlyUpdate.data.sharedSuccessInsights,
+            technicalAssistanceQuarterlyUpdate?.data?.sharedSuccessInsights,
           sharedROIInsights:
-            technicalAssistanceQuarterlyUpdate.data.sharedROIInsights,
+            technicalAssistanceQuarterlyUpdate?.data?.sharedROIInsights,
           systemicChanges:
-            technicalAssistanceQuarterlyUpdate.data.systemicChanges,
+            technicalAssistanceQuarterlyUpdate?.data?.systemicChanges,
           revisionAdjustments:
-            technicalAssistanceQuarterlyUpdate.data.revisionAdjustments,
+            technicalAssistanceQuarterlyUpdate?.data?.revisionAdjustments,
         });
 
-        setEditId(technicalAssistanceQuarterlyUpdate.data.id);
+        setEditId(technicalAssistanceQuarterlyUpdate?.data?.id);
       }
     }
     setCurrentFormValues();

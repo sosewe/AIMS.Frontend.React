@@ -26,16 +26,14 @@ import {
   newAdvocacyObjective,
   getAdvocacyObjectiveById,
 } from "../../../../api/advocacy-objective";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const initialValues = {
@@ -52,6 +50,8 @@ const AdvocacyObjectiveForm = (props) => {
   const id = props.id;
   const onAdvocacyActionChange = props.onAdvocacyActionChange;
   const queryClient = useQueryClient();
+  const user = useKeyCloakAuth();
+
   const {
     data: AdvocacyObjectiveData,
     isLoading: isLoadingAdvocacyObjectiveData,
@@ -137,6 +137,7 @@ const AdvocacyObjectiveForm = (props) => {
           reportingFrequencyId: values.reportingFrequencyId,
           targetStatusId: values.targetStatusId,
           startStatusId: values.startStatusId,
+          userId: user.sub,
         };
 
         await mutation.mutateAsync(saveAdvocacyObjective);

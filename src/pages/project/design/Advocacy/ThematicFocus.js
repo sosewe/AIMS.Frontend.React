@@ -32,6 +32,7 @@ import { getSubThemesByThematicAreaId } from "../../../../api/thematic-area-sub-
 import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import { Guid } from "../../../../utils/guid";
 import { Helmet } from "react-helmet-async";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 import {
   deleteAdvocacyThematicFocus,
@@ -65,6 +66,7 @@ const ThematicFocus = (props) => {
   const [open, setOpen] = React.useState(false);
   const [thematicFocusId, setThematicFocusId] = React.useState();
   const [pageSize, setPageSize] = useState(5);
+  const user = useKeyCloakAuth();
 
   const {
     isLoading: isLoadingStrategicObjectives,
@@ -123,6 +125,7 @@ const ThematicFocus = (props) => {
               subThemeId: subThemesDatum.subThemeId,
               thematicAreaId: subThemesDatum.thematicAreaId,
               id: new Guid().toString(),
+              userId: user.sub,
             };
             await mutation.mutateAsync(innovationThematicFocus);
           }

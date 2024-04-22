@@ -16,6 +16,9 @@ export const REPORT_FREQUENCY = {
 
 export const SHARED_DIRECTORY = {
   INNOVATION: "amref.remote.address/edms/",
+  ADVOCACY: "amref.remote.address/edms/",
+  TECHNICALASSISTANCE: "amref.remote.address/edms/",
+  LEARNING: "amref.remote.address/edms/",
 };
 
 var start = new Date();

@@ -45,6 +45,7 @@ import {
   getInnovationMonitoringTargetMetricsByReportId,
 } from "../../../../api/innovation-monitoring-metric";
 import { getInnovationMonitoringTargetMetricsByInnovationId } from "../../../../api/innovation-monitoring";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
@@ -184,6 +185,7 @@ const MetricDetailsForm = ({
     innovationPercentageChange: "",
   };
 
+  const user = useKeyCloakAuth();
   const {
     data: innovationMetricsReport,
     isLoading: isLoadingInnovationMetricsReport,
@@ -221,6 +223,7 @@ const MetricDetailsForm = ({
           implementationYear: "",
           administrativeUnitId: initialMetricValues.administrativeUnitId,
           createDate: new Date(),
+          userId: user.sub,
         };
         innovationMetrics.push(metric);
         await mutation.mutateAsync(innovationMetrics);
@@ -340,6 +343,8 @@ const InnovationUpdateForm = (props) => {
   const [innovationRisksList, setInnovationRisksList] = useState([]);
   const [innovationMetricsList, setInnovationMetricsList] = useState([]);
 
+  const user = useKeyCloakAuth();
+
   const {
     data: innovationMetrics,
     isLoading: isLoadingInnovationMetrics,
@@ -389,6 +394,7 @@ const InnovationUpdateForm = (props) => {
             implementationYear: "",
             administrativeUnitId: innovationRisk.administrativeUnitId,
             createDate: new Date(),
+            userId: user.sub,
           };
           innovationRisks.push(risk);
         }

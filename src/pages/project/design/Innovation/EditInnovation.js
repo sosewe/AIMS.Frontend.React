@@ -434,6 +434,7 @@ const EditInnovationForm = ({ id, onActionChange }) => {
             donorId: donor.id,
             innovationId: id,
             createDate: new Date(),
+            userId: user.sub,
           };
           innovationDonors.push(innovationDonor);
         }
@@ -452,6 +453,7 @@ const EditInnovationForm = ({ id, onActionChange }) => {
               staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
             staffNames: staffDetail.staffDetailsName,
             staffId: staffDetail.staffId.personId,
+            userId: user.sub,
             void: false,
           };
           projectRoles.push(projectRole);

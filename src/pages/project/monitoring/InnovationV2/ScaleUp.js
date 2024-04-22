@@ -27,6 +27,7 @@ import { getInnovationByMonitoringPeriod } from "../../../../api/innovation";
 import { newInnovationMonitoringScaleUp } from "../../../../api/innovation-monitoring-scaleup";
 import { getInnovationMonitoringTechnicalReviewByInnovationId } from "../../../../api/innovation-monitoring-technical-review";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -55,6 +56,7 @@ const ScaleUpForm = (props) => {
   const [isScalable, setIsScalable] = useState(true);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     data: innovationMonitoring,
@@ -144,6 +146,7 @@ const ScaleUpForm = (props) => {
           implementationYear: "",
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
+          userId: user.sub,
         };
 
         await mutation.mutateAsync(saveScaleUp);
@@ -171,7 +174,7 @@ const ScaleUpForm = (props) => {
         innovationMonitoring.data
       ) {
         let data =
-          innovationMonitoring.data.innovationTechnicalReviewAtClosures[0];
+          innovationMonitoring.data?.innovationTechnicalReviewAtClosures[0];
         const effectiveness = data?.hasInnovationMetEffectivenessCriteria;
         const scalable = data?.canInnovationBeScaledUp;
         if (
@@ -192,7 +195,7 @@ const ScaleUpForm = (props) => {
           innovationClosingReason: data?.innovationClosingReason,
         });
 
-        setEditId(data.id);
+        setEditId(data?.id);
       }
     }
     setCurrentFormValues();

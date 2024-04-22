@@ -28,11 +28,9 @@ import {
 import { spacing } from "@mui/system";
 import { Check, Trash as TrashIcon } from "react-feather";
 import styled from "@emotion/styled";
-import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
   newTechnicalAssistanceObjective,
   getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
-  deleteTechnicalAssistanceObjective,
 } from "../../../../api/technical-assistance-objective";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
@@ -40,7 +38,7 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { Guid } from "../../../../utils/guid";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import { newTechnicalAssistance } from "../../../../api/technical-assistance";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -122,6 +120,7 @@ const LearningObjectives = ({ id }) => {
   const [objectivesList, setObjectivesList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     data: technicalAssistanceObjectivesData,
@@ -148,12 +147,13 @@ const LearningObjectives = ({ id }) => {
             objective: objective.technicalAssistanceObjectiveDescription,
             technicalAssistanceId: id,
             createDate: new Date(),
+            userId: user.sub,
           };
           technicalAssistanceObjectives.push(technicalAssistanceObjective);
         }
         await mutation.mutateAsync(technicalAssistanceObjectives);
 
-        toast("Successfully Created an Innovation Objective", {
+        toast("Successfully Created Learning Objective", {
           type: "success",
         });
 

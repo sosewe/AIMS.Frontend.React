@@ -24,6 +24,7 @@ import { Guid } from "../../../../utils/guid";
 import { getInnovationByMonitoringPeriod } from "../../../../api/innovation";
 import { newInnovationMonitoringTechnicalReview } from "../../../../api/innovation-monitoring-technical-review";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -44,6 +45,7 @@ const TechnicalReviewForm = (props) => {
   const reportingYearId = props.year;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     data: innovationMonitoring,
@@ -92,6 +94,7 @@ const TechnicalReviewForm = (props) => {
           implementationYear: "",
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
+          userId: user.sub,
         };
         await mutation.mutateAsync(saveTechnicalReview);
 
@@ -119,12 +122,13 @@ const TechnicalReviewForm = (props) => {
       ) {
         let data =
           innovationMonitoring.data.innovationTechnicalReviewAtClosures[0];
+
         formik.setValues({
-          innovationEffectiveness: data.hasInnovationMetEffectivenessCriteria,
-          innovationScalabiity: data.canInnovationBeScaledUp,
+          innovationEffectiveness: data?.hasInnovationMetEffectivenessCriteria,
+          innovationScalabiity: data?.canInnovationBeScaledUp,
         });
 
-        setEditId(data.id);
+        setEditId(data?.id);
       }
     }
     setCurrentFormValues();

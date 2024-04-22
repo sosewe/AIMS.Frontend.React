@@ -24,7 +24,7 @@ import {
   getAdvocacyObjectiveByAdvocacyId,
   deleteAdvocacyObjectiveById,
 } from "../../../../api/advocacy-objective";
-import { format } from "date-fns";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -42,6 +42,7 @@ const AdvocacyObjectiveGridData = (props) => {
   const [pageSize, setPageSize] = useState(5);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     data: AdvocacyObjectiveData,

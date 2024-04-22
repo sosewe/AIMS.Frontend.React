@@ -45,26 +45,18 @@ import {
 } from "../../../../api/lookup";
 import { getAdministrativeProgrammes } from "../../../../api/administrative-programme";
 import { getDonors } from "../../../../api/donor";
-import { getAllThematicAreas } from "../../../../api/thematic-area";
 import { getOrganizationUnits } from "../../../../api/organization-unit";
 import { getAmrefEntities } from "../../../../api/amref-entity";
 import { getLearningByLearningId, newLearning } from "../../../../api/learning";
 import { newLearningDonor } from "../../../../api/learning-donor";
-import {
-  newLearningPartner,
-  getLearningPartnerByLearningId,
-  deleteLearningPartnerById,
-} from "../../../../api/learning-partner";
-import {
-  newLearningStaff,
-  getLearningStaff,
-  getLearningStaffByLearningId,
-} from "../../../../api/learning-staff";
+import { newLearningPartner } from "../../../../api/learning-partner";
+import { newLearningStaff } from "../../../../api/learning-staff";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { getProjectRoles } from "../../../../api/project-role";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
 import { YEAR_RANGE } from "../../../../constants";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -411,6 +403,8 @@ const EditLearningForm = ({ id, onActionChange }) => {
   const [partnerDetailsList, setPartnerDetailsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
+
   const {
     data: LearningData,
     isLoading: isLoadingLearningData,
@@ -582,6 +576,7 @@ const EditLearningForm = ({ id, onActionChange }) => {
           totalBudget: values.totalBudget,
           currencyTypeId: values.currencyTypeId,
           costCenter: values.costCenter,
+          userId: user.sub,
         };
         await mutation.mutateAsync(saveLearning);
 
@@ -591,6 +586,7 @@ const EditLearningForm = ({ id, onActionChange }) => {
             donorId: donor.id,
             researchId: id,
             createDate: new Date(),
+            userId: user.sub,
           };
           learningDonors.push(learningDonor);
         }
@@ -609,6 +605,7 @@ const EditLearningForm = ({ id, onActionChange }) => {
               staffDetail.primaryRole === "" ? false : staffDetail.primaryRole,
             staffNames: staffDetail.staffDetailsName,
             void: false,
+            userId: user.sub,
           };
           learningStaff.push(projectRole);
         }
@@ -627,6 +624,7 @@ const EditLearningForm = ({ id, onActionChange }) => {
             partnerId: new Guid().toString(),
             createDate: new Date(),
             void: false,
+            userId: user.sub,
           };
           learningPartners.push(projectRole);
         }

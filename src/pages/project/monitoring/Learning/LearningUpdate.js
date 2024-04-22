@@ -29,6 +29,7 @@ import {
 } from "../../../../api/learning-progress-update";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
@@ -50,6 +51,7 @@ const LearningUpdateForm = (props) => {
   const geoFocusId = props.projectLocationId;
   const reportingFrequencyId = props.reportingPeriod;
   const reportingYearId = props.year;
+  const user = useKeyCloakAuth();
 
   const {
     data: learningUpdateData,
@@ -109,6 +111,7 @@ const LearningUpdateForm = (props) => {
           implementationYear: "",
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
+          userId: user.sub,
         };
 
         await mutation.mutateAsync(saveLearningUpdate);
@@ -149,16 +152,16 @@ const LearningUpdateForm = (props) => {
         }
 
         formik.setValues({
-          researchStageId: learningUpdateData.data.researchStageId,
+          researchStageId: learningUpdateData?.data?.researchStageId,
           researchStageId: monitoringResearchStage
             ? monitoringResearchStage
             : "",
           ragStatusId: monitoringRAGStatusId ? monitoringRAGStatusId : "",
-          progress: learningUpdateData.data.progress,
-          challenges: learningUpdateData.data.challenges,
+          progress: learningUpdateData?.data?.progress,
+          challenges: learningUpdateData?.data?.challenges,
         });
 
-        setEditId(learningUpdateData.data.id);
+        setEditId(learningUpdateData?.data?.id);
       }
     }
     setCurrentFormValues();

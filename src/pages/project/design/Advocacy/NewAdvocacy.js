@@ -44,6 +44,7 @@ import { newAdvocacyPartner } from "../../../../api/advocacy-partner";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -80,6 +81,7 @@ const AdvocacyForm = ({
   onActionChange,
 }) => {
   const queryClient = useQueryClient();
+  const user = useKeyCloakAuth();
 
   const { isLoading: isLoadingCurrency, data: currencyData } = useQuery(
     ["currencyType", "CurrencyType"],
@@ -179,7 +181,9 @@ const AdvocacyForm = ({
       startDate: Yup.date().required("Required"),
       endDate: Yup.date().required("Required"),
       extensionDate: Yup.date().when("endDate", (endDate, schema) => {
-        return endDate ? schema.min(endDate, "Must be after End Date") : schema;
+        return endDate
+          ? schema.min(endDate, "Must be after End Date").nullable()
+          : schema;
       }),
       staffNameId: Yup.object().required("Required"),
       implementingOfficeId: Yup.string().required("Required"),
@@ -216,6 +220,7 @@ const AdvocacyForm = ({
           statusId: values.status,
           processLevelItemId: processLevelItemId,
           processLevelTypeId: processLevelTypeId,
+          userId: user.sub,
         };
 
         const advocacy = await mutation.mutateAsync(saveAdvocacy);
@@ -226,6 +231,7 @@ const AdvocacyForm = ({
             donorId: donor.id,
             advocacyId: advocacy.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           advocacyDonors.push(advocacyDonor);
         }
@@ -237,6 +243,7 @@ const AdvocacyForm = ({
             partnerId: partner.id,
             advocacyId: advocacy.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           advocacyPartners.push(advocacyPartner);
         }

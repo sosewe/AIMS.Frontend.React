@@ -473,6 +473,7 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
             donorId: donor.id,
             technicalAssistanceId: id,
             createDate: new Date(),
+            userId: user.sub,
           };
           technicalAssistanceDonors.push(technicalAssistanceDonor);
         }
@@ -486,6 +487,7 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
             partnerId: partner.id,
             technicalAssistanceId: id,
             createDate: new Date(),
+            userId: user.sub,
           };
           technicalAssistancePartners.push(technicalAssistancePartner);
         }
@@ -507,6 +509,7 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
             staffNames: staffDetail.staffDetailsName,
             staffId: staffDetail.staffId.personId,
             void: false,
+            userId: user.sub,
           };
           technicalAssistanceStaff.push(projectRole);
         }

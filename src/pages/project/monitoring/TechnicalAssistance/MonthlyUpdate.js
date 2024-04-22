@@ -38,6 +38,7 @@ import { newTechnicalAssistanceAgency } from "../../../../api/technical-assistan
 import { newTechnicalAssistanceModality } from "../../../../api/technical-assistance-modality";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -51,6 +52,8 @@ const MonthlyUpdateForm = (props) => {
   const geoFocusId = props.projectLocationId;
   const reportingFrequencyId = props.reportingPeriod;
   const reportingYearId = props.year;
+  const user = useKeyCloakAuth();
+
   const initialValues = {
     changeDescription: "",
     objectives: [],
@@ -207,6 +210,7 @@ const MonthlyUpdateForm = (props) => {
           implementationYear: "",
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
+          userId: user.sub,
         };
         const monthlyUpdate = await mutationMonthlyUpdate.mutateAsync(
           saveMonthlyUpdate
@@ -219,6 +223,7 @@ const MonthlyUpdateForm = (props) => {
             technicalAssistanceId: id,
             technicalAssistanceMonthlyUpdateId: monthlyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           objectivesList.push(objective);
         }
@@ -231,6 +236,7 @@ const MonthlyUpdateForm = (props) => {
             technicalAssistanceId: id,
             technicalAssistanceMonthlyUpdateId: monthlyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           departmentsList.push(department);
         }
@@ -243,6 +249,7 @@ const MonthlyUpdateForm = (props) => {
             technicalAssistanceId: id,
             technicalAssistanceMonthlyUpdateId: monthlyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           modalitiesList.push(modality);
         }
@@ -318,26 +325,26 @@ const MonthlyUpdateForm = (props) => {
 
         formik.setValues({
           changeDescription:
-            technicalAssistanceMonthlyUpdate.data.changeDescription,
+            technicalAssistanceMonthlyUpdate?.data?.changeDescription,
           objectives: objectivesList,
           changeRelevance:
-            technicalAssistanceMonthlyUpdate.data.changeRelevance,
+            technicalAssistanceMonthlyUpdate?.data?.changeRelevance,
           changeLevelOfRelevance:
-            technicalAssistanceMonthlyUpdate.data.changeLevelOfRelevanceId,
+            technicalAssistanceMonthlyUpdate?.data?.changeLevelOfRelevanceId,
           changeLevelOfContribution:
-            technicalAssistanceMonthlyUpdate.data.changeLevelOfContributionId,
+            technicalAssistanceMonthlyUpdate?.data?.changeLevelOfContributionId,
           titleOfChangeActors:
-            technicalAssistanceMonthlyUpdate.data.titleOfChangeActors,
+            technicalAssistanceMonthlyUpdate?.data?.titleOfChangeActors,
           agencyOfChangeActors: agencyOfChangeActorsList,
           modalities: modalitiesList,
           changeContribution:
-            technicalAssistanceMonthlyUpdate.data.changeContribution,
+            technicalAssistanceMonthlyUpdate?.data?.changeContribution,
           changeContributionOther:
-            technicalAssistanceMonthlyUpdate.data.changeContributionOther,
-          followUp: technicalAssistanceMonthlyUpdate.data.followUp,
+            technicalAssistanceMonthlyUpdate?.data?.changeContributionOther,
+          followUp: technicalAssistanceMonthlyUpdate?.data?.followUp,
         });
 
-        setEditId(technicalAssistanceMonthlyUpdate.data.id);
+        setEditId(technicalAssistanceMonthlyUpdate?.data?.id);
       }
     }
 

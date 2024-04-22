@@ -380,6 +380,7 @@ const InnovationForm = ({
             donorId: donor.id,
             innovationId: innovation.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           innovationDonors.push(innovationDonor);
         }
