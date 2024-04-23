@@ -84,7 +84,6 @@ const Input = styled(InputBase)`
 const Navbar = ({ onDrawerToggle }) => {
   const { t } = useTranslation();
   const user = useKeyCloakAuth();
-  console.log(user);
   const officeContext = useContext(OfficeContext);
   const selectedOffice = officeContext.selectedOffice;
 

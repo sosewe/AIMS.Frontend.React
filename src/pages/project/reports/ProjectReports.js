@@ -26,6 +26,7 @@ import { toast } from "react-toastify";
 import { apiRoutes } from "../../../apiRoutes";
 import DoubleCountingAdjustment from "./DoubleCountingAdjustment";
 import EndOfProjectReport from "./EndOfProjectReport";
+import NarrativeReports from "./NarrativeReports";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -244,6 +245,9 @@ const ProjectReportsAccordion = ({
       </TabPanel>
       <TabPanel index={1} value={value}>
         <DoubleCountingAdjustment processLevelItemId={processLevelItemId} />
+      </TabPanel>
+      <TabPanel index={2} value={value}>
+        <NarrativeReports processLevelItemId={processLevelItemId} />
       </TabPanel>
       <TabPanel index={3} value={value}>
         <EndOfProjectReport processLevelItemId={processLevelItemId} />

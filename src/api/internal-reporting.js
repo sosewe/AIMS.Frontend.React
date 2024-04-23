@@ -62,3 +62,10 @@ export const getEndOfProjectBrief = async ({ queryKey }) => {
     `${apiRoutes.endOfProjectBrief}/${processLevelItemId}`
   );
 };
+
+export const getNarrativeReportsData = async ({ queryKey }) => {
+  const [_, processLevelItemId, year, month] = queryKey;
+  return await axios.get(
+    `${apiRoutes.narrativeReports}/${processLevelItemId}/${year}/${month}`
+  );
+};
