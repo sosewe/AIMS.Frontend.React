@@ -25,6 +25,8 @@ import { getLookupMasterItemsByName } from "../../../api/lookup";
 import { toast } from "react-toastify";
 import { apiRoutes } from "../../../apiRoutes";
 import DoubleCountingAdjustment from "./DoubleCountingAdjustment";
+import EndOfProjectReport from "./EndOfProjectReport";
+import NarrativeReports from "./NarrativeReports";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -144,6 +146,7 @@ const ProjectReportsAccordion = ({
         <Tab label="Indicator Datasets" {...a11yProps(0)} />
         <Tab label="Project DCA" {...a11yProps(1)} />
         <Tab label="Narrative Reports" {...a11yProps(2)} />
+        <Tab label="End of Project Brief" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <Typography variant="h5" gutterBottom display="inline">
@@ -242,6 +245,12 @@ const ProjectReportsAccordion = ({
       </TabPanel>
       <TabPanel index={1} value={value}>
         <DoubleCountingAdjustment processLevelItemId={processLevelItemId} />
+      </TabPanel>
+      <TabPanel index={2} value={value}>
+        <NarrativeReports processLevelItemId={processLevelItemId} />
+      </TabPanel>
+      <TabPanel index={3} value={value}>
+        <EndOfProjectReport processLevelItemId={processLevelItemId} />
       </TabPanel>
     </Box>
   );

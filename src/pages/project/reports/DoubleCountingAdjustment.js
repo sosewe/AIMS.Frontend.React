@@ -26,7 +26,6 @@ import { toast } from "react-toastify";
 import { getDCAResults } from "../../../api/internal-reporting";
 import GroupedTable from "./GroupedTable";
 import ProjectLevelDCASummary from "./ProjectLevelDCASummary";
-import CountryLevelDCA from "./CountryLevelDCA";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -205,24 +204,6 @@ const DoubleCountingAdjustment = ({ processLevelItemId }) => {
                     processLevelItemId={processLevelItemId}
                     implementationYearId={implementationYearId}
                   />
-
-                  <Grid container spacing={6}>
-                    <Grid item md={4}>
-                      <Button
-                        variant="contained"
-                        onClick={handleNext}
-                        sx={{ mt: 1, mr: 1 }}
-                      >
-                        Continue
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </StepContent>
-              </Step>
-              <Step key={2}>
-                <StepLabel>Country level DCA</StepLabel>
-                <StepContent>
-                  <CountryLevelDCA />
                 </StepContent>
               </Step>
             </Stepper>

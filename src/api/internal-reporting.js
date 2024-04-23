@@ -37,3 +37,35 @@ export const getLocationBasedDCA = async ({ queryKey }) => {
     `${apiRoutes.doubleCountingAdjustment}/${processLevelItemId}/${implementingYearId}`
   );
 };
+
+export const projectLevelDCA = async (values) => {
+  return await axios.post(
+    `${apiRoutes.doubleCountingAdjustment}/AddProjectLevelDCA`,
+    values
+  );
+};
+
+export const getProjectLevelDCA = async ({ queryKey }) => {
+  const [_, processLevelItemId, implementingYearId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetProjectLevelDCA/${processLevelItemId}/${implementingYearId}`
+  );
+};
+
+export const saveEndOfProjectBrief = async (values) => {
+  return await axios.post(`${apiRoutes.endOfProjectBrief}`, values);
+};
+
+export const getEndOfProjectBrief = async ({ queryKey }) => {
+  const [_, processLevelItemId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.endOfProjectBrief}/${processLevelItemId}`
+  );
+};
+
+export const getNarrativeReportsData = async ({ queryKey }) => {
+  const [_, processLevelItemId, year, month] = queryKey;
+  return await axios.get(
+    `${apiRoutes.narrativeReports}/${processLevelItemId}/${year}/${month}`
+  );
+};
