@@ -1,19 +1,15 @@
 import styled from "@emotion/styled";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Box,
   CircularProgress,
   Grid,
-  Link,
-  Autocomplete as MuiAutocomplete,
-  Breadcrumbs as MuiBreadcrumbs,
   Button as MuiButton,
   Card as MuiCard,
   CardContent as MuiCardContent,
   Divider as MuiDivider,
   MenuItem,
-  Paper as MuiPaper,
   TextField as MuiTextField,
   Typography,
   InputLabel,
@@ -27,7 +23,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { spacing } from "@mui/system";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
-import { Check, ChevronLeft } from "react-feather";
+import { Check } from "react-feather";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -37,28 +33,17 @@ import {
   newTechnicalAssistanceMonthlyUpdate,
   getTechnicalAssistanceMonthlyUpdateByMonitoringPeriod,
 } from "../../../../api/technical-assistance-monthly-update";
-import {
-  newTechnicalAssistanceObjectiveLink,
-  getTechnicalAssistanceObjectiveLinkByTechnicalAssistanceId,
-} from "../../../../api/technical-assistance-objective-link";
-import {
-  newTechnicalAssistanceAgency,
-  getTechnicalAssistanceAgencyByTechnicalAssistanceId,
-} from "../../../../api/technical-assistance-agencies";
-import {
-  newTechnicalAssistanceModality,
-  getTechnicalAssistanceModalityByTechnicalAssistanceId,
-} from "../../../../api/technical-assistance-modality";
+import { newTechnicalAssistanceObjectiveLink } from "../../../../api/technical-assistance-objective-link";
+import { newTechnicalAssistanceAgency } from "../../../../api/technical-assistance-agencies";
+import { newTechnicalAssistanceModality } from "../../../../api/technical-assistance-modality";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
-const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
 const TextField = styled(MuiTextField)(spacing);
-const Autocomplete = styled(MuiAutocomplete)(spacing);
 const Button = styled(MuiButton)(spacing);
-const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 const Divider = styled(MuiDivider)(spacing);
 
 const MonthlyUpdateForm = (props) => {
@@ -67,6 +52,8 @@ const MonthlyUpdateForm = (props) => {
   const geoFocusId = props.projectLocationId;
   const reportingFrequencyId = props.reportingPeriod;
   const reportingYearId = props.year;
+  const user = useKeyCloakAuth();
+
   const initialValues = {
     changeDescription: "",
     objectives: [],
@@ -223,6 +210,7 @@ const MonthlyUpdateForm = (props) => {
           implementationYear: "",
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
+          userId: user.sub,
         };
         const monthlyUpdate = await mutationMonthlyUpdate.mutateAsync(
           saveMonthlyUpdate
@@ -235,6 +223,7 @@ const MonthlyUpdateForm = (props) => {
             technicalAssistanceId: id,
             technicalAssistanceMonthlyUpdateId: monthlyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           objectivesList.push(objective);
         }
@@ -247,6 +236,7 @@ const MonthlyUpdateForm = (props) => {
             technicalAssistanceId: id,
             technicalAssistanceMonthlyUpdateId: monthlyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           departmentsList.push(department);
         }
@@ -259,6 +249,7 @@ const MonthlyUpdateForm = (props) => {
             technicalAssistanceId: id,
             technicalAssistanceMonthlyUpdateId: monthlyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           modalitiesList.push(modality);
         }
@@ -287,11 +278,11 @@ const MonthlyUpdateForm = (props) => {
         technicalAssistanceMonthlyUpdate &&
         technicalAssistanceMonthlyUpdate.data
       ) {
+        let objectivesList = [];
         let objectivesMonthlyUpdateData =
           technicalAssistanceMonthlyUpdate.data
             .technicalAssistanceMonthlyUpdateObjectives;
-        let objectivesList = [];
-        if (objectivesMonthlyUpdateData) {
+        if (objectivesMonthlyUpdateData && objectivesData) {
           for (const item of objectivesMonthlyUpdateData) {
             const result = objectivesData.data.find(
               (obj) => obj.id === item.objectiveId
@@ -302,11 +293,11 @@ const MonthlyUpdateForm = (props) => {
           }
         }
 
+        let agencyOfChangeActorsList = [];
         let agencyOfChangeActorsMonthlyUpdateData =
           technicalAssistanceMonthlyUpdate.data
             .technicalAssistanceMonthlyUpdateAgencies;
-        let agencyOfChangeActorsList = [];
-        if (agencyOfChangeActorsMonthlyUpdateData) {
+        if (agencyOfChangeActorsMonthlyUpdateData && departmentsData) {
           for (const item of agencyOfChangeActorsMonthlyUpdateData) {
             const result = departmentsData.data.find(
               (obj) => obj.id === item.agencyId
@@ -317,11 +308,11 @@ const MonthlyUpdateForm = (props) => {
           }
         }
 
+        let modalitiesList = [];
         let modalitiesMonthlyUpdateData =
           technicalAssistanceMonthlyUpdate.data
             .technicalAssistanceMonthlyUpdateModalities;
-        let modalitiesList = [];
-        if (modalitiesMonthlyUpdateData) {
+        if (modalitiesMonthlyUpdateData && modalitiesData) {
           for (const item of modalitiesMonthlyUpdateData) {
             const result = modalitiesData.data.find(
               (obj) => obj.id === item.modalityId
@@ -334,32 +325,35 @@ const MonthlyUpdateForm = (props) => {
 
         formik.setValues({
           changeDescription:
-            technicalAssistanceMonthlyUpdate.data.changeDescription,
+            technicalAssistanceMonthlyUpdate?.data?.changeDescription,
           objectives: objectivesList,
           changeRelevance:
-            technicalAssistanceMonthlyUpdate.data.changeRelevance,
+            technicalAssistanceMonthlyUpdate?.data?.changeRelevance,
           changeLevelOfRelevance:
-            technicalAssistanceMonthlyUpdate.data.changeLevelOfRelevanceId,
+            technicalAssistanceMonthlyUpdate?.data?.changeLevelOfRelevanceId,
           changeLevelOfContribution:
-            technicalAssistanceMonthlyUpdate.data.changeLevelOfContributionId,
+            technicalAssistanceMonthlyUpdate?.data?.changeLevelOfContributionId,
           titleOfChangeActors:
-            technicalAssistanceMonthlyUpdate.data.titleOfChangeActors,
+            technicalAssistanceMonthlyUpdate?.data?.titleOfChangeActors,
           agencyOfChangeActors: agencyOfChangeActorsList,
           modalities: modalitiesList,
           changeContribution:
-            technicalAssistanceMonthlyUpdate.data.changeContribution,
+            technicalAssistanceMonthlyUpdate?.data?.changeContribution,
           changeContributionOther:
-            technicalAssistanceMonthlyUpdate.data.changeContributionOther,
-          followUp: technicalAssistanceMonthlyUpdate.data.followUp,
+            technicalAssistanceMonthlyUpdate?.data?.changeContributionOther,
+          followUp: technicalAssistanceMonthlyUpdate?.data?.followUp,
         });
 
-        setEditId(technicalAssistanceMonthlyUpdate.data.id);
+        setEditId(technicalAssistanceMonthlyUpdate?.data?.id);
       }
     }
 
     setCurrentFormValues();
   }, [
     isLoadingTechnicalAssistanceMonthlyUpdate,
+    isLoadingDepartments,
+    isLoadingModalities,
+    isLoadingObjectives,
     technicalAssistanceMonthlyUpdate,
   ]);
 

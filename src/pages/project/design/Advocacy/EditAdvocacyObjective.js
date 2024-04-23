@@ -29,6 +29,7 @@ import {
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -51,6 +52,8 @@ const initialValues = {
 const AdvocacyObjectiveForm = ({ id, onAdvocacyActionChange }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
+
   const {
     data: AdvocacyObjectiveData,
     isLoading: isLoadingAdvocacyObjectiveData,
@@ -138,6 +141,7 @@ const AdvocacyObjectiveForm = ({ id, onAdvocacyActionChange }) => {
           reportingFrequencyId: values.reportingFrequencyId,
           targetStatusId: values.targetStatusId,
           startStatusId: values.startStatusId,
+          userId: user.sub,
         };
 
         await mutation.mutateAsync(saveAdvocacyObjective);

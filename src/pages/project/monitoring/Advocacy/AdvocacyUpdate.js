@@ -40,6 +40,7 @@ import { newAdvocacyContribution } from "../../../../api/advocacy-contribution";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -66,6 +67,9 @@ const AdvocacyUpdateForm = (props) => {
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const user = useKeyCloakAuth();
+
   const {
     data: advocacyUpdate,
     isLoading: isLoadingAdvocacyUpdate,
@@ -154,6 +158,7 @@ const AdvocacyUpdateForm = (props) => {
           implementationYear: "",
           administrativeUnitId: geoFocusId,
           createDate: new Date(),
+          userId: user.sub,
         };
         const advocacyUpdate = await mutation.mutateAsync(saveAdvocacyUpdate);
 
@@ -164,6 +169,7 @@ const AdvocacyUpdateForm = (props) => {
             advocacyId: id,
             advocacyProgressUpdateId: advocacyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           amrefContributions.push(advocacyContribution);
         }
@@ -176,12 +182,13 @@ const AdvocacyUpdateForm = (props) => {
             advocacyId: id,
             advocacyProgressUpdateId: advocacyUpdate.data.id,
             createDate: new Date(),
+            userId: user.sub,
           };
           actorsInvolved.push(advocacyPartner);
         }
         await mutationPartner.mutateAsync(actorsInvolved);
 
-        toast("Successfully Created an Advocacy Update", {
+        toast("Successfully Created Advocacy Update", {
           type: "success",
         });
         await queryClient.invalidateQueries([
@@ -200,9 +207,12 @@ const AdvocacyUpdateForm = (props) => {
     function setCurrentFormValues() {
       if (!isLoadingAdvocacyUpdate && advocacyUpdate && advocacyUpdate.data) {
         let amrefContributions = [];
-        if (!isLoadingAmrefContribution) {
-          for (const contribution of advocacyUpdate.data
-            .advocacyContributions) {
+        if (
+          !isLoadingAmrefContribution &&
+          advocacyUpdate.data.advocacyContributions
+        ) {
+          for (const contribution of advocacyUpdate?.data
+            ?.advocacyContributions) {
             const result = amrefContributionData.data.find(
               (obj) => obj.id === contribution.contributionId
             );
@@ -213,8 +223,8 @@ const AdvocacyUpdateForm = (props) => {
         }
 
         let actorsInvolved = [];
-        if (!isLoadingPartner) {
-          for (const partner of advocacyUpdate.data.advocacyActors) {
+        if (!isLoadingPartner && advocacyUpdate.data.advocacyActors) {
+          for (const partner of advocacyUpdate?.data?.advocacyActors) {
             const result = partnerData.data.find(
               (obj) => obj.id === partner.actorId
             );
@@ -233,18 +243,24 @@ const AdvocacyUpdateForm = (props) => {
 
         formik.setValues({
           ragStatusId: monitoringRAGStatusId ?? "",
-          actualChangeInStatusId: advocacyUpdate.data.actualChangeInStatusId,
+          actualChangeInStatusId: advocacyUpdate?.data?.actualChangeInStatusId,
           amrefContribution: amrefContributions,
           actorsInvolved: actorsInvolved,
-          progress: advocacyUpdate.data.progress,
+          progress: advocacyUpdate?.data?.progress,
         });
 
-        setEditId(advocacyUpdate.data.id);
+        setEditId(advocacyUpdate?.data?.id);
       }
     }
 
     setCurrentFormValues();
-  }, [advocacyUpdate, isLoadingAdvocacyUpdate]);
+  }, [
+    advocacyUpdate,
+    isLoadingAdvocacyUpdate,
+    isLoadingAmrefContribution,
+    isLoadingPartner,
+    isLoadingBragStatuses,
+  ]);
 
   return (
     <form onSubmit={formik.handleSubmit}>

@@ -45,6 +45,7 @@ import {
   getUniqueThematicAreasByProgrammeId,
 } from "../../../../api/programme-thematic-area-sub-theme";
 import { getProgrammes } from "../../../../api/programmes";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -65,6 +66,7 @@ const ThematicFocus = (props) => {
   const [open, setOpen] = React.useState(false);
   const [thematicFocusId, setThematicFocusId] = React.useState();
   const [pageSize, setPageSize] = useState(5);
+  const user = useKeyCloakAuth();
 
   const {
     isLoading: isLoadingStrategicObjectives,
@@ -123,6 +125,7 @@ const ThematicFocus = (props) => {
               subThemeId: subThemesDatum.subThemeId,
               thematicAreaId: subThemesDatum.thematicAreaId,
               id: new Guid().toString(),
+              userId: user.sub,
             };
             await mutation.mutateAsync(innovationThematicFocus);
           }
@@ -130,7 +133,7 @@ const ThematicFocus = (props) => {
         await queryClient.invalidateQueries([
           "getLearningThematicFocusByLearningId",
         ]);
-        toast("Successfully added Learning Thematic Focus", {
+        toast("Successfully Updated Learning Thematic Focus", {
           type: "success",
         });
       } catch (error) {

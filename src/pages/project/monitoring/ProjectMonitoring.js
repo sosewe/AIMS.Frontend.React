@@ -174,10 +174,6 @@ const ProjectMonitoringAccordion = ({
         <Tab label="Technical Assistance" {...a11yProps(2)} />
         <Tab label="Advocacy" {...a11yProps(3)} />
         <Tab label="Reasearch (Learning)" {...a11yProps(4)} />
-        <Tab label="Innovation V2" {...a11yProps(5)} />
-        <Tab label="Technical Assistance V2" {...a11yProps(6)} />
-        <Tab label="Advocacy V2" {...a11yProps(7)} />
-        <Tab label="Reasearch (Learning) V2" {...a11yProps(8)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         <Typography variant="h5" gutterBottom display="inline">
@@ -279,111 +275,15 @@ const ProjectMonitoringAccordion = ({
         </form>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        {(() => {
-          if (action.status) {
-            return (
-              <InnovationDataGrid
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                onActionChange={setAction}
-              />
-            );
-          } else {
-            return (
-              <>
-                <InnovationDetail
-                  id={action.id}
-                  processLevelItemId={processLevelItemId}
-                  processLevelTypeId={processLevelTypeId}
-                  onActionChange={setAction}
-                />
-              </>
-            );
-          }
-        })()}
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        {(() => {
-          if (action.status) {
-            return (
-              <TechnicalAssistanceDataGrid
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                onActionChange={setAction}
-              />
-            );
-          } else {
-            return (
-              <>
-                <TechnicalAssistanceDetail
-                  id={action.id}
-                  processLevelItemId={processLevelItemId}
-                  processLevelTypeId={processLevelTypeId}
-                  onActionChange={setAction}
-                />
-              </>
-            );
-          }
-        })()}
-      </TabPanel>
-      <TabPanel value={value} index={3}>
-        {(() => {
-          if (action.status) {
-            return (
-              <AdvocacyDataGrid
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                onActionChange={setAction}
-              />
-            );
-          } else {
-            return (
-              <>
-                <AdvocacyDetail
-                  id={action.id}
-                  processLevelItemId={processLevelItemId}
-                  processLevelTypeId={processLevelTypeId}
-                  onActionChange={setAction}
-                />
-              </>
-            );
-          }
-        })()}
-      </TabPanel>
-      <TabPanel value={value} index={4}>
-        {(() => {
-          if (action.status) {
-            return (
-              <LearningDataGrid
-                processLevelItemId={processLevelItemId}
-                processLevelTypeId={processLevelTypeId}
-                onActionChange={setAction}
-              />
-            );
-          } else {
-            return (
-              <>
-                <LearningDetail
-                  id={action.id}
-                  processLevelItemId={processLevelItemId}
-                  processLevelTypeId={processLevelTypeId}
-                  onActionChange={setAction}
-                />
-              </>
-            );
-          }
-        })()}
-      </TabPanel>
-      <TabPanel value={value} index={5}>
         <InnovationMonitoring />
       </TabPanel>
-      <TabPanel value={value} index={6}>
+      <TabPanel value={value} index={2}>
         <TechnicalAssistanceMonitoring />
       </TabPanel>
-      <TabPanel value={value} index={7}>
+      <TabPanel value={value} index={3}>
         <AdvocacyMonitoring />
       </TabPanel>
-      <TabPanel value={value} index={8}>
+      <TabPanel value={value} index={4}>
         <LearningMonitoring />
       </TabPanel>
     </Box>

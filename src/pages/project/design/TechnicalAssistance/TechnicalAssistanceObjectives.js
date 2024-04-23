@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { MenuItem } from "@mui/material";
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -15,10 +14,7 @@ import {
   TableRow,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
-  Link,
-  Breadcrumbs,
   Divider,
   Grid,
   Paper as MuiPaper,
@@ -28,11 +24,9 @@ import {
 import { spacing } from "@mui/system";
 import { Check, Trash as TrashIcon, ChevronLeft } from "react-feather";
 import styled from "@emotion/styled";
-import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import {
   newTechnicalAssistanceObjective,
   getTechnicalAssistanceObjectiveByTechnicalAssistanceId,
-  deleteTechnicalAssistanceObjective,
 } from "../../../../api/technical-assistance-objective";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
@@ -40,7 +34,7 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { Guid } from "../../../../utils/guid";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import { newTechnicalAssistance } from "../../../../api/technical-assistance";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -124,6 +118,7 @@ const TechnicalAssistanceObjectives = (props) => {
   const [objectivesList, setObjectivesList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     data: technicalAssistanceObjectivesData,
@@ -150,6 +145,7 @@ const TechnicalAssistanceObjectives = (props) => {
             objective: objective.technicalAssistanceObjectiveDescription,
             technicalAssistanceId: id,
             createDate: new Date(),
+            userId: user.sub,
           };
           technicalAssistanceObjectives.push(technicalAssistanceObjective);
         }
@@ -187,6 +183,7 @@ const TechnicalAssistanceObjectives = (props) => {
   useEffect(() => {
     function setCurrentFormValues() {
       if (
+        !isLoadingTechnicalAssistanceObjectivesData &&
         technicalAssistanceObjectivesData &&
         technicalAssistanceObjectivesData.data.length > 0
       ) {
@@ -203,7 +200,10 @@ const TechnicalAssistanceObjectives = (props) => {
       }
     }
     setCurrentFormValues();
-  }, [technicalAssistanceObjectivesData]);
+  }, [
+    technicalAssistanceObjectivesData,
+    isLoadingTechnicalAssistanceObjectivesData,
+  ]);
 
   const handleActionChange = useCallback(
     (event) => {

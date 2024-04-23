@@ -35,6 +35,7 @@ import {
   getInnovationGeographicalFocus,
 } from "../../../../api/innovation-geographical-focus";
 import { DataGrid } from "@mui/x-data-grid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -66,6 +67,8 @@ const GeoFocus = (props) => {
 
   const [open, setOpen] = React.useState(false);
   const [locationId, setLocationId] = React.useState();
+
+  const user = useKeyCloakAuth();
 
   const {
     data: ProjectLocationsData,
@@ -171,6 +174,7 @@ const GeoFocus = (props) => {
           administrativeUnitName,
           administrativeUnitCountryId,
           administrativeUnitCountryName,
+          userId: user.sub,
         };
         await mutation.mutateAsync(innovationtLocation);
         await queryClient.invalidateQueries(["getInnovationGeographicalFocus"]);

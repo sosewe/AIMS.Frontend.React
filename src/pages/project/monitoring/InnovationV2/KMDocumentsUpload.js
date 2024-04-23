@@ -47,6 +47,7 @@ import {
   getInnovationMonitoringUpdateDocumentByInnovationId,
   deleteInnovationMonitoringUpdateDocument,
 } from "../../../../api/innovation-monitoring-document";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 import { SHARED_DIRECTORY } from "../../../../constants";
 
 const Card = styled(MuiCard)(spacing);
@@ -365,6 +366,7 @@ const KMDocumentsUploadForm = ({ id, onActionChange }) => {
   const [documentsList, setDocumentsList] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
     data: InnovationDocumentData,
@@ -409,6 +411,7 @@ const KMDocumentsUploadForm = ({ id, onActionChange }) => {
             documentAccessId: item.documentAccessId,
             documentYearId: item.documentYearId,
             documentUrl: SHARED_DIRECTORY.INNOVATION,
+            userId: user.sub,
           };
           innovationDocuments.push(document);
         }

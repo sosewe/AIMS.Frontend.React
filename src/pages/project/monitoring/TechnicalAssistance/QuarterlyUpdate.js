@@ -28,11 +28,11 @@ import { toast } from "react-toastify";
 import * as Yup from "yup";
 import {
   newTechnicalAssistanceQuarterlyUpdate,
-  getTechnicalAssistanceQuarterlyUpdateByTechnicalAssistanceId,
-  getTechnicalAssistanceQuarterlyUpdateById,
+  getTechnicalAssistanceQuarterlyUpdateByMonitoringPeriod,
 } from "../../../../api/technical-assistance-quarterly-update";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
 import { Guid } from "../../../../utils/guid";
+import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
 
 const Paper = styled(MuiPaper)(spacing);
 const Card = styled(MuiCard)(spacing);
@@ -55,40 +55,30 @@ const initialValues = {
 };
 
 const QuarterlyUpdateForm = (props) => {
-  const {
-    id,
-    processLevelItemId,
-    processLevelTypeId,
-    onActionChange,
-    onTechnicalAssistanceActionChange,
-  } = props;
-
+  const [editId, setEditId] = useState();
+  const id = props.technicalAssistanceId;
+  const geoFocusId = props.projectLocationId;
+  const reportingFrequencyId = props.reportingPeriod;
+  const reportingYearId = props.year;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useKeyCloakAuth();
 
   const {
-    data: QuarterlyUpdateData,
-    isLoading: isLoadingQuarterlyUpdate,
-    isError: isErrorQuarterlyUpdate,
+    data: technicalAssistanceQuarterlyUpdate,
+    isLoading: isLoadingTechnicalAssistanceQuarterlyUpdate,
+    isError: isErrorTechnicalAssistanceQuarterlyUpdate,
   } = useQuery(
-    ["getTechnicalAssistanceQuarterlyUpdateById", id],
-    getTechnicalAssistanceQuarterlyUpdateById,
-    { enabled: !!id }
-  );
-
-  const { isLoading: isLoadingQuarters, data: quartersData } = useQuery(
-    ["quarters", "Quarters"],
-    getLookupMasterItemsByName,
+    [
+      "getTechnicalAssistanceQuarterlyUpdateByMonitoringPeriod",
+      id,
+      geoFocusId,
+      reportingFrequencyId,
+      reportingYearId,
+    ],
+    getTechnicalAssistanceQuarterlyUpdateByMonitoringPeriod,
     {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const { isLoading: isLoadingYears, data: yearsData } = useQuery(
-    ["years", "Years"],
-    getLookupMasterItemsByName,
-    {
-      refetchOnWindowFocus: false,
+      enabled: !!id,
     }
   );
 
@@ -99,8 +89,6 @@ const QuarterlyUpdateForm = (props) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: Yup.object().shape({
-      year: Yup.object().required("Required"),
-      quarter: Yup.object().required("Required"),
       bestModelsApproaches: Yup.string().required("Required"),
       resultOutcomeAnalysis: Yup.string().required("Required"),
       sharedSuccessInsights: Yup.string().required("Required"),
@@ -111,23 +99,25 @@ const QuarterlyUpdateForm = (props) => {
     onSubmit: async (values) => {
       try {
         const saveQuarterlyUpdate = {
-          createDate: new Date(),
-          id: new Guid().toString(),
+          id: editId ?? new Guid().toString(),
           technicalAssistanceId: id,
-          yearId: values.year.lookupItemId,
-          quarterId: values.quarter.lookupItemId,
-          year: values.year.lookupItemName,
-          quarter: values.quarter.lookupItemName,
           bestModelsApproaches: values.bestModelsApproaches,
           resultOutcomeAnalysis: values.resultOutcomeAnalysis,
           sharedSuccessInsights: values.sharedSuccessInsights,
           sharedROIInsights: values.sharedROIInsights,
           systemicChanges: values.systemicChanges,
           revisionAdjustments: values.revisionAdjustments,
+          reportingFrequencyId: reportingFrequencyId,
+          reportingFrequency: "",
+          implementationYearId: reportingYearId,
+          implementationYear: "",
+          administrativeUnitId: geoFocusId,
+          createDate: new Date(),
+          userId: user.sub,
         };
         await mutationQuarterlyUpdate.mutateAsync(saveQuarterlyUpdate);
 
-        toast("Successfully Updated Quarterly Monitoring", {
+        toast("Successfully Updated TA Quarterly Monitoring", {
           type: "success",
         });
 
@@ -145,14 +135,41 @@ const QuarterlyUpdateForm = (props) => {
     },
   });
 
-  useEffect(() => {}, []);
+  console.log();
+  useEffect(() => {
+    function setCurrentFormValues() {
+      if (
+        !isLoadingTechnicalAssistanceQuarterlyUpdate &&
+        !isErrorTechnicalAssistanceQuarterlyUpdate &&
+        technicalAssistanceQuarterlyUpdate &&
+        technicalAssistanceQuarterlyUpdate.data
+      ) {
+        formik.setValues({
+          bestModelsApproaches:
+            technicalAssistanceQuarterlyUpdate?.data?.bestModelsApproaches,
+          resultOutcomeAnalysis:
+            technicalAssistanceQuarterlyUpdate?.data?.resultOutcomeAnalysis,
+          sharedSuccessInsights:
+            technicalAssistanceQuarterlyUpdate?.data?.sharedSuccessInsights,
+          sharedROIInsights:
+            technicalAssistanceQuarterlyUpdate?.data?.sharedROIInsights,
+          systemicChanges:
+            technicalAssistanceQuarterlyUpdate?.data?.systemicChanges,
+          revisionAdjustments:
+            technicalAssistanceQuarterlyUpdate?.data?.revisionAdjustments,
+        });
 
-  const handleTechnicalAssistanceActionChange = useCallback(
-    (id, status) => {
-      onTechnicalAssistanceActionChange({ id: id, status: status });
-    },
-    [onTechnicalAssistanceActionChange]
-  );
+        setEditId(technicalAssistanceQuarterlyUpdate?.data?.id);
+      }
+    }
+    setCurrentFormValues();
+  }, [
+    isLoadingTechnicalAssistanceQuarterlyUpdate,
+    isErrorTechnicalAssistanceQuarterlyUpdate,
+    technicalAssistanceQuarterlyUpdate,
+  ]);
+
+  const handleTechnicalAssistanceActionChange = useCallback();
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -162,58 +179,6 @@ const QuarterlyUpdateForm = (props) => {
         </Box>
       ) : (
         <Grid container item spacing={2}>
-          <Grid item md={6}>
-            <TextField
-              name="year"
-              label="Year"
-              select
-              value={formik.values.year}
-              error={Boolean(formik.touched.year && formik.errors.year)}
-              fullWidth
-              helperText={formik.touched.year && formik.errors.year}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Year
-              </MenuItem>
-              {!isLoadingYears
-                ? yearsData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
-          <Grid item md={6}>
-            <TextField
-              name="quarter"
-              label="Quarter"
-              select
-              value={formik.values.quarter}
-              error={Boolean(formik.touched.quarter && formik.errors.quarter)}
-              fullWidth
-              helperText={formik.touched.quarter && formik.errors.quarter}
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              variant="outlined"
-              my={2}
-            >
-              <MenuItem disabled value="">
-                Select Quarter
-              </MenuItem>
-              {!isLoadingQuarters
-                ? quartersData.data.map((option) => (
-                    <MenuItem key={option.lookupItemId} value={option}>
-                      {option.lookupItemName}
-                    </MenuItem>
-                  ))
-                : []}
-            </TextField>
-          </Grid>
           <Grid item md={12} mb={2}>
             <TextField
               name="bestModelsApproaches"
@@ -350,15 +315,6 @@ const QuarterlyUpdateForm = (props) => {
               variant="contained"
               color="primary"
               mt={3}
-              onClick={() => handleTechnicalAssistanceActionChange(0, true)}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
               ml={3}
             >
               <Check /> Save changes
@@ -370,7 +326,15 @@ const QuarterlyUpdateForm = (props) => {
   );
 };
 
-const QuarterlyUpdate = (props) => {
+const QuarterlyUpdate = () => {
+  let {
+    processLevelItemId,
+    processLevelTypeId,
+    technicalAssistanceId,
+    projectLocationId,
+    reportingPeriod,
+    year,
+  } = useParams();
   return (
     <React.Fragment>
       <Helmet title="Quarterly Update" />
@@ -383,13 +347,12 @@ const QuarterlyUpdate = (props) => {
           <Grid container spacing={2}>
             <Grid item md={12}>
               <QuarterlyUpdateForm
-                id={props.id}
-                processLevelItemId={props.processLevelItemId}
-                processLevelTypeId={props.processLevelTypeId}
-                onActionChange={props.onActionChange}
-                onTechnicalAssistanceActionChange={
-                  props.onTechnicalAssistanceActionChange
-                }
+                processLevelItemId={processLevelItemId}
+                processLevelTypeId={processLevelTypeId}
+                technicalAssistanceId={technicalAssistanceId}
+                projectLocationId={projectLocationId}
+                reportingPeriod={reportingPeriod}
+                year={year}
               />
             </Grid>
           </Grid>
