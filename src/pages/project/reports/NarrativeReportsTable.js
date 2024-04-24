@@ -16,6 +16,9 @@ import { useForm } from "react-hook-form";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { green, purple } from "@mui/material/colors";
 import DownloadingOutlinedIcon from "@mui/icons-material/DownloadingOutlined";
+import { useMutation } from "@tanstack/react-query";
+import { saveNarrativeReport } from "../../../api/internal-reporting";
+import { toast } from "react-toastify";
 
 const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
@@ -43,24 +46,33 @@ const NarrativeReportsTable = ({
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(NarrativeReportsResults);
-    console.log(data);
-    const InData = {
-      overallProjectComments: data.overallProjectComments,
-      processLevelItemId: processLevelItemId,
-      implementationYearId,
-      implementationMonthId,
-      datas: [],
-    };
-    for (const inNarrativeReportKey of NarrativeReportsResults) {
-      InData.datas.push({
-        indicatorId: inNarrativeReportKey.indicatorId,
-        value: data[inNarrativeReportKey.indicatorId],
+  const mutation = useMutation({ mutationFn: saveNarrativeReport });
+
+  const onSubmit = async (data) => {
+    try {
+      const InData = {
+        overallProjectComments: data.overallProjectComments,
+        processLevelItemId: processLevelItemId,
+        implementationYearId,
+        implementationMonthId,
+        datas: [],
+      };
+      for (const inNarrativeReportKey of NarrativeReportsResults) {
+        InData.datas.push({
+          indicatorId: inNarrativeReportKey.indicatorId,
+          value: data[inNarrativeReportKey.indicatorId],
+        });
+      }
+
+      await mutation.mutateAsync(InData);
+      toast("Successfully Created Narrative Reports", {
+        type: "success",
+      });
+    } catch (error) {
+      toast(error.response.data, {
+        type: "error",
       });
     }
-
-    console.log(InData);
   };
 
   const handleDownload = () => {};

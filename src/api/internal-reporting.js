@@ -69,3 +69,7 @@ export const getNarrativeReportsData = async ({ queryKey }) => {
     `${apiRoutes.narrativeReports}/${processLevelItemId}/${year}/${month}`
   );
 };
+
+export const saveNarrativeReport = async (values) => {
+  return await axios.post(`${apiRoutes.narrativeReports}`, values);
+};
