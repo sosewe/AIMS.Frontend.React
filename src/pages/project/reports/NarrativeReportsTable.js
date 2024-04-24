@@ -5,7 +5,7 @@ import {
   TableRow,
   TextField as MuiTextField,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TableContainer from "@mui/material/TableContainer";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -16,6 +16,13 @@ import { useForm } from "react-hook-form";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { green, purple } from "@mui/material/colors";
 import DownloadingOutlinedIcon from "@mui/icons-material/DownloadingOutlined";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getSavedNarrativeReports,
+  saveNarrativeReport,
+} from "../../../api/internal-reporting";
+import { toast } from "react-toastify";
+import Papa from "papaparse";
 
 const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
@@ -40,30 +47,82 @@ const NarrativeReportsTable = ({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
+  const [isSaved, setIsSaved] = useState(false);
+  const mutation = useMutation({ mutationFn: saveNarrativeReport });
 
-  const onSubmit = (data) => {
-    console.log(NarrativeReportsResults);
-    console.log(data);
-    const InData = {
-      overallProjectComments: data.overallProjectComments,
-      processLevelItemId: processLevelItemId,
+  const { isLoading, isError, data } = useQuery(
+    [
+      "getSavedNarrativeReports",
+      processLevelItemId,
       implementationYearId,
       implementationMonthId,
-      datas: [],
-    };
-    for (const inNarrativeReportKey of NarrativeReportsResults) {
-      InData.datas.push({
-        indicatorId: inNarrativeReportKey.indicatorId,
-        value: data[inNarrativeReportKey.indicatorId],
+    ],
+    getSavedNarrativeReports,
+    {
+      enabled:
+        !!processLevelItemId &&
+        !!implementationYearId &&
+        !!implementationMonthId,
+    }
+  );
+
+  const onSubmit = async (data) => {
+    try {
+      const InData = {
+        overallProjectComments: data.overallProjectComments,
+        processLevelItemId: processLevelItemId,
+        implementationYearId,
+        implementationMonthId,
+        datas: [],
+      };
+      for (const inNarrativeReportKey of NarrativeReportsResults) {
+        InData.datas.push({
+          indicatorId: inNarrativeReportKey.indicatorId,
+          value: data[inNarrativeReportKey.indicatorId],
+        });
+      }
+
+      await mutation.mutateAsync(InData);
+      toast("Successfully Created Narrative Reports", {
+        type: "success",
+      });
+      setIsSaved(true);
+    } catch (error) {
+      toast(error.response.data, {
+        type: "error",
       });
     }
-
-    console.log(InData);
   };
 
-  const handleDownload = () => {};
+  useEffect(() => {
+    if (!isLoading && !isError && data) {
+      if (data.data && data.data.length > 0) {
+        setValue("overallProjectComments", data.data[0].overallProjectComments);
+        for (const datum of data.data[0].narrativeReportDatas) {
+          setValue(datum.indicatorId, datum.value);
+        }
+        setIsSaved(true);
+      }
+    }
+  }, [isLoading, isError, data]);
+
+  const handleDownload = () => {
+    const csv = Papa.unparse(NarrativeReportsResults, {
+      header: true,
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute("download", "data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <React.Fragment>
@@ -258,6 +317,7 @@ const NarrativeReportsTable = ({
                       variant="contained"
                       color="primary"
                       mt={2}
+                      disabled={isSaved}
                     >
                       Save Narrative Report
                     </Button>
