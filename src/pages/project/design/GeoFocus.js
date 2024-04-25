@@ -23,6 +23,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdministrativeUnitById,
   getAdministrativeUnitByParentName,
+  getAdministrativeUnits,
   getAdministrativeUnitTopLevel,
 } from "../../../api/administrative-unit";
 import { Check, Trash as TrashIcon } from "react-feather";
@@ -71,18 +72,26 @@ const GeoFocus = ({ id, processLevelTypeId }) => {
     enabled: !!id,
   });
 
+  const { data: result, isLoading: isLoadingAdministrativeUnit } = useQuery(
+    ["getAdministrativeUnits"],
+    getAdministrativeUnits,
+    {
+      refetchOnWindowFocus: false,
+      keepPreviousData: true,
+    }
+  );
+
   const GetAdministrativeUnit = (params) => {
-    const administrativeUnitId = params.value;
-    const { data: result, isLoading } = useQuery(
-      ["getAdministrativeUnitById", administrativeUnitId],
-      getAdministrativeUnitById,
-      {
-        refetchOnWindowFocus: false,
-        keepPreviousData: true,
+    if (params.value) {
+      const administrativeUnitId = params.value;
+      if (!isLoadingAdministrativeUnit && result && result.data) {
+        const adminUnitVal = result.data.find(
+          (obj) => obj.id === administrativeUnitId
+        );
+        if (adminUnitVal) {
+          return adminUnitVal.adminUnit;
+        }
       }
-    );
-    if (!isLoading && result && result.data) {
-      return result.data.adminUnit;
     }
   };
 

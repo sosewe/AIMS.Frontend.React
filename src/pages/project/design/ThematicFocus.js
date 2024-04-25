@@ -381,7 +381,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                             headerName: "STRATEGIC OBJECTIVE",
                             editable: false,
                             flex: 1,
-                            valueGetter: GetStrategicObjective,
+                            renderCell: GetStrategicObjective,
                           },
                           {
                             field: "subThemeId",
@@ -389,7 +389,7 @@ const ThematicFocus = ({ id, processLevelTypeId }) => {
                             headerName: "SUB-THEME [THEMATIC AREA]",
                             editable: false,
                             flex: 1,
-                            valueGetter: GetSubTheme,
+                            renderCell: GetSubTheme,
                           },
                           {
                             field: "action",
