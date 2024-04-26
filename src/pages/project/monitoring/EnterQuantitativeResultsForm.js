@@ -28,7 +28,7 @@ const EnterQuantitativeResultsForm = ({
     isLoading: isLoadingProjectResults,
     isError: isErrorProjectResults,
   } = useQuery(
-    ["getProjectResults", processLevelItemId, year, monthId],
+    ["getProjectResults", processLevelItemId, year, monthId, projectLocationId],
     getProjectResults,
     {
       refetchOnWindowFocus: false,
@@ -373,6 +373,7 @@ const EnterQuantitativeResultsForm = ({
                     setValue={setValue}
                     year={year}
                     monthId={monthId}
+                    projectLocationId={projectLocationId}
                   />
                 </Grid>
               </React.Fragment>

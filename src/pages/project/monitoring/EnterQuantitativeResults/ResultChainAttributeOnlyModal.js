@@ -66,7 +66,7 @@ const ResultChainAttributeOnlyModal = ({
     isLoading: isLoadingProjectResults,
     isError: isErrorProjectResults,
   } = useQuery(
-    ["getProjectResults", processLevelItemId, year, monthId],
+    ["getProjectResults", processLevelItemId, year, monthId, projectLocationId],
     getProjectResults,
     {
       refetchOnWindowFocus: false,
@@ -285,6 +285,7 @@ const ResultChainAttributeOnlyModal = ({
                                         primaryResultChainAttribute={
                                           primaryResultChainAttribute
                                         }
+                                        projectLocationId={projectLocationId}
                                       />
                                     </StyledTableCell>
                                   )}

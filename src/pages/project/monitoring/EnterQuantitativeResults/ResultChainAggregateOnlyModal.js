@@ -33,7 +33,7 @@ const ResultChainAggregateOnlyModal = ({
     isLoading: isLoadingProjectResults,
     isError: isErrorProjectResults,
   } = useQuery(
-    ["getProjectResults", processLevelItemId, year, monthId],
+    ["getProjectResults", processLevelItemId, year, monthId, projectLocationId],
     getProjectResults,
     {
       refetchOnWindowFocus: false,
@@ -126,6 +126,7 @@ const ResultChainAggregateOnlyModal = ({
                     setValue={setValue}
                     year={year}
                     monthId={monthId}
+                    projectLocationId={projectLocationId}
                   />
                 </React.Fragment>
               );

@@ -45,6 +45,7 @@ const PrimaryResultChainAttributesField = ({
   monthId,
   resultChainAttribute,
   errors,
+  projectLocationId,
 }) => {
   return (
     <React.Fragment>
@@ -111,6 +112,7 @@ const PrimaryResultChainAttributesField = ({
                           primaryResultChainAttribute
                         }
                         errors={errors}
+                        projectLocationId={projectLocationId}
                       />
                     </StyledTableCell>
                   ))}
@@ -152,7 +154,7 @@ const ResultChainAggregateAttributeModal = ({
     isLoading: isLoadingProjectResults,
     isError: isErrorProjectResults,
   } = useQuery(
-    ["getProjectResults", processLevelItemId, year, monthId],
+    ["getProjectResults", processLevelItemId, year, monthId, projectLocationId],
     getProjectResults,
     {
       refetchOnWindowFocus: false,
@@ -328,6 +330,7 @@ const ResultChainAggregateAttributeModal = ({
               monthId={monthId}
               resultChainAttribute={resultChainAttributes}
               errors={errors}
+              projectLocationId={projectLocationId}
             />
           </React.Fragment>
         ) : (

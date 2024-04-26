@@ -14,6 +14,7 @@ export const AggregateField = ({
   setValue,
   year,
   monthId,
+  projectLocationId,
 }) => {
   const {
     data: DisaggregateData,
@@ -48,6 +49,7 @@ export const AggregateField = ({
       resultChainAggregate.id,
       year,
       monthId,
+      projectLocationId,
     ],
     getAchievedResultsByResultChainIndicatorIdAndAggregateId,
     {
