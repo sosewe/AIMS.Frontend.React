@@ -123,7 +123,7 @@ const DonorsData = () => {
                 headerName: "Donor Type",
                 editable: false,
                 flex: 1,
-                valueGetter: GetDonorType,
+                renderCell: GetDonorType,
               },
               {
                 field: "action",

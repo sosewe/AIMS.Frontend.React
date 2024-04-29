@@ -183,7 +183,7 @@ const TableQuantitativeResultsGrid = () => {
     "November",
     "December",
   ];
-  if (fYear < currentYear) {
+  if (fYear <= currentYear) {
     for (const month of monthsArray) {
       yearMonths.push({
         yearMonth: fYear + " " + month,
@@ -377,6 +377,11 @@ const TableQuantitativeResultsGrid = () => {
                   )}
                 </React.Fragment>
               ))}
+              {yearMonths.length === 0 && (
+                <React.Fragment>
+                  Data Entry For Future Years Not Allowed
+                </React.Fragment>
+              )}
             </TableBody>
           </Table>
         </TableContainer>

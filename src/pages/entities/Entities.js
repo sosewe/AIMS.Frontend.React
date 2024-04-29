@@ -113,7 +113,7 @@ const EntitiesData = () => {
                 headerName: "Entity",
                 editable: false,
                 flex: 1,
-                valueGetter: GetEntityTypeName,
+                renderCell: GetEntityTypeName,
               },
               {
                 field: "description",
