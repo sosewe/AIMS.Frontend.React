@@ -20,6 +20,8 @@ import Navbar from "../components/navbar/Navbar";
 import guestDashboardItems from "../components/sidebar/guestLayoutItems";
 import projectDashboardItems from "../components/sidebar/projectLayoutItems";
 import countryDashboardItems from "../components/sidebar/countryLayoutItems";
+import countryLayoutMonitoringItems from "../components/sidebar/countryLayoutMonitoringItems";
+import countryLayoutReportingItems from "../components/sidebar/countryLayoutReportingItems";
 import corporateDashboardItems from "../components/sidebar/corporateItems";
 import corporateMonitoringItems from "../components/sidebar/corporateMonitoringItems";
 import corporateReportingItems from "../components/sidebar/corporateReportingItems";
@@ -106,7 +108,20 @@ const DynamicLayout = ({ children }) => {
           }
           break;
         case "Country":
-          setDashboardItems(countryDashboardItems);
+          switch (selectedLink) {
+            case "design":
+              setDashboardItems(countryDashboardItems);
+              break;
+            case "monitoring":
+              setDashboardItems(countryLayoutMonitoringItems);
+              break;
+            case "reports":
+              setDashboardItems(countryLayoutReportingItems);
+              break;
+            default:
+              setDashboardItems(countryDashboardItems);
+              break;
+          }
           break;
         case "Programme":
           setDashboardItems(programmeDashboardItems);

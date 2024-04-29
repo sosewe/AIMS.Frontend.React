@@ -22,16 +22,6 @@ const navItems = [
       {
         title: "Country Strategy",
         href: "",
-        icon: YardIcon,
-      },
-    ],
-  },
-  {
-    title: "",
-    pages: [
-      {
-        title: "Country Projects",
-        href: "/project-home",
         icon: WorkspacesOutlinedIcon,
       },
     ],
@@ -42,7 +32,7 @@ const navItems = [
       {
         title: "Country Advocacies",
         href: "",
-        icon: PublicIcon,
+        icon: YardIcon,
       },
     ],
   },
@@ -52,7 +42,7 @@ const navItems = [
       {
         title: "Country Innovations",
         href: "",
-        icon: LeaderboardOutlinedIcon,
+        icon: PublicIcon,
       },
     ],
   },
@@ -62,7 +52,7 @@ const navItems = [
       {
         title: "Country Researches",
         href: "",
-        icon: MarginOutlinedIcon,
+        icon: LeaderboardOutlinedIcon,
       },
     ],
   },
