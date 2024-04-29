@@ -69,7 +69,6 @@ function App({ emotionCache = clientSideEmotionCache }) {
 
           localStorage.setItem("kc_token", kc.token);
           localStorage.setItem("kc_refreshToken", kc.refreshToken);
-          console.log(user);
         } else {
           SetUserInformation(null);
           toast("Login failed", {

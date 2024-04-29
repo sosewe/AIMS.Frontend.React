@@ -492,7 +492,9 @@ const ProjectLevelDCASummary = ({
     if (
       !isLoadingProjectLevelDCA &&
       !isErrorProjectLevelDCA &&
-      ProjectLevelDCA
+      ProjectLevelDCA &&
+      ProjectLevelDCA.data &&
+      ProjectLevelDCA.data.length > 0
     ) {
       setEnableSubmitForApproval(false);
     }
@@ -535,6 +537,7 @@ const ProjectLevelDCASummary = ({
       toast("Successfully Saved Project Level DCA", {
         type: "success",
       });
+      setEnableSubmitForApproval(false);
     } catch (error) {
       toast(error.response.data, {
         type: "error",
