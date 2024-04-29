@@ -101,7 +101,7 @@ const LocationTable = ({
         InData.id = new Guid().toString();
         await mutationSaveDCA.mutateAsync(InData);
         setSubmitting(false);
-        toast("Successfully Create DCA", {
+        toast("Successfully Created DCA", {
           type: "success",
         });
       } catch (error) {

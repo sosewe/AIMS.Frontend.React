@@ -27,7 +27,9 @@ import { getLookupMasterItemsByName } from "../../../api/lookup";
 import { green, purple } from "@mui/material/colors";
 import { toast } from "react-toastify";
 import {
+  addCountryLevelDCA,
   getAllProjectsDCA,
+  getCountryLevelDCA,
   uploadDCAReportingFile,
 } from "../../../api/internal-reporting";
 import TableBody from "@mui/material/TableBody";
@@ -81,6 +83,20 @@ const CountryLevelDCA = () => {
   const user = useKeyCloakAuth();
 
   const mutation = useMutation({ mutationFn: uploadDCAReportingFile });
+  const mutationCountryLevel = useMutation({ mutationFn: addCountryLevelDCA });
+
+  const {
+    isLoading: isLoadingCountryDCA,
+    isError: isErrorCountryDCA,
+    data: CountryDCAData,
+  } = useQuery(
+    ["getCountryLevelDCA", implementationYearId, selectedOffice],
+    getCountryLevelDCA,
+    {
+      enabled: !!implementationYearId && !!selectedOffice,
+    }
+  );
+
   const {
     data: implementationYears,
     isLoading,
@@ -121,54 +137,6 @@ const CountryLevelDCA = () => {
       }
     },
   });
-
-  useEffect(() => {
-    if (
-      !isLoadingAllProjectsDCA &&
-      !isErrorAllProjectsDCA &&
-      AllProjectsDCAData
-    ) {
-      let originalChildTotal = 0;
-      let originalYouthTotal = 0;
-      let originalAdultTotal = 0;
-      let originalTotal = 0;
-      let adjustedChildTotal = 0;
-      let adjustedYouthTotal = 0;
-      let adjustedAdultTotal = 0;
-      let adjustedTotal = 0;
-      let finalChildTotal = 0;
-      let finalYouthTotal = 0;
-      let finalAdultTotal = 0;
-      let finalTotal = 0;
-
-      for (const projectDatum of AllProjectsDCAData.data) {
-        originalChildTotal += projectDatum.originalChild;
-        originalYouthTotal += projectDatum.originalYouth;
-        originalAdultTotal += projectDatum.originalAdult;
-        originalTotal += projectDatum.originalTotal;
-        adjustedChildTotal += projectDatum.adjustedChild;
-        adjustedYouthTotal += projectDatum.adjustedYouth;
-        adjustedAdultTotal += projectDatum.adjustedAdult;
-        adjustedTotal += projectDatum.adjustedTotal;
-        finalChildTotal += projectDatum.finalChild;
-        finalYouthTotal += projectDatum.finalYouth;
-        finalAdultTotal += projectDatum.finalAdult;
-        finalTotal += projectDatum.finalTotal;
-      }
-      setSumOriginalChild(originalChildTotal);
-      setSumOriginalYouth(originalYouthTotal);
-      setSumOriginalAdult(originalAdultTotal);
-      setSumOriginalTotal(originalTotal);
-      setSumAdjustedChild(adjustedChildTotal);
-      setSumAdjustedYouth(adjustedYouthTotal);
-      setSumAdjustedAdult(adjustedAdultTotal);
-      setSumAdjustedTotal(adjustedTotal);
-      setSumFinalChild(finalChildTotal);
-      setSumFinalYouth(finalYouthTotal);
-      setSumFinalAdult(finalAdultTotal);
-      setSumFinalTotal(finalTotal);
-    }
-  }, [isLoadingAllProjectsDCA, isErrorAllProjectsDCA, AllProjectsDCAData]);
 
   const downloadCountryLevelDCASummary = () => {
     const csv = Papa.unparse(AllProjectsDCAData.data, {
@@ -223,15 +191,25 @@ const CountryLevelDCA = () => {
           filePath,
           fileName,
           ImplementingYearId: implementationYearId,
-          sumOriginalChild: sumOriginalChild,
-          sumOriginalYouth: sumOriginalYouth,
-          sumOriginalAdult: sumOriginalAdult,
-          sumOriginalTotal: sumOriginalTotal,
+          originalChild: sumFinalChild,
+          originalYouth: sumFinalYouth,
+          originalAdult: sumFinalAdult,
+          originalTotal: sumFinalTotal,
+          finalChild: sumFinalChild - values.officeAdjustedChild,
+          finalYouth: sumFinalYouth - values.officeAdjustedYouth,
+          finalAdult: sumFinalAdult - values.officeAdjustedAdults,
+          finalTotal: sumFinalTotal - values.officeAdjustedTotal,
           CreateDate: new Date(),
           UserId: user.sub,
+          selectedOffice,
         };
         InData.id = new Guid().toString();
+        console.log(InData);
+        await mutationCountryLevel.mutateAsync(InData);
         setSubmitting(true);
+        toast("Successfully Created Country Level DCA", {
+          type: "success",
+        });
       } catch (error) {
         toast(error.response.data, {
           type: "error",
@@ -271,6 +249,87 @@ const CountryLevelDCA = () => {
     }
   };
 
+  useEffect(() => {
+    if (
+      !isLoadingAllProjectsDCA &&
+      !isErrorAllProjectsDCA &&
+      AllProjectsDCAData
+    ) {
+      let originalChildTotal = 0;
+      let originalYouthTotal = 0;
+      let originalAdultTotal = 0;
+      let originalTotal = 0;
+      let adjustedChildTotal = 0;
+      let adjustedYouthTotal = 0;
+      let adjustedAdultTotal = 0;
+      let adjustedTotal = 0;
+      let finalChildTotal = 0;
+      let finalYouthTotal = 0;
+      let finalAdultTotal = 0;
+      let finalTotal = 0;
+
+      for (const projectDatum of AllProjectsDCAData.data) {
+        originalChildTotal += projectDatum.originalChild;
+        originalYouthTotal += projectDatum.originalYouth;
+        originalAdultTotal += projectDatum.originalAdult;
+        originalTotal += projectDatum.originalTotal;
+        adjustedChildTotal += projectDatum.adjustedChild;
+        adjustedYouthTotal += projectDatum.adjustedYouth;
+        adjustedAdultTotal += projectDatum.adjustedAdult;
+        adjustedTotal += projectDatum.adjustedTotal;
+        finalChildTotal += projectDatum.finalChild;
+        finalYouthTotal += projectDatum.finalYouth;
+        finalAdultTotal += projectDatum.finalAdult;
+        finalTotal += projectDatum.finalTotal;
+      }
+      setSumOriginalChild(originalChildTotal);
+      setSumOriginalYouth(originalYouthTotal);
+      setSumOriginalAdult(originalAdultTotal);
+      setSumOriginalTotal(originalTotal);
+      setSumAdjustedChild(adjustedChildTotal);
+      setSumAdjustedYouth(adjustedYouthTotal);
+      setSumAdjustedAdult(adjustedAdultTotal);
+      setSumAdjustedTotal(adjustedTotal);
+      setSumFinalChild(finalChildTotal);
+      setSumFinalYouth(finalYouthTotal);
+      setSumFinalAdult(finalAdultTotal);
+      setSumFinalTotal(finalTotal);
+    }
+
+    if (!isLoadingCountryDCA && !isErrorCountryDCA && CountryDCAData) {
+      if (CountryDCAData.data.length > 0) {
+        setDisableEdit(true);
+        formikAdjustment.setFieldValue(
+          "comments",
+          CountryDCAData.data[0].comments
+        );
+        formikAdjustment.setFieldValue(
+          "officeAdjustedChild",
+          CountryDCAData.data[0].officeAdjustedChild
+        );
+        formikAdjustment.setFieldValue(
+          "officeAdjustedAdults",
+          CountryDCAData.data[0].officeAdjustedAdults
+        );
+        formikAdjustment.setFieldValue(
+          "officeAdjustedYouth",
+          CountryDCAData.data[0].officeAdjustedYouth
+        );
+        formikAdjustment.setFieldValue(
+          "officeAdjustedTotal",
+          CountryDCAData.data[0].officeAdjustedTotal
+        );
+      }
+    }
+  }, [
+    isLoadingAllProjectsDCA,
+    isErrorAllProjectsDCA,
+    AllProjectsDCAData,
+    isLoadingCountryDCA,
+    isErrorCountryDCA,
+    CountryDCAData,
+  ]);
+
   return (
     <React.Fragment>
       <Card>
@@ -298,7 +357,7 @@ const CountryLevelDCA = () => {
                   onBlur={formik.handleBlur}
                   onChange={(e) => {
                     formik.handleChange(e);
-                    // setCanDownload(false);
+                    setActiveStep(0);
                   }}
                   variant="outlined"
                   my={2}
@@ -331,7 +390,9 @@ const CountryLevelDCA = () => {
           </form>
           <Stepper activeStep={activeStep} orientation="vertical">
             <Step key={0}>
-              <StepLabel>Country Level DCA table</StepLabel>
+              <StepLabel>
+                Country Level DCA table - {implementationYear}
+              </StepLabel>
               <StepContent>
                 <Grid container spacing={12}>
                   <Grid item md={12}>
@@ -729,6 +790,22 @@ const CountryLevelDCA = () => {
                                         <DownloadIcon /> &nbsp; Download project
                                         level DCA summary
                                       </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                </React.Fragment>
+                              )}
+
+                              {AllProjectsDCAData.data.length === 0 && (
+                                <React.Fragment>
+                                  <TableRow>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                      colSpan={14}
+                                    >
+                                      No Project Level DCA found
                                     </TableCell>
                                   </TableRow>
                                 </React.Fragment>
