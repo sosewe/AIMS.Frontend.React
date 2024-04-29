@@ -6,6 +6,10 @@ import {
   Grid,
   MenuItem,
   Paper,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
   Table,
   TableCell,
   TableHead,
@@ -18,19 +22,24 @@ import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { useFormik } from "formik";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../../api/lookup";
 import { green, purple } from "@mui/material/colors";
-import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { getAllProjectsDCA } from "../../../api/internal-reporting";
+import {
+  getAllProjectsDCA,
+  uploadDCAReportingFile,
+} from "../../../api/internal-reporting";
 import TableBody from "@mui/material/TableBody";
 import { OfficeContext } from "../../../App";
-import { useForm } from "react-hook-form";
 import DownloadIcon from "@mui/icons-material/Download";
 import ArrowRightOutlinedIcon from "@mui/icons-material/ArrowRightOutlined";
 import Papa from "papaparse";
-import { useParams } from "react-router-dom";
+import * as Yup from "yup";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import SaveIcon from "@mui/icons-material/Save";
+import { Guid } from "../../../utils/guid";
+import useKeyCloakAuth from "../../../hooks/useKeyCloakAuth";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -49,6 +58,7 @@ const theme = createTheme({
 });
 
 const CountryLevelDCA = () => {
+  const [activeStep, setActiveStep] = React.useState(0);
   const [implementationYear, setImplementationYear] = useState();
   const [implementationYearId, setImplementationYearId] = useState();
   const [sumOriginalChild, setSumOriginalChild] = useState(0);
@@ -63,15 +73,14 @@ const CountryLevelDCA = () => {
   const [sumFinalYouth, setSumFinalYouth] = useState(0);
   const [sumFinalAdult, setSumFinalAdult] = useState(0);
   const [sumFinalTotal, setSumFinalTotal] = useState(0);
+  const [filePath, setFilePath] = useState();
+  const [fileName, setFileName] = useState();
+  const [disableEdit, setDisableEdit] = useState(false);
   const officeContext = useContext(OfficeContext);
   let selectedOffice = officeContext.selectedOffice;
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
+  const user = useKeyCloakAuth();
 
+  const mutation = useMutation({ mutationFn: uploadDCAReportingFile });
   const {
     data: implementationYears,
     isLoading,
@@ -112,10 +121,6 @@ const CountryLevelDCA = () => {
       }
     },
   });
-
-  const onSubmit = async (data) => {
-    console.log(data);
-  };
 
   useEffect(() => {
     if (
@@ -180,7 +185,91 @@ const CountryLevelDCA = () => {
     document.body.removeChild(link);
   };
 
-  const continueCountryLevelDCASummary = () => {};
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const formikAdjustment = useFormik({
+    initialValues: {
+      officeAdjustedChild: "",
+      officeAdjustedYouth: "",
+      officeAdjustedAdults: "",
+      officeAdjustedTotal: "",
+      comments: "",
+      file: "",
+    },
+    validationSchema: Yup.object().shape({
+      officeAdjustedChild: Yup.string().required("Required"),
+      officeAdjustedAdults: Yup.string().required("Required"),
+      officeAdjustedYouth: Yup.string().required("Required"),
+      officeAdjustedTotal: Yup.string().required("Required"),
+      comments: Yup.string().required("Required"),
+      file: Yup.string().required("Required"),
+    }),
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        if (!fileName || !filePath) {
+          toast("Please upload a document", {
+            type: "error",
+          });
+          return;
+        }
+        const InData = {
+          officeAdjustedChild: values.officeAdjustedChild,
+          officeAdjustedAdults: values.officeAdjustedAdults,
+          officeAdjustedYouth: values.officeAdjustedYouth,
+          officeAdjustedTotal: values.officeAdjustedTotal,
+          comments: values.comments,
+          filePath,
+          fileName,
+          ImplementingYearId: implementationYearId,
+          sumOriginalChild: sumOriginalChild,
+          sumOriginalYouth: sumOriginalYouth,
+          sumOriginalAdult: sumOriginalAdult,
+          sumOriginalTotal: sumOriginalTotal,
+          CreateDate: new Date(),
+          UserId: user.sub,
+        };
+        InData.id = new Guid().toString();
+        setSubmitting(true);
+      } catch (error) {
+        toast(error.response.data, {
+          type: "error",
+        });
+      }
+    },
+  });
+
+  const onSelectedFile = (event) => {
+    formikAdjustment.setFieldValue("file", event.target.files[0]);
+  };
+
+  const uploadFile = async () => {
+    try {
+      if (formikAdjustment.values.file) {
+        const response = await mutation.mutateAsync(
+          formikAdjustment.values.file
+        );
+        if (response.status === 200) {
+          if (response.data && response.data.length > 0) {
+            setFilePath(response.data[0].path);
+            setFileName(response.data[0].originalFileName);
+          }
+          toast("Successfully Uploaded File", {
+            type: "success",
+          });
+        }
+      } else {
+        toast("Please select a file", {
+          type: "error",
+        });
+      }
+    } catch (e) {
+      toast("An error occurred while uploading the file", {
+        type: "error",
+      });
+    }
+  };
 
   return (
     <React.Fragment>
@@ -240,406 +329,864 @@ const CountryLevelDCA = () => {
               </Grid>
             </Grid>
           </form>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid container spacing={12}>
-              <Grid item md={12}>
-                <TableContainer component={Paper}>
-                  <Table size="small" aria-label="grouped table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Project
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Location
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Original Child
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Original Youth
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Original Adults
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Original Total
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Adjusted Child
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Adjusted Youth
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Adjusted Adult
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Adjusted Total
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Project Final Child
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Project Final Youth
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Project Final Adult
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Project Final Total
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: "1px solid #000", textAlign: "center" }}
-                        >
-                          Project Comments
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {!isLoadingAllProjectsDCA && !isErrorAllProjectsDCA ? (
-                        <React.Fragment>
-                          {AllProjectsDCAData.data.map((projectDCA, index) => {
-                            return (
-                              <TableRow key={index}>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.shortTitle}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  All
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.originalChild}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.originalYouth}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.originalAdult}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.originalTotal}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.adjustedChild}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.adjustedYouth}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.adjustedAdult}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.adjustedTotal}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.finalChild}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.finalYouth}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.finalAdult}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {projectDCA.finalTotal}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  <TextField
-                                    name={projectDCA.projectId}
-                                    label="Comments"
-                                    error={Boolean(
-                                      errors[projectDCA.projectId]?.type ===
-                                        "required"
-                                    )}
-                                    fullWidth
-                                    variant="outlined"
-                                    {...register(projectDCA.projectId, {
-                                      required: "Field is required",
-                                    })}
-                                  />
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-
-                          {AllProjectsDCAData.data.length > 0 && (
+          <Stepper activeStep={activeStep} orientation="vertical">
+            <Step key={0}>
+              <StepLabel>Country Level DCA table</StepLabel>
+              <StepContent>
+                <Grid container spacing={12}>
+                  <Grid item md={12}>
+                    <TableContainer component={Paper}>
+                      <Table size="small" aria-label="grouped table">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Project
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Location
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Original Child
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Original Youth
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Original Adults
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Original Total
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Adjusted Child
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Adjusted Youth
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Adjusted Adult
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Adjusted Total
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Project Final Child
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Project Final Youth
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Project Final Adult
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                border: "1px solid #000",
+                                textAlign: "center",
+                              }}
+                            >
+                              Project Final Total
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {!isLoadingAllProjectsDCA &&
+                          !isErrorAllProjectsDCA ? (
                             <React.Fragment>
-                              <TableRow>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                  colSpan={2}
-                                >
-                                  Office Total
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumOriginalChild}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumOriginalYouth}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumOriginalAdult}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumOriginalTotal}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumAdjustedChild}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumAdjustedYouth}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumAdjustedAdult}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumAdjustedTotal}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumFinalChild}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumFinalYouth}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumFinalAdult}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  {sumFinalTotal}
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  &nbsp;
-                                </TableCell>
-                              </TableRow>
-                              <TableRow>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                  colSpan={7}
-                                >
-                                  <Button
-                                    type="button"
-                                    variant="contained"
-                                    onClick={() =>
-                                      continueCountryLevelDCASummary()
-                                    }
-                                  >
-                                    <ArrowRightOutlinedIcon /> &nbsp; Continue
-                                  </Button>
-                                </TableCell>
-                                <TableCell
-                                  sx={{
-                                    border: "1px solid #000",
-                                    textAlign: "center",
-                                  }}
-                                  colSpan={8}
-                                >
-                                  <Button
-                                    type="button"
-                                    variant="contained"
-                                    sx={{
-                                      fontWeight: "bolder",
-                                      backgroundColor: "#333333",
-                                      "&:hover": {
-                                        background: "#333333",
-                                        color: "white",
-                                      },
-                                    }}
-                                    onClick={() =>
-                                      downloadCountryLevelDCASummary()
-                                    }
-                                  >
-                                    <DownloadIcon /> &nbsp; Download project
-                                    level DCA summary
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
+                              {AllProjectsDCAData.data.map(
+                                (projectDCA, index) => {
+                                  return (
+                                    <TableRow key={index}>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.shortTitle}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        All
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.originalChild}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.originalYouth}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.originalAdult}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.originalTotal}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.adjustedChild}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.adjustedYouth}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.adjustedAdult}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.adjustedTotal}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.finalChild}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.finalYouth}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.finalAdult}
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{
+                                          border: "1px solid #000",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        {projectDCA.finalTotal}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                }
+                              )}
+
+                              {AllProjectsDCAData.data.length > 0 && (
+                                <React.Fragment>
+                                  <TableRow>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                      colSpan={2}
+                                    >
+                                      Office Total
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumOriginalChild}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumOriginalYouth}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumOriginalAdult}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumOriginalTotal}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumAdjustedChild}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumAdjustedYouth}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumAdjustedAdult}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumAdjustedTotal}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumFinalChild}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumFinalYouth}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumFinalAdult}
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumFinalTotal}
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                      colSpan={7}
+                                    >
+                                      <Button
+                                        type="button"
+                                        variant="contained"
+                                        onClick={handleNext}
+                                      >
+                                        <ArrowRightOutlinedIcon /> &nbsp;
+                                        Continue
+                                      </Button>
+                                    </TableCell>
+                                    <TableCell
+                                      sx={{
+                                        border: "1px solid #000",
+                                        textAlign: "center",
+                                      }}
+                                      colSpan={8}
+                                    >
+                                      <Button
+                                        type="button"
+                                        variant="contained"
+                                        sx={{
+                                          fontWeight: "bolder",
+                                          backgroundColor: "#333333",
+                                          "&:hover": {
+                                            background: "#333333",
+                                            color: "white",
+                                          },
+                                        }}
+                                        onClick={() =>
+                                          downloadCountryLevelDCASummary()
+                                        }
+                                      >
+                                        <DownloadIcon /> &nbsp; Download project
+                                        level DCA summary
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                </React.Fragment>
+                              )}
                             </React.Fragment>
+                          ) : (
+                            <React.Fragment></React.Fragment>
                           )}
-                        </React.Fragment>
-                      ) : (
-                        <React.Fragment></React.Fragment>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Grid>
-            </Grid>
-          </form>
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Grid>
+                </Grid>
+              </StepContent>
+            </Step>
+            <Step key={1}>
+              <StepLabel>Office level Double Counting Adjustment</StepLabel>
+              <StepContent>
+                <Grid container spacing={12}>
+                  <Grid item md={12}>
+                    <form onSubmit={formikAdjustment.handleSubmit}>
+                      <TableContainer component={Paper}>
+                        <Table size="small" aria-label="grouped table">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office projects total Child
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office projects total Youth
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office projects total Adults
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Projects totals
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Adjusted Child
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Adjusted Youth
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Adjusted Adults
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Adjusted Total
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Final Child
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Final Youth
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Final Adults
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Office Final Total
+                              </TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            <TableRow>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {selectedOffice}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalChild}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalYouth}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalAdult}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalTotal}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <TextField
+                                  name="officeAdjustedChild"
+                                  label="Office Adjusted Child"
+                                  value={
+                                    formikAdjustment.values.officeAdjustedChild
+                                  }
+                                  error={Boolean(
+                                    formikAdjustment.touched
+                                      .officeAdjustedChild &&
+                                      formikAdjustment.errors
+                                        .officeAdjustedChild
+                                  )}
+                                  fullWidth
+                                  helperText={
+                                    formikAdjustment.touched
+                                      .officeAdjustedChild &&
+                                    formikAdjustment.errors.officeAdjustedChild
+                                  }
+                                  onBlur={formikAdjustment.handleBlur}
+                                  onChange={formikAdjustment.handleChange}
+                                  variant="outlined"
+                                  disabled={disableEdit}
+                                  type="number"
+                                />
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <TextField
+                                  name="officeAdjustedYouth"
+                                  label="Office Adjusted Youth"
+                                  value={
+                                    formikAdjustment.values.officeAdjustedYouth
+                                  }
+                                  error={Boolean(
+                                    formikAdjustment.touched
+                                      .officeAdjustedYouth &&
+                                      formikAdjustment.errors
+                                        .officeAdjustedYouth
+                                  )}
+                                  fullWidth
+                                  helperText={
+                                    formikAdjustment.touched
+                                      .officeAdjustedYouth &&
+                                    formikAdjustment.errors.officeAdjustedYouth
+                                  }
+                                  onBlur={formikAdjustment.handleBlur}
+                                  onChange={formikAdjustment.handleChange}
+                                  variant="outlined"
+                                  disabled={disableEdit}
+                                  type="number"
+                                />
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <TextField
+                                  name="officeAdjustedAdults"
+                                  label="Office Adjusted Adults"
+                                  value={
+                                    formikAdjustment.values.officeAdjustedAdults
+                                  }
+                                  error={Boolean(
+                                    formikAdjustment.touched
+                                      .officeAdjustedAdults &&
+                                      formikAdjustment.errors
+                                        .officeAdjustedAdults
+                                  )}
+                                  fullWidth
+                                  helperText={
+                                    formikAdjustment.touched
+                                      .officeAdjustedAdults &&
+                                    formikAdjustment.errors.officeAdjustedAdults
+                                  }
+                                  onBlur={formikAdjustment.handleBlur}
+                                  onChange={formikAdjustment.handleChange}
+                                  variant="outlined"
+                                  disabled={disableEdit}
+                                  type="number"
+                                />
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <TextField
+                                  name="officeAdjustedTotal"
+                                  label="Office Adjusted Total"
+                                  value={
+                                    formikAdjustment.values.officeAdjustedTotal
+                                  }
+                                  error={Boolean(
+                                    formikAdjustment.touched
+                                      .officeAdjustedTotal &&
+                                      formikAdjustment.errors
+                                        .officeAdjustedTotal
+                                  )}
+                                  fullWidth
+                                  helperText={
+                                    formikAdjustment.touched
+                                      .officeAdjustedTotal &&
+                                    formikAdjustment.errors.officeAdjustedTotal
+                                  }
+                                  onBlur={formikAdjustment.handleBlur}
+                                  onChange={formikAdjustment.handleChange}
+                                  variant="outlined"
+                                  type="number"
+                                />
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalChild -
+                                  formikAdjustment.values.officeAdjustedChild}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalYouth -
+                                  formikAdjustment.values.officeAdjustedYouth}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalAdult -
+                                  formikAdjustment.values.officeAdjustedAdults}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                {sumFinalTotal -
+                                  (formikAdjustment.values.officeAdjustedChild +
+                                    formikAdjustment.values
+                                      .officeAdjustedYouth +
+                                    formikAdjustment.values
+                                      .officeAdjustedAdults)}
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                TEXT(comment)
+                              </TableCell>
+                              <TableCell
+                                colSpan={12}
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <TextField
+                                  name="comments"
+                                  label="Comments"
+                                  value={formikAdjustment.values.comments}
+                                  error={Boolean(
+                                    formikAdjustment.touched.comments &&
+                                      formikAdjustment.errors.comments
+                                  )}
+                                  fullWidth
+                                  helperText={
+                                    formikAdjustment.touched.comments &&
+                                    formikAdjustment.errors.comments
+                                  }
+                                  onBlur={formikAdjustment.handleBlur}
+                                  onChange={formikAdjustment.handleChange}
+                                  multiline
+                                  variant="outlined"
+                                  rows={3}
+                                  my={2}
+                                  disabled={disableEdit}
+                                />
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Upload File
+                              </TableCell>
+                              <TableCell
+                                colSpan={6}
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <TextField
+                                  name="file"
+                                  fullWidth
+                                  onChange={(e) => {
+                                    onSelectedFile(e);
+                                  }}
+                                  variant="outlined"
+                                  type="file"
+                                  disabled={disableEdit}
+                                />
+                              </TableCell>
+                              <TableCell
+                                colSpan={6}
+                                sx={{
+                                  border: "1px solid #000",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <Button
+                                  type="button"
+                                  variant="contained"
+                                  sx={{
+                                    fontWeight: "bolder",
+                                    backgroundColor: "#333333",
+                                    "&:hover": {
+                                      background: "#333333",
+                                      color: "white",
+                                    },
+                                  }}
+                                  onClick={uploadFile}
+                                  disabled={disableEdit}
+                                >
+                                  <CloudUploadIcon /> &nbsp; Upload
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell></TableCell>
+                              <TableCell colSpan={8}>
+                                <Button
+                                  type="button"
+                                  variant="contained"
+                                  onClick={formikAdjustment.handleSubmit}
+                                  sx={{
+                                    fontWeight: "bolder",
+                                    backgroundColor: "#333333",
+                                    "&:hover": {
+                                      background: "#333333",
+                                      color: "white",
+                                    },
+                                  }}
+                                  disabled={disableEdit}
+                                >
+                                  <SaveIcon /> &nbsp; Save
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </form>
+                  </Grid>
+                </Grid>
+              </StepContent>
+            </Step>
+          </Stepper>
         </CardContent>
       </Card>
     </React.Fragment>

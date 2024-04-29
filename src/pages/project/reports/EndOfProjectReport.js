@@ -9,6 +9,7 @@ import {
   CircularProgress,
   Divider as MuiDivider,
   Grid,
+  Link,
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
@@ -35,6 +36,10 @@ const Button = styled(MuiButton)(spacing);
 const EndOfProjectReport = ({ processLevelItemId }) => {
   const user = useKeyCloakAuth();
   const [submitDisabled, setSubmitDisabled] = useState(false);
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const path = protocol + "//" + hostname;
+
   const mutation = useMutation({ mutationFn: uploadDCAReportingFile });
   const endOfProjectBriefMutation = useMutation({
     mutationFn: saveEndOfProjectBrief,
@@ -202,15 +207,29 @@ const EndOfProjectReport = ({ processLevelItemId }) => {
                 </Grid>
               </Grid>
 
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                mt={3}
-                disabled={submitDisabled}
-              >
-                Save End of Project Brief
-              </Button>
+              <Grid container spacing={6}>
+                <Grid item md={4}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    mt={3}
+                    disabled={submitDisabled}
+                  >
+                    Save End of Project Brief
+                  </Button>
+                </Grid>
+
+                <Grid item md={4}>
+                  <Link
+                    href={`${path}${process.env.REACT_APP_INTERNAL_REPORTING}${formik.values.filePath}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Download
+                  </Link>
+                </Grid>
+              </Grid>
             </>
           )}
         </CardContent>
