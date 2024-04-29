@@ -30,6 +30,7 @@ import { useForm } from "react-hook-form";
 import DownloadIcon from "@mui/icons-material/Download";
 import ArrowRightOutlinedIcon from "@mui/icons-material/ArrowRightOutlined";
 import Papa from "papaparse";
+import { useParams } from "react-router-dom";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -63,8 +64,7 @@ const CountryLevelDCA = () => {
   const [sumFinalAdult, setSumFinalAdult] = useState(0);
   const [sumFinalTotal, setSumFinalTotal] = useState(0);
   const officeContext = useContext(OfficeContext);
-  const selectedOffice = officeContext.selectedOffice;
-
+  let selectedOffice = officeContext.selectedOffice;
   const {
     register,
     handleSubmit,

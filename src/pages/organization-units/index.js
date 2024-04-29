@@ -140,14 +140,14 @@ const OrganizationUnitsData = () => {
                 headerName: "Amref Entity",
                 editable: false,
                 flex: 1,
-                valueGetter: GetAMREFEntityName,
+                renderCell: GetAMREFEntityName,
               },
               {
                 field: "countryId",
                 headerName: "Country",
                 editable: false,
                 flex: 1,
-                valueGetter: GetCountryName,
+                renderCell: GetCountryName,
               },
               {
                 field: "action",

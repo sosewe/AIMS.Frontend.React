@@ -91,35 +91,39 @@ const DesignProject = () => {
         aria-label="Vertical tabs example"
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
-        <Tab label="Basic Information" {...a11yProps(0)} />
-        <Tab label="Thematic Focus" {...a11yProps(1)} />
-        <Tab label="Geographic Focus" {...a11yProps(2)} />
-        <Tab label="Objectives" {...a11yProps(3)} />
-        <Tab label="Results Framework" {...a11yProps(4)} />
-        <Tab label="Innovation" {...a11yProps(5)} />
-        <Tab label="Advocacy" {...a11yProps(6)} />
-        <Tab label="Technical Assistance" {...a11yProps(7)} />
-        <Tab label="Research (Learning)" {...a11yProps(8)} />
+        <Tab label="Project Dashboard" {...a11yProps(0)} />
+        <Tab label="Basic Information" {...a11yProps(1)} />
+        <Tab label="Thematic Focus" {...a11yProps(2)} />
+        <Tab label="Geographic Focus" {...a11yProps(3)} />
+        <Tab label="Objectives" {...a11yProps(4)} />
+        <Tab label="Results Framework" {...a11yProps(5)} />
+        <Tab label="Innovation" {...a11yProps(6)} />
+        <Tab label="Advocacy" {...a11yProps(7)} />
+        <Tab label="Technical Assistance" {...a11yProps(8)} />
+        <Tab label="Research (Learning)" {...a11yProps(9)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <NewProjectForm id={id} />
+        Project Dashboard
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <ThematicFocus id={id} processLevelTypeId={processLevelTypeId} />
+        <NewProjectForm id={id} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
+        <ThematicFocus id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
+        <GeoFocus id={id} processLevelTypeId={processLevelTypeId} />
       </TabPanel>
       <TabPanel value={value} index={4}>
+        <ProjectObjectives id={id} processLevelTypeId={processLevelTypeId} />
+      </TabPanel>
+      <TabPanel value={value} index={5}>
         <EnterTargetQuantitativeResultsFramework
           processLevelItemId={id}
           processLevelTypeId={processLevelTypeId}
         />
       </TabPanel>
-      <TabPanel index={5} value={value}>
+      <TabPanel index={6} value={value}>
         {(() => {
           if (action.status) {
             return (
@@ -153,7 +157,7 @@ const DesignProject = () => {
           }
         })()}
       </TabPanel>
-      <TabPanel index={6} value={value}>
+      <TabPanel index={7} value={value}>
         {(() => {
           if (action.status) {
             return (
@@ -209,7 +213,7 @@ const DesignProject = () => {
           }
         })()}
       </TabPanel>
-      <TabPanel index={7} value={value}>
+      <TabPanel index={8} value={value}>
         {(() => {
           if (action.status) {
             return (
@@ -243,7 +247,7 @@ const DesignProject = () => {
           }
         })()}
       </TabPanel>
-      <TabPanel index={8} value={value}>
+      <TabPanel index={9} value={value}>
         {(() => {
           if (action.status) {
             return (

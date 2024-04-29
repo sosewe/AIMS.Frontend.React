@@ -137,14 +137,14 @@ const AdministrativeProgrammesData = () => {
                 headerName: "Organisation Unit",
                 editable: false,
                 flex: 1,
-                valueGetter: GetOrganization,
+                renderCell: GetOrganization,
               },
               {
                 field: "personnelId",
                 headerName: "Manager Name",
                 editable: false,
                 flex: 1,
-                valueGetter: GetManagerName,
+                renderCell: GetManagerName,
               },
               {
                 field: "goal",

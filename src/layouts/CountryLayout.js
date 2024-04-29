@@ -17,18 +17,12 @@ import { spacing } from "@mui/system";
 
 import GlobalStyle from "../components/GlobalStyle";
 import Navbar from "../components/navbar/Navbar";
-import guestDashboardItems from "../components/sidebar/guestLayoutItems";
-import projectDashboardItems from "../components/sidebar/projectLayoutItems";
 import countryDashboardItems from "../components/sidebar/countryLayoutItems";
-import countryLayoutMonitoringItems from "../components/sidebar/countryLayoutMonitoringItems";
-import countryLayoutReportingItems from "../components/sidebar/countryLayoutReportingItems";
-import corporateDashboardItems from "../components/sidebar/corporateItems";
-import corporateMonitoringItems from "../components/sidebar/corporateMonitoringItems";
-import corporateReportingItems from "../components/sidebar/corporateReportingItems";
-import programmeDashboardItems from "../components/sidebar/programmeItems";
 import Sidebar from "../components/sidebar/Sidebar";
 import Footer from "../components/Footer";
 import { UserLevelContext } from "../App";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizationUnits } from "../api/organization-unit";
 
 const drawerWidth = 258;
 
@@ -66,10 +60,15 @@ const MainContent = styled(Paper)`
   }
 `;
 
-const DynamicLayout = ({ children }) => {
+const CountryLayout = ({ children }) => {
   const userLevelContext = useContext(UserLevelContext);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dashboardItems, setDashboardItems] = useState(null);
+
+  const { isLoading, isError, data } = useQuery(
+    ["getOrganizationUnits"],
+    getOrganizationUnits
+  );
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -87,52 +86,48 @@ const DynamicLayout = ({ children }) => {
 
   useEffect(() => {
     function setLayout() {
-      switch (userLevelContext) {
-        case "Project":
-          setDashboardItems(projectDashboardItems);
-          break;
-        case "Corporate":
-          switch (selectedLink) {
-            case "design":
-              setDashboardItems(corporateDashboardItems);
-              break;
-            case "monitoring":
-              setDashboardItems(corporateMonitoringItems);
-              break;
-            case "reports":
-              setDashboardItems(corporateReportingItems);
-              break;
-            default:
-              setDashboardItems(corporateDashboardItems);
-              break;
-          }
-          break;
-        case "Country":
-          switch (selectedLink) {
-            case "design":
-              setDashboardItems(countryDashboardItems);
-              break;
-            case "monitoring":
-              setDashboardItems(countryLayoutMonitoringItems);
-              break;
-            case "reports":
-              setDashboardItems(countryLayoutReportingItems);
-              break;
-            default:
-              setDashboardItems(countryDashboardItems);
-              break;
-          }
-          break;
-        case "Programme":
-          setDashboardItems(programmeDashboardItems);
-          break;
-        default:
-          setDashboardItems(guestDashboardItems);
-          break;
-      }
+      // if (!isLoading && !isError && data) {
+      //   corporateDashboardItems[1]["pages"][0]["children"] = [];
+      //   for (const datum of data.data) {
+      //     corporateDashboardItems[1]["pages"][0]["children"].push({
+      //       title: datum.name,
+      //       href: "/country-layout/country/" + datum.name,
+      //     });
+      //   }
+      // }
+      // switch (userLevelContext) {
+      //   case "Project":
+      //     setDashboardItems(projectDashboardItems);
+      //     break;
+      //   case "Corporate":
+      //     switch (selectedLink) {
+      //       case "design":
+      //         setDashboardItems(corporateDashboardItems);
+      //         break;
+      //       case "monitoring":
+      //         setDashboardItems(corporateMonitoringItems);
+      //         break;
+      //       case "reports":
+      //         setDashboardItems(corporateReportingItems);
+      //         break;
+      //       default:
+      //         setDashboardItems(corporateDashboardItems);
+      //         break;
+      //     }
+      //     break;
+      //   case "Country":
+      //     setDashboardItems(countryDashboardItems);
+      //     break;
+      //   case "Programme":
+      //     setDashboardItems(programmeDashboardItems);
+      //     break;
+      //   default:
+      //     setDashboardItems(guestDashboardItems);
+      //     break;
+      // }
     }
     setLayout();
-  }, [userLevelContext, selectedLink]);
+  }, [userLevelContext, selectedLink, isLoading, isError, data]);
 
   const handleLinkClick = (link) => {
     setSelectedLink(link);
@@ -149,13 +144,13 @@ const DynamicLayout = ({ children }) => {
             variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
-            items={dashboardItems}
+            items={countryDashboardItems}
           />
         </Box>
         <Box sx={{ display: { xs: "none", md: "block" } }}>
           <Sidebar
             PaperProps={{ style: { width: drawerWidth } }}
-            items={dashboardItems}
+            items={countryDashboardItems}
           />
         </Box>
       </Drawer>
@@ -212,4 +207,4 @@ const DynamicLayout = ({ children }) => {
     </Root>
   );
 };
-export default DynamicLayout;
+export default CountryLayout;

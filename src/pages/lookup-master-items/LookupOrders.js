@@ -133,7 +133,7 @@ const LookupMasterItemsData = () => {
                 headerName: "Order",
                 editable: false,
                 flex: 1,
-                valueGetter: GetMaxOptionOrder,
+                renderCell: GetMaxOptionOrder,
               },
               {
                 field: "action",

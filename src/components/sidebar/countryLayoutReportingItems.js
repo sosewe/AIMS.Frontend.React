@@ -20,29 +20,9 @@ const navItems = [
     title: "",
     pages: [
       {
-        title: "Country Strategy",
-        href: "",
-        icon: YardIcon,
-      },
-    ],
-  },
-  {
-    title: "",
-    pages: [
-      {
-        title: "Country Projects",
-        href: "/project-home",
-        icon: WorkspacesOutlinedIcon,
-      },
-    ],
-  },
-  {
-    title: "",
-    pages: [
-      {
         title: "Country Advocacies",
         href: "",
-        icon: PublicIcon,
+        icon: WorkspacesOutlinedIcon,
       },
     ],
   },
@@ -52,7 +32,7 @@ const navItems = [
       {
         title: "Country Innovations",
         href: "",
-        icon: LeaderboardOutlinedIcon,
+        icon: YardIcon,
       },
     ],
   },
@@ -62,7 +42,7 @@ const navItems = [
       {
         title: "Country Researches",
         href: "",
-        icon: MarginOutlinedIcon,
+        icon: PublicIcon,
       },
     ],
   },
@@ -71,6 +51,46 @@ const navItems = [
     pages: [
       {
         title: "Country TA",
+        href: "",
+        icon: LeaderboardOutlinedIcon,
+      },
+    ],
+  },
+  {
+    title: "",
+    pages: [
+      {
+        title: "Country DCA",
+        href: "",
+        icon: MarginOutlinedIcon,
+      },
+    ],
+  },
+  {
+    title: "",
+    pages: [
+      {
+        title: "Project Performance Report",
+        href: "",
+        icon: MarginOutlinedIcon,
+      },
+    ],
+  },
+  {
+    title: "",
+    pages: [
+      {
+        title: "Country Indicator Report",
+        href: "",
+        icon: MarginOutlinedIcon,
+      },
+    ],
+  },
+  {
+    title: "",
+    pages: [
+      {
+        title: "End Of Project Brief",
         href: "",
         icon: MarginOutlinedIcon,
       },
