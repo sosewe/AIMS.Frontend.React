@@ -86,9 +86,12 @@ const TableRowReturned = ({
     isLoading: isLoadingProjectResults,
     isError: isErrorProjectResults,
   } = useQuery(
-    ["getProjectResults", processLevelItemId, year, monthId],
+    ["getProjectResults", processLevelItemId, year, monthId, projectLocationId],
     getProjectResults,
-    { enabled: !!processLevelItemId && !!year && !!monthId }
+    {
+      enabled:
+        !!processLevelItemId && !!year && !!monthId && !!projectLocationId,
+    }
   );
   if (!isLoadingProjectResults && !isErrorProjectResults) {
     if (projectResults.data.length > 0) {

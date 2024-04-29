@@ -14,6 +14,7 @@ const EnterQuantitativeResultField = ({
   setValue,
   year,
   monthId,
+  projectLocationId,
 }) => {
   return (
     <Grid
@@ -45,6 +46,7 @@ const EnterQuantitativeResultField = ({
                       setValue={setValue}
                       year={year}
                       monthId={monthId}
+                      projectLocationId={projectLocationId}
                     />
                   </Table>
                 </TableContainer>

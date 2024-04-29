@@ -18,6 +18,7 @@ const ResultChainAggregatePrimaryAttributeOnlyField = ({
   monthId,
   primaryResultChainAttribute,
   errors,
+  projectLocationId,
 }) => {
   const {
     data: attributeOptionData,
@@ -64,6 +65,7 @@ const ResultChainAggregatePrimaryAttributeOnlyField = ({
       resultChainAttribute.id,
       year,
       monthId,
+      projectLocationId,
     ],
     getProjectResultsByAggregateIdAndAttributeId,
     { enabled: !!resultChainAggregate.id && !!resultChainAttribute.id }

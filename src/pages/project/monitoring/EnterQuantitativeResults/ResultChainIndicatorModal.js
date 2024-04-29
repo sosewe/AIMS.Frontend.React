@@ -37,7 +37,7 @@ const ResultChainIndicatorModal = ({
     isLoading: isLoadingProjectResults,
     isError: isErrorProjectResults,
   } = useQuery(
-    ["getProjectResults", processLevelItemId, year, monthId],
+    ["getProjectResults", processLevelItemId, year, monthId, projectLocationId],
     getProjectResults,
     {
       refetchOnWindowFocus: false,
@@ -54,6 +54,7 @@ const ResultChainIndicatorModal = ({
       resultChainIndicator.id,
       year,
       monthId,
+      projectLocationId,
     ],
     getAchievedResultsByResultChainIndicatorId,
     {
@@ -124,7 +125,6 @@ const ResultChainIndicatorModal = ({
         type: "success",
       });
     } catch (error) {
-      console.log(error);
       if (error && error.response && error.response.data) {
         toast(error.response.data, {
           type: "error",

@@ -201,6 +201,7 @@ export const AttributeField = ({
   year,
   monthId,
   primaryResultChainAttribute,
+  projectLocationId,
 }) => {
   const {
     data: AttributeData,
@@ -234,6 +235,7 @@ export const AttributeField = ({
       resultChainAttribute.id,
       year,
       monthId,
+      projectLocationId,
     ],
     getAchievedResultsByResultChainIndicatorIdAndAttributeId,
     {

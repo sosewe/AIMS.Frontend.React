@@ -89,7 +89,7 @@ const Dashboard = ({ children }) => {
         </MainContent>
         <Footer />
       </AppContent>
-      <Settings />
+      {/*<Settings />*/}
     </Root>
   );
 };

@@ -217,14 +217,6 @@ const ProjectHome = () => {
     <React.Fragment>
       <Helmet title="Project Home" />
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Button
-          mr={2}
-          variant="contained"
-          color="error"
-          onClick={() => navigate("/project/new-project")}
-        >
-          <AddIcon /> New Project
-        </Button>
         <Divider my={3} />
         <ProjectsDataByUserType height={1000} />
       </LocalizationProvider>

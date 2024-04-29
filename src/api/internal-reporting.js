@@ -52,6 +52,13 @@ export const getProjectLevelDCA = async ({ queryKey }) => {
   );
 };
 
+export const getAllProjectsDCA = async ({ queryKey }) => {
+  const [_, implementingYearId, selectedOffice] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetAllProjectsDCA/${implementingYearId}/${selectedOffice}`
+  );
+};
+
 export const saveEndOfProjectBrief = async (values) => {
   return await axios.post(`${apiRoutes.endOfProjectBrief}`, values);
 };

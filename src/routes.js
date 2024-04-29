@@ -263,6 +263,15 @@ const DisAggregatesList = async(() =>
 const NewDisAggregate = async(() =>
   import("./pages/dis-aggregates/NewDisAggregate")
 );
+const CountryLevelDCA = async(() =>
+  import("./pages/project/reports/CountryLevelDCA")
+);
+const GlobalDCASummary = async(() =>
+  import("./pages/project/reports/GlobalDCASummary")
+);
+const CountryPerformanceReport = async(() =>
+  import("./pages/project/reports/CountryPerformanceReport")
+);
 
 const routes = [
   {
@@ -282,8 +291,16 @@ const routes = [
         element: <ProjectHome />,
       },
       {
-        path: "new-project",
-        element: <NewProject />,
+        path: "country-level-dca",
+        element: <CountryLevelDCA />,
+      },
+      {
+        path: "country-performance-report",
+        element: <CountryPerformanceReport />,
+      },
+      {
+        path: "global-summary",
+        element: <GlobalDCASummary />,
       },
     ],
   },

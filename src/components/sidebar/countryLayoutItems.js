@@ -3,6 +3,7 @@ import YardIcon from "@mui/icons-material/Yard";
 import PublicIcon from "@mui/icons-material/Public";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import MarginOutlinedIcon from "@mui/icons-material/MarginOutlined";
+import WorkspacesOutlinedIcon from "@mui/icons-material/WorkspacesOutlined";
 
 const navItems = [
   {
@@ -12,6 +13,16 @@ const navItems = [
         title: "Country Dashboard",
         href: "/",
         icon: Home,
+      },
+    ],
+  },
+  {
+    title: "",
+    pages: [
+      {
+        title: "Country Projects",
+        href: "/project-home",
+        icon: WorkspacesOutlinedIcon,
       },
     ],
   },

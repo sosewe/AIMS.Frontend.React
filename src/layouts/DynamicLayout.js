@@ -118,7 +118,7 @@ const DynamicLayout = ({ children }) => {
         </MainContent>
         <Footer />
       </AppContent>
-      <Settings />
+      {/*<Settings />*/}
     </Root>
   );
 };

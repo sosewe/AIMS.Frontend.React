@@ -39,6 +39,7 @@ const PrimaryAttributeField = ({
   year,
   monthId,
   resultChainAttribute,
+  projectLocationId,
 }) => {
   return (
     <React.Fragment>
@@ -104,6 +105,7 @@ const PrimaryAttributeField = ({
                         primaryResultChainAttribute={
                           primaryResultChainAttribute
                         }
+                        projectLocationId={projectLocationId}
                       />
                     </StyledTableCell>
                   ))}
@@ -157,6 +159,7 @@ const ResultChainAggregateField = ({
   setValue,
   year,
   monthId,
+  projectLocationId,
 }) => {
   return (
     <React.Fragment>
@@ -172,6 +175,7 @@ const ResultChainAggregateField = ({
             year={year}
             monthId={monthId}
             resultChainAttribute={resultChainAttributes}
+            projectLocationId={projectLocationId}
           />
         </React.Fragment>
       ) : (
