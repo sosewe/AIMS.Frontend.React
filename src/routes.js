@@ -307,20 +307,6 @@ const routes = [
     ],
   },
   {
-    path: "country-layout",
-    element: <CountryLayout />,
-    children: [
-      {
-        path: "country/:countryName",
-        element: <CountryName />,
-      },
-      {
-        path: "country-level-dca/:countryName",
-        element: <CountryLevelDCA />,
-      },
-    ],
-  },
-  {
     path: "project-access",
     element: <ProjectLayout />,
     children: [
