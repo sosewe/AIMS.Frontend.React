@@ -9,6 +9,7 @@ import async from "./components/Async";
 import AuthLayout from "./layouts/Auth";
 import DashboardLayout from "./layouts/Dashboard";
 import ProjectLayout from "./layouts/ProjectLayout";
+import CountryLayout from "./layouts/CountryLayout";
 
 // import PresentationLayout from "./layouts/Presentation";
 import DynamicLayout from "./layouts/DynamicLayout";
@@ -28,6 +29,7 @@ import Home from "./pages/home";
 import ProjectAccess from "./pages/home/ProjectAccess";
 import NewAttributeResponseOption from "./pages/attributes/NewAttributeResponseOption";
 import ProjectHome from "./pages/home/ProjectHome";
+import CountryName from "./pages/home/CountryName";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
@@ -291,16 +293,30 @@ const routes = [
         element: <ProjectHome />,
       },
       {
-        path: "country-level-dca",
-        element: <CountryLevelDCA />,
-      },
-      {
         path: "country-performance-report",
         element: <CountryPerformanceReport />,
       },
       {
         path: "global-summary",
         element: <GlobalDCASummary />,
+      },
+    ],
+  },
+  {
+    path: "country-layout",
+    element: <CountryLayout />,
+    children: [
+      {
+        path: "country/:countryName",
+        element: <CountryName />,
+      },
+      {
+        path: "country-level-dca",
+        element: <CountryLevelDCA />,
+      },
+      {
+        path: "country-level-dca/:countryName",
+        element: <CountryLevelDCA />,
       },
     ],
   },

@@ -3,10 +3,6 @@ import YardIcon from "@mui/icons-material/Yard";
 import PublicIcon from "@mui/icons-material/Public";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SummarizeIcon from "@mui/icons-material/Summarize";
-import MemoryOutlinedIcon from "@mui/icons-material/MemoryOutlined";
-import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
-import TurnedInNotOutlinedIcon from "@mui/icons-material/TurnedInNotOutlined";
-import TextureOutlinedIcon from "@mui/icons-material/TextureOutlined";
 import SettingsBrightnessOutlinedIcon from "@mui/icons-material/SettingsBrightnessOutlined";
 
 const navItems = [
@@ -15,38 +11,8 @@ const navItems = [
     pages: [
       {
         title: "Corporate Dashboard",
-        href: "/",
-        icon: Home,
-      },
-    ],
-  },
-  {
-    title: "",
-    pages: [
-      {
-        title: "Country Offices",
         href: "",
-        icon: PublicIcon,
-      },
-    ],
-  },
-  {
-    title: "",
-    pages: [
-      {
-        title: "Corporate Strategy",
-        href: "/corporate-strategy",
-        icon: YardIcon,
-      },
-    ],
-  },
-  {
-    title: "",
-    pages: [
-      {
-        title: "Corporate Projects",
-        href: "/project-home",
-        icon: Tag,
+        icon: Home,
       },
     ],
   },
@@ -56,7 +22,7 @@ const navItems = [
       {
         title: "Corporate Advocacies",
         href: "",
-        icon: TextureOutlinedIcon,
+        icon: SummarizeIcon,
       },
     ],
   },
@@ -66,7 +32,7 @@ const navItems = [
       {
         title: "Corporate Innovations",
         href: "",
-        icon: MemoryOutlinedIcon,
+        icon: Tag,
       },
     ],
   },
@@ -76,7 +42,7 @@ const navItems = [
       {
         title: "Corporate Researches",
         href: "",
-        icon: TurnedInNotOutlinedIcon,
+        icon: YardIcon,
       },
     ],
   },
@@ -84,9 +50,9 @@ const navItems = [
     title: "",
     pages: [
       {
-        title: "Corporate Standalone TA",
+        title: "Corporate TA's",
         href: "",
-        icon: BuildOutlinedIcon,
+        icon: BarChartIcon,
       },
     ],
   },
