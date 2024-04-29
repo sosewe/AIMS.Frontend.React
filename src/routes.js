@@ -293,30 +293,16 @@ const routes = [
         element: <ProjectHome />,
       },
       {
+        path: "country-level-dca",
+        element: <CountryLevelDCA />,
+      },
+      {
         path: "country-performance-report",
         element: <CountryPerformanceReport />,
       },
       {
         path: "global-summary",
         element: <GlobalDCASummary />,
-      },
-    ],
-  },
-  {
-    path: "country-layout",
-    element: <CountryLayout />,
-    children: [
-      {
-        path: "country/:countryName",
-        element: <CountryName />,
-      },
-      {
-        path: "country-level-dca",
-        element: <CountryLevelDCA />,
-      },
-      {
-        path: "country-level-dca/:countryName",
-        element: <CountryLevelDCA />,
       },
     ],
   },

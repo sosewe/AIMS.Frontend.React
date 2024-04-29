@@ -53,7 +53,7 @@ const navItems = [
     pages: [
       {
         title: "Global DCA Summary",
-        href: "",
+        href: "/global-summary",
         icon: SummarizeIcon,
       },
     ],

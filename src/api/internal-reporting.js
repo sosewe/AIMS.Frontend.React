@@ -59,6 +59,20 @@ export const getAllProjectsDCA = async ({ queryKey }) => {
   );
 };
 
+export const addCountryLevelDCA = async (values) => {
+  return await axios.post(
+    `${apiRoutes.doubleCountingAdjustment}/AddCountryLevelDCA`,
+    values
+  );
+};
+
+export const getCountryLevelDCA = async ({ queryKey }) => {
+  const [_, implementingYearId, selectedOffice] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetCountryLevelDCA/${implementingYearId}/${selectedOffice}`
+  );
+};
+
 export const saveEndOfProjectBrief = async (values) => {
   return await axios.post(`${apiRoutes.endOfProjectBrief}`, values);
 };
