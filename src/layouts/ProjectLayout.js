@@ -85,7 +85,7 @@ const ProjectLayout = ({ children }) => {
         </MainContent>
         <Footer />
       </AppContent>
-      <Settings />
+      {/*<Settings />*/}
     </Root>
   );
 };

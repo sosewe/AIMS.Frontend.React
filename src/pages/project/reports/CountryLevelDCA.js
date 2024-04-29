@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Button as MuiButton,
   Card as MuiCard,
@@ -28,6 +28,8 @@ import TableBody from "@mui/material/TableBody";
 import { OfficeContext } from "../../../App";
 import { useForm } from "react-hook-form";
 import DownloadIcon from "@mui/icons-material/Download";
+import ArrowRightOutlinedIcon from "@mui/icons-material/ArrowRightOutlined";
+import Papa from "papaparse";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -48,6 +50,18 @@ const theme = createTheme({
 const CountryLevelDCA = () => {
   const [implementationYear, setImplementationYear] = useState();
   const [implementationYearId, setImplementationYearId] = useState();
+  const [sumOriginalChild, setSumOriginalChild] = useState(0);
+  const [sumOriginalYouth, setSumOriginalYouth] = useState(0);
+  const [sumOriginalAdult, setSumOriginalAdult] = useState(0);
+  const [sumOriginalTotal, setSumOriginalTotal] = useState(0);
+  const [sumAdjustedChild, setSumAdjustedChild] = useState(0);
+  const [sumAdjustedYouth, setSumAdjustedYouth] = useState(0);
+  const [sumAdjustedAdult, setSumAdjustedAdult] = useState(0);
+  const [sumAdjustedTotal, setSumAdjustedTotal] = useState(0);
+  const [sumFinalChild, setSumFinalChild] = useState(0);
+  const [sumFinalYouth, setSumFinalYouth] = useState(0);
+  const [sumFinalAdult, setSumFinalAdult] = useState(0);
+  const [sumFinalTotal, setSumFinalTotal] = useState(0);
   const officeContext = useContext(OfficeContext);
   const selectedOffice = officeContext.selectedOffice;
 
@@ -102,6 +116,71 @@ const CountryLevelDCA = () => {
   const onSubmit = async (data) => {
     console.log(data);
   };
+
+  useEffect(() => {
+    if (
+      !isLoadingAllProjectsDCA &&
+      !isErrorAllProjectsDCA &&
+      AllProjectsDCAData
+    ) {
+      let originalChildTotal = 0;
+      let originalYouthTotal = 0;
+      let originalAdultTotal = 0;
+      let originalTotal = 0;
+      let adjustedChildTotal = 0;
+      let adjustedYouthTotal = 0;
+      let adjustedAdultTotal = 0;
+      let adjustedTotal = 0;
+      let finalChildTotal = 0;
+      let finalYouthTotal = 0;
+      let finalAdultTotal = 0;
+      let finalTotal = 0;
+
+      for (const projectDatum of AllProjectsDCAData.data) {
+        originalChildTotal += projectDatum.originalChild;
+        originalYouthTotal += projectDatum.originalYouth;
+        originalAdultTotal += projectDatum.originalAdult;
+        originalTotal += projectDatum.originalTotal;
+        adjustedChildTotal += projectDatum.adjustedChild;
+        adjustedYouthTotal += projectDatum.adjustedYouth;
+        adjustedAdultTotal += projectDatum.adjustedAdult;
+        adjustedTotal += projectDatum.adjustedTotal;
+        finalChildTotal += projectDatum.finalChild;
+        finalYouthTotal += projectDatum.finalYouth;
+        finalAdultTotal += projectDatum.finalAdult;
+        finalTotal += projectDatum.finalTotal;
+      }
+      setSumOriginalChild(originalChildTotal);
+      setSumOriginalYouth(originalYouthTotal);
+      setSumOriginalAdult(originalAdultTotal);
+      setSumOriginalTotal(originalTotal);
+      setSumAdjustedChild(adjustedChildTotal);
+      setSumAdjustedYouth(adjustedYouthTotal);
+      setSumAdjustedAdult(adjustedAdultTotal);
+      setSumAdjustedTotal(adjustedTotal);
+      setSumFinalChild(finalChildTotal);
+      setSumFinalYouth(finalYouthTotal);
+      setSumFinalAdult(finalAdultTotal);
+      setSumFinalTotal(finalTotal);
+    }
+  }, [isLoadingAllProjectsDCA, isErrorAllProjectsDCA, AllProjectsDCAData]);
+
+  const downloadCountryLevelDCASummary = () => {
+    const csv = Papa.unparse(AllProjectsDCAData.data, {
+      header: true,
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute("download", "data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const continueCountryLevelDCASummary = () => {};
 
   return (
     <React.Fragment>
@@ -386,35 +465,174 @@ const CountryLevelDCA = () => {
                               </TableRow>
                             );
                           })}
-                          <TableRow></TableRow>
+
+                          {AllProjectsDCAData.data.length > 0 && (
+                            <React.Fragment>
+                              <TableRow>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                  colSpan={2}
+                                >
+                                  Office Total
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumOriginalChild}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumOriginalYouth}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumOriginalAdult}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumOriginalTotal}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumAdjustedChild}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumAdjustedYouth}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumAdjustedAdult}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumAdjustedTotal}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumFinalChild}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumFinalYouth}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumFinalAdult}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  {sumFinalTotal}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  &nbsp;
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                  colSpan={7}
+                                >
+                                  <Button
+                                    type="button"
+                                    variant="contained"
+                                    onClick={() =>
+                                      continueCountryLevelDCASummary()
+                                    }
+                                  >
+                                    <ArrowRightOutlinedIcon /> &nbsp; Continue
+                                  </Button>
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    border: "1px solid #000",
+                                    textAlign: "center",
+                                  }}
+                                  colSpan={8}
+                                >
+                                  <Button
+                                    type="button"
+                                    variant="contained"
+                                    sx={{
+                                      fontWeight: "bolder",
+                                      backgroundColor: "#333333",
+                                      "&:hover": {
+                                        background: "#333333",
+                                        color: "white",
+                                      },
+                                    }}
+                                    onClick={() =>
+                                      downloadCountryLevelDCASummary()
+                                    }
+                                  >
+                                    <DownloadIcon /> &nbsp; Download project
+                                    level DCA summary
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            </React.Fragment>
+                          )}
                         </React.Fragment>
                       ) : (
-                        <React.Fragment>
-                          <TableCell
-                            sx={{
-                              border: "1px solid #000",
-                              textAlign: "center",
-                            }}
-                            colSpan={7}
-                          >
-                            <Button
-                              type="button"
-                              variant="contained"
-                              sx={{
-                                fontWeight: "bolder",
-                                backgroundColor: "#333333",
-                                "&:hover": {
-                                  background: "#333333",
-                                  color: "white",
-                                },
-                              }}
-                              // onClick={() => downloadProjectLevelDCASummary()}
-                            >
-                              <DownloadIcon /> &nbsp; Download project level DCA
-                              summary
-                            </Button>
-                          </TableCell>
-                        </React.Fragment>
+                        <React.Fragment></React.Fragment>
                       )}
                     </TableBody>
                   </Table>
