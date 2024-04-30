@@ -66,10 +66,31 @@ export const addCountryLevelDCA = async (values) => {
   );
 };
 
+export const addGlobalLevelDCA = async (values) => {
+  return await axios.post(
+    `${apiRoutes.doubleCountingAdjustment}/AddGlobalLevelDCA`,
+    values
+  );
+};
+
 export const getCountryLevelDCA = async ({ queryKey }) => {
   const [_, implementingYearId, selectedOffice] = queryKey;
   return await axios.get(
     `${apiRoutes.doubleCountingAdjustment}/GetCountryLevelDCA/${implementingYearId}/${selectedOffice}`
+  );
+};
+
+export const getCountryLevelDCAs = async ({ queryKey }) => {
+  const [_, implementingYearId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetCountryLevelDCAs/${implementingYearId}`
+  );
+};
+
+export const getGlobalLevelDCA = async ({ queryKey }) => {
+  const [_, implementingYearId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetGlobalLevelDCA/${implementingYearId}`
   );
 };
 
