@@ -159,10 +159,10 @@ const CountryLevelDCA = () => {
 
   const formikAdjustment = useFormik({
     initialValues: {
-      officeAdjustedChild: "",
-      officeAdjustedYouth: "",
-      officeAdjustedAdults: "",
-      officeAdjustedTotal: "",
+      officeAdjustedChild: 0,
+      officeAdjustedYouth: 0,
+      officeAdjustedAdults: 0,
+      officeAdjustedTotal: 0,
       comments: "",
       file: "",
     },

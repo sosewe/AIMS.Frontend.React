@@ -43,7 +43,7 @@ const navItems = [
     pages: [
       {
         title: "Global Narrative Reports",
-        href: "",
+        href: "/global-narrative-report",
         icon: YardIcon,
       },
     ],

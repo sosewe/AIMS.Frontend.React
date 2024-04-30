@@ -30,6 +30,7 @@ import ProjectAccess from "./pages/home/ProjectAccess";
 import NewAttributeResponseOption from "./pages/attributes/NewAttributeResponseOption";
 import ProjectHome from "./pages/home/ProjectHome";
 import CountryName from "./pages/home/CountryName";
+import GlobalNarrativeReport from "./pages/project/reports/GlobalNarrativeReport";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
@@ -303,6 +304,10 @@ const routes = [
       {
         path: "global-summary",
         element: <GlobalDCASummary />,
+      },
+      {
+        path: "global-narrative-report",
+        element: <GlobalNarrativeReport />,
       },
     ],
   },
