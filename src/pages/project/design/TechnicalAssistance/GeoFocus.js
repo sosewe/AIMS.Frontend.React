@@ -380,14 +380,14 @@ const GeoFocus = (props) => {
                     headerName: "Administrative Country",
                     editable: false,
                     flex: 1,
-                    valueGetter: GetAdministrativeUnit,
+                    renderCell: GetAdministrativeUnit,
                   },
                   {
                     field: "administrativeUnitId",
                     headerName: "Administrative Unit",
                     editable: false,
                     flex: 1,
-                    valueGetter: GetAdministrativeUnit,
+                    renderCell: GetAdministrativeUnit,
                   },
                   {
                     field: "action",

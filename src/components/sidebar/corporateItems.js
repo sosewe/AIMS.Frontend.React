@@ -55,7 +55,7 @@ const navItems = [
     pages: [
       {
         title: "Corporate Advocacies",
-        href: "",
+        href: "/advocacy-design-home",
         icon: TextureOutlinedIcon,
       },
     ],
@@ -65,7 +65,7 @@ const navItems = [
     pages: [
       {
         title: "Corporate Innovations",
-        href: "",
+        href: "/innovation-design-home",
         icon: MemoryOutlinedIcon,
       },
     ],
@@ -75,7 +75,7 @@ const navItems = [
     pages: [
       {
         title: "Corporate Researches",
-        href: "",
+        href: "/research-design-home",
         icon: TurnedInNotOutlinedIcon,
       },
     ],
@@ -84,8 +84,8 @@ const navItems = [
     title: "",
     pages: [
       {
-        title: "Corporate Standalone TA",
-        href: "",
+        title: "Corporate Technical Assistance",
+        href: "/technical-assistance-design-home",
         icon: BuildOutlinedIcon,
       },
     ],

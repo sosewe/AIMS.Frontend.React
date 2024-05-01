@@ -56,6 +56,7 @@ import { getQualitativeCountryByTypeItemId } from "../../../../api/qualitative-c
 import { newQualitativeThematicArea } from "../../../../api/qualitative-thematic-area";
 import { Guid } from "../../../../utils/guid";
 import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
+import { parseISO } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -585,9 +586,9 @@ const EditAdvocacyForm = ({ id, onActionChange }) => {
         formik.setValues({
           title: AdvocacyData.data.title,
           shortTitle: AdvocacyData.data.shortTitle,
-          startDate: AdvocacyData.data.startDate,
-          endDate: AdvocacyData.data.endDate,
-          extensionDate: AdvocacyData.data.extensionDate,
+          startDate: parseISO(AdvocacyData.data.startDate),
+          endDate: parseISO(AdvocacyData.data.endDate),
+          extensionDate: parseISO(AdvocacyData.data.extensionDate),
           staffNameId: staffId ? staffId : "",
           implementingOfficeId: AdvocacyData.data.implementingOfficeId,
           regionalProgrammeId: AdvocacyData.data.regionalProgrammeId,
@@ -711,7 +712,7 @@ const EditAdvocacyForm = ({ id, onActionChange }) => {
               )}
             />
           </Grid>
-          <Grid item md={4}>
+          <Grid item md={4} width={"100%"}>
             <DatePicker
               label="End Date"
               value={formik.values.endDate || null}

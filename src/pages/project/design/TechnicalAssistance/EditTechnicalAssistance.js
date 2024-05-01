@@ -67,6 +67,7 @@ import { getProjectRoles } from "../../../../api/project-role";
 import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
 import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
+import { parseISO } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -611,9 +612,9 @@ const EditTechnicalAssistanceForm = ({ id, onActionChange }) => {
           title: TechnicalAssistanceData.data.title,
           shortTitle: TechnicalAssistanceData.data.shortTitle,
           goal: TechnicalAssistanceData.data.goal,
-          startDate: TechnicalAssistanceData.data.startDate,
-          endDate: TechnicalAssistanceData.data.endDate,
-          extensionDate: TechnicalAssistanceData.data.extensionDate,
+          startDate: parseISO(TechnicalAssistanceData.data.startDate),
+          endDate: parseISO(TechnicalAssistanceData.data.endDate),
+          extensionDate: parseISO(TechnicalAssistanceData.data.extensionDate),
           status: TechnicalAssistanceData.data.status,
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",

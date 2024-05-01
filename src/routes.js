@@ -32,6 +32,29 @@ import ProjectHome from "./pages/home/ProjectHome";
 import CountryName from "./pages/home/CountryName";
 import GlobalNarrativeReport from "./pages/project/reports/GlobalNarrativeReport";
 
+//Qualitative
+import AdvocacyDesign from "./pages/home/AdvocacyDesign";
+import AdvocacyDesignHome from "./pages/home/AdvocacyDesignHome";
+import AdvocacyMonitoringSelect from "./pages/home/AdvocacyMonitoringSelect";
+import AdvocacyMonitoringHome from "./pages/home/AdvocacyMonitoringHome";
+
+import InnovationDesign from "./pages/home/InnovationDesign";
+import InnovationDesignHome from "./pages/home/InnovationDesignHome";
+import InnovationMonitoringSelect from "./pages/home/InnovationMonitoringSelect";
+import InnovationMonitoringHome from "./pages/home/InnovationMonitoringHome";
+
+import TechnicalAssistanceDesign from "./pages/home/TechnicalAssistanceDesign";
+import TechnicalAssistanceDesignHome from "./pages/home/TechnicalAssistanceDesignHome";
+import TechnicalAssistanceMonitoringSelect from "./pages/home/TechnicalAssistanceMonitoringSelect";
+import TechnicalAssistanceMonitoringHome from "./pages/home/TechnicalAssistanceMonitoringHome";
+
+import ResearchDesign from "./pages/home/ResearchDesign";
+import ResearchDesignHome from "./pages/home/ResearchDesignHome";
+import ResearchMonitoringSelect from "./pages/home/ResearchMonitoringSelect";
+import ResearchMonitoringHome from "./pages/home/ResearchMonitoringHome";
+
+import ResearchHome from "./pages/home/ResearchHome";
+
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
 const NewLookupItem = async(() => import("./pages/lookup/NewLookupItem"));
@@ -308,6 +331,38 @@ const routes = [
       {
         path: "global-narrative-report",
         element: <GlobalNarrativeReport />,
+      },
+      {
+        path: "advocacy-design-home",
+        element: <AdvocacyDesignHome />,
+      },
+      {
+        path: "advocacy-monitoring-home",
+        element: <AdvocacyMonitoringHome />,
+      },
+      {
+        path: "innovation-design-home",
+        element: <InnovationDesignHome />,
+      },
+      {
+        path: "innovation-monitoring-home",
+        element: <InnovationMonitoringHome />,
+      },
+      {
+        path: "technical-assistance-design-home",
+        element: <TechnicalAssistanceDesignHome />,
+      },
+      {
+        path: "technical-assistance-monitoring-home",
+        element: <TechnicalAssistanceMonitoringHome />,
+      },
+      {
+        path: "research-design-home",
+        element: <ResearchDesignHome />,
+      },
+      {
+        path: "research-monitoring-home",
+        element: <ResearchMonitoringHome />,
       },
     ],
   },
@@ -648,6 +703,86 @@ const routes = [
       {
         path: "monitoring/advocacy-monitoring-update/:id/:editId",
         element: <AdvocacyMonitoringUpdate />,
+      },
+    ],
+  },
+  {
+    path: "advocacy-design",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <AdvocacyDesign />,
+      },
+    ],
+  },
+  {
+    path: "advocacy-monitoring",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <AdvocacyMonitoringSelect />,
+      },
+    ],
+  },
+  {
+    path: "innovation-design",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <InnovationDesign />,
+      },
+    ],
+  },
+  {
+    path: "innovation-monitoring",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <InnovationMonitoringSelect />,
+      },
+    ],
+  },
+  {
+    path: "technical-assistance-design",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <TechnicalAssistanceDesign />,
+      },
+    ],
+  },
+  {
+    path: "technical-assistance-monitoring",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <TechnicalAssistanceMonitoringSelect />,
+      },
+    ],
+  },
+  {
+    path: "research-design",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <ResearchDesign />,
+      },
+    ],
+  },
+  {
+    path: "research-monitoring",
+    element: <ProjectLayout />,
+    children: [
+      {
+        path: ":id/:processLevelTypeId",
+        element: <ResearchMonitoringSelect />,
       },
     ],
   },

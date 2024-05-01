@@ -83,7 +83,7 @@ const GeoFocus = (props) => {
     }
   );
 
-  const GetAdministrativeUnit = (params) => {
+  /* const GetAdministrativeUnit = (params) => {
     const administrativeUnitId = params.value;
     const { data: result, isLoading } = useQuery(
       ["getAdministrativeUnitById", administrativeUnitId],
@@ -96,7 +96,7 @@ const GeoFocus = (props) => {
     if (!isLoading && result && result.data) {
       return result.data.adminUnit;
     }
-  };
+  };*/
 
   const mutation = useMutation({ mutationFn: newInnovationGeographicalFocus });
   const formik = useFormik({
@@ -372,18 +372,18 @@ const GeoFocus = (props) => {
                   }
                   columns={[
                     {
-                      field: "administrativeUnitCountryId",
+                      field: "administrativeUnitCountryName",
                       headerName: "Administrative Country",
                       editable: false,
                       flex: 1,
-                      valueGetter: GetAdministrativeUnit,
+                      //valueGetter: GetAdministrativeUnit,
                     },
                     {
-                      field: "administrativeUnitId",
+                      field: "administrativeUnitName",
                       headerName: "Administrative Unit",
                       editable: false,
                       flex: 1,
-                      valueGetter: GetAdministrativeUnit,
+                      //valueGetter: GetAdministrativeUnit,
                     },
                     {
                       field: "action",
