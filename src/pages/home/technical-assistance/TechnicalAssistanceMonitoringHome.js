@@ -20,13 +20,13 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { useQuery } from "@tanstack/react-query";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { apiRoutes } from "../../apiRoutes";
-import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
+import { apiRoutes } from "../../../apiRoutes";
+import useKeyCloakAuth from "../../../hooks/useKeyCloakAuth";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import { useNavigate } from "react-router-dom";
-import { getLookupMasterItemsByName } from "../../api/lookup";
-import { OfficeContext } from "../../App";
-import { UserLevelContext } from "../../App";
+import { getLookupMasterItemsByName } from "../../../api/lookup";
+import { OfficeContext } from "../../../App";
+import { UserLevelContext } from "../../../App";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -36,8 +36,7 @@ const Divider = styled(MuiDivider)(spacing);
 let processLevelItemId;
 let processLevelTypeId;
 
-const AdvocaciesDataByUserLevel = () => {
-  const userOffice = useContext(OfficeContext);
+const TechnicalAssistanceDataByUserLevel = () => {
   const userLevel = useContext(UserLevelContext);
   const user = useKeyCloakAuth();
   const navigate = useNavigate();
@@ -84,7 +83,7 @@ const AdvocaciesDataByUserLevel = () => {
     ],
     queryFn: async () => {
       const fetchURL = new URL(
-        `${apiRoutes.advocacy}/GetAdvocacies/${processLevelTypeId}/${user?.tokenParsed?.email}`
+        `${apiRoutes.technicalAssistance}/GetTechnicalAssistances/${processLevelTypeId}/${user?.tokenParsed?.email}`
       );
 
       //read our state and pass it to the API as query params
@@ -170,7 +169,7 @@ const AdvocaciesDataByUserLevel = () => {
           disabled={!processLevelTypeId}
           onClick={() =>
             navigate(
-              `/advocacy-monitoring/${row.original.id}/${processLevelTypeId}`
+              `/technical-assistance-monitoring/${row.original.id}/${processLevelTypeId}`
             )
           }
         >
@@ -207,16 +206,16 @@ const AdvocaciesDataByUserLevel = () => {
     </Card>
   );
 };
-const AdvocacyMonitoringHome = () => {
+const TechnicalAssistanceMonitoringHome = () => {
   return (
     <React.Fragment>
       <Helmet title="Project Home" />
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Divider my={3} />
-        <AdvocaciesDataByUserLevel height={1000} />
+        <TechnicalAssistanceDataByUserLevel height={1000} />
       </LocalizationProvider>
     </React.Fragment>
   );
 };
 
-export default AdvocacyMonitoringHome;
+export default TechnicalAssistanceMonitoringHome;

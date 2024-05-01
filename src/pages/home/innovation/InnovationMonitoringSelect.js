@@ -3,9 +3,9 @@ import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useNavigate, useParams } from "react-router-dom";
-import TechnicalAssistanceMonitoring from "../project/monitoring/TechnicalAssistance/TechnicalAssistanceMonitoring";
+import InnovationMonitoring from "../../project/monitoring/InnovationV2/InnovationMonitoring";
 
-const TechnicalAssistanceMonitoringSelect = () => {
+const InnovationMonitoringSelect = () => {
   let { id, processLevelTypeId } = useParams();
   const navigate = useNavigate();
   const darkTheme = createTheme({
@@ -26,7 +26,7 @@ const TechnicalAssistanceMonitoringSelect = () => {
     switch (selectedLink) {
       case "monitoring":
         return (
-          <TechnicalAssistanceMonitoring
+          <InnovationMonitoring
             id={id}
             processLevelTypeId={processLevelTypeId}
           />
@@ -67,4 +67,4 @@ const TechnicalAssistanceMonitoringSelect = () => {
     </React.Fragment>
   );
 };
-export default TechnicalAssistanceMonitoringSelect;
+export default InnovationMonitoringSelect;

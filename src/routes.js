@@ -33,27 +33,25 @@ import CountryName from "./pages/home/CountryName";
 import GlobalNarrativeReport from "./pages/project/reports/GlobalNarrativeReport";
 
 //Qualitative
-import AdvocacyDesign from "./pages/home/AdvocacyDesign";
-import AdvocacyDesignHome from "./pages/home/AdvocacyDesignHome";
-import AdvocacyMonitoringSelect from "./pages/home/AdvocacyMonitoringSelect";
-import AdvocacyMonitoringHome from "./pages/home/AdvocacyMonitoringHome";
+import AdvocacyDesign from "./pages/home/advocacy/AdvocacyDesign";
+import AdvocacyDesignHome from "./pages/home/advocacy/AdvocacyDesignHome";
+import AdvocacyMonitoringSelect from "./pages/home/advocacy/AdvocacyMonitoringSelect";
+import AdvocacyMonitoringHome from "./pages/home/advocacy/AdvocacyMonitoringHome";
 
-import InnovationDesign from "./pages/home/InnovationDesign";
-import InnovationDesignHome from "./pages/home/InnovationDesignHome";
-import InnovationMonitoringSelect from "./pages/home/InnovationMonitoringSelect";
-import InnovationMonitoringHome from "./pages/home/InnovationMonitoringHome";
+import InnovationDesign from "./pages/home/innovation/InnovationDesign";
+import InnovationDesignHome from "./pages/home/innovation/InnovationDesignHome";
+import InnovationMonitoringSelect from "./pages/home/innovation/InnovationMonitoringSelect";
+import InnovationMonitoringHome from "./pages/home/innovation/InnovationMonitoringHome";
 
-import TechnicalAssistanceDesign from "./pages/home/TechnicalAssistanceDesign";
-import TechnicalAssistanceDesignHome from "./pages/home/TechnicalAssistanceDesignHome";
-import TechnicalAssistanceMonitoringSelect from "./pages/home/TechnicalAssistanceMonitoringSelect";
-import TechnicalAssistanceMonitoringHome from "./pages/home/TechnicalAssistanceMonitoringHome";
+import TechnicalAssistanceDesign from "./pages/home/technical-assistance/TechnicalAssistanceDesign";
+import TechnicalAssistanceDesignHome from "./pages/home/technical-assistance/TechnicalAssistanceDesignHome";
+import TechnicalAssistanceMonitoringSelect from "./pages/home/technical-assistance/TechnicalAssistanceMonitoringSelect";
+import TechnicalAssistanceMonitoringHome from "./pages/home/technical-assistance/TechnicalAssistanceMonitoringHome";
 
-import ResearchDesign from "./pages/home/ResearchDesign";
-import ResearchDesignHome from "./pages/home/ResearchDesignHome";
-import ResearchMonitoringSelect from "./pages/home/ResearchMonitoringSelect";
-import ResearchMonitoringHome from "./pages/home/ResearchMonitoringHome";
-
-import ResearchHome from "./pages/home/ResearchHome";
+import ResearchDesign from "./pages/home/research/ResearchDesign";
+import ResearchDesignHome from "./pages/home/research/ResearchDesignHome";
+import ResearchMonitoringSelect from "./pages/home/research/ResearchMonitoringSelect";
+import ResearchMonitoringHome from "./pages/home/research/ResearchMonitoringHome";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));

@@ -3,7 +3,7 @@ import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useNavigate, useParams } from "react-router-dom";
-import InnovationDetail from "../project/design/Innovation/InnovationDetail";
+import InnovationDetail from "../../project/design/Innovation/InnovationDetail";
 
 const InnovationDesign = () => {
   let { id, processLevelTypeId } = useParams();

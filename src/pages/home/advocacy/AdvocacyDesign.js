@@ -3,9 +3,12 @@ import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useNavigate, useParams } from "react-router-dom";
-import InnovationMonitoring from "../project/monitoring/InnovationV2/InnovationMonitoring";
+import DesignInnovation from "../../project/design/Innovation/DesignInnovation";
+import ProjectMonitoring from "../../project/monitoring/ProjectMonitoring";
+import ProjectReports from "../../project/reports/ProjectReports";
+import AdvocacyDetail from "../../project/design/Advocacy/AdvocacyDetail";
 
-const InnovationMonitoringSelect = () => {
+const AdvocacyDesign = () => {
   let { id, processLevelTypeId } = useParams();
   const navigate = useNavigate();
   const darkTheme = createTheme({
@@ -14,7 +17,7 @@ const InnovationMonitoringSelect = () => {
     },
   });
   // State to track the selected link
-  const [selectedLink, setSelectedLink] = useState("monitoring");
+  const [selectedLink, setSelectedLink] = useState("design");
 
   // Function to handle link selection
   const handleLinkClick = (link) => {
@@ -24,12 +27,9 @@ const InnovationMonitoringSelect = () => {
   // Function to render the appropriate component based on the selected link
   const renderComponent = () => {
     switch (selectedLink) {
-      case "monitoring":
+      case "design":
         return (
-          <InnovationMonitoring
-            id={id}
-            processLevelTypeId={processLevelTypeId}
-          />
+          <AdvocacyDetail id={id} processLevelTypeId={processLevelTypeId} />
         );
 
       default:
@@ -50,16 +50,12 @@ const InnovationMonitoringSelect = () => {
               <HomeOutlinedIcon />
             </Button>
 
-            {/* Monitoring link in the middle */}
-            <Typography variant="h6" style={{ flex: 1, textAlign: "center" }}>
-              <Button
-                color={selectedLink === "monitoring" ? "primary" : "secondary"}
-                onClick={() => handleLinkClick("monitoring")}
-                style={{ marginLeft: "16px" }}
-              >
-                Monitoring
-              </Button>
-            </Typography>
+            <Button
+              color={selectedLink === "design" ? "primary" : "secondary"}
+              onClick={() => handleLinkClick("design")}
+            >
+              Design
+            </Button>
           </Toolbar>
         </AppBar>
       </ThemeProvider>
@@ -67,4 +63,4 @@ const InnovationMonitoringSelect = () => {
     </React.Fragment>
   );
 };
-export default InnovationMonitoringSelect;
+export default AdvocacyDesign;

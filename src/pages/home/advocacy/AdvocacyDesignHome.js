@@ -20,13 +20,13 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { useQuery } from "@tanstack/react-query";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { apiRoutes } from "../../apiRoutes";
-import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
+import { apiRoutes } from "../../../apiRoutes";
+import useKeyCloakAuth from "../../../hooks/useKeyCloakAuth";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import { useNavigate } from "react-router-dom";
-import { getLookupMasterItemsByName } from "../../api/lookup";
-import { OfficeContext } from "../../App";
-import { UserLevelContext } from "../../App";
+import { getLookupMasterItemsByName } from "../../../api/lookup";
+import { OfficeContext } from "../../../App";
+import { UserLevelContext } from "../../../App";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -36,7 +36,7 @@ const Divider = styled(MuiDivider)(spacing);
 let processLevelItemId;
 let processLevelTypeId;
 
-const ResearchDataByUserLevel = () => {
+const AdvocaciesDataByUserLevel = () => {
   const userOffice = useContext(OfficeContext);
   const userLevel = useContext(UserLevelContext);
   const user = useKeyCloakAuth();
@@ -84,7 +84,7 @@ const ResearchDataByUserLevel = () => {
     ],
     queryFn: async () => {
       const fetchURL = new URL(
-        `${apiRoutes.learning}/GetResearches/${processLevelTypeId}/${user?.tokenParsed?.email}`
+        `${apiRoutes.advocacy}/GetAdvocacies/${processLevelTypeId}/${user?.tokenParsed?.email}`
       );
 
       //read our state and pass it to the API as query params
@@ -127,8 +127,8 @@ const ResearchDataByUserLevel = () => {
   const columns = useMemo(
     () => [
       {
-        accessorKey: "learningQuestion",
-        header: "Question",
+        accessorKey: "title",
+        header: "Title",
       },
       {
         accessorKey: "startDate",
@@ -170,7 +170,7 @@ const ResearchDataByUserLevel = () => {
           disabled={!processLevelTypeId}
           onClick={() =>
             navigate(
-              `/research-access/${row.original.id}/${processLevelTypeId}`
+              `/advocacy-design/${row.original.id}/${processLevelTypeId}`
             )
           }
         >
@@ -207,7 +207,7 @@ const ResearchDataByUserLevel = () => {
     </Card>
   );
 };
-const InnovationHome = () => {
+const AdvocacyDesignHome = () => {
   const navigate = useNavigate();
   return (
     <React.Fragment>
@@ -219,17 +219,17 @@ const InnovationHome = () => {
           color="error"
           onClick={() =>
             navigate(
-              `/qualitative/new-research/${processLevelTypeId}/${processLevelTypeId}`
+              `/qualitative/new-advocacy/${processLevelTypeId}/${processLevelTypeId}`
             )
           }
         >
-          <AddIcon /> New Research
+          <AddIcon /> New Advocacy
         </Button>
         <Divider my={3} />
-        <ResearchDataByUserLevel height={1000} />
+        <AdvocaciesDataByUserLevel height={1000} />
       </LocalizationProvider>
     </React.Fragment>
   );
 };
 
-export default InnovationHome;
+export default AdvocacyDesignHome;

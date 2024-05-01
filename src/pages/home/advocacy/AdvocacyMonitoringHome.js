@@ -20,13 +20,13 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { useQuery } from "@tanstack/react-query";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { apiRoutes } from "../../apiRoutes";
-import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
+import { apiRoutes } from "../../../apiRoutes";
+import useKeyCloakAuth from "../../../hooks/useKeyCloakAuth";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import { useNavigate } from "react-router-dom";
-import { getLookupMasterItemsByName } from "../../api/lookup";
-import { OfficeContext } from "../../App";
-import { UserLevelContext } from "../../App";
+import { getLookupMasterItemsByName } from "../../../api/lookup";
+import { OfficeContext } from "../../../App";
+import { UserLevelContext } from "../../../App";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -36,7 +36,8 @@ const Divider = styled(MuiDivider)(spacing);
 let processLevelItemId;
 let processLevelTypeId;
 
-const TechnicalAssistanceDataByUserLevel = () => {
+const AdvocaciesDataByUserLevel = () => {
+  const userOffice = useContext(OfficeContext);
   const userLevel = useContext(UserLevelContext);
   const user = useKeyCloakAuth();
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ const TechnicalAssistanceDataByUserLevel = () => {
     ],
     queryFn: async () => {
       const fetchURL = new URL(
-        `${apiRoutes.technicalAssistance}/GetTechnicalAssistances/${processLevelTypeId}/${user?.tokenParsed?.email}`
+        `${apiRoutes.advocacy}/GetAdvocacies/${processLevelTypeId}/${user?.tokenParsed?.email}`
       );
 
       //read our state and pass it to the API as query params
@@ -169,7 +170,7 @@ const TechnicalAssistanceDataByUserLevel = () => {
           disabled={!processLevelTypeId}
           onClick={() =>
             navigate(
-              `/technical-assistance-monitoring/${row.original.id}/${processLevelTypeId}`
+              `/advocacy-monitoring/${row.original.id}/${processLevelTypeId}`
             )
           }
         >
@@ -206,16 +207,16 @@ const TechnicalAssistanceDataByUserLevel = () => {
     </Card>
   );
 };
-const TechnicalAssistanceMonitoringHome = () => {
+const AdvocacyMonitoringHome = () => {
   return (
     <React.Fragment>
       <Helmet title="Project Home" />
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Divider my={3} />
-        <TechnicalAssistanceDataByUserLevel height={1000} />
+        <AdvocaciesDataByUserLevel height={1000} />
       </LocalizationProvider>
     </React.Fragment>
   );
 };
 
-export default TechnicalAssistanceMonitoringHome;
+export default AdvocacyMonitoringHome;

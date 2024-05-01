@@ -20,13 +20,13 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { useQuery } from "@tanstack/react-query";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import { apiRoutes } from "../../apiRoutes";
-import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
+import { apiRoutes } from "../../../apiRoutes";
+import useKeyCloakAuth from "../../../hooks/useKeyCloakAuth";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import { useNavigate } from "react-router-dom";
-import { getLookupMasterItemsByName } from "../../api/lookup";
-import { OfficeContext } from "../../App";
-import { UserLevelContext } from "../../App";
+import { getLookupMasterItemsByName } from "../../../api/lookup";
+import { OfficeContext } from "../../../App";
+import { UserLevelContext } from "../../../App";
 
 const Card = styled(MuiCard)(spacing);
 const Paper = styled(MuiPaper)(spacing);
@@ -37,6 +37,7 @@ let processLevelItemId;
 let processLevelTypeId;
 
 const InnovationsDataByUserLevel = () => {
+  const userOffice = useContext(OfficeContext);
   const userLevel = useContext(UserLevelContext);
   const user = useKeyCloakAuth();
   const navigate = useNavigate();
@@ -169,7 +170,7 @@ const InnovationsDataByUserLevel = () => {
           disabled={!processLevelTypeId}
           onClick={() =>
             navigate(
-              `/innovation-monitoring/${row.original.id}/${processLevelTypeId}`
+              `/innovation-design/${row.original.id}/${processLevelTypeId}`
             )
           }
         >
@@ -206,11 +207,24 @@ const InnovationsDataByUserLevel = () => {
     </Card>
   );
 };
-const InnovationMonitoringHome = () => {
+const InnovationDesignHome = () => {
+  const navigate = useNavigate();
   return (
     <React.Fragment>
       <Helmet title="Project Home" />
       <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Button
+          mr={2}
+          variant="contained"
+          color="error"
+          onClick={() =>
+            navigate(
+              `/qualitative/new-innocation/${processLevelTypeId}/${processLevelTypeId}`
+            )
+          }
+        >
+          <AddIcon /> New Innovation
+        </Button>
         <Divider my={3} />
         <InnovationsDataByUserLevel height={1000} />
       </LocalizationProvider>
@@ -218,4 +232,4 @@ const InnovationMonitoringHome = () => {
   );
 };
 
-export default InnovationMonitoringHome;
+export default InnovationDesignHome;

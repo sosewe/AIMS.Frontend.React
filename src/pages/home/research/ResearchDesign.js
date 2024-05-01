@@ -3,11 +3,9 @@ import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useNavigate, useParams } from "react-router-dom";
-import ProjectMonitoring from "../project/monitoring/ProjectMonitoring";
-import ProjectReports from "../project/reports/ProjectReports";
-import DesignLearning from "../project/design/Learning/DesignLearning";
+import ResearchDetail from "../../project/design/Learning/LearningDetail";
 
-const ResearchAccess = () => {
+const ResearchDesign = () => {
   let { id, processLevelTypeId } = useParams();
   const navigate = useNavigate();
   const darkTheme = createTheme({
@@ -28,18 +26,9 @@ const ResearchAccess = () => {
     switch (selectedLink) {
       case "design":
         return (
-          <DesignLearning id={id} processLevelTypeId={processLevelTypeId} />
+          <ResearchDetail id={id} processLevelTypeId={processLevelTypeId} />
         );
-      case "monitoring":
-        return (
-          <ProjectMonitoring
-            id={id}
-            processLevelTypeId={processLevelTypeId}
-            event={4}
-          />
-        );
-      case "reports":
-        return <ProjectReports />;
+
       default:
         return null;
     }
@@ -64,26 +53,6 @@ const ResearchAccess = () => {
             >
               Design
             </Button>
-
-            {/* Monitoring link in the middle */}
-            <Typography variant="h6" style={{ flex: 1, textAlign: "center" }}>
-              <Button
-                color={selectedLink === "monitoring" ? "primary" : "secondary"}
-                onClick={() => handleLinkClick("monitoring")}
-                style={{ marginLeft: "16px" }}
-              >
-                Monitoring
-              </Button>
-            </Typography>
-
-            {/* Reports link on the right */}
-            <Button
-              color={selectedLink === "reports" ? "primary" : "secondary"}
-              onClick={() => handleLinkClick("reports")}
-              style={{ marginLeft: "auto" }}
-            >
-              Reports
-            </Button>
           </Toolbar>
         </AppBar>
       </ThemeProvider>
@@ -91,4 +60,4 @@ const ResearchAccess = () => {
     </React.Fragment>
   );
 };
-export default ResearchAccess;
+export default ResearchDesign;

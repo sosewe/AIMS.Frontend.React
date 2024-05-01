@@ -3,9 +3,9 @@ import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useNavigate, useParams } from "react-router-dom";
-import TechnicalAssistanceDetail from "../project/design/TechnicalAssistance/TechnicalAssistanceDetail";
+import TechnicalAssistanceMonitoring from "../../project/monitoring/TechnicalAssistance/TechnicalAssistanceMonitoring";
 
-const TechnicalAssistanceDesign = () => {
+const TechnicalAssistanceMonitoringSelect = () => {
   let { id, processLevelTypeId } = useParams();
   const navigate = useNavigate();
   const darkTheme = createTheme({
@@ -14,7 +14,7 @@ const TechnicalAssistanceDesign = () => {
     },
   });
   // State to track the selected link
-  const [selectedLink, setSelectedLink] = useState("design");
+  const [selectedLink, setSelectedLink] = useState("monitoring");
 
   // Function to handle link selection
   const handleLinkClick = (link) => {
@@ -24,9 +24,9 @@ const TechnicalAssistanceDesign = () => {
   // Function to render the appropriate component based on the selected link
   const renderComponent = () => {
     switch (selectedLink) {
-      case "design":
+      case "monitoring":
         return (
-          <TechnicalAssistanceDetail
+          <TechnicalAssistanceMonitoring
             id={id}
             processLevelTypeId={processLevelTypeId}
           />
@@ -50,12 +50,16 @@ const TechnicalAssistanceDesign = () => {
               <HomeOutlinedIcon />
             </Button>
 
-            <Button
-              color={selectedLink === "design" ? "primary" : "secondary"}
-              onClick={() => handleLinkClick("design")}
-            >
-              Design
-            </Button>
+            {/* Monitoring link in the middle */}
+            <Typography variant="h6" style={{ flex: 1, textAlign: "center" }}>
+              <Button
+                color={selectedLink === "monitoring" ? "primary" : "secondary"}
+                onClick={() => handleLinkClick("monitoring")}
+                style={{ marginLeft: "16px" }}
+              >
+                Monitoring
+              </Button>
+            </Typography>
           </Toolbar>
         </AppBar>
       </ThemeProvider>
@@ -63,4 +67,4 @@ const TechnicalAssistanceDesign = () => {
     </React.Fragment>
   );
 };
-export default TechnicalAssistanceDesign;
+export default TechnicalAssistanceMonitoringSelect;
