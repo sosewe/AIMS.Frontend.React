@@ -4,6 +4,10 @@ import PublicIcon from "@mui/icons-material/Public";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import SettingsBrightnessOutlinedIcon from "@mui/icons-material/SettingsBrightnessOutlined";
+import MemoryOutlinedIcon from "@mui/icons-material/MemoryOutlined";
+import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
+import TurnedInNotOutlinedIcon from "@mui/icons-material/TurnedInNotOutlined";
+import TextureOutlinedIcon from "@mui/icons-material/TextureOutlined";
 
 const navItems = [
   {
@@ -21,8 +25,8 @@ const navItems = [
     pages: [
       {
         title: "Corporate Advocacies",
-        href: "",
-        icon: SummarizeIcon,
+        href: "/advocacy-monitoring-home",
+        icon: TextureOutlinedIcon,
       },
     ],
   },
@@ -31,8 +35,8 @@ const navItems = [
     pages: [
       {
         title: "Corporate Innovations",
-        href: "",
-        icon: Tag,
+        href: "/innovation-monitoring-home",
+        icon: MemoryOutlinedIcon,
       },
     ],
   },
@@ -41,8 +45,8 @@ const navItems = [
     pages: [
       {
         title: "Corporate Researches",
-        href: "",
-        icon: YardIcon,
+        href: "/research-monitoring-home",
+        icon: TurnedInNotOutlinedIcon,
       },
     ],
   },
@@ -50,9 +54,9 @@ const navItems = [
     title: "",
     pages: [
       {
-        title: "Corporate TA's",
-        href: "",
-        icon: BarChartIcon,
+        title: "Corporate Technical Assistance",
+        href: "/technical-assistance-monitoring-home",
+        icon: BuildOutlinedIcon,
       },
     ],
   },

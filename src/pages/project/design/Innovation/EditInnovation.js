@@ -52,6 +52,7 @@ import { newInnovationDonor } from "../../../../api/innovation-donor";
 import { newInnovationStaff } from "../../../../api/innovation-staff";
 import { getProjectRoles } from "../../../../api/project-role";
 import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
+import { parseISO } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -522,9 +523,9 @@ const EditInnovationForm = ({ id, onActionChange }) => {
         formik.setValues({
           title: InnovationData.data.title,
           shortTitle: InnovationData.data.shortTitle,
-          startDate: InnovationData.data.startDate,
-          endDate: InnovationData.data.endDate,
-          extensionDate: InnovationData.data.extensionDate,
+          startDate: parseISO(InnovationData.data.startDate),
+          endDate: parseISO(InnovationData.data.endDate),
+          extensionDate: parseISO(InnovationData.data.extensionDate),
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",
           technicalReviewerId: reviewerId ? reviewerId : "",

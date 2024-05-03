@@ -391,7 +391,7 @@ const ThematicFocus = (props) => {
                               headerName: "STRATEGIC OBJECTIVE",
                               editable: false,
                               flex: 1,
-                              valueGetter: GetStrategicObjective,
+                              renderCell: GetStrategicObjective,
                             },
                             {
                               field: "subThemeId",
@@ -399,7 +399,7 @@ const ThematicFocus = (props) => {
                               headerName: "SUB-THEME [THEMATIC AREA]",
                               editable: false,
                               flex: 1,
-                              valueGetter: GetSubTheme,
+                              renderCell: GetSubTheme,
                             },
                             {
                               field: "action",
