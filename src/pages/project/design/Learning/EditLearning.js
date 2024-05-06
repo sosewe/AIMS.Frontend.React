@@ -57,6 +57,7 @@ import { Helmet } from "react-helmet-async";
 import { Guid } from "../../../../utils/guid";
 import { YEAR_RANGE } from "../../../../constants";
 import useKeyCloakAuth from "../../../../hooks/useKeyCloakAuth";
+import { parseISO } from "date-fns";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -714,9 +715,9 @@ const EditLearningForm = ({ id, onActionChange }) => {
           learningQuestion: LearningData.data.learningQuestion,
           learningMethodologyId: LearningData.data.learningMethodologyId,
           keyDecisionPoint: LearningData.data.keyDecisionPoint,
-          startDate: LearningData.data.startDate,
-          endDate: LearningData.data.endDate,
-          extensionDate: LearningData.data.extensionDate,
+          startDate: parseISO(LearningData.data.startDate),
+          endDate: parseISO(LearningData.data.endDate),
+          extensionDate: parseISO(LearningData.data.extensionDate),
           statusId: LearningData.data.statusId,
           staffNameId: staffId ? staffId : "",
           leadStaffEmail: staffEmail ? staffEmail : "",

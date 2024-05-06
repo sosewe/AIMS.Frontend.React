@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -25,6 +25,7 @@ import { getInnovationByProcessLevelItemId } from "../../../../api/innovation";
 import { getInnovationGeographicalFocus } from "../../../../api/innovation-geographical-focus";
 import { getInnovationObjectiveClassificationByInnovationId } from "../../../../api/innovation-objectivesclassification";
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
+import { UserLevelContext } from "../../../../App";
 import { REPORT_FREQUENCY } from "../../../../constants";
 
 const Card = styled(MuiCard)(spacing);
@@ -57,7 +58,7 @@ const InnovationMonitoringForm = ({
 }) => {
   const [innovationId, setInnovationId] = useState();
   const navigate = useNavigate();
-
+  const userLevelContext = useContext(UserLevelContext);
   const {
     data: innovations,
     isLoading: isLoadingInnovations,

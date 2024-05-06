@@ -145,7 +145,7 @@ const LearningMonitoringForm = ({ processLevelItemId, processLevelTypeId }) => {
             <Grid item md={3}>
               <TextField
                 name="learning"
-                label="Learning"
+                label="Learning Question"
                 select
                 required
                 value={formik.values.learning}

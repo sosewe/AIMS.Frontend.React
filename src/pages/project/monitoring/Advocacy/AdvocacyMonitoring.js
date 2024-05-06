@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import styled from "@emotion/styled";
 import {
   Button as MuiButton,
@@ -27,6 +27,7 @@ import { getAdvocacyGeographicalFocus } from "../../../../api/advocacy-geographi
 import { getAdvocacyObjectiveByAdvocacyId } from "../../../../api/advocacy-objective";
 
 import { getLookupMasterItemsByName } from "../../../../api/lookup";
+import { UserLevelContext } from "../../../../App";
 import { REPORT_FREQUENCY } from "../../../../constants";
 
 const Card = styled(MuiCard)(spacing);
@@ -57,6 +58,7 @@ const AdvocacyMonitoringForm = ({ processLevelItemId, processLevelTypeId }) => {
   const [advocacyId, setAdvocacyId] = useState();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const userLevelContext = useContext(UserLevelContext);
 
   const {
     data: implementationYears,
@@ -170,7 +172,6 @@ const AdvocacyMonitoringForm = ({ processLevelItemId, processLevelTypeId }) => {
     }),
     onSubmit: async (values) => {
       try {
-        console.log("values.advocacy " + values.advocacy);
         navigate(
           `/project-access/monitoring/advocacy-results/${processLevelItemId}/${processLevelTypeId}/${values.advocacy}/${values.location}/${values.reportingPeriod}/${values.implementationYear}`
         );
@@ -183,8 +184,6 @@ const AdvocacyMonitoringForm = ({ processLevelItemId, processLevelTypeId }) => {
   });
 
   useEffect(() => {}, []);
-
-  const handleActionChange = useCallback();
 
   const handleAdvocacyChange = (e) => {
     const advocacyId = e.target.value;
@@ -358,6 +357,7 @@ const AdvocacyMonitoringForm = ({ processLevelItemId, processLevelTypeId }) => {
 
 const AdvocacyMonitoring = () => {
   let { id, processLevelTypeId } = useParams();
+  console.log(id, processLevelTypeId);
   return (
     <React.Fragment>
       <Helmet title="TechnicalAssistance Monitoring" />
