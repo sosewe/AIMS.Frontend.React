@@ -705,6 +705,28 @@ const routes = [
     ],
   },
   {
+    path: "qualitative",
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "new-advocacy/:processLevelItemId/:processLevelTypeId",
+        element: <NewAdvocacy />,
+      },
+      {
+        path: "new-innovation/:processLevelItemId/:processLevelTypeId",
+        element: <NewInnovation />,
+      },
+      {
+        path: "new-research/:processLevelItemId/:processLevelTypeId",
+        element: <NewLearning />,
+      },
+      {
+        path: "new-technical-assistance/:processLevelItemId/:processLevelTypeId",
+        element: <NewTechnicalAssistance />,
+      },
+    ],
+  },
+  {
     path: "advocacy-design",
     element: <ProjectLayout />,
     children: [

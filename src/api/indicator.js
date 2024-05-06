@@ -3,10 +3,8 @@ import axios from "axios";
 
 export const getAllIndicators = async ({ queryKey }) => {
   const [, page, pageSize, filterModel] = queryKey;
-  return await axios.post(
-    `${apiRoutes.indicator}/GetIndicators?PageNumber=${page}&PageSize=${pageSize}`,
-    filterModel.items
-  );
+  // return await axios.post(`${apiRoutes.indicator}/GetIndicators?PageNumber=${page}&PageSize=${pageSize}`, filterModel.items);
+  return await axios.get(`${apiRoutes.indicator}`);
 };
 
 export const newIndicator = async (values) => {
