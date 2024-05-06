@@ -204,7 +204,6 @@ const CountryLevelDCA = () => {
           selectedOffice,
         };
         InData.id = new Guid().toString();
-        console.log(InData);
         await mutationCountryLevel.mutateAsync(InData);
         setSubmitting(true);
         toast("Successfully Created Country Level DCA", {

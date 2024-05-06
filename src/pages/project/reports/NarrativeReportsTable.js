@@ -5,7 +5,7 @@ import {
   TableRow,
   TextField as MuiTextField,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import TableContainer from "@mui/material/TableContainer";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -23,6 +23,8 @@ import {
 } from "../../../api/internal-reporting";
 import { toast } from "react-toastify";
 import Papa from "papaparse";
+import { OfficeContext } from "../../../App";
+import { getProjectById } from "../../../api/project";
 
 const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
@@ -44,6 +46,14 @@ const NarrativeReportsTable = ({
   implementationYearId,
   implementationMonthId,
 }) => {
+  const [sumActual, setSumActual] = useState(0);
+  const [sumYtD_Perf, setSumYtD_Perf] = useState(0);
+  const [sumAnnual_Perf, setSumAnnual_Perf] = useState(0);
+  const [projectTitle, setProjectTitle] = useState("");
+
+  const officeContext = useContext(OfficeContext);
+  let selectedOffice = officeContext.selectedOffice;
+
   const {
     register,
     handleSubmit,
@@ -53,6 +63,13 @@ const NarrativeReportsTable = ({
   const [isSaved, setIsSaved] = useState(false);
   const mutation = useMutation({ mutationFn: saveNarrativeReport });
 
+  const {
+    isLoading: isLoadingProjectById,
+    isError: isErrorProjectById,
+    data: ProjectById,
+  } = useQuery(["getProjectById", processLevelItemId], getProjectById, {
+    enabled: !!processLevelItemId,
+  });
   const { isLoading, isError, data } = useQuery(
     [
       "getSavedNarrativeReports",
@@ -76,6 +93,11 @@ const NarrativeReportsTable = ({
         processLevelItemId: processLevelItemId,
         implementationYearId,
         implementationMonthId,
+        serviceContractFrequency: sumActual,
+        yTDPerf: sumYtD_Perf,
+        annualPerf: sumAnnual_Perf,
+        countryOffice: selectedOffice,
+        ProjectName: projectTitle,
         datas: [],
       };
       for (const inNarrativeReportKey of NarrativeReportsResults) {
@@ -107,7 +129,33 @@ const NarrativeReportsTable = ({
         setIsSaved(true);
       }
     }
-  }, [isLoading, isError, data]);
+
+    let actual = 0;
+    let ytD_Perf = 0;
+    let annual_Perf = 0;
+    let count = 0;
+    for (const narrativeReportsResult of NarrativeReportsResults) {
+      actual += narrativeReportsResult.actual;
+      ytD_Perf += narrativeReportsResult.ytD_Perf;
+      annual_Perf += narrativeReportsResult.annual_Perf;
+      count++;
+    }
+    setSumActual(actual);
+    setSumYtD_Perf(ytD_Perf / count);
+    setSumAnnual_Perf(annual_Perf / count);
+
+    if (!isLoadingProjectById && !isErrorProjectById && ProjectById) {
+      setProjectTitle(ProjectById.data.shortTitle);
+    }
+  }, [
+    isLoading,
+    isError,
+    data,
+    NarrativeReportsResults,
+    isLoadingProjectById,
+    isErrorProjectById,
+    ProjectById,
+  ]);
 
   const handleDownload = () => {
     const csv = Papa.unparse(NarrativeReportsResults, {

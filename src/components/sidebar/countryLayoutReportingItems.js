@@ -71,7 +71,7 @@ const navItems = [
     pages: [
       {
         title: "Project Performance Report",
-        href: "",
+        href: "/country-performance-report",
         icon: MarginOutlinedIcon,
       },
     ],
