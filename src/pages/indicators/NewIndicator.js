@@ -1137,6 +1137,7 @@ const NewIndicatorForm = () => {
           }
         }
 
+        setAggregateDisAggregateArray([]);
         for (const indicatorAggregate of IndicatorData.data
           .indicatorAggregates) {
           const selectedIndicatorAggregate =

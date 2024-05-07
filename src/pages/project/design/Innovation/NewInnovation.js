@@ -371,7 +371,6 @@ const InnovationForm = ({
           processLevelTypeId: processLevelTypeId,
           userId: user.sub,
         };
-        console.log("saveInnovation - " + JSON.stringify(saveInnovation));
         const innovation = await mutation.mutateAsync(saveInnovation);
 
         let innovationDonors = [];
@@ -880,22 +879,7 @@ const InnovationForm = ({
           </Grid>
 
           <Grid item mt={5} md={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
-              onClick={() => handleActionChange()}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
-              ml={3}
-            >
+            <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save Changes
             </Button>
           </Grid>
