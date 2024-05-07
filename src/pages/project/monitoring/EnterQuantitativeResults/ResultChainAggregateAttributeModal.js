@@ -75,9 +75,11 @@ const PrimaryResultChainAttributesField = ({
           )}
           {resultChainAggregates.map((resultChainAggregate, i) => (
             <StyledTableCell key={i}>
-              <AggregateDisAggregateLabel
-                resultChainAggregate={resultChainAggregate}
-              />
+              {!resultChainAggregate.void && (
+                <AggregateDisAggregateLabel
+                  resultChainAggregate={resultChainAggregate}
+                />
+              )}
             </StyledTableCell>
           ))}
         </TableRow>
@@ -101,19 +103,21 @@ const PrimaryResultChainAttributesField = ({
                 <React.Fragment>
                   {resultChainAggregates.map((resultChainAggregate, i) => (
                     <StyledTableCell key={i}>
-                      <ResultChainAggregatePrimaryAttributeOnlyField
-                        resultChainAttribute={resultChainAttribute}
-                        resultChainAggregate={resultChainAggregate}
-                        register={register}
-                        setValue={setValue}
-                        year={year}
-                        monthId={monthId}
-                        primaryResultChainAttribute={
-                          primaryResultChainAttribute
-                        }
-                        errors={errors}
-                        projectLocationId={projectLocationId}
-                      />
+                      {!resultChainAggregate.void && (
+                        <ResultChainAggregatePrimaryAttributeOnlyField
+                          resultChainAttribute={resultChainAttribute}
+                          resultChainAggregate={resultChainAggregate}
+                          register={register}
+                          setValue={setValue}
+                          year={year}
+                          monthId={monthId}
+                          primaryResultChainAttribute={
+                            primaryResultChainAttribute
+                          }
+                          errors={errors}
+                          projectLocationId={projectLocationId}
+                        />
+                      )}
                     </StyledTableCell>
                   ))}
                 </React.Fragment>
