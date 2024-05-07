@@ -18,7 +18,7 @@ import {
 } from "../../../api/lookup";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getSetTarget, saveProjectTargets } from "../../../api/set-target";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 const TextField = styled(MuiTextField)(spacing);
 const Button = styled(MuiButton)(spacing);
@@ -44,7 +44,7 @@ const ProjectIndicatorTargetsDataEntry = ({
   projectLocationId,
   year,
 }) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   let reportingFrequency;
   const {
     data: reportingFrequencyData,
@@ -637,9 +637,9 @@ const ProjectIndicatorTargetsDataEntry = ({
         toast("Successfully Created an Administrative Programme", {
           type: "success",
         });
-        navigate(
-          `/project-access/project-indicator-targets-view/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${year}`
-        );
+        // navigate(
+        //   `/project-access/project-indicator-targets-view/${processLevelItemId}/${processLevelTypeId}/${projectLocationId}/${year}`
+        // );
       } catch (error) {
         toast(error.response.data, {
           type: "error",

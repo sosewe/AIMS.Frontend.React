@@ -23,3 +23,8 @@ export const getResultChainAggregateByResultChainIndicatorId = async ({
     `${apiRoutes.resultChainAggregate}/GetResultChainAggregateByResultChainIndicatorId/${resultChainIndicatorId}`
   );
 };
+
+export const deleteResultChainAggregateById = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  return await axios.delete(`${apiRoutes.resultChainAggregate}/${id}`);
+};
