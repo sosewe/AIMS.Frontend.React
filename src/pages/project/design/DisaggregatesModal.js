@@ -1,13 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Autocomplete as MuiAutocomplete,
   Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
+  Paper,
   TextField as MuiTextField,
 } from "@mui/material";
 import { Guid } from "../../../utils/guid";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  deleteResultChainAggregateById,
   getResultChainAggregateByResultChainIndicatorId,
   saveResultChainAggregate,
 } from "../../../api/result-chain-aggregate";
@@ -17,10 +26,8 @@ import * as Yup from "yup";
 import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
 import { getAllAggregateDisaggregates } from "../../../api/aggregate-disaggregate";
-// import {
-//   getResultChainAttributeByIndicatorId,
-//   saveResultChainAttributes,
-// } from "../../../api/result-chain-attribute";
+import { Trash as TrashIcon } from "react-feather";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 
 const Autocomplete = styled(MuiAutocomplete)(spacing);
 const TextField = styled(MuiTextField)(spacing);
@@ -32,7 +39,18 @@ const DisaggregatesModal = ({
   processLevelTypeId,
   handleClick,
 }) => {
+  const [pageSize, setPageSize] = useState(10);
+  const [open, setOpen] = React.useState(false);
+  const [id, setId] = React.useState();
   const [level3Data, setLevel3Data] = useState([]);
+  const queryClient = useQueryClient();
+
+  const { refetch } = useQuery(
+    ["deleteResultChainAggregateById", id],
+    deleteResultChainAggregateById,
+    { enabled: false }
+  );
+
   const {
     data: ResultChains,
     isLoading: isLoadingResultChains,
@@ -115,48 +133,6 @@ const DisaggregatesModal = ({
   const secondaries = indicatorAggregates.filter(
     (obj) => obj.isPrimary === false
   );
-  useEffect(() => {
-    function setCurrentFormValues() {
-      if (
-        !isLoadingResultChains &&
-        !isErrorResultChains
-        // &&
-        // !isLoadingResultChainAttribute &&
-        // !isErrorResultChainAttribute
-      ) {
-        let ageVal = [];
-        let sexVal;
-        // let attributeType;
-        // let attributeValues = [];
-        if (ResultChains.data.length > 0) {
-          sexVal = primaries.find(
-            (obj) =>
-              obj.aggregateDisaggregate.disaggregate.id ===
-              ResultChains.data[0].disaggregateId1
-          );
-          for (const resultChainElement of ResultChains.data) {
-            const res = secondaries.find(
-              (obj) =>
-                obj.aggregateDisaggregate.disaggregate.id ===
-                resultChainElement.disaggregateId2
-            );
-            if (res) {
-              ageVal.push(res);
-            }
-          }
-        }
-
-        formik.setValues({
-          sex: sexVal ? [sexVal] : [],
-          age: ageVal,
-          level3: [],
-          // attributeType: attributeType ? [attributeType] : [],
-          // attributeValues: attributeValues,
-        });
-      }
-    }
-    setCurrentFormValues();
-  }, [ResultChains, isLoadingResultChains, isErrorResultChains]);
 
   const onLevel2Change = (val) => {
     if (!isError && !isLoading) {
@@ -170,6 +146,23 @@ const DisaggregatesModal = ({
       });
       setLevel3Data(filteredArray2);
     }
+  };
+
+  function handleClickOpen(id) {
+    setOpen(true);
+    setId(id);
+  }
+
+  function handleClose() {
+    setOpen(false);
+  }
+
+  const handleAggregateDisaggregate = async () => {
+    await refetch();
+    setOpen(false);
+    await queryClient.invalidateQueries([
+      "getResultChainAggregateByResultChainIndicatorId",
+    ]);
   };
 
   return (
@@ -285,6 +278,97 @@ const DisaggregatesModal = ({
           Save changes
         </Button>
       </form>
+
+      <Card>
+        <CardContent>
+          <Paper>
+            <div style={{ height: 400, width: "100%" }}>
+              <DataGrid
+                rowsPerPageOptions={[5, 10, 25]}
+                rows={
+                  isLoadingResultChains || isErrorResultChains
+                    ? []
+                    : ResultChains
+                    ? ResultChains.data
+                    : []
+                }
+                columns={[
+                  {
+                    field: "disaggregate1",
+                    headerName: "Disaggregate 1(Sex)",
+                    editable: false,
+                    flex: 1,
+                    valueGetter: (params) => {
+                      return params.value.name;
+                    },
+                  },
+                  {
+                    field: "disaggregate2",
+                    headerName: "Disaggregate2",
+                    editable: false,
+                    flex: 1,
+                    valueGetter: (params) => {
+                      return params.value.name;
+                    },
+                  },
+                  {
+                    field: "disaggregate2_level",
+                    headerName: "Level",
+                    editable: false,
+                    flex: 1,
+                    valueGetter: (params) => {
+                      return params.row.disaggregate2.level;
+                    },
+                  },
+                  {
+                    field: "action",
+                    headerName: "Action",
+                    sortable: false,
+                    flex: 1,
+                    renderCell: (params) => (
+                      <>
+                        <Button
+                          startIcon={<TrashIcon />}
+                          size="small"
+                          onClick={() => handleClickOpen(params.id)}
+                        ></Button>
+                      </>
+                    ),
+                  },
+                ]}
+                pageSize={pageSize}
+                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                loading={isLoadingResultChains}
+                components={{ Toolbar: GridToolbar }}
+                getRowHeight={() => "auto"}
+              />
+            </div>
+            <Dialog
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">
+                Delete Aggregate Disaggregate
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  Are you sure you want to delete Aggregate Disaggregate?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleAggregateDisaggregate} color="primary">
+                  Yes
+                </Button>
+                <Button onClick={handleClose} color="error" autoFocus>
+                  No
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Paper>
+        </CardContent>
+      </Card>
     </>
   );
 };

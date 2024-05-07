@@ -123,3 +123,25 @@ export const getSavedNarrativeReports = async ({ queryKey }) => {
     `${apiRoutes.narrativeReports}/GetNarrativeReports/${processLevelItemId}/${implementationYearId}/${implementationMonthId}`
   );
 };
+
+export const getCountryNarrativeReports = async ({ queryKey }) => {
+  const [_, countryOffice, implementationYearId, implementationMonthId] =
+    queryKey;
+  return await axios.get(
+    `${apiRoutes.narrativeReports}/GetCountryNarrativeReports/${countryOffice}/${implementationYearId}/${implementationMonthId}`
+  );
+};
+
+export const saveAddCountryNarrativeReport = async (values) => {
+  return await axios.post(
+    `${apiRoutes.narrativeReports}/AddCountryNarrativeReport`,
+    values
+  );
+};
+
+export const getAllCountryNarrativeReports = async ({ queryKey }) => {
+  const [_, countryOffice] = queryKey;
+  return await axios.get(
+    `${apiRoutes.narrativeReports}/GetAllCountryNarrativeReports/${countryOffice}`
+  );
+};
