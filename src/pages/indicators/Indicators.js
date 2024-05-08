@@ -39,7 +39,7 @@ const IndicatorsData = () => {
   const [open, setOpen] = React.useState(false);
   const [id, setId] = React.useState();
   const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(25);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // fetch All Indicators
