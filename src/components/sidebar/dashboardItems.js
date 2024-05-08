@@ -15,8 +15,8 @@ const projectSection = [
     title: "Project",
     children: [
       {
-        href: "/project/projects",
-        title: "Projects",
+        href: "/project/new-project",
+        title: "New Project",
       },
     ],
   },
@@ -161,10 +161,10 @@ const navItems = [
     title: "Programmes",
     pages: programmeSection,
   },
-  /*{
+  {
     title: "Projects",
     pages: projectSection,
-  },*/
+  },
   {
     title: "Configuration",
     pages: configurationSection,

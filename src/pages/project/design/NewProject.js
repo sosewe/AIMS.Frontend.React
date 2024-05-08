@@ -23,7 +23,7 @@ const NewProject = () => {
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-        <Link component={NavLink} to="/project/projects">
+        <Link component={NavLink} to="/project/new-project">
           Projects
         </Link>
         <Typography>New Project</Typography>
