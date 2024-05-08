@@ -10,6 +10,7 @@ import {
   Chip,
   CircularProgress,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
@@ -22,6 +23,11 @@ import {
   OutlinedInput,
   Paper as MuiPaper,
   Select,
+  Stack,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
   Table,
   TableBody,
   TableCell,
@@ -30,13 +36,16 @@ import {
   TextField as MuiTextField,
   Typography,
 } from "@mui/material";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
+import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
 import { spacing } from "@mui/system";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLookupMasterItemsByName } from "../../api/lookup";
 import { Guid } from "../../utils/guid";
 import {
@@ -60,11 +69,21 @@ import {
 import { getAttributeTypes } from "../../api/attribute-type";
 import { saveIndicatorProgrammes } from "../../api/indicator-programme";
 import { saveIndicatorThematicAreas } from "../../api/indicator-thematic-area";
-import { saveIndicatorSubThemes } from "../../api/indicator-sub-theme";
-import { saveIndicatorAggregates } from "../../api/indicator-aggregate";
-import { saveIndicatorAttributeTypes } from "../../api/indicator-attribute-type";
-import { getAllThematicAreas } from "../../api/thematic-area";
-import { getAllSubThemes } from "../../api/sub-theme";
+import {
+  deleteIndicatorSubThemesById,
+  getIndicatorSubThemesByIndicatorId,
+  saveIndicatorSubThemes,
+} from "../../api/indicator-sub-theme";
+import {
+  deleteIndicatorAggregatesById,
+  getIndicatorAggregatesByIndicatorId,
+  saveIndicatorAggregates,
+} from "../../api/indicator-aggregate";
+import {
+  deleteIndicatorAttributeById,
+  getIndicatorAttributeTypesByIndicatorId,
+  saveIndicatorAttributeTypes,
+} from "../../api/indicator-attribute-type";
 
 const Card = styled(MuiCard)(spacing);
 const Divider = styled(MuiDivider)(spacing);
@@ -672,16 +691,25 @@ const NewIndicatorForm = () => {
   const [open, setOpen] = useState(false);
   const [openAggregate, setOpenAggregate] = useState(false);
   const [openAttributeTypes, setOpenAttributeTypes] = useState(false);
+  const [openSubThemesDelete, setSubThemesDelete] = useState(false);
+  const [openAttributesDelete, setAttributesDelete] = useState(false);
+  const [openAggregateDelete, setAggregateDelete] = useState(false);
   const [isNumberMeasure, setIsNumberMeasure] = useState(false);
-  const [subThemesArray, setSubThemesArray] = useState([]);
+  const [activeStep, setActiveStep] = React.useState(0);
+  const [isIndicatorSectionValid, setIndicatorSectionValid] =
+    React.useState(false);
+  const [indicatorId, setIndicatorId] = useState();
+  const [indicatorSubThemeId, setIndicatorSubThemeId] = useState();
+  const [indicatorAttributeId, setIndicatorAttributeId] = useState();
+  const [
+    indicatorAggregateDisaggregateId,
+    setIndicatorAggregateDisaggregateId,
+  ] = useState();
+  const queryClient = useQueryClient();
   let siId;
   let numeratorId;
   let denominatorId;
   const navigate = useNavigate();
-  const [aggregateDisAggregateArray, setAggregateDisAggregateArray] = useState(
-    []
-  );
-  const [attributesTypesArray, setAttributesTypesArray] = useState([]);
   // fetch indicator for update
   const {
     data: IndicatorData,
@@ -689,23 +717,6 @@ const NewIndicatorForm = () => {
     isError,
     error,
   } = useQuery(["getIndicator", id], getIndicator, { enabled: !!id });
-  // fetch all Programmes
-  const { data: programmesData, isLoading: isLoadingProgrammes } = useQuery(
-    ["getProgrammes"],
-    getProgrammes
-  );
-  // fetch all Thematic Areas
-  const { data: thematicAreasData, isLoading: isLoadingThematicAreas } =
-    useQuery(["getAllThematicAreas"], getAllThematicAreas);
-  // fetch all Sub-Themes
-  const { data: subThemesData, isLoading: isLoadingSubThemes } = useQuery(
-    ["getAllSubThemes"],
-    getAllSubThemes
-  );
-  const {
-    data: allAggregateDisaggregate,
-    isLoading: isLoadingAggregateDisaggregate,
-  } = useQuery(["getAllAggregateDisaggregates"], getAllAggregateDisaggregates);
   // fetch IndicatorType Lookup
   const {
     data: indicatorTypeData,
@@ -838,6 +849,39 @@ const NewIndicatorForm = () => {
     GetIndicatorsByIndicatorTypeIdAndIndicatorRelationshipTypeId,
     { enabled: !!siId && !!denominatorId }
   );
+  const {
+    isLoading: isLoadingIndicatorSubThemes,
+    isError: isErrorIndicatorSubThemes,
+    data: IndicatorSubThemesData,
+  } = useQuery(
+    ["getIndicatorSubThemesByIndicatorId", indicatorId],
+    getIndicatorSubThemesByIndicatorId,
+    {
+      enabled: !!indicatorId,
+    }
+  );
+  const {
+    isLoading: isLoadingIndicatorAggregates,
+    isError: isErrorIndicatorAggregates,
+    data: IndicatorAggregatesData,
+  } = useQuery(
+    ["getIndicatorAggregatesByIndicatorId", indicatorId],
+    getIndicatorAggregatesByIndicatorId,
+    {
+      enabled: !!indicatorId,
+    }
+  );
+  const {
+    isLoading: isLoadingIndicatorAttributeTypes,
+    isError: isErrorIndicatorAttributeTypes,
+    data: IndicatorAttributeTypesData,
+  } = useQuery(
+    ["getIndicatorAttributeTypesByIndicatorId", indicatorId],
+    getIndicatorAttributeTypesByIndicatorId,
+    {
+      enabled: !!indicatorId,
+    }
+  );
   const mutation = useMutation({ mutationFn: newIndicator });
   const mutationIndicatorProgramme = useMutation({
     mutationFn: saveIndicatorProgrammes,
@@ -919,111 +963,11 @@ const NewIndicatorForm = () => {
       }
       try {
         const indicator = await mutation.mutateAsync(values);
-        // Programme
-        const programmes = [];
-        const thematicAreas = [];
-        const subThemes = [];
-        for (const programmeThematicAreaSubTheme of subThemesArray) {
-          programmes.push(programmeThematicAreaSubTheme.indicatorProgrammeId);
-          thematicAreas.push(
-            programmeThematicAreaSubTheme.indicatorThematicAreaId
-          );
-          thematicAreas[thematicAreas.length - 1].programmeId =
-            programmeThematicAreaSubTheme.indicatorProgrammeId.id;
-          subThemes.push(programmeThematicAreaSubTheme.indicatorSubThemeId);
-          subThemes[subThemes.length - 1].programmeId =
-            programmeThematicAreaSubTheme.indicatorProgrammeId.id;
-          subThemes[subThemes.length - 1].thematicAreaId =
-            programmeThematicAreaSubTheme.indicatorThematicAreaId.id;
-        }
-        const key = "id";
-
-        const arrayUniqueProgramme = [
-          ...new Map(programmes.map((item) => [item[key], item])).values(),
-        ];
-        const arrayUniqueThematicArea = [
-          ...new Map(thematicAreas.map((item) => [item[key], item])).values(),
-        ];
-        const arrayUniqueSubTheme = [
-          ...new Map(subThemes.map((item) => [item[key], item])).values(),
-        ];
-        const indicatorProgrammes = [];
-        const indicatorThematicAreas = [];
-        const indicatorSubThemes = [];
-        const indicatorAggregates = [];
-        for (const arrayUniqueProgrammeElement of arrayUniqueProgramme) {
-          const indicatorProgramme = {
-            createDate: new Date(),
-            indicatorId: indicator.data.id,
-            programmeId: arrayUniqueProgrammeElement.id,
-          };
-          indicatorProgrammes.push(indicatorProgramme);
-        }
-        await mutationIndicatorProgramme.mutateAsync(indicatorProgrammes);
-        // Thematic Area
-        for (const arrayUniqueThematicAreaElement of arrayUniqueThematicArea) {
-          const indicatorThematicArea = {
-            createDate: new Date(),
-            indicatorId: indicator.data.id,
-            thematicAreaId: arrayUniqueThematicAreaElement.id,
-            programmeId: arrayUniqueThematicAreaElement.programmeId,
-          };
-          indicatorThematicAreas.push(indicatorThematicArea);
-        }
-        await mutationIndicatorThematicArea.mutateAsync(indicatorThematicAreas);
-        // Sub Theme
-        for (const arrayUniqueSubThemeElement of arrayUniqueSubTheme) {
-          const indicatorSubTheme = {
-            createDate: new Date(),
-            indicatorId: indicator.data.id,
-            subThemeId: arrayUniqueSubThemeElement.id,
-            thematicAreaId: arrayUniqueSubThemeElement.thematicAreaId,
-            programmeId: arrayUniqueSubThemeElement.programmeId,
-          };
-          indicatorSubThemes.push(indicatorSubTheme);
-        }
-        await mutationIndicatorSubTheme.mutateAsync(indicatorSubThemes);
-        // Attribute Type
-        const indicatorAttributeTypes = [];
-        for (const selectedAttributeType of attributesTypesArray) {
-          const indicatorAttributeType = {
-            createDate: new Date(),
-            attributeTypeId: selectedAttributeType.id,
-            indicatorId: indicator.data.id,
-          };
-          indicatorAttributeTypes.push(indicatorAttributeType);
-        }
-        await mutationIndicatorAttributeType.mutateAsync(
-          indicatorAttributeTypes
-        );
-        // Indicator Aggregates
-        for (const selectedAggregateDisaggregate of aggregateDisAggregateArray) {
-          for (const selectedAggregateDisaggregateElement of selectedAggregateDisaggregate.indicatorAggregateDisaggregateId) {
-            const aggregateDisaggregate = {
-              createDate: new Date(),
-              void: false,
-              indicatorId: indicator.data.id,
-              aggregateDisaggregateId: selectedAggregateDisaggregateElement.id,
-              isPrimary: true,
-            };
-            indicatorAggregates.push(aggregateDisaggregate);
-          }
-          for (const selectedAggregateDisaggregateElement of selectedAggregateDisaggregate.indicatorSecondaryAggregateDisaggregateId) {
-            const aggregateDisaggregate = {
-              createDate: new Date(),
-              void: false,
-              indicatorId: indicator.data.id,
-              aggregateDisaggregateId: selectedAggregateDisaggregateElement.id,
-              isPrimary: false,
-            };
-            indicatorAggregates.push(aggregateDisaggregate);
-          }
-        }
-        await mutationIndicatorAggregate.mutateAsync(indicatorAggregates);
+        setIndicatorSectionValid(true);
+        setIndicatorId(indicator.data.id);
         toast("Successfully Created an Indicator", {
           type: "success",
         });
-        navigate("/indicator/indicators");
       } catch (error) {
         console.log(error);
         toast(error.response.data, {
@@ -1088,87 +1032,11 @@ const NewIndicatorForm = () => {
             : "",
           reference: IndicatorData.data.reference,
         });
-        for (const indicatorAttributeType of IndicatorData.data
-          .indicatorAttributeTypes) {
-          const val =
-            !isLoadingAttributeTypes &&
-            dataAttributeTypes.data.find(
-              (obj) => obj.id === indicatorAttributeType.attributeTypeId
-            );
-          const res = attributesTypesArray.filter((obj) => obj.id === val.id);
-          if (val && res.length === 0) {
-            setAttributesTypesArray((current) => [...current, val]);
-          }
-        }
+      }
 
-        for (const indicatorSubTheme of IndicatorData.data.indicatorSubThemes) {
-          const val =
-            !isLoadingProgrammes &&
-            programmesData.data.find(
-              (obj) => obj.id === indicatorSubTheme.programmeId
-            );
-          const valThematicArea =
-            !isLoadingThematicAreas &&
-            thematicAreasData.data.find(
-              (obj) => obj.id === indicatorSubTheme.thematicAreaId
-            );
-          const valSubTheme =
-            !isLoadingSubThemes &&
-            subThemesData.data.find(
-              (obj) => obj.id === indicatorSubTheme.subThemeId
-            );
-          const indicatorProgrammeVal = {
-            indicatorProgrammeId: val,
-            indicatorThematicAreaId: valThematicArea,
-            indicatorSubThemeId: valSubTheme,
-          };
-          const res = subThemesArray.filter(
-            (obj) =>
-              obj.indicatorSubThemeId.id ===
-              indicatorProgrammeVal.indicatorSubThemeId.id
-          );
-          if (
-            res.length === 0 &&
-            indicatorProgrammeVal.indicatorProgrammeId &&
-            indicatorProgrammeVal.indicatorSubThemeId &&
-            indicatorProgrammeVal.indicatorThematicAreaId
-          ) {
-            setSubThemesArray((current) => [...current, indicatorProgrammeVal]);
-          }
-        }
-
-        setAggregateDisAggregateArray([]);
-        for (const indicatorAggregate of IndicatorData.data
-          .indicatorAggregates) {
-          const selectedIndicatorAggregate =
-            !isLoadingAggregateDisaggregate &&
-            allAggregateDisaggregate.data.find(
-              (obj) => obj.id === indicatorAggregate.aggregateDisaggregateId
-            );
-          const indicatorAggregateDisaggregates = {
-            indicatorAggregateDisaggregateId: [],
-            indicatorAggregateId: "",
-            indicatorSecondaryAggregateDisaggregateId: [],
-            indicatorSecondaryAggregateId: "",
-          };
-          if (indicatorAggregate.isPrimary) {
-            indicatorAggregateDisaggregates.indicatorAggregateDisaggregateId.push(
-              selectedIndicatorAggregate
-            );
-            indicatorAggregateDisaggregates.indicatorAggregateId =
-              selectedIndicatorAggregate.aggregate;
-          } else {
-            indicatorAggregateDisaggregates.indicatorAggregateDisaggregateId.push(
-              selectedIndicatorAggregate
-            );
-            indicatorAggregateDisaggregates.indicatorSecondaryAggregateId =
-              selectedIndicatorAggregate.aggregate;
-          }
-          setAggregateDisAggregateArray((current) => [
-            ...current,
-            indicatorAggregateDisaggregates,
-          ]);
-        }
+      if (id) {
+        setIndicatorId(id);
+        setIndicatorSectionValid(true);
       }
     }
     setCurrentFormValues();
@@ -1183,120 +1051,146 @@ const NewIndicatorForm = () => {
     IndicatorMeasureTypeData,
     isLoadingIndicatorMeasureType,
     isErrorIndicatorMeasureType,
+    id,
   ]);
 
   const handleClick = async (values) => {
-    const res = subThemesArray.find(
-      (obj) =>
-        obj &&
-        obj.indicatorProgrammeId.id === values.indicatorProgrammeId.id &&
-        obj.indicatorThematicAreaId.id === values.indicatorThematicAreaId.id &&
-        obj.indicatorSubThemeId.id === values.indicatorSubThemeId.id
-    );
-    if (!res) {
-      setSubThemesArray((current) => [...current, values]);
-      setOpen(false);
-      if (id) {
-        // Sub Theme
-        const indicatorSubThemes = [];
-        const indicatorSubTheme = {
-          createDate: new Date(),
-          indicatorId: id,
-          subThemeId: values.indicatorSubThemeId.id,
-          thematicAreaId: values.indicatorThematicAreaId.id,
-          programmeId: values.indicatorProgrammeId.id,
-        };
-        indicatorSubThemes.push(indicatorSubTheme);
-        await mutationIndicatorSubTheme.mutateAsync(indicatorSubThemes);
-      }
-    } else {
-      toast("Duplicate SubTheme Selected", {
-        type: "error",
-      });
-    }
+    const indicatorProgrammes = [];
+    const indicatorProgramme = {
+      createDate: new Date(),
+      indicatorId: indicatorId,
+      programmeId: values.indicatorProgrammeId.id,
+    };
+    indicatorProgrammes.push(indicatorProgramme);
+    await mutationIndicatorProgramme.mutateAsync(indicatorProgrammes);
+    const indicatorThematicAreas = [];
+    const indicatorThematicArea = {
+      createDate: new Date(),
+      indicatorId: indicatorId,
+      thematicAreaId: values.indicatorThematicAreaId.id,
+      programmeId: values.indicatorProgrammeId.id,
+    };
+    indicatorThematicAreas.push(indicatorThematicArea);
+    await mutationIndicatorThematicArea.mutateAsync(indicatorThematicAreas);
+    const indicatorSubThemes = [];
+    const indicatorSubTheme = {
+      createDate: new Date(),
+      indicatorId: indicatorId,
+      subThemeId: values.indicatorSubThemeId.id,
+      thematicAreaId: values.indicatorThematicAreaId.id,
+      programmeId: values.indicatorProgrammeId.id,
+    };
+    indicatorSubThemes.push(indicatorSubTheme);
+    await mutationIndicatorSubTheme.mutateAsync(indicatorSubThemes);
+    await queryClient.invalidateQueries(["getIndicatorSubThemesByIndicatorId"]);
+    toast("Successfully Created SubTheme", {
+      type: "success",
+    });
   };
 
-  const handleClickAggregate = (values) => {
-    setAggregateDisAggregateArray((current) => [...current, values]);
-    setOpenAggregate(false);
-    if (id) {
+  const handleClickAggregate = async (values) => {
+    const indicatorAggregates = [];
+    for (const indicatorAggregateDisaggregate of values.indicatorAggregateDisaggregateId) {
+      const aggregateDisaggregate = {
+        createDate: new Date(),
+        void: false,
+        indicatorId: indicatorId,
+        aggregateDisaggregateId: indicatorAggregateDisaggregate.id,
+        isPrimary: true,
+      };
+      indicatorAggregates.push(aggregateDisaggregate);
     }
+    for (const indicatorSecondaryAggregateDisaggregate of values.indicatorSecondaryAggregateDisaggregateId) {
+      const aggregateDisaggregate = {
+        createDate: new Date(),
+        void: false,
+        indicatorId: indicatorId,
+        aggregateDisaggregateId: indicatorSecondaryAggregateDisaggregate.id,
+        isPrimary: false,
+      };
+      indicatorAggregates.push(aggregateDisaggregate);
+    }
+    await mutationIndicatorAggregate.mutateAsync(indicatorAggregates);
+    await queryClient.invalidateQueries([
+      "getIndicatorAggregatesByIndicatorId",
+    ]);
+    toast("Successfully Created AggregateDisaggregate", {
+      type: "success",
+    });
   };
 
   const handleClickAttributes = async (values) => {
-    for (const value of values.attributeTypeId) {
-      const res = attributesTypesArray.filter((obj) => obj.id === value.id);
-      if (res.length > 0) {
-        toast("Duplicate Attribute Type Selected", {
-          type: "error",
-        });
-        return;
-      }
+    const indicatorAttributeTypes = [];
+    for (const attributeType of values.attributeTypeId) {
+      const indicatorAttributeType = {
+        createDate: new Date(),
+        attributeTypeId: attributeType.id,
+        indicatorId: indicatorId,
+      };
+      indicatorAttributeTypes.push(indicatorAttributeType);
     }
-    setAttributesTypesArray((current) => [
-      ...current,
-      ...values.attributeTypeId,
+    await mutationIndicatorAttributeType.mutateAsync(indicatorAttributeTypes);
+    await queryClient.invalidateQueries([
+      "getIndicatorAttributeTypesByIndicatorId",
     ]);
-    setOpenAttributeTypes(false);
-
-    // Attribute Type
-    if (id) {
-      const indicatorAttributeTypes = [];
-      for (const selectedAttributeType of values.attributeTypeId) {
-        const indicatorAttributeType = {
-          createDate: new Date(),
-          attributeTypeId: selectedAttributeType.id,
-          indicatorId: id,
-        };
-        indicatorAttributeTypes.push(indicatorAttributeType);
-      }
-      await mutationIndicatorAttributeType.mutateAsync(indicatorAttributeTypes);
-    }
+    toast("Successfully Created Indicator Attributes", {
+      type: "success",
+    });
   };
 
-  const removeSubTheme = (row) => {
-    setSubThemesArray((current) =>
-      current.filter(
-        (subTheme) =>
-          subTheme.indicatorSubThemeId.id !== row.indicatorSubThemeId.id ||
-          subTheme.indicatorThematicAreaId.id !== row.indicatorThematicAreaId.id
-      )
-    );
+  const { refetch } = useQuery(
+    ["deleteIndicatorSubThemesById", indicatorSubThemeId],
+    deleteIndicatorSubThemesById,
+    { enabled: false }
+  );
+
+  const { refetch: refetchAttribute } = useQuery(
+    ["deleteIndicatorAttributeById", indicatorAttributeId],
+    deleteIndicatorAttributeById,
+    { enabled: false }
+  );
+
+  const { refetch: refetchAggregate } = useQuery(
+    ["deleteIndicatorAggregatesById", indicatorAggregateDisaggregateId],
+    deleteIndicatorAggregatesById,
+    { enabled: false }
+  );
+
+  const removeSubTheme = async (row) => {
+    setSubThemesDelete(true);
+    setIndicatorSubThemeId(row.id);
+  };
+
+  const handleDeleteSubTheme = async () => {
+    await refetch();
+    setSubThemesDelete(false);
+    await queryClient.invalidateQueries(["getIndicatorSubThemesByIndicatorId"]);
+  };
+
+  const handleDeleteAttribute = async () => {
+    await refetchAttribute();
+    setAttributesDelete(false);
+    await queryClient.invalidateQueries([
+      "getIndicatorAttributeTypesByIndicatorId",
+    ]);
+  };
+
+  const handleDeleteAggregate = async () => {
+    await refetchAggregate();
+    setAggregateDelete(false);
+    await queryClient.invalidateQueries([
+      "getIndicatorAggregatesByIndicatorId",
+    ]);
   };
 
   const removeAggregateDisaggregate = (row, isPrimary) => {
-    if (isPrimary) {
-      setAggregateDisAggregateArray((current) =>
-        current.filter((aggregateDisaggregate) => {
-          const res =
-            aggregateDisaggregate.indicatorAggregateDisaggregateId.filter(
-              (obj) =>
-                obj.aggregateId !== row.aggregateId ||
-                obj.disaggregateId !== row.disaggregateId
-            );
-          return (aggregateDisaggregate.indicatorAggregateDisaggregateId = res);
-        })
-      );
-    } else {
-      setAggregateDisAggregateArray((current) =>
-        current.filter((aggregateDisaggregate) => {
-          const res =
-            aggregateDisaggregate.indicatorSecondaryAggregateDisaggregateId.filter(
-              (obj) =>
-                obj.aggregateId !== row.aggregateId ||
-                obj.disaggregateId !== row.disaggregateId
-            );
-          return (aggregateDisaggregate.indicatorSecondaryAggregateDisaggregateId =
-            res);
-        })
-      );
-    }
+    setAggregateDelete(true);
+    setIndicatorAggregateDisaggregateId(row.id);
   };
 
   function removeAttributeType(row) {
-    setAttributesTypesArray((current) =>
-      current.filter((obj) => obj.id !== row.id)
-    );
+    setAttributesDelete(true);
+    setIndicatorAttributeId(row.id);
   }
 
   const onChangeIndicatorMeasure = (e) => {
@@ -1310,663 +1204,813 @@ const NewIndicatorForm = () => {
     }
   };
 
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
   return (
-    <form onSubmit={formik.handleSubmit}>
+    <React.Fragment>
       <Card mb={12}>
         <CardContent>
-          {formik.isSubmitting ? (
-            <Box display="flex" justifyContent="center" my={6}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <>
-              <Grid container spacing={12}>
-                <Grid item md={12}>
-                  <Typography variant="h3" gutterBottom display="inline">
-                    NEW INDICATOR
-                  </Typography>
-                </Grid>
-              </Grid>
-              <Grid container spacing={2}>
-                <Grid item md={12}>
-                  <TextField
-                    name="name"
-                    label="Indicator Name"
-                    value={formik.values.name}
-                    error={Boolean(formik.touched.name && formik.errors.name)}
-                    fullWidth
-                    helperText={formik.touched.name && formik.errors.name}
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={2}>
-                <Grid item md={4}>
-                  <TextField
-                    name="code"
-                    label="Indicator Code"
-                    value={formik.values.code}
-                    error={Boolean(formik.touched.code && formik.errors.code)}
-                    fullWidth
-                    helperText={formik.touched.code && formik.errors.code}
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  />
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="indicatorTypeId"
-                    label="Indicator Type"
-                    select
-                    value={formik.values.indicatorTypeId}
-                    error={Boolean(
-                      formik.touched.indicatorTypeId &&
-                        formik.errors.indicatorTypeId
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorTypeId &&
-                      formik.errors.indicatorTypeId
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Type
-                    </MenuItem>
-                    {!isLoadingIndicatorType
-                      ? indicatorTypeData.data.map((option) => (
-                          <MenuItem key={option.lookupItemId} value={option}>
-                            {option.lookupItemName}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="indicatorMeasure"
-                    label="Indicator Measure"
-                    select
-                    value={formik.values.indicatorMeasure}
-                    error={Boolean(
-                      formik.touched.indicatorMeasure &&
-                        formik.errors.indicatorMeasure
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorMeasure &&
-                      formik.errors.indicatorMeasure
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      onChangeIndicatorMeasure(e);
-                    }}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Measure
-                    </MenuItem>
-                    {!isLoadingIndicatorMeasure
-                      ? indicatorMeasureData.data.map((option) => (
-                          <MenuItem key={option.lookupItemId} value={option}>
-                            {option.lookupItemName}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="indicatorMeasureType"
-                    label="Indicator Measure Type"
-                    select
-                    value={formik.values.indicatorMeasureType}
-                    error={Boolean(
-                      formik.touched.indicatorMeasureType &&
-                        formik.errors.indicatorMeasureType
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorMeasureType &&
-                      formik.errors.indicatorMeasureType
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Measure Type
-                    </MenuItem>
-                    {!isLoadingIndicatorMeasureType
-                      ? IndicatorMeasureTypeData.data.map((option) => (
-                          <MenuItem key={option.lookupItemId} value={option}>
-                            {option.lookupItemName}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={4}>
-                  <TextField
-                    name="indicatorRelationshipTypeId"
-                    label="Indicator Relationship Type"
-                    select
-                    value={formik.values.indicatorRelationshipTypeId}
-                    error={Boolean(
-                      formik.touched.indicatorRelationshipTypeId &&
-                        formik.errors.indicatorRelationshipTypeId
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorRelationshipTypeId &&
-                      formik.errors.indicatorRelationshipTypeId
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Relationship Type
-                    </MenuItem>
-                    {!isLoadingIndicatorRelationshipType &&
-                    !isErrorIndicatorRelationshipType
-                      ? IndicatorRelationshipType.data.map((option) => (
-                          <MenuItem
-                            key={option.lookupItemId}
-                            value={option.lookupItemId}
-                          >
-                            {option.lookupItemName}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-              </Grid>
-              <TextField
-                name="definition"
-                label="Definition"
-                value={formik.values.definition}
-                error={Boolean(
-                  formik.touched.definition && formik.errors.definition
-                )}
-                fullWidth
-                helperText={
-                  formik.touched.definition && formik.errors.definition
-                }
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                multiline
-                variant="outlined"
-                rows={3}
-                my={2}
-              />
-              <Grid container spacing={2}>
-                <Grid item md={3}>
-                  <TextField
-                    name="indicatorCalculationId"
-                    label="Indicator Calculation"
-                    select
-                    value={formik.values.indicatorCalculationId}
-                    error={Boolean(
-                      formik.touched.indicatorCalculationId &&
-                        formik.errors.indicatorCalculationId
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorCalculationId &&
-                      formik.errors.indicatorCalculationId
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                    disabled={isNumberMeasure}
-                    sx={{
-                      "& .MuiInputBase-input.Mui-disabled": {
-                        backgroundColor: "#e9ecef",
-                      },
-                    }}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Calculation
-                    </MenuItem>
-                    {!isLoadingYesNo
-                      ? yesNoData.data.map((option) => (
-                          <MenuItem
-                            key={option.lookupItemId}
-                            value={option.lookupItemId}
-                          >
-                            {option.lookupItemName}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={3}>
-                  <TextField
-                    name="indicatorCalculationType"
-                    label="Indicator Calculation Type"
-                    select
-                    value={formik.values.indicatorCalculationType}
-                    error={Boolean(
-                      formik.touched.indicatorCalculationType &&
-                        formik.errors.indicatorCalculationType
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorCalculationType &&
-                      formik.errors.indicatorCalculationType
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                    disabled={isNumberMeasure}
-                    sx={{
-                      "& .MuiInputBase-input.Mui-disabled": {
-                        backgroundColor: "#e9ecef",
-                      },
-                    }}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Calculation Type
-                    </MenuItem>
-                    {!isLoadingIndicatorCalculationType
-                      ? dataIndicatorCalculationType.data.map((option) => (
-                          <MenuItem
-                            key={option.lookupItemId}
-                            value={option.lookupItemId}
-                          >
-                            {option.lookupItemName}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={3}>
-                  <TextField
-                    name="numeratorId"
-                    label="Indicator Numerator"
-                    select
-                    value={formik.values.numeratorId}
-                    defaultValue={""}
-                    error={Boolean(
-                      formik.touched.numeratorId && formik.errors.numeratorId
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.numeratorId && formik.errors.numeratorId
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Numerator
-                    </MenuItem>
-                    {!isLoadingNumerator && !isErrorNumerator
-                      ? NumeratorData.data.map((option) => (
-                          <MenuItem key={option.id} value={option.id}>
-                            {option.name}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={3}>
-                  <TextField
-                    name="denominatorId"
-                    label="Indicator Denominator"
-                    select
-                    value={formik.values.denominatorId}
-                    defaultValue={""}
-                    error={Boolean(
-                      formik.touched.denominatorId &&
-                        formik.errors.denominatorId
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.denominatorId &&
-                      formik.errors.denominatorId
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Denominator
-                    </MenuItem>
-                    {!isLoadingDenominator && !isErrorDenominator
-                      ? DenominatorData.data.map((option) => (
-                          <MenuItem key={option.id} value={option.id}>
-                            {option.name}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={3}>
-                  <TextField
-                    name="indicatorStatus"
-                    label="Indicator Status"
-                    select
-                    value={formik.values.indicatorStatus}
-                    error={Boolean(
-                      formik.touched.indicatorStatus &&
-                        formik.errors.indicatorStatus
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.indicatorStatus &&
-                      formik.errors.indicatorStatus
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  >
-                    <MenuItem disabled value="">
-                      Select Indicator Status
-                    </MenuItem>
-                    {!isLoadingIndicatorStatus
-                      ? IndicatorStatusData.data.map((option) => (
-                          <MenuItem
-                            key={option.lookupItemId}
-                            value={option.lookupItemId}
-                          >
-                            {option.lookupItemName}
-                          </MenuItem>
-                        ))
-                      : []}
-                  </TextField>
-                </Grid>
-                <Grid item md={6}>
-                  <TextField
-                    name="reference"
-                    label="Reference"
-                    value={formik.values.reference}
-                    error={Boolean(
-                      formik.touched.reference && formik.errors.reference
-                    )}
-                    fullWidth
-                    helperText={
-                      formik.touched.reference && formik.errors.reference
-                    }
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    variant="outlined"
-                    my={2}
-                  />
-                </Grid>
-                <Grid item md={12}>
-                  <Card
-                    variant="outlined"
-                    style={{ borderStyle: "dashed", borderRadius: 1 }}
-                  >
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        &nbsp;
-                      </Grid>
-                    </Grid>
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        <ThemeProvider theme={theme}>
-                          <Button
-                            variant="contained"
-                            color="neutral"
-                            onClick={() => setOpen(true)}
-                          >
-                            <AddIcon /> ADD SUB-THEME
-                          </Button>
-                        </ThemeProvider>
-                      </Grid>
-                    </Grid>
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        <Paper>
-                          <Table>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>PROGRAMME</TableCell>
-                                <TableCell align="right">
-                                  THEMATIC AREA
-                                </TableCell>
-                                <TableCell align="right">SUB THEME</TableCell>
-                                <TableCell align="right">Action</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {subThemesArray.map((row) => (
-                                <TableRow
-                                  key={
-                                    row.indicatorThematicAreaId.id +
-                                    row.indicatorSubThemeId.id
-                                  }
-                                >
-                                  <TableCell component="th" scope="row">
-                                    {row.indicatorProgrammeId.name}
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    {row.indicatorThematicAreaId.code +
-                                      "-" +
-                                      row.indicatorThematicAreaId.name}
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    {row.indicatorSubThemeId.code +
-                                      "-" +
-                                      row.indicatorSubThemeId.name}
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    <Button
-                                      variant="contained"
-                                      color="primary"
-                                      onClick={() => removeSubTheme(row)}
-                                    >
-                                      <DeleteIcon />
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </Paper>
-                      </Grid>
-                    </Grid>
-                    <br />
-                  </Card>
-                </Grid>
-                <Grid item md={12}>
-                  <Card
-                    variant="outlined"
-                    style={{ borderStyle: "dashed", borderRadius: 1 }}
-                  >
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        &nbsp;
-                      </Grid>
-                    </Grid>
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        <ThemeProvider theme={theme}>
-                          <Button
-                            variant="contained"
-                            color="neutral"
-                            onClick={() => setOpenAggregate(true)}
-                          >
-                            <AddIcon /> ADD AGGREGATE DISAGGREGATES
-                          </Button>
-                        </ThemeProvider>
-                      </Grid>
-                    </Grid>
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        <Paper>
-                          <Table>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>AGGREGATE</TableCell>
-                                <TableCell align="right">
-                                  DISAGGREGATE
-                                </TableCell>
-                                <TableCell align="right">
-                                  PRIMARY/SECONDARY
-                                </TableCell>
-                                <TableCell align="right">Action</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {aggregateDisAggregateArray.map((row) =>
-                                row.indicatorAggregateDisaggregateId.map(
-                                  (agg) => (
-                                    <TableRow key={agg.id}>
-                                      <TableCell component="th" scope="row">
-                                        {agg.aggregate.name}
-                                      </TableCell>
-                                      <TableCell align="right">
-                                        {agg.disaggregate.name}
-                                      </TableCell>
-                                      <TableCell align="right">
-                                        Primary
-                                      </TableCell>
-                                      <TableCell align="right">
-                                        <Button
-                                          variant="contained"
-                                          color="primary"
-                                          onClick={() =>
-                                            removeAggregateDisaggregate(
-                                              agg,
-                                              true
-                                            )
-                                          }
-                                        >
-                                          <DeleteIcon />
-                                        </Button>
-                                      </TableCell>
-                                    </TableRow>
-                                  )
-                                )
+          <Box sx={{ width: "100%" }}>
+            <Stepper activeStep={activeStep} orientation="vertical">
+              <Step key="Indicator Section">
+                <StepLabel>Indicator Section</StepLabel>
+                <StepContent>
+                  <form onSubmit={formik.handleSubmit}>
+                    {formik.isSubmitting ? (
+                      <Box display="flex" justifyContent="center" my={6}>
+                        <CircularProgress />
+                      </Box>
+                    ) : (
+                      <React.Fragment>
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            <Typography
+                              variant="h3"
+                              gutterBottom
+                              display="inline"
+                            >
+                              NEW INDICATOR
+                            </Typography>
+                          </Grid>
+                        </Grid>
+
+                        <Grid container spacing={2}>
+                          <Grid item md={12}>
+                            <TextField
+                              name="name"
+                              label="Indicator Name"
+                              value={formik.values.name}
+                              error={Boolean(
+                                formik.touched.name && formik.errors.name
                               )}
-                              {aggregateDisAggregateArray.map((row) =>
-                                row.indicatorSecondaryAggregateDisaggregateId.map(
-                                  (agg) => (
-                                    <TableRow key={agg.id}>
-                                      <TableCell component="th" scope="row">
-                                        {agg.aggregate.name}
-                                      </TableCell>
-                                      <TableCell align="right">
-                                        {agg.disaggregate.name}
-                                      </TableCell>
-                                      <TableCell align="right">
-                                        Secondary
-                                      </TableCell>
-                                      <TableCell align="right">
-                                        <Button
-                                          variant="contained"
-                                          color="primary"
-                                          onClick={() =>
-                                            removeAggregateDisaggregate(
-                                              agg,
-                                              false
-                                            )
-                                          }
-                                        >
-                                          <DeleteIcon />
-                                        </Button>
-                                      </TableCell>
-                                    </TableRow>
-                                  )
-                                )
+                              fullWidth
+                              helperText={
+                                formik.touched.name && formik.errors.name
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                        </Grid>
+
+                        <Grid container spacing={2}>
+                          <Grid item md={4}>
+                            <TextField
+                              name="code"
+                              label="Indicator Code"
+                              value={formik.values.code}
+                              error={Boolean(
+                                formik.touched.code && formik.errors.code
                               )}
-                            </TableBody>
-                          </Table>
-                        </Paper>
-                      </Grid>
-                    </Grid>
-                    <br />
-                  </Card>
-                </Grid>
-                <Grid item md={12}>
-                  <Card
-                    variant="outlined"
-                    style={{ borderStyle: "dashed", borderRadius: 1 }}
-                  >
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        &nbsp;
-                      </Grid>
-                    </Grid>
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        <ThemeProvider theme={theme}>
-                          <Button
-                            variant="contained"
-                            color="neutral"
-                            onClick={() => setOpenAttributeTypes(true)}
-                          >
-                            <AddIcon /> ADD ATTRIBUTE TYPES
-                          </Button>
-                        </ThemeProvider>
-                      </Grid>
-                    </Grid>
-                    <Grid container spacing={12}>
-                      <Grid item md={12}>
-                        <Paper>
-                          <Table>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>NAME</TableCell>
-                                <TableCell align="right">DATA TYPE</TableCell>
-                                <TableCell align="right">Action</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {attributesTypesArray.map((row) => (
-                                <TableRow key={row.id}>
-                                  <TableCell component="th" scope="row">
-                                    {row.name}
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    {row.attributeDataType.dataType}
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    <Button
-                                      variant="contained"
-                                      color="primary"
-                                      onClick={() => removeAttributeType(row)}
+                              fullWidth
+                              helperText={
+                                formik.touched.code && formik.errors.code
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                          <Grid item md={4}>
+                            <TextField
+                              name="indicatorTypeId"
+                              label="Indicator Type"
+                              select
+                              value={formik.values.indicatorTypeId}
+                              error={Boolean(
+                                formik.touched.indicatorTypeId &&
+                                  formik.errors.indicatorTypeId
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.indicatorTypeId &&
+                                formik.errors.indicatorTypeId
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Type
+                              </MenuItem>
+                              {!isLoadingIndicatorType
+                                ? indicatorTypeData.data.map((option) => (
+                                    <MenuItem
+                                      key={option.lookupItemId}
+                                      value={option}
                                     >
-                                      <DeleteIcon />
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </Paper>
-                      </Grid>
+                                      {option.lookupItemName}
+                                    </MenuItem>
+                                  ))
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={4}>
+                            <TextField
+                              name="indicatorMeasure"
+                              label="Indicator Measure"
+                              select
+                              value={formik.values.indicatorMeasure}
+                              error={Boolean(
+                                formik.touched.indicatorMeasure &&
+                                  formik.errors.indicatorMeasure
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.indicatorMeasure &&
+                                formik.errors.indicatorMeasure
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={(e) => {
+                                formik.handleChange(e);
+                                onChangeIndicatorMeasure(e);
+                              }}
+                              variant="outlined"
+                              my={2}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Measure
+                              </MenuItem>
+                              {!isLoadingIndicatorMeasure
+                                ? indicatorMeasureData.data.map((option) => (
+                                    <MenuItem
+                                      key={option.lookupItemId}
+                                      value={option}
+                                    >
+                                      {option.lookupItemName}
+                                    </MenuItem>
+                                  ))
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={4}>
+                            <TextField
+                              name="indicatorMeasureType"
+                              label="Indicator Measure Type"
+                              select
+                              value={formik.values.indicatorMeasureType}
+                              error={Boolean(
+                                formik.touched.indicatorMeasureType &&
+                                  formik.errors.indicatorMeasureType
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.indicatorMeasureType &&
+                                formik.errors.indicatorMeasureType
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Measure Type
+                              </MenuItem>
+                              {!isLoadingIndicatorMeasureType
+                                ? IndicatorMeasureTypeData.data.map(
+                                    (option) => (
+                                      <MenuItem
+                                        key={option.lookupItemId}
+                                        value={option}
+                                      >
+                                        {option.lookupItemName}
+                                      </MenuItem>
+                                    )
+                                  )
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={4}>
+                            <TextField
+                              name="indicatorRelationshipTypeId"
+                              label="Indicator Relationship Type"
+                              select
+                              value={formik.values.indicatorRelationshipTypeId}
+                              error={Boolean(
+                                formik.touched.indicatorRelationshipTypeId &&
+                                  formik.errors.indicatorRelationshipTypeId
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.indicatorRelationshipTypeId &&
+                                formik.errors.indicatorRelationshipTypeId
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Relationship Type
+                              </MenuItem>
+                              {!isLoadingIndicatorRelationshipType &&
+                              !isErrorIndicatorRelationshipType
+                                ? IndicatorRelationshipType.data.map(
+                                    (option) => (
+                                      <MenuItem
+                                        key={option.lookupItemId}
+                                        value={option.lookupItemId}
+                                      >
+                                        {option.lookupItemName}
+                                      </MenuItem>
+                                    )
+                                  )
+                                : []}
+                            </TextField>
+                          </Grid>
+                        </Grid>
+
+                        <TextField
+                          name="definition"
+                          label="Definition"
+                          value={formik.values.definition}
+                          error={Boolean(
+                            formik.touched.definition &&
+                              formik.errors.definition
+                          )}
+                          fullWidth
+                          helperText={
+                            formik.touched.definition &&
+                            formik.errors.definition
+                          }
+                          onBlur={formik.handleBlur}
+                          onChange={formik.handleChange}
+                          multiline
+                          variant="outlined"
+                          rows={3}
+                          my={2}
+                        />
+                        <Grid container spacing={2}>
+                          <Grid item md={3}>
+                            <TextField
+                              name="indicatorCalculationId"
+                              label="Indicator Calculation"
+                              select
+                              value={formik.values.indicatorCalculationId}
+                              error={Boolean(
+                                formik.touched.indicatorCalculationId &&
+                                  formik.errors.indicatorCalculationId
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.indicatorCalculationId &&
+                                formik.errors.indicatorCalculationId
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                              disabled={isNumberMeasure}
+                              sx={{
+                                "& .MuiInputBase-input.Mui-disabled": {
+                                  backgroundColor: "#e9ecef",
+                                },
+                              }}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Calculation
+                              </MenuItem>
+                              {!isLoadingYesNo
+                                ? yesNoData.data.map((option) => (
+                                    <MenuItem
+                                      key={option.lookupItemId}
+                                      value={option.lookupItemId}
+                                    >
+                                      {option.lookupItemName}
+                                    </MenuItem>
+                                  ))
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={3}>
+                            <TextField
+                              name="indicatorCalculationType"
+                              label="Indicator Calculation Type"
+                              select
+                              value={formik.values.indicatorCalculationType}
+                              error={Boolean(
+                                formik.touched.indicatorCalculationType &&
+                                  formik.errors.indicatorCalculationType
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.indicatorCalculationType &&
+                                formik.errors.indicatorCalculationType
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                              disabled={isNumberMeasure}
+                              sx={{
+                                "& .MuiInputBase-input.Mui-disabled": {
+                                  backgroundColor: "#e9ecef",
+                                },
+                              }}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Calculation Type
+                              </MenuItem>
+                              {!isLoadingIndicatorCalculationType
+                                ? dataIndicatorCalculationType.data.map(
+                                    (option) => (
+                                      <MenuItem
+                                        key={option.lookupItemId}
+                                        value={option.lookupItemId}
+                                      >
+                                        {option.lookupItemName}
+                                      </MenuItem>
+                                    )
+                                  )
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={3}>
+                            <TextField
+                              name="numeratorId"
+                              label="Indicator Numerator"
+                              select
+                              value={formik.values.numeratorId}
+                              defaultValue={""}
+                              error={Boolean(
+                                formik.touched.numeratorId &&
+                                  formik.errors.numeratorId
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.numeratorId &&
+                                formik.errors.numeratorId
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Numerator
+                              </MenuItem>
+                              {!isLoadingNumerator && !isErrorNumerator
+                                ? NumeratorData.data.map((option) => (
+                                    <MenuItem key={option.id} value={option.id}>
+                                      {option.name}
+                                    </MenuItem>
+                                  ))
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={3}>
+                            <TextField
+                              name="denominatorId"
+                              label="Indicator Denominator"
+                              select
+                              value={formik.values.denominatorId}
+                              defaultValue={""}
+                              error={Boolean(
+                                formik.touched.denominatorId &&
+                                  formik.errors.denominatorId
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.denominatorId &&
+                                formik.errors.denominatorId
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Denominator
+                              </MenuItem>
+                              {!isLoadingDenominator && !isErrorDenominator
+                                ? DenominatorData.data.map((option) => (
+                                    <MenuItem key={option.id} value={option.id}>
+                                      {option.name}
+                                    </MenuItem>
+                                  ))
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={3}>
+                            <TextField
+                              name="indicatorStatus"
+                              label="Indicator Status"
+                              select
+                              value={formik.values.indicatorStatus}
+                              error={Boolean(
+                                formik.touched.indicatorStatus &&
+                                  formik.errors.indicatorStatus
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.indicatorStatus &&
+                                formik.errors.indicatorStatus
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            >
+                              <MenuItem disabled value="">
+                                Select Indicator Status
+                              </MenuItem>
+                              {!isLoadingIndicatorStatus
+                                ? IndicatorStatusData.data.map((option) => (
+                                    <MenuItem
+                                      key={option.lookupItemId}
+                                      value={option.lookupItemId}
+                                    >
+                                      {option.lookupItemName}
+                                    </MenuItem>
+                                  ))
+                                : []}
+                            </TextField>
+                          </Grid>
+                          <Grid item md={6}>
+                            <TextField
+                              name="reference"
+                              label="Reference"
+                              value={formik.values.reference}
+                              error={Boolean(
+                                formik.touched.reference &&
+                                  formik.errors.reference
+                              )}
+                              fullWidth
+                              helperText={
+                                formik.touched.reference &&
+                                formik.errors.reference
+                              }
+                              onBlur={formik.handleBlur}
+                              onChange={formik.handleChange}
+                              variant="outlined"
+                              my={2}
+                            />
+                          </Grid>
+                        </Grid>
+
+                        <Box sx={{ mb: 2 }}>
+                          <Stack direction="row" spacing={2}>
+                            <Button
+                              variant="contained"
+                              sx={{ mt: 1, mr: 1 }}
+                              type="submit"
+                            >
+                              <SaveOutlinedIcon /> &nbsp; Save Indicator Section
+                            </Button>
+
+                            <Button
+                              variant="contained"
+                              onClick={handleNext}
+                              sx={{ mt: 1, mr: 1 }}
+                              color="success"
+                              disabled={!isIndicatorSectionValid}
+                            >
+                              <ArrowForwardIosOutlinedIcon />
+                              &nbsp; Continue
+                            </Button>
+                          </Stack>
+                        </Box>
+                      </React.Fragment>
+                    )}
+                  </form>
+                </StepContent>
+              </Step>
+
+              <Step key="SUB-THEME">
+                <StepLabel>Sub Theme Section</StepLabel>
+                <StepContent>
+                  <Grid container spacing={12}>
+                    <Grid item md={12}>
+                      <Card
+                        variant="outlined"
+                        style={{ borderStyle: "dashed", borderRadius: 1 }}
+                      >
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            &nbsp;
+                          </Grid>
+                        </Grid>
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            <ThemeProvider theme={theme}>
+                              <Button
+                                variant="contained"
+                                color="neutral"
+                                onClick={() => setOpen(true)}
+                              >
+                                <AddIcon /> ADD SUB-THEME
+                              </Button>
+                            </ThemeProvider>
+                          </Grid>
+                        </Grid>
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            <Paper>
+                              <Table>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>PROGRAMME</TableCell>
+                                    <TableCell align="right">
+                                      THEMATIC AREA
+                                    </TableCell>
+                                    <TableCell align="right">
+                                      SUB THEME
+                                    </TableCell>
+                                    <TableCell align="right">Action</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {!isLoadingIndicatorSubThemes &&
+                                  !isErrorIndicatorSubThemes ? (
+                                    IndicatorSubThemesData.data.map((row) => (
+                                      <TableRow
+                                        key={
+                                          row.thematicArea.id + row.subTheme.id
+                                        }
+                                      >
+                                        <TableCell component="th" scope="row">
+                                          {row.programme.name}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          {row.thematicArea.code +
+                                            "-" +
+                                            row.thematicArea.name}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          {row.subTheme.code +
+                                            "-" +
+                                            row.subTheme.name}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => removeSubTheme(row)}
+                                          >
+                                            <DeleteIcon />
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))
+                                  ) : (
+                                    <></>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Paper>
+                          </Grid>
+                        </Grid>
+                        <br />
+                      </Card>
                     </Grid>
-                    <br />
-                  </Card>
-                </Grid>
-              </Grid>
-              <Button type="submit" variant="contained" color="primary" mt={3}>
-                Save changes
-              </Button>
-            </>
-          )}
+                  </Grid>
+
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleNext}
+                      sx={{ mt: 1, mr: 1 }}
+                      color="success"
+                    >
+                      <ArrowForwardIosOutlinedIcon />
+                      &nbsp; Continue
+                    </Button>
+
+                    <Button
+                      variant="contained"
+                      onClick={handleBack}
+                      sx={{ mt: 1, mr: 1 }}
+                    >
+                      <ArrowBackIosNewOutlinedIcon />
+                      &nbsp; Back
+                    </Button>
+                  </Box>
+                </StepContent>
+              </Step>
+
+              <Step key="AGGREGATE DISAGGREGATES">
+                <StepLabel>Aggregate Disaggregates Section</StepLabel>
+                <StepContent>
+                  <Grid container spacing={12}>
+                    <Grid item md={12}>
+                      <Card
+                        variant="outlined"
+                        style={{ borderStyle: "dashed", borderRadius: 1 }}
+                      >
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            &nbsp;
+                          </Grid>
+                        </Grid>
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            <ThemeProvider theme={theme}>
+                              <Button
+                                variant="contained"
+                                color="neutral"
+                                onClick={() => setOpenAggregate(true)}
+                              >
+                                <AddIcon /> ADD AGGREGATE DISAGGREGATES
+                              </Button>
+                            </ThemeProvider>
+                          </Grid>
+                        </Grid>
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            <Paper>
+                              <Table>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>AGGREGATE</TableCell>
+                                    <TableCell align="right">
+                                      DISAGGREGATE
+                                    </TableCell>
+                                    <TableCell align="right">
+                                      PRIMARY/SECONDARY
+                                    </TableCell>
+                                    <TableCell align="right">Action</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {!isLoadingIndicatorAggregates &&
+                                  !isErrorIndicatorAggregates ? (
+                                    IndicatorAggregatesData.data.map((row) => (
+                                      <TableRow key={row.id}>
+                                        <TableCell component="th" scope="row">
+                                          {
+                                            row.aggregateDisaggregate.aggregate
+                                              .name
+                                          }
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          {
+                                            row.aggregateDisaggregate
+                                              .disaggregate.name
+                                          }
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          {row.isPrimary
+                                            ? "Primary"
+                                            : "Secondary"}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() =>
+                                              removeAggregateDisaggregate(
+                                                row,
+                                                true
+                                              )
+                                            }
+                                          >
+                                            <DeleteIcon />
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))
+                                  ) : (
+                                    <></>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Paper>
+                          </Grid>
+                        </Grid>
+                        <br />
+                      </Card>
+                    </Grid>
+                  </Grid>
+
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleNext}
+                      sx={{ mt: 1, mr: 1 }}
+                      color="success"
+                    >
+                      <ArrowForwardIosOutlinedIcon />
+                      &nbsp; Continue
+                    </Button>
+
+                    <Button
+                      variant="contained"
+                      onClick={handleBack}
+                      sx={{ mt: 1, mr: 1 }}
+                    >
+                      <ArrowBackIosNewOutlinedIcon />
+                      &nbsp;Back
+                    </Button>
+                  </Box>
+                </StepContent>
+              </Step>
+
+              <Step key="ATTRIBUTES SECTION">
+                <StepLabel>Attributes Section</StepLabel>
+                <StepContent>
+                  <Grid container spacing={12}>
+                    <Grid item md={12}>
+                      <Card
+                        variant="outlined"
+                        style={{ borderStyle: "dashed", borderRadius: 1 }}
+                      >
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            &nbsp;
+                          </Grid>
+                        </Grid>
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            <ThemeProvider theme={theme}>
+                              <Button
+                                variant="contained"
+                                color="neutral"
+                                onClick={() => setOpenAttributeTypes(true)}
+                              >
+                                <AddIcon /> ADD ATTRIBUTE TYPES
+                              </Button>
+                            </ThemeProvider>
+                          </Grid>
+                        </Grid>
+                        <Grid container spacing={12}>
+                          <Grid item md={12}>
+                            <Paper>
+                              <Table>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>NAME</TableCell>
+                                    <TableCell align="right">
+                                      DATA TYPE
+                                    </TableCell>
+                                    <TableCell align="right">Action</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {!isLoadingIndicatorAttributeTypes &&
+                                  !isErrorIndicatorAttributeTypes ? (
+                                    IndicatorAttributeTypesData.data.map(
+                                      (row) => (
+                                        <TableRow key={row.id}>
+                                          <TableCell component="th" scope="row">
+                                            {row.attributeType.name}
+                                          </TableCell>
+                                          <TableCell align="right">
+                                            {
+                                              row.attributeType
+                                                .attributeDataType.dataType
+                                            }
+                                          </TableCell>
+                                          <TableCell align="right">
+                                            <Button
+                                              variant="contained"
+                                              color="primary"
+                                              onClick={() =>
+                                                removeAttributeType(row)
+                                              }
+                                            >
+                                              <DeleteIcon />
+                                            </Button>
+                                          </TableCell>
+                                        </TableRow>
+                                      )
+                                    )
+                                  ) : (
+                                    <></>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Paper>
+                          </Grid>
+                        </Grid>
+                        <br />
+                      </Card>
+                    </Grid>
+                  </Grid>
+
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleBack}
+                      sx={{ mt: 1, mr: 1 }}
+                    >
+                      <ArrowBackIosNewOutlinedIcon />
+                      &nbsp;Back
+                    </Button>
+                  </Box>
+                </StepContent>
+              </Step>
+            </Stepper>
+          </Box>
         </CardContent>
       </Card>
       <Dialog
@@ -2017,7 +2061,87 @@ const NewIndicatorForm = () => {
           />
         </DialogContent>
       </Dialog>
-    </form>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openSubThemesDelete}
+        onClose={() => setSubThemesDelete(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="alert-dialog-title">Delete SubTheme</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete SubTheme?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteSubTheme} color="primary">
+            Yes
+          </Button>
+          <Button
+            onClick={() => setSubThemesDelete(false)}
+            color="error"
+            autoFocus
+          >
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAttributesDelete}
+        onClose={() => setAttributesDelete(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="alert-dialog-title">Delete Attribute</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete Attribute?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteAttribute} color="primary">
+            Yes
+          </Button>
+          <Button
+            onClick={() => setAttributesDelete(false)}
+            color="error"
+            autoFocus
+          >
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        fullWidth={true}
+        maxWidth="md"
+        open={openAggregateDelete}
+        onClose={() => setAggregateDelete(false)}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Delete Aggregate Disaggregate
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete Aggregate Disaggregate?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteAggregate} color="primary">
+            Yes
+          </Button>
+          <Button
+            onClick={() => setAggregateDelete(false)}
+            color="error"
+            autoFocus
+          >
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </React.Fragment>
   );
 };
 
