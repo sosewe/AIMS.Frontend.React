@@ -109,10 +109,13 @@ const IndicatorsData = () => {
       </CardContent>
       <br />
       <Paper>
-        <div style={{ height: 400, width: "100%" }}>
+        <div style={{ height: 600, width: "100%" }}>
           <DataGrid
-            rowsPerPageOptions={[5, 10, 25]}
-            rows={isLoading || isError ? [] : data ? data.data.data : []}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10 } },
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            rows={isLoading || isError ? [] : data ? data.data : []}
             columns={[
               {
                 field: "name",
@@ -154,19 +157,11 @@ const IndicatorsData = () => {
                 ),
               },
             ]}
-            pageSize={pageInfo.pageSize}
+            pageSize={pageSize}
             onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
             loading={isLoading}
             components={{ Toolbar: GridToolbar }}
-            paginationMode="server"
-            filterModel={filterModel}
-            onFilterModelChange={(model) => onFilterChange(model)}
-            rowCount={pageInfo.totalItems}
-            pagination
-            onPageChange={async (newPage) => {
-              setPage(newPage + 1);
-              await queryClient.invalidateQueries(["getAllIndicators"]);
-            }}
+            getRowHeight={() => "auto"}
           />
         </div>
         <Dialog

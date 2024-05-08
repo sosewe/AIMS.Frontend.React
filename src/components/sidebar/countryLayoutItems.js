@@ -1,9 +1,9 @@
-import { Home } from "react-feather";
+import { Home, Tag } from "react-feather";
 import YardIcon from "@mui/icons-material/Yard";
-import PublicIcon from "@mui/icons-material/Public";
-import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
-import MarginOutlinedIcon from "@mui/icons-material/MarginOutlined";
-import WorkspacesOutlinedIcon from "@mui/icons-material/WorkspacesOutlined";
+import MemoryOutlinedIcon from "@mui/icons-material/MemoryOutlined";
+import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
+import TurnedInNotOutlinedIcon from "@mui/icons-material/TurnedInNotOutlined";
+import TextureOutlinedIcon from "@mui/icons-material/TextureOutlined";
 
 const navItems = [
   {
@@ -32,7 +32,7 @@ const navItems = [
       {
         title: "Country Projects",
         href: "/project-home",
-        icon: WorkspacesOutlinedIcon,
+        icon: Tag,
       },
     ],
   },
@@ -41,8 +41,8 @@ const navItems = [
     pages: [
       {
         title: "Country Advocacies",
-        href: "",
-        icon: PublicIcon,
+        href: "/advocacy-design-home",
+        icon: TextureOutlinedIcon,
       },
     ],
   },
@@ -51,8 +51,8 @@ const navItems = [
     pages: [
       {
         title: "Country Innovations",
-        href: "",
-        icon: LeaderboardOutlinedIcon,
+        href: "/innovation-design-home",
+        icon: MemoryOutlinedIcon,
       },
     ],
   },
@@ -61,8 +61,8 @@ const navItems = [
     pages: [
       {
         title: "Country Researches",
-        href: "",
-        icon: MarginOutlinedIcon,
+        href: "/research-design-home",
+        icon: TurnedInNotOutlinedIcon,
       },
     ],
   },
@@ -70,9 +70,9 @@ const navItems = [
     title: "",
     pages: [
       {
-        title: "Country TA",
-        href: "",
-        icon: MarginOutlinedIcon,
+        title: "Country Technical Assistance",
+        href: "/technical-assistance-design-home",
+        icon: BuildOutlinedIcon,
       },
     ],
   },

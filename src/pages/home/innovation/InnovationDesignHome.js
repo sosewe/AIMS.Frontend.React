@@ -219,7 +219,7 @@ const InnovationDesignHome = () => {
           color="error"
           onClick={() =>
             navigate(
-              `/qualitative/new-innocation/${processLevelTypeId}/${processLevelTypeId}`
+              `/qualitative/new-innovation/${processLevelTypeId}/${processLevelTypeId}`
             )
           }
         >

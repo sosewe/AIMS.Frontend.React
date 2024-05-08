@@ -1,8 +1,6 @@
 import { Home, Tag } from "react-feather";
 import YardIcon from "@mui/icons-material/Yard";
 import PublicIcon from "@mui/icons-material/Public";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import SummarizeIcon from "@mui/icons-material/Summarize";
 import MemoryOutlinedIcon from "@mui/icons-material/MemoryOutlined";
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
 import TurnedInNotOutlinedIcon from "@mui/icons-material/TurnedInNotOutlined";

@@ -1492,22 +1492,7 @@ const EditLearningForm = ({ id, onActionChange }) => {
           </Dialog>
 
           <Grid item mt={5} md={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
-              onClick={() => handleActionChange()}
-            >
-              <ChevronLeft /> Back
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              mt={3}
-              ml={3}
-            >
+            <Button type="submit" variant="contained" color="primary" mt={3}>
               <Check /> Save Changes
             </Button>
           </Grid>

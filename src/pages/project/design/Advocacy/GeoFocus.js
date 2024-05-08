@@ -106,21 +106,9 @@ const GeoFocus = (props) => {
         then: Yup.object().required("FirstLevel required"),
         otherwise: Yup.object().notRequired(),
       }),
-      secondLevel: Yup.object().when("firstLevel", {
-        is: () => onValidateSecondLevel(),
-        then: Yup.object().required("SecondLevel required"),
-        otherwise: Yup.object().notRequired(),
-      }),
-      thirdLevel: Yup.object().when("secondLevel", {
-        is: () => onValidateThirdLevel(),
-        then: Yup.object().required("ThirdLevel required"),
-        otherwise: Yup.object().notRequired(),
-      }),
-      fourthLevel: Yup.object().when("thirdLevel", {
-        is: () => onValidateFourthLevel(),
-        then: Yup.object().required("FourthLevel required"),
-        otherwise: Yup.object().notRequired(),
-      }),
+      secondLevel: Yup.object().notRequired(),
+      thirdLevel: Yup.object().notRequired(),
+      fourthLevel: Yup.object().notRequired(),
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
@@ -174,9 +162,6 @@ const GeoFocus = (props) => {
           administrativeUnitCountryName,
           userId: user.sub,
         };
-
-        console.log("advocacyLocation ..." + JSON.stringify(advocacyLocation));
-
         await mutation.mutateAsync(advocacyLocation);
         await queryClient.invalidateQueries(["getAdvocacyGeographicalFocus"]);
       } catch (error) {
