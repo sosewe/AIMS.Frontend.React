@@ -145,3 +145,10 @@ export const getAllCountryNarrativeReports = async ({ queryKey }) => {
     `${apiRoutes.narrativeReports}/GetAllCountryNarrativeReports/${countryOffice}`
   );
 };
+
+export const getCountryReportData = async ({ queryKey }) => {
+  const [_, processLevelItemId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.narrativeReports}/GetCountryReportData/${processLevelItemId}`
+  );
+};

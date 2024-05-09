@@ -163,10 +163,34 @@ const CountryPerformanceReport = () => {
       setSumYTDPerf(ytdPerf / count);
       setSumAnnualPerf(annualPerf / count);
     }
+
+    if (
+      !isErrorAllCountryNarrative &&
+      !isLoadingAllCountryNarrative &&
+      AllCountryNarrative
+    ) {
+      if (AllCountryNarrative.data.length > 0) {
+        setValue(
+          "overallCountryComments",
+          AllCountryNarrative.data[0].overallCountryComments
+        );
+        for (const countryNarrativeReportData of AllCountryNarrative.data[0]
+          .countryNarrativeReportDatas) {
+          setValue(
+            countryNarrativeReportData.processLevelItemId,
+            countryNarrativeReportData.comments
+          );
+        }
+        setIsSaved(true);
+      }
+    }
   }, [
     isLoadingCountryNarrativeReports,
     isErrorCountryNarrativeReports,
     CountryNarrativeReportsData,
+    isErrorAllCountryNarrative,
+    isLoadingAllCountryNarrative,
+    AllCountryNarrative,
   ]);
 
   const onSubmit = async (data) => {
