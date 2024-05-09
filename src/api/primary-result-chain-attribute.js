@@ -11,3 +11,8 @@ export const newSinglePrimaryResultChainAttribute = async (values) => {
     values
   );
 };
+
+export const deletePrimaryResultChainAttribute = async ({ queryKey }) => {
+  const [_, id] = queryKey;
+  return await axios.delete(`${apiRoutes.primaryResultChainAttribute}/${id}`);
+};

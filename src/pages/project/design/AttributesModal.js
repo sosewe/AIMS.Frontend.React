@@ -30,6 +30,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { getAttributeTypeById } from "../../../api/attribute-type";
 import { getAttributeResponseOptionById } from "../../../api/attribute-response-option";
 import {
+  deletePrimaryResultChainAttribute,
   newPrimaryResultChainAttribute,
   newSinglePrimaryResultChainAttribute,
 } from "../../../api/primary-result-chain-attribute";
@@ -177,8 +178,8 @@ const AttributesModal = ({
   });
 
   const { refetch, isError, error, isLoading } = useQuery(
-    ["deleteResultChainById", id],
-    deleteResultChainById,
+    ["deletePrimaryResultChainAttribute", id],
+    deletePrimaryResultChainAttribute,
     { enabled: false }
   );
 
@@ -187,7 +188,7 @@ const AttributesModal = ({
   };
   const handleClickOpen = (params) => {
     setOpen(true);
-    setId(params.row.resultChainAttributeId);
+    setId(params.row.id);
   };
   const handleDeleteAttribute = async () => {
     try {
