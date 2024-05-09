@@ -12,7 +12,7 @@ Material UI v5
 ### `npm start`
 
 Runs the app in the development mode.
-Open [https://localhost:3000](http://localhost:3000) to view it in the browser.
+Open [https://localhost:3000](https://localhost:3000) to view it in the browser.
 
 ### `npm run build`
 
