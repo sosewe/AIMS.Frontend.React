@@ -7,3 +7,10 @@ export const saveIndicatorThematicAreas = async (values) => {
     values
   );
 };
+
+export const getIndicatorThematicAreas = async ({ queryKey }) => {
+  const [_, thematicAreaId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.indicatorThematicArea}/GetIndicatorThematicAreas/${thematicAreaId}`
+  );
+};
