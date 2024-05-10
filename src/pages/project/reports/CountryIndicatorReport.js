@@ -27,6 +27,10 @@ import { getCountryIndicatorReport } from "../../../api/internal-reporting";
 import TableHead from "@mui/material/TableHead";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
+import { OfficeContext, OfficeIdContext } from "../../../App";
+import ProjectNarrative from "./ProjectNarrative";
+import DownloadingOutlinedIcon from "@mui/icons-material/DownloadingOutlined";
+import Papa from "papaparse";
 
 const Card = styled(MuiCard)(spacing);
 const CardContent = styled(MuiCardContent)(spacing);
@@ -45,9 +49,22 @@ const theme = createTheme({
 });
 
 const CountryIndicatorReport = () => {
+  const officeIdContext = useContext(OfficeIdContext);
+  const officeContext = useContext(OfficeContext);
   const [selectedThemeId, setSelectedThemeId] = useState();
   const [indicatorId, setIndicatorId] = useState();
   const [yearId, setYearId] = useState();
+  const [monthId, setMonthId] = useState();
+  const [organizationId, setOrganizationId] = useState();
+  const [sumAchieved, setSumAchieved] = useState();
+  const [sumTarget, setSumTarget] = useState();
+  const [sumPercentage, setSumPercentage] = useState();
+  const [sumChildrenFemale, setSumChildrenFemale] = useState();
+  const [sumChildrenMale, setSumChildrenMale] = useState();
+  const [sumYouthFemale, setSumYouthFemale] = useState();
+  const [sumYouthMale, setSumYouthMale] = useState();
+  const [sumAdultFemale, setSumAdultsFemale] = useState();
+  const [sumAdultMale, setSumAdultsMale] = useState();
 
   const { data, isLoading, isError } = useQuery(
     ["getAllThematicAreas"],
@@ -86,12 +103,20 @@ const CountryIndicatorReport = () => {
     isError: isErrorCountryIndicatorReport,
     data: CountryIndicatorReportData,
   } = useQuery(
-    ["getCountryIndicatorReport", indicatorId, yearId],
+    ["getCountryIndicatorReport", indicatorId, yearId, organizationId],
     getCountryIndicatorReport,
     {
-      enabled: !!indicatorId && !!yearId,
+      enabled: !!indicatorId && !!yearId && !!organizationId,
     }
   );
+
+  const {
+    data: lookupMonths,
+    isLoading: isLoadingLookupMonths,
+    isError: isErrorLookupMonths,
+  } = useQuery(["Months", "Months"], getLookupMasterItemsByName, {
+    refetchOnWindowFocus: false,
+  });
 
   const formik = useFormik({
     initialValues: { implementationYear: "", themeId: "", indicatorId: "" },
@@ -114,16 +139,79 @@ const CountryIndicatorReport = () => {
 
   useEffect(() => {
     if (
-      !isLoadingIndicatorThematicAreas &&
-      !isErrorIndicatorThematicAreas &&
-      IndicatorThematicAreasData
+      !isLoadingCountryIndicatorReport &&
+      !isErrorCountryIndicatorReport &&
+      CountryIndicatorReportData
     ) {
+      let achieved = 0;
+      let target = 0;
+      let percentage = 0;
+      let children_Female = 0;
+      let children_Male = 0;
+      let youths_Female = 0;
+      let youths_Male = 0;
+      let adults_Female = 0;
+      let adults_Male = 0;
+      let count = 0;
+      for (const countryIndicatorReport of CountryIndicatorReportData.data) {
+        achieved += countryIndicatorReport.achieved;
+        target += countryIndicatorReport.target;
+        percentage += countryIndicatorReport.percentage;
+        children_Female += countryIndicatorReport.children_Female;
+        children_Male += countryIndicatorReport.children_Male;
+        youths_Female += countryIndicatorReport.youths_Female;
+        youths_Male += countryIndicatorReport.youths_Male;
+        adults_Female += countryIndicatorReport.adults_Female;
+        adults_Male += countryIndicatorReport.adults_Male;
+        count++;
+      }
+      setSumAchieved(achieved);
+      setSumTarget(target);
+      setSumChildrenFemale(children_Female);
+      setSumChildrenMale(children_Male);
+      setSumYouthFemale(youths_Female);
+      setSumYouthMale(youths_Male);
+      setSumAdultsFemale(adults_Female);
+      setSumAdultsMale(adults_Male);
+      setSumPercentage(percentage / count);
+    }
+
+    if (officeIdContext.selectedOfficeId) {
+      setOrganizationId(officeIdContext.selectedOfficeId);
+    }
+    if (!isErrorLookupMonths && !isLoadingLookupMonths && lookupMonths) {
+      const december = lookupMonths.data.find(
+        (obj) => obj.lookupItemName === "DEC"
+      );
+      setMonthId(december.lookupItemId);
     }
   }, [
     isLoadingIndicatorThematicAreas,
     isErrorIndicatorThematicAreas,
     IndicatorThematicAreasData,
+    officeIdContext,
+    isErrorLookupMonths,
+    isLoadingLookupMonths,
+    lookupMonths,
+    isLoadingCountryIndicatorReport,
+    isErrorCountryIndicatorReport,
+    CountryIndicatorReportData,
   ]);
+
+  const handleDownload = () => {
+    const csv = Papa.unparse(CountryIndicatorReportData.data, {
+      header: true,
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute("download", "data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <React.Fragment>
@@ -262,6 +350,14 @@ const CountryIndicatorReport = () => {
                       textAlign: "center",
                     }}
                   >
+                    AMREF Office
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
                     Project
                   </TableCell>
                   <TableCell
@@ -366,6 +462,14 @@ const CountryIndicatorReport = () => {
                             textAlign: "center",
                           }}
                         >
+                          {officeContext.selectedOffice}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            border: "1px solid #000",
+                            textAlign: "center",
+                          }}
+                        >
                           {data.shortTitle}
                         </TableCell>
                         <TableCell
@@ -390,7 +494,7 @@ const CountryIndicatorReport = () => {
                             textAlign: "center",
                           }}
                         >
-                          {data.percentage * 100}
+                          {data.percentage * 100}%
                         </TableCell>
                         <TableCell
                           sx={{
@@ -445,13 +549,140 @@ const CountryIndicatorReport = () => {
                             border: "1px solid #000",
                             textAlign: "center",
                           }}
-                        ></TableCell>
+                        >
+                          <ProjectNarrative
+                            processLevelItemId={data.processLevelItemId}
+                            implementationYearId={yearId}
+                            implementationMonthId={monthId}
+                          />
+                        </TableCell>
                       </TableRow>
                     );
                   })
                 ) : (
                   <React.Fragment></React.Fragment>
                 )}
+                <TableRow>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    TOTAL
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    &nbsp;
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumAchieved}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumTarget}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumPercentage * 100}%
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumChildrenFemale}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumChildrenMale}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumYouthFemale}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumYouthMale}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumAdultFemale}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    {sumAdultMale}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                  >
+                    &nbsp;
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell
+                    sx={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                    }}
+                    colSpan={12}
+                  >
+                    <ThemeProvider theme={theme}>
+                      <Button
+                        type="button"
+                        variant="contained"
+                        color="primary"
+                        mt={2}
+                        onClick={() => handleDownload()}
+                      >
+                        <DownloadingOutlinedIcon />
+                        &nbsp;DownLoad
+                      </Button>
+                    </ThemeProvider>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>

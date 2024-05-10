@@ -176,8 +176,8 @@ export const getCorporateNarrativeReports = async ({ queryKey }) => {
 };
 
 export const getCountryIndicatorReport = async ({ queryKey }) => {
-  const [_, indicatorId, yearId] = queryKey;
+  const [_, indicatorId, yearId, organizationId] = queryKey;
   return await axios.get(
-    `${apiRoutes.doubleCountingAdjustment}/GetCountryIndicatorReport/${indicatorId}/${yearId}`
+    `${apiRoutes.doubleCountingAdjustment}/GetCountryIndicatorReport/${indicatorId}/${yearId}/${organizationId}`
   );
 };

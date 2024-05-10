@@ -9,16 +9,28 @@ import {
 } from "@mui/material";
 import { Settings } from "react-feather";
 import useKeyCloakAuth from "../../hooks/useKeyCloakAuth";
-import { OfficeContext } from "../../App";
+import { OfficeContext, OfficeIdContext } from "../../App";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizationUnit } from "../../api/organization-unit";
 
 const OfficeSelect = () => {
   const user = useKeyCloakAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const officeContext = useContext(OfficeContext);
+  const officeIdContext = useContext(OfficeIdContext);
   const selectedOffice = officeContext.selectedOffice;
 
   const data = user?.tokenParsed?.Office ?? [];
   const open = Boolean(anchorEl);
+
+  const {
+    isLoading,
+    isError,
+    data: OrganizationUnit,
+    refetch,
+  } = useQuery(["getOrganizationUnit", selectedOffice], getOrganizationUnit, {
+    enabled: !!selectedOffice,
+  });
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -30,6 +42,7 @@ const OfficeSelect = () => {
     localStorage.setItem("office_setting", office);
     handleClose();
     handleRefresh();
+    refetch();
   };
 
   const handleRefresh = (event) => {
@@ -45,7 +58,11 @@ const OfficeSelect = () => {
         officeContext.setSelectedOffice(data[0]);
       }
     }
-  }, [data, officeContext]);
+
+    if (!isLoading && !isError && OrganizationUnit) {
+      officeIdContext.setSelectedOfficeId(OrganizationUnit.data.id);
+    }
+  }, [data, officeContext, isLoading, isError, OrganizationUnit]);
 
   return (
     <React.Fragment>
