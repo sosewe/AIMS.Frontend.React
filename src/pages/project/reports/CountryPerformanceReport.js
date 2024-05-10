@@ -114,10 +114,16 @@ const CountryPerformanceReport = () => {
     isLoading: isLoadingAllCountryNarrative,
     data: AllCountryNarrative,
   } = useQuery(
-    ["getAllCountryNarrativeReports", selectedOffice],
+    [
+      "getAllCountryNarrativeReports",
+      implementationYearId,
+      implementationMonthId,
+      selectedOffice,
+    ],
     getAllCountryNarrativeReports,
     {
-      enabled: !!selectedOffice,
+      enabled:
+        !!selectedOffice && !!implementationYearId && !!implementationMonthId,
     }
   );
 
@@ -195,8 +201,9 @@ const CountryPerformanceReport = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log(data);
       const InData = {
+        implementingYearId: implementationYearId,
+        implementationMonthId: implementationMonthId,
         selectedOffice: selectedOffice,
         overallCountryComments: data.overallCountryComments,
         serviceContactFrequency: sumServiceContactFrequency,

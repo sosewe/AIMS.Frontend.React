@@ -140,9 +140,17 @@ export const saveAddCountryNarrativeReport = async (values) => {
 };
 
 export const getAllCountryNarrativeReports = async ({ queryKey }) => {
-  const [_, countryOffice] = queryKey;
+  const [_, implementationYearId, implementationMonthId, countryOffice] =
+    queryKey;
   return await axios.get(
-    `${apiRoutes.narrativeReports}/GetAllCountryNarrativeReports/${countryOffice}`
+    `${apiRoutes.narrativeReports}/GetAllCountryNarrativeReports/${implementationYearId}/${implementationMonthId}/${countryOffice}`
+  );
+};
+
+export const getAllNarrativeReports = async ({ queryKey }) => {
+  const [_, implementationYearId, implementationMonthId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.narrativeReports}/GetAllNarrativeReports/${implementationYearId}/${implementationMonthId}`
   );
 };
 
@@ -150,5 +158,19 @@ export const getCountryReportData = async ({ queryKey }) => {
   const [_, processLevelItemId] = queryKey;
   return await axios.get(
     `${apiRoutes.narrativeReports}/GetCountryReportData/${processLevelItemId}`
+  );
+};
+
+export const addCorporateNarrativeReport = async (values) => {
+  return await axios.post(
+    `${apiRoutes.narrativeReports}/AddCorporateNarrativeReport`,
+    values
+  );
+};
+
+export const getCorporateNarrativeReports = async ({ queryKey }) => {
+  const [_, implementingYearId, implementationMonthId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.narrativeReports}/GetCorporateNarrativeReports/${implementingYearId}/${implementationMonthId}`
   );
 };
