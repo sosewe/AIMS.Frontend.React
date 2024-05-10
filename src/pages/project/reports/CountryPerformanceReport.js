@@ -114,10 +114,16 @@ const CountryPerformanceReport = () => {
     isLoading: isLoadingAllCountryNarrative,
     data: AllCountryNarrative,
   } = useQuery(
-    ["getAllCountryNarrativeReports", selectedOffice],
+    [
+      "getAllCountryNarrativeReports",
+      implementationYearId,
+      implementationMonthId,
+      selectedOffice,
+    ],
     getAllCountryNarrativeReports,
     {
-      enabled: !!selectedOffice,
+      enabled:
+        !!selectedOffice && !!implementationYearId && !!implementationMonthId,
     }
   );
 
@@ -163,16 +169,41 @@ const CountryPerformanceReport = () => {
       setSumYTDPerf(ytdPerf / count);
       setSumAnnualPerf(annualPerf / count);
     }
+
+    if (
+      !isErrorAllCountryNarrative &&
+      !isLoadingAllCountryNarrative &&
+      AllCountryNarrative
+    ) {
+      if (AllCountryNarrative.data.length > 0) {
+        setValue(
+          "overallCountryComments",
+          AllCountryNarrative.data[0].overallCountryComments
+        );
+        for (const countryNarrativeReportData of AllCountryNarrative.data[0]
+          .countryNarrativeReportDatas) {
+          setValue(
+            countryNarrativeReportData.processLevelItemId,
+            countryNarrativeReportData.comments
+          );
+        }
+        setIsSaved(true);
+      }
+    }
   }, [
     isLoadingCountryNarrativeReports,
     isErrorCountryNarrativeReports,
     CountryNarrativeReportsData,
+    isErrorAllCountryNarrative,
+    isLoadingAllCountryNarrative,
+    AllCountryNarrative,
   ]);
 
   const onSubmit = async (data) => {
     try {
-      console.log(data);
       const InData = {
+        implementingYearId: implementationYearId,
+        implementationMonthId: implementationMonthId,
         selectedOffice: selectedOffice,
         overallCountryComments: data.overallCountryComments,
         serviceContactFrequency: sumServiceContactFrequency,

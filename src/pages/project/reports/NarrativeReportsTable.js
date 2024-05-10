@@ -18,6 +18,7 @@ import { green, purple } from "@mui/material/colors";
 import DownloadingOutlinedIcon from "@mui/icons-material/DownloadingOutlined";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  getCountryReportData,
   getSavedNarrativeReports,
   saveNarrativeReport,
 } from "../../../api/internal-reporting";
@@ -50,6 +51,7 @@ const NarrativeReportsTable = ({
   const [sumYtD_Perf, setSumYtD_Perf] = useState(0);
   const [sumAnnual_Perf, setSumAnnual_Perf] = useState(0);
   const [projectTitle, setProjectTitle] = useState("");
+  const [commentsFromCO, setCommentsFromCO] = useState("");
 
   const officeContext = useContext(OfficeContext);
   let selectedOffice = officeContext.selectedOffice;
@@ -83,6 +85,18 @@ const NarrativeReportsTable = ({
         !!processLevelItemId &&
         !!implementationYearId &&
         !!implementationMonthId,
+    }
+  );
+
+  const {
+    isLoading: isLoadingCountryReportData,
+    isError: isErrorCountryReportData,
+    data: CountryReportData,
+  } = useQuery(
+    ["getCountryReportData", processLevelItemId],
+    getCountryReportData,
+    {
+      enabled: !!processLevelItemId,
     }
   );
 
@@ -147,6 +161,13 @@ const NarrativeReportsTable = ({
     if (!isLoadingProjectById && !isErrorProjectById && ProjectById) {
       setProjectTitle(ProjectById.data.shortTitle);
     }
+    if (
+      !isLoadingCountryReportData &&
+      !isErrorCountryReportData &&
+      CountryReportData
+    ) {
+      setCommentsFromCO(CountryReportData.data.comments);
+    }
   }, [
     isLoading,
     isError,
@@ -155,6 +176,9 @@ const NarrativeReportsTable = ({
     isLoadingProjectById,
     isErrorProjectById,
     ProjectById,
+    isLoadingCountryReportData,
+    isErrorCountryReportData,
+    CountryReportData,
   ]);
 
   const handleDownload = () => {
@@ -348,7 +372,7 @@ const NarrativeReportsTable = ({
                   }}
                   colSpan={7}
                 >
-                  Feedback from CO:
+                  Feedback from CO: {commentsFromCO}
                 </TableCell>
               </TableRow>
               <TableRow>
