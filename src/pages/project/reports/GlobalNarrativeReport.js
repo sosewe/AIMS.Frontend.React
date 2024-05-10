@@ -24,7 +24,6 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import {
   addCorporateNarrativeReport,
-  getAllCountryNarrativeReports,
   getAllNarrativeReports,
   getCorporateNarrativeReports,
 } from "../../../api/internal-reporting";

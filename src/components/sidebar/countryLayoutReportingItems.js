@@ -81,7 +81,7 @@ const navItems = [
     pages: [
       {
         title: "Country Indicator Report",
-        href: "",
+        href: "/country-indicator-report",
         icon: MarginOutlinedIcon,
       },
     ],

@@ -23,7 +23,7 @@ const navItems = [
     pages: [
       {
         title: "Global Indicator Reports",
-        href: "/",
+        href: "/global-indicator-report",
         icon: BarChartIcon,
       },
     ],

@@ -52,6 +52,7 @@ import ResearchDesign from "./pages/home/research/ResearchDesign";
 import ResearchDesignHome from "./pages/home/research/ResearchDesignHome";
 import ResearchMonitoringSelect from "./pages/home/research/ResearchMonitoringSelect";
 import ResearchMonitoringHome from "./pages/home/research/ResearchMonitoringHome";
+import GlobalIndicatorReport from "./pages/project/reports/GlobalIndicatorReport";
 
 // Lookup
 const LookupItem = async(() => import("./pages/lookup/LookupItem"));
@@ -296,6 +297,9 @@ const GlobalDCASummary = async(() =>
 const CountryPerformanceReport = async(() =>
   import("./pages/project/reports/CountryPerformanceReport")
 );
+const CountryIndicatorReport = async(() =>
+  import("./pages/project/reports/CountryIndicatorReport")
+);
 
 const routes = [
   {
@@ -329,6 +333,14 @@ const routes = [
       {
         path: "global-narrative-report",
         element: <GlobalNarrativeReport />,
+      },
+      {
+        path: "country-indicator-report",
+        element: <CountryIndicatorReport />,
+      },
+      {
+        path: "global-indicator-report",
+        element: <GlobalIndicatorReport />,
       },
       {
         path: "advocacy-design-home",
