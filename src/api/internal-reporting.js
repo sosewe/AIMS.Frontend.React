@@ -181,3 +181,10 @@ export const getCountryIndicatorReport = async ({ queryKey }) => {
     `${apiRoutes.doubleCountingAdjustment}/GetCountryIndicatorReport/${indicatorId}/${yearId}/${organizationId}`
   );
 };
+
+export const getGlobalIndicatorReport = async ({ queryKey }) => {
+  const [_, indicatorId, yearId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetGlobalIndicatorReport/${indicatorId}/${yearId}`
+  );
+};
