@@ -29,12 +29,14 @@ import { kc } from "./keycloak";
 export const AuthProvider = createContext(null);
 export const OfficeContext = createContext(null);
 export const UserLevelContext = createContext(null);
+export const OfficeIdContext = createContext(null);
 const clientSideEmotionCache = createEmotionCache();
 
 function App({ emotionCache = clientSideEmotionCache }) {
   const [userInformation, SetUserInformation] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [selectedUserLevel, setSelectedUserLevel] = useState(null);
+  const [selectedOfficeId, setSelectedOfficeId] = useState(null);
 
   const token = localStorage.getItem("kc_token");
   const refreshToken = localStorage.getItem("kc_refreshToken");
@@ -101,11 +103,15 @@ function App({ emotionCache = clientSideEmotionCache }) {
                 <OfficeContext.Provider
                   value={{ selectedOffice, setSelectedOffice }}
                 >
-                  <UserLevelContext.Provider value={selectedUserLevel}>
-                    <ApiProvider user={userInformation}>
-                      {userInformation && content}
-                    </ApiProvider>
-                  </UserLevelContext.Provider>
+                  <OfficeIdContext.Provider
+                    value={{ selectedOfficeId, setSelectedOfficeId }}
+                  >
+                    <UserLevelContext.Provider value={selectedUserLevel}>
+                      <ApiProvider user={userInformation}>
+                        {userInformation && content}
+                      </ApiProvider>
+                    </UserLevelContext.Provider>
+                  </OfficeIdContext.Provider>
                 </OfficeContext.Provider>
               </AuthProvider.Provider>
             </MuiThemeProvider>

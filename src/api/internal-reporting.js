@@ -174,3 +174,17 @@ export const getCorporateNarrativeReports = async ({ queryKey }) => {
     `${apiRoutes.narrativeReports}/GetCorporateNarrativeReports/${implementingYearId}/${implementationMonthId}`
   );
 };
+
+export const getCountryIndicatorReport = async ({ queryKey }) => {
+  const [_, indicatorId, yearId, organizationId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetCountryIndicatorReport/${indicatorId}/${yearId}/${organizationId}`
+  );
+};
+
+export const getGlobalIndicatorReport = async ({ queryKey }) => {
+  const [_, indicatorId, yearId] = queryKey;
+  return await axios.get(
+    `${apiRoutes.doubleCountingAdjustment}/GetGlobalIndicatorReport/${indicatorId}/${yearId}`
+  );
+};

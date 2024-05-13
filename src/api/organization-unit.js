@@ -25,3 +25,10 @@ export const deleteOrganizationUnit = async ({ queryKey }) => {
   const [, id] = queryKey;
   return await axios.delete(`${apiRoutes.organizationUnit}/${id}`);
 };
+
+export const getOrganizationUnit = async ({ queryKey }) => {
+  const [, officeName] = queryKey;
+  return await axios.get(
+    `${apiRoutes.organizationUnit}/GetOrganizationUnit/${officeName}`
+  );
+};
